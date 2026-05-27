@@ -36,7 +36,8 @@ qt_add_executable(UplinkIRC
     src/irc/ircparser.h
 )
 
-target_include_directories(UplinkIRC PRIVATE src)
+configure_file(src/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
+target_include_directories(UplinkIRC PRIVATE src ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(UplinkIRC PRIVATE
     Qt6::Core

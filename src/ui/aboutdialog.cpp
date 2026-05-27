@@ -1,5 +1,6 @@
 #include "aboutdialog.h"
 #include "appicons.h"
+#include "version.h"
 
 #include <QVBoxLayout>
 #include <QLabel>
@@ -23,7 +24,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     layout->addWidget(logo);
 
     // Version + description
-    auto *version = new QLabel("UplinkIRC  v0.1.0");
+    auto *version = new QLabel("UplinkIRC  v" UPLINKIRC_VERSION);
     QFont f = version->font();
     f.setBold(true);
     f.setPointSize(f.pointSize() + 2);
