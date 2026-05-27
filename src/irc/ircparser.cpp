@@ -1,0 +1,66 @@
+#include "ircparser.h"
+
+IrcMessage IrcParser::parse(const QString &raw)
+{
+    IrcMessage msg;
+    QString line = raw.trimmed();
+    if (line.isEmpty()) return msg;
+
+    int pos = 0;
+
+    // IRCv3 tags
+    if (line.startsWith('@')) {
+        int space = line.indexOf(' ');
+        if (space == -1) return msg;
+        msg.tags = line.mid(1, space - 1);
+        pos = space + 1;
+    }
+
+    // prefix
+    if (pos < line.size() && line[pos] == ':') {
+        int space = line.indexOf(' ', pos);
+        if (space == -1) return msg;
+        msg.prefix = line.mid(pos + 1, space - pos - 1);
+        pos = space + 1;
+
+        // parse nick!user@host
+        int bang = msg.prefix.indexOf('!');
+        int at   = msg.prefix.indexOf('@');
+        if (bang != -1 && at != -1) {
+            msg.nick = msg.prefix.left(bang);
+            msg.user = msg.prefix.mid(bang + 1, at - bang - 1);
+            msg.host = msg.prefix.mid(at + 1);
+        } else {
+            msg.nick = msg.prefix;
+        }
+    }
+
+    // command
+    {
+        int space = line.indexOf(' ', pos);
+        if (space == -1) {
+            msg.command = line.mid(pos).toUpper();
+            return msg;
+        }
+        msg.command = line.mid(pos, space - pos).toUpper();
+        pos = space + 1;
+    }
+
+    // params + trailing
+    while (pos < line.size()) {
+        if (line[pos] == ':') {
+            msg.trailing = line.mid(pos + 1);
+            msg.params.append(msg.trailing);
+            break;
+        }
+        int space = line.indexOf(' ', pos);
+        if (space == -1) {
+            msg.params.append(line.mid(pos));
+            break;
+        }
+        msg.params.append(line.mid(pos, space - pos));
+        pos = space + 1;
+    }
+
+    return msg;
+}

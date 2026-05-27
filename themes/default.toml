@@ -1,0 +1,74 @@
+# DojoIRC Theme — default (Catppuccin Mocha)
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy this file, rename it, and drop it in your themes/ folder.
+# Set `theme = "yourthemename"` in config.toml to activate it.
+# All values are hex color codes (#RRGGBB or #RRGGBBAA).
+# ─────────────────────────────────────────────────────────────────────────────
+
+[general]
+# Main window and buffer background
+background   = "#1e1e2e"
+# Default text color
+text         = "#cdd6f4"
+# Borders and dividers between panels
+border       = "#313244"
+# Accent color (active items, focus rings, links)
+accent       = "#89b4fa"
+
+[sidebar]
+# Sidebar panel background (server + channel list)
+background   = "#181825"
+# Default channel name color
+text         = "#6c7086"
+# Currently selected channel
+active       = "#cdd6f4"
+# Channel with unread messages
+unread       = "#89b4fa"
+# Channel with an unread mention
+mention      = "#f38ba8"
+# Server name label
+server       = "#585b70"
+
+[buffer]
+# Message area background (can match general.background or be slightly different)
+background   = "#1e1e2e"
+# Timestamp column color
+timestamp    = "#6c7086"
+# Server/status messages (join, part, quit, mode changes)
+server_line  = "#585b70"
+# /me action messages
+action       = "#cba6f7"
+# Your own nick in messages
+nick_self    = "#a6e3a1"
+
+[highlights]
+# Background tint on a line where your nick or a keyword is mentioned
+mention_bg   = "#2a1a2e"
+# Text color for a mention
+mention_text = "#f38ba8"
+# Keyword highlight text color (other tracked words)
+keyword      = "#fab387"
+
+[nicklist]
+# Nick list panel background
+background   = "#181825"
+# Regular user nick color
+text         = "#6c7086"
+# Channel operator (@)
+op           = "#89b4fa"
+# Half-op (%)
+halfop       = "#cba6f7"
+# Voiced user (+)
+voice        = "#a6e3a1"
+# Away user (grayed out)
+away         = "#45475a"
+
+[input]
+# Input bar background
+background   = "#313244"
+# Input text color
+text         = "#cdd6f4"
+# Placeholder text color
+placeholder  = "#6c7086"
+# Your nick shown before the input box
+nick_color   = "#a6e3a1"

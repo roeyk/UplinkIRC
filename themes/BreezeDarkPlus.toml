@@ -1,0 +1,42 @@
+# DojoIRC Theme — BreezeDarkPlus
+# Ported from KDE Breeze Dark Plus (Halloy theme by joehonkey)
+
+[general]
+background   = "#141414"
+text         = "#FCFCFC"
+border       = "#2B2E32"
+accent       = "#3DAEE9"
+
+[sidebar]
+background   = "#1E1E1E"
+text         = "#A1A9B1"
+active       = "#FCFCFC"
+unread       = "#3DAEE9"
+mention      = "#DA4453"
+server       = "#4A5568"
+
+[buffer]
+background   = "#0C0C0C"
+timestamp    = "#A8B2BA"
+server_line  = "#3DAEE9"
+action       = "#3DAEE9"
+nick_self    = "#40B8FF"
+
+[highlights]
+mention_bg   = "#1E5774"
+mention_text = "#DA4453"
+keyword      = "#27AE60"
+
+[nicklist]
+background   = "#1E1E1E"
+text         = "#A1A9B1"
+op           = "#40B8FF"
+halfop       = "#3DAEE9"
+voice        = "#5FEFAA"
+away         = "#4A5568"
+
+[input]
+background   = "#232629"
+text         = "#FCFCFC"
+placeholder  = "#A1A9B1"
+nick_color   = "#40B8FF"

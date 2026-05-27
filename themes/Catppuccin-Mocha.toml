@@ -1,0 +1,39 @@
+[general]
+background   = "#181825"
+text         = "#cdd6f4"
+border       = "#6c7086"
+accent       = "#cba6f7"
+
+[sidebar]
+background   = "#11111b"
+text         = "#a6adc8"
+active       = "#cdd6f4"
+unread       = "#cba6f7"
+mention      = "#f38ba8"
+server       = "#666b7a"
+
+[buffer]
+background   = "#181825"
+timestamp    = "#585a6e"
+server_line  = "#f9e2af"
+action       = "#fab387"
+nick_self    = "#89dceb"
+
+[highlights]
+mention_bg   = "#322534"
+mention_text = "#f38ba8"
+keyword      = "#cba6f7"
+
+[nicklist]
+background   = "#11111b"
+text         = "#a6adc8"
+op           = "#cba6f7"
+halfop       = "#cba6f7"
+voice        = "#a6e3a1"
+away         = "#636778"
+
+[input]
+background   = "#1e1e2e"
+text         = "#cdd6f4"
+placeholder  = "#a6adc8"
+nick_color   = "#89dceb"
