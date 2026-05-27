@@ -21,7 +21,7 @@ host     = "irc.linuxdojo.org"
 port     = 6697
 ssl      = true
 nick     = "yournick"
-user     = "uplink"
+user     = "yournick"
 realname = "UplinkIRC User"
 
 [[server.channels]]
@@ -38,9 +38,10 @@ QString Config::defaultPath()
 
 void Config::ensureExists(const QString &path)
 {
-    if (QFile::exists(path)) return;
+    QFileInfo fi(path);
+    if (fi.exists() && fi.size() > 0) return;
 
-    QDir().mkpath(QFileInfo(path).absolutePath());
+    QDir().mkpath(fi.absolutePath());
     QFile f(path);
     if (f.open(QIODevice::WriteOnly | QIODevice::Text))
         f.write(kDefaultConfig);
