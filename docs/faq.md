@@ -1,53 +1,28 @@
 # FAQ & Troubleshooting
 
-Common questions and fixes for DojoIRC.
+Common questions and fixes for UplinkIRC.
 
 ---
 
 ## Installation & startup
 
-### Blank window on KDE Wayland
+### Where do I get UplinkIRC?
 
-webkit2gtk has a rendering issue on some KDE Wayland setups. Run DojoIRC with XWayland:
+Build from source — see [Building](building.md) for step-by-step instructions. Packages for Linux, FreeBSD, macOS, and Windows are planned.
 
-```bash
-GDK_BACKEND=x11 ./DojoIRC
-```
+### A nick dialog appeared on first launch — what do I do?
 
-Add that to your `.desktop` file or launcher script to make it permanent.
-
-### "webkit2gtk not found" or build fails on Linux
-
-DojoIRC requires **webkit2gtk-4.1**, not the older webkit2gtk-4.0. Install the correct version:
-
-```bash
-# Arch Linux
-sudo pacman -S webkit2gtk-4.1
-
-# Ubuntu 24.04 / Debian
-sudo apt install libwebkit2gtk-4.1-0
-
-# Fedora
-sudo dnf install webkit2gtk4.1
-```
-
-For building from source, you also need the development headers:
-
-```bash
-# Ubuntu / Debian
-sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev
-
-# Fedora
-sudo dnf install gtk3-devel webkit2gtk4.1-devel
-```
+UplinkIRC detected that your config still has the placeholder nick `yournick`. Type your desired nickname in the dialog and click OK. It will be saved to your config and used for all servers on the next connect.
 
 ### themes/ folder missing — no themes load
 
-The `themes/` folder must be in the same directory as the `DojoIRC` binary. If you moved the binary without the folder, copy it back:
+The `themes/` folder must be in the same directory as the `UplinkIRC` binary (or at `~/.config/LinuxDojo/UplinkIRC/themes/`). If you moved the binary, copy the folder back:
 
 ```bash
-cp -r themes/ /path/to/your/DojoIRC/
+cp -r themes/ /path/to/your/binary/
 ```
+
+If you built with CMake, themes are copied to the build directory automatically via a post-build step.
 
 ---
 
@@ -57,115 +32,58 @@ cp -r themes/ /path/to/your/DojoIRC/
 
 | Platform | Path |
 |---|---|
-| Linux / macOS | `~/.config/dojoirc/config.toml` |
-| Windows | `%APPDATA%\dojoirc\config.toml` |
+| Linux / FreeBSD | `~/.config/LinuxDojo/UplinkIRC/config.toml` |
+| macOS | `~/Library/Application Support/LinuxDojo/UplinkIRC/config.toml` |
+| Windows | `%APPDATA%\LinuxDojo\UplinkIRC\config.toml` |
 
-Use **Hamburger → Open Config** to open it directly in your system editor. On Windows this opens in `notepad.exe` (set `EDITOR` or `VISUAL` to use a different editor); on macOS `open`; on Linux it tries `$VISUAL`/`$EDITOR`, then common GUI editors, then `xdg-open`.
+Open it in any text editor and restart UplinkIRC to apply changes.
 
-### Config changes aren't applying
+### My config change isn't taking effect
 
-Use **Hamburger → Reload Config** after saving. Most settings apply immediately. Font size and theme changes apply on reload. CSS changes (style.css) require a full restart.
+UplinkIRC reads the config once at startup. After editing `config.toml`, close and reopen the app. Live reload is planned for a future release.
 
 ### TOML parse error on startup
 
-All string values in TOML must be wrapped in double quotes. Common mistakes:
+All string values in TOML must be wrapped in double quotes. The `#` character starts a comment outside of strings, which trips up channel names.
 
 ```toml
-# Wrong
+# Wrong — causes a parse error
 name = LinuxDojo
-channels = [#dojoirc]
+channels = [#uplink]
 
 # Correct
 name     = "LinuxDojo"
-channels = ["#dojoirc"]
 ```
 
-The channel `#` symbol inside an unquoted value causes a parse error because `#` starts a TOML comment.
-
-### Should I use SASL or nickserv_password?
-
-Use SASL if the server supports it — authentication happens during the CAP handshake before you join channels, so your nick is identified from the start. NickServ identify happens after the MOTD, which means there is a brief window where you are unidentified.
-
-Do not use both on the same server block. If the server supports SASL PLAIN, prefer that.
+For channels, each one needs its own `[[server.channels]]` block:
 
 ```toml
-# SASL (preferred)
-[[server]]
-name = "Libera"
-host = "irc.libera.chat"
-port = 6697
-tls  = true
-nick = "yournick"
+[[server.channels]]
+name = "#uplink"
 
-[server.sasl]
-mechanism = "PLAIN"
-username  = "youraccountname"
-password  = "yourpassword"
-
-# NickServ (fallback for servers without SASL)
-[[server]]
-name              = "LinuxDojo"
-host              = "irc.linuxdojo.org"
-port              = 6697
-tls               = true
-nick              = "yournick"
-nickserv_password = "yourpassword"
+[[server.channels]]
+name = "#linux"
 ```
 
-### Open Config doesn't do anything on Windows
+See [Configuration](configuration.md) for the full format reference.
 
-This was a bug — fixed in v0.4.10. On Windows, DojoIRC now opens the config in Notepad (always available, no dialogs). If you have `$EDITOR` or `$VISUAL` set in your environment, that is used instead.
+### Where do I set the channel to auto-join?
 
-### Does DojoIRC support the Windows touch keyboard?
-
-Yes. When Windows tablet mode is active, focusing the message input automatically raises the touch keyboard (`TabTip.exe`). If `TabTip.exe` is not present (some Windows 11 builds removed it), the on-screen keyboard (`osk.exe`) is used as a fallback. On desktop Windows where tablet mode is off, nothing happens.
-
----
-
-## Fonts & appearance
-
-### How do I change the font?
-
-Set `font` in config.toml to any font installed on your system, then use Hamburger → Reload Config:
+Add a `[[server.channels]]` block inside the server entry:
 
 ```toml
-font      = "Noto Sans"
-font_size = 15
+[[server]]
+name     = "LinuxDojo"
+host     = "irc.linuxdojo.org"
+port     = 6697
+ssl      = true
+nick     = "yournick"
+user     = "uplink"
+realname = "UplinkIRC User"
+
+[[server.channels]]
+name = "#uplink"
 ```
-
-### How do I make the nick by the input box bigger?
-
-Open **Hamburger → Font Sizes** and use the + button next to **Input Nick Prefix**. Changes apply instantly — no restart needed.
-
-### How do I change font sizes for specific UI elements?
-
-Open **Hamburger → Font Sizes**. You get +/− controls for every UI zone: Sidebar Header, Hamburger Button, Server Names, Channel Names, Chat Messages, Timestamps, Nick List, Typing Indicator, Input Nick Prefix, and Input Field. Changes apply live and persist across restarts. Use **Reset to Defaults** to restore everything at once.
-
-See [Font Sizes](font-sizes.md) for the full reference.
-
-### How do I add a custom theme?
-
-Drop a `.toml` file in `~/.config/dojoirc/themes/`. The filename becomes the theme name. Then use **Hamburger → Reload Config** — it appears in the picker immediately.
-
-See [Themes](themes.md) for the full color key reference.
-
----
-
-## Emoji
-
-### How do I send emoji?
-
-Three ways:
-
-1. **Shortcodes** — type `:shortcode:` and it converts on send. For example, type `:fire:` and it becomes 🔥, `:thumbsup:` becomes 👍, `:heart:` becomes ❤️. See the [full shortcode list](keyboard-shortcuts.md#shortcode-reference).
-
-2. **Emoji picker** — click the **😊** button to the right of the message input. Browse by category (Smileys, Gestures, Hearts, Animals, Food, Objects, Symbols) or search by name. Click any emoji to insert it at the cursor.
-
-3. **Tab completion** — type `:` followed by part of a name and press Tab to complete. For example `:fir` + Tab inserts 🔥. Press Tab again to cycle through matches (`:fire:`, `:fire:`, etc.).
-
-### Do emoji work in channel names, nicks, or topics?
-
-Shortcode conversion only runs on messages you send in the input box. It does not affect incoming messages, channel names, topics, or other UI elements. Emoji sent by other clients appear as-is.
 
 ---
 
@@ -173,79 +91,183 @@ Shortcode conversion only runs on messages you send in the input box. It does no
 
 ### Can I connect to multiple servers at once?
 
-Yes. Add as many `[[server]]` blocks as you want in config.toml. Each gets its own entry in the sidebar.
+Yes. Add multiple `[[server]]` blocks in your config — each gets its own entry in the sidebar and connects independently.
 
 ```toml
 [[server]]
 name     = "LinuxDojo"
 host     = "irc.linuxdojo.org"
 port     = 6697
-tls      = true
+ssl      = true
 nick     = "yournick"
-channels = ["#dojoirc"]
+user     = "uplink"
+realname = "UplinkIRC User"
+
+[[server.channels]]
+name = "#uplink"
 
 [[server]]
 name     = "Libera"
 host     = "irc.libera.chat"
 port     = 6697
-tls      = true
+ssl      = true
 nick     = "yournick"
-channels = ["#linux"]
+user     = "uplink"
+realname = "UplinkIRC User"
+
+[[server.channels]]
+name = "#linux"
 ```
 
-### DojoIRC disconnected — will it reconnect?
+### UplinkIRC disconnected — will it reconnect?
 
-Yes. DojoIRC retries automatically every 10 seconds on unexpected disconnect. Right-click the server name in the sidebar and choose **Disconnect** to cancel reconnection.
+Not automatically yet. Auto-reconnect with backoff is planned. For now, close and reopen the app to reconnect.
 
 ### How do I send a raw IRC command?
 
-Use `/raw` followed by the full IRC protocol line:
+Use `/raw` followed by the full IRC line:
 
 ```
-/raw PRIVMSG #dojoirc :hello
-/raw MODE #dojoirc +m
+/raw PRIVMSG #uplink :hello
+/raw MODE #uplink +m
 /raw WHOIS alice
 ```
 
-### How do I open a private message window?
+`/quote` works as an alias for `/raw`.
 
-Click any nick in the nick list or in chat to open a DM buffer. You can also use `/query <nick>` or `/msg <nick> <text>`.
+### My nick was already in use — what happened?
 
-### URL previews are not loading
+If your preferred nick is taken, UplinkIRC appends `_` and tries again (e.g. `yournick_`). You will see the new nick reflected next to the input box. Use `/nick yournick` once the original nick becomes available.
 
-URL previews fetch Open Graph metadata from the link. If a site blocks scrapers or has no OG tags the preview will not appear. This is expected behavior — the preview is best-effort.
+### How do I join a channel while connected?
+
+Type `/join #channelname` in the input box and press Enter.
+
+### How do I use a bouncer (ZNC or soju)?
+
+Set the `password` field in your server block. UplinkIRC sends it as `PASS` before registration, which is how bouncers authenticate.
+
+ZNC format — `username/network:password`:
+
+```toml
+[[server]]
+name     = "ZNC"
+host     = "znc.example.com"
+port     = 6697
+ssl      = true
+nick     = "yournick"
+user     = "uplink"
+realname = "UplinkIRC User"
+password = "joe/libera:mysecretpassword"
+```
+
+soju format — `username:password`:
+
+```toml
+[[server]]
+name     = "soju"
+host     = "soju.example.com"
+port     = 6697
+ssl      = true
+nick     = "yournick"
+user     = "uplink"
+realname = "UplinkIRC User"
+password = "joe:mysecretpassword"
+```
+
+---
+
+## Interface
+
+### How do I change the theme?
+
+Open **Hamburger menu → Theme** and pick from the list. The theme applies immediately. To make it the default, set `theme` in `config.toml`:
+
+```toml
+[ui]
+theme = "nord"
+```
+
+### How do I move the nick list?
+
+The nick list panel is a floating dock — drag its title bar to the left or right to reposition it. The position is not persisted yet (window state persistence is planned).
+
+### How do I hide the topic bar?
+
+Open **Hamburger menu** and toggle the **Topic** option. You can also set it in config:
+
+```toml
+[ui]
+show_topic = false
+```
+
+### How do I hide my nick next to the input box?
+
+Open **Hamburger menu** and toggle the **Nick** option. Or set it in config:
+
+```toml
+[ui]
+show_nick_prefix = false
+```
+
+### How do I change the app icon?
+
+Open **Hamburger menu → App Icon** and choose **Default** (flat satellite dish) or **Alternative** (3D satellite). The choice is saved and persists across restarts.
+
+### The emoji button doesn't do anything
+
+The emoji picker UI is not built yet. Toggle the emoji button in the hamburger menu to show or hide the button — the picker will be wired up in a future release.
+
+### How do I minimize to the system tray?
+
+Close the window normally — it minimizes to the system tray instead of quitting. Left-click the tray icon to bring the window back. Right-click for a menu with **Show** and **Quit**.
 
 ---
 
 ## Building from source
 
-### What do I need to build DojoIRC?
+### What do I need to build UplinkIRC?
 
-- Go 1.21 or newer
-- Node.js 18 or newer
-- Wails v2: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
-- On Linux: webkit2gtk-4.1 development libraries
+- CMake 3.16 or newer
+- Qt 6.2 or newer (Widgets + Network + Ssl modules)
+- A C++17 compiler (GCC, Clang, or MSVC)
+- tomlplusplus (header-only, available via most package managers)
 
-### The `-tags webkit2_41` flag — is it required?
+See [Building](building.md) for full platform-specific instructions.
 
-Yes, on Linux. Without it Wails defaults to webkit2gtk-4.0, which is the older version and may not be installed. Always build with:
+### Build fails: "tomlplusplus not found"
+
+Install the package for your platform:
 
 ```bash
-~/go/bin/wails build -tags webkit2_41
+# Arch Linux
+sudo pacman -S tomlplusplus
+
+# Ubuntu / Debian
+sudo apt install libtomlplusplus-dev
+
+# Fedora
+sudo dnf install tomlplusplus-devel
+
+# FreeBSD
+sudo pkg install tomlplusplus
+
+# macOS (Homebrew)
+brew install tomlplusplus
 ```
 
-### Do I need to copy the themes folder after building?
+### Build fails: Qt6 not found
 
-Yes. The binary does not embed themes. Copy them next to the binary after every build:
+Make sure Qt6 is installed and CMake can find it. If Qt is in a non-standard location, pass the prefix:
 
 ```bash
-cp -r themes build/bin/
+cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 ```
 
 ---
 
 ## Getting help
 
-- Join **#dojoirc** on `irc.linuxdojo.org` — BeeMO the bot can answer most questions
-- File bugs and feature requests on [GitHub Issues](https://github.com/joehonkey/DojoIRC/issues)
+- Join **#uplink** on `irc.linuxdojo.org` — the UplinkIRC development channel
+- File bugs and feature requests on the GitHub Issues page
 - Browse the full documentation index at [docs/index.md](index.md)

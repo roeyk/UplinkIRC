@@ -1,11 +1,49 @@
-[server]
-name    = "LinuxDojo"
-host    = "irc.linuxdojo.org"
-port    = 6697
-ssl     = true
-nick    = "yournick"
-user    = "uplink"
-real    = "UplinkIRC User"
+# UplinkIRC configuration example
+# Copy to ~/.config/LinuxDojo/UplinkIRC/config.toml and set your nick.
+# This file is created automatically on first launch if it does not exist.
+
+[ui]
+theme             = "catppuccin-mocha"  # theme name from themes/ folder
+show_nick_prefix  = true                # show your nick next to the input box
+show_topic        = true                # show the topic bar at the top
+show_emoji_button = false               # show emoji button (picker coming soon)
+colored_nicks     = true                # give each nick a unique color
+
+[[server]]
+name     = "LinuxDojo"            # display name in the sidebar
+host     = "irc.linuxdojo.org"    # server hostname
+port     = 6697                   # 6697 = standard TLS port
+ssl      = true                   # always use TLS
+nick     = "yournick"             # change this to your nickname
+user     = "uplink"               # username in your hostmask
+realname = "UplinkIRC User"       # shown in WHOIS
 
 [[server.channels]]
-name    = "#uplink"
+name = "#uplink"                  # channel to join on connect
+
+# Optional: join additional channels
+# [[server.channels]]
+# name = "#linux"
+
+# Optional: password-protected channel
+# [[server.channels]]
+# name = "#secret"
+# password = "channelkey"
+
+# Optional: server password (used for bouncers like ZNC or soju)
+# password = "joe/network:mypassword"
+
+# --- Multiple servers ---
+# Add more [[server]] blocks to connect to additional networks.
+
+# [[server]]
+# name     = "Libera"
+# host     = "irc.libera.chat"
+# port     = 6697
+# ssl      = true
+# nick     = "yournick"
+# user     = "uplink"
+# realname = "UplinkIRC User"
+#
+# [[server.channels]]
+# name = "#linux"

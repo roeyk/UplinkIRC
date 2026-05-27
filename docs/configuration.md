@@ -1,286 +1,320 @@
 # Configuration
 
-DojoIRC is configured with a single TOML file at `~/.config/dojoirc/config.toml`.
+UplinkIRC is configured with a single TOML file. On first launch it is created automatically with the default settings — you just need to set your nickname.
 
-Use **Hamburger → Open Config** to open it in your system editor. Use **Hamburger → Reload Config** to apply changes without restarting. New servers in the config are connected automatically on reload; existing connections are not affected.
+---
+
+## Config file location
+
+| Platform | Path |
+|---|---|
+| Linux | `~/.config/LinuxDojo/UplinkIRC/config.toml` |
+| macOS | `~/Library/Application Support/LinuxDojo/UplinkIRC/config.toml` |
+| Windows | `%APPDATA%\LinuxDojo\UplinkIRC\config.toml` |
+| FreeBSD | `~/.config/LinuxDojo/UplinkIRC/config.toml` |
+
+Open the file in any text editor. Changes take effect on the next launch (live reload is planned).
 
 ---
 
 ## Full example
 
-```toml
-theme     = "default"
-font      = "IBM Plex Mono"
-font_size = 13
+This is a complete config file showing every available option. Copy it, change the nick, and you are ready to go.
 
-[behaviour]
-scrollback      = 500    # messages visible per buffer (hard memory cap: 500, persistence cap: 200)
-notifications   = true
-auto_reconnect  = true
-reconnect_delay = 10
+```toml
+[ui]
+theme             = "catppuccin-mocha"
+show_nick_prefix  = true
+show_topic        = true
+show_emoji_button = false
+colored_nicks     = true
 
 [[server]]
 name     = "LinuxDojo"
 host     = "irc.linuxdojo.org"
 port     = 6697
-tls      = true
+ssl      = true
 nick     = "yournick"
-channels = ["#dojoirc", "#linuxdojo"]
-ignore   = ["spambot"]
+user     = "uplink"
+realname = "UplinkIRC User"
 
-[[server]]
-name     = "Libera"
-host     = "irc.libera.chat"
-port     = 6697
-tls      = true
-nick     = "yournick"
-channels = ["#linux", "#archlinux"]
+[[server.channels]]
+name = "#uplink"
 
-[server.sasl]
-mechanism = "PLAIN"
-username  = "youraccountname"
-password  = "yourpassword"
+[[server.channels]]
+name = "#linux"
 ```
 
 ---
 
-## Global options
+## The `[ui]` block
+
+Controls the look and feel of the interface. All keys are optional — if omitted the default value is used.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `theme` | string | `"default"` | Theme name to load. Matches the filename in `themes/` without `.toml` |
-| `font` | string | `"IBM Plex Mono"` | Font family for the UI. Must be installed on your system |
-| `font_size` | integer | `13` | Main chat font size in pixels. Applied at runtime via Reload Config |
-
----
-
-## Behaviour options
-
-The `[behaviour]` block controls connection and UI behaviour. All keys are optional and fall back to the defaults shown.
-
-| Key | Type | Default | Description |
-|---|---|---|---|
-| `scrollback` | integer | `500` | Number of messages visible per buffer. Hard memory cap is 500; up to 200 messages are persisted across restarts. Values above 500 have no additional effect |
-| `notifications` | bool | `true` | Enable OS desktop notifications on nick mention |
-| `auto_reconnect` | bool | `true` | Automatically reconnect on unexpected disconnect |
-| `reconnect_delay` | integer | `10` | Seconds to wait before each reconnect attempt |
-| `tray` | bool | `true` | Enable system tray integration |
-| `dcc_enabled` | bool | `true` | Enable DCC file transfer and chat. Set `false` to disable all DCC. See [DCC security note](#dcc-security-note) |
-| `previews_enabled` | bool | `true` | Enable URL preview cards. Set `false` to disable all previews. See [URL preview privacy note](#url-preview-privacy-note) |
-| `max_dcc_file_size` | integer | `0` | Reject incoming DCC files larger than this many bytes. `0` means unlimited |
+| `theme` | string | `"default"` | Theme to apply. Must match the filename in `themes/` without the `.toml` extension. See [Themes](#themes) below |
+| `show_nick_prefix` | bool | `true` | Show your nickname next to the message input box |
+| `show_topic` | bool | `true` | Show the topic bar at the top of the chat view |
+| `show_emoji_button` | bool | `false` | Show the emoji button to the right of the message input (emoji picker is coming soon) |
+| `colored_nicks` | bool | `true` | Give each nickname a unique color in chat |
 
 ### Example
 
 ```toml
-[behaviour]
-scrollback      = 500
-notifications   = true
-auto_reconnect  = true
-reconnect_delay = 5
+[ui]
+theme             = "nord"
+show_nick_prefix  = true
+show_topic        = true
+show_emoji_button = false
+colored_nicks     = true
 ```
 
 ---
 
-## DCC security note
+## The `[[server]]` block
 
-DCC (Direct Client-to-Client) transfers use a direct TCP connection between you and another IRC user. This means:
-
-- The other user learns your IP address.
-- Files are transferred without encryption.
-- Only accept DCC offers from users you trust.
-
-Set `dcc_enabled = false` in `[behaviour]` to disable all DCC. You can also limit the maximum accepted file size with `max_dcc_file_size`.
-
----
-
-## URL preview privacy note
-
-When URL previews are enabled, DojoIRC fetches metadata (title, description, image) for links that appear in chat. This means:
-
-- A network request is made to each linked site as messages arrive.
-- The site receives your IP address and a DojoIRC user-agent string.
-- Preview image thumbnails are loaded by the webview from the image's origin, which may be a third-party host.
-
-Set `previews_enabled = false` in `[behaviour]` to disable all URL previews.
-
-To disable previews only in private messages (DMs), use **Hamburger → PM Previews** to toggle them off. This setting persists via `localStorage` and defaults to on.
-
----
-
-## Server options
-
-Each server is defined with a `[[server]]` block. You can have as many as you need.
+Each server you want to connect to gets its own `[[server]]` block. The double brackets (`[[...]]`) mean you can have as many as you want — just add another block.
 
 | Key | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | yes | Display name shown in the sidebar |
+| `name` | string | yes | Display name shown in the sidebar. Can be anything |
 | `host` | string | yes | IRC server hostname or IP address |
 | `port` | integer | yes | Server port. Standard TLS port is 6697 |
-| `tls` | bool | yes | Use TLS. Strongly recommended — always use `true` |
-| `nick` | string | yes | Your preferred nickname |
-| `channels` | array of strings | no | Channels to join automatically on connect |
-| `password` | string | no | Server password sent as `PASS` during connection. Use this for bouncers (ZNC, soju) — set to `user/network:password` for ZNC |
-| `nickserv_password` | string | no | If set, sends `IDENTIFY` to NickServ after connecting. Use this **or** SASL — not both |
-| `ignore` | array of strings | no | Nicks to silently ignore. Messages, notices, and actions from these nicks are dropped |
+| `ssl` | bool | yes | Use TLS encryption. Always use `true` — plain IRC is not secure |
+| `nick` | string | yes | Your preferred nickname. Cannot contain spaces |
+| `user` | string | no | Username shown in your hostmask (defaults to `"uplink"`) |
+| `realname` | string | no | Your "real name" shown in WHOIS (defaults to `"UplinkIRC User"`) |
+| `password` | string | no | Server password, sent as `PASS` during connection. Used for bouncers (ZNC, soju) and password-protected servers |
 
-### Example — minimal server block
+### Minimal server block
 
-```toml
-[[server]]
-name     = "MyServer"
-host     = "irc.example.com"
-port     = 6697
-tls      = true
-nick     = "yournick"
-channels = ["#general"]
-```
-
-### Example — with ignore list
+This is the smallest valid server config. Just change `yournick` to your nickname.
 
 ```toml
 [[server]]
 name     = "LinuxDojo"
 host     = "irc.linuxdojo.org"
 port     = 6697
-tls      = true
+ssl      = true
 nick     = "yournick"
-channels = ["#dojoirc"]
-ignore   = ["spambot", "annoyinguser"]
+user     = "uplink"
+realname = "UplinkIRC User"
 ```
-
-Nicks in `ignore` are matched case-insensitively. Messages, actions, and notices from ignored nicks are silently dropped — they do not appear in any buffer.
 
 ---
 
-## SASL authentication
+## The `[[server.channels]]` block
 
-Add a `[server.sasl]` block **immediately after** the `[[server]]` block it belongs to. The SASL block always applies to the server directly above it.
+Channels to auto-join on connect go inside the server block using `[[server.channels]]`. Each channel gets its own block.
 
-| Key | Type | Description |
-|---|---|---|
-| `mechanism` | string | Authentication mechanism. Currently only `"PLAIN"` is supported |
-| `username` | string | Your account name (not necessarily your nick) |
-| `password` | string | Your account password |
+| Key | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | yes | Channel name, including the `#` |
+| `password` | string | no | Channel key, if the channel requires one |
 
-### Example
+### Example — multiple channels
 
 ```toml
+[[server]]
+name     = "LinuxDojo"
+host     = "irc.linuxdojo.org"
+port     = 6697
+ssl      = true
+nick     = "yournick"
+user     = "uplink"
+realname = "UplinkIRC User"
+
+[[server.channels]]
+name = "#uplink"
+
+[[server.channels]]
+name = "#linux"
+
+[[server.channels]]
+name = "#secret"
+password = "channelkey"
+```
+
+---
+
+## Multiple servers
+
+Add as many `[[server]]` blocks as you need. Each server and its channels appear in the sidebar independently.
+
+```toml
+[ui]
+theme = "catppuccin-mocha"
+
+[[server]]
+name     = "LinuxDojo"
+host     = "irc.linuxdojo.org"
+port     = 6697
+ssl      = true
+nick     = "yournick"
+user     = "uplink"
+realname = "UplinkIRC User"
+
+[[server.channels]]
+name = "#uplink"
+
 [[server]]
 name     = "Libera"
 host     = "irc.libera.chat"
 port     = 6697
-tls      = true
+ssl      = true
 nick     = "yournick"
-channels = ["#linux"]
+user     = "uplink"
+realname = "UplinkIRC User"
 
-[server.sasl]
-mechanism = "PLAIN"
-username  = "myaccount"
-password  = "mypassword"
+[[server.channels]]
+name = "#linux"
+
+[[server.channels]]
+name = "#archlinux"
 ```
-
-SASL negotiation happens during the CAP handshake at connect time. A success or failure message appears in the server buffer. If authentication fails, the connection continues but without being identified.
 
 ---
 
 ## Bouncer support (ZNC / soju)
 
-Set `password` in the server block to send a `PASS` command during connection. This is how ZNC and soju authenticate.
+Set `password` in the server block to send a `PASS` command at connection. This is the standard way to authenticate with ZNC and soju.
 
-**ZNC** — use `username/network:password` as the password:
+**ZNC** — password format is `username/network:password`:
 
 ```toml
 [[server]]
 name     = "ZNC"
 host     = "znc.example.com"
 port     = 6697
-tls      = true
+ssl      = true
 nick     = "yournick"
+user     = "uplink"
+realname = "UplinkIRC User"
 password = "joe/libera:mysecretpassword"
-channels = ["#linux"]
+
+[[server.channels]]
+name = "#linux"
 ```
 
-**soju** — use `username:password` or configure SASL PLAIN (both work):
+**soju** — password format is `username:password`:
 
 ```toml
 [[server]]
 name     = "soju"
 host     = "soju.example.com"
 port     = 6697
-tls      = true
+ssl      = true
 nick     = "yournick"
+user     = "uplink"
+realname = "UplinkIRC User"
 password = "joe:mysecretpassword"
-channels = ["#linux"]
+
+[[server.channels]]
+name = "#linux"
 ```
 
-`PASS` is sent before `NICK`/`USER` during the connection handshake, which is what bouncers require.
+`PASS` is sent before `NICK`/`USER` during the handshake, which is what bouncers require.
 
 ---
 
-## NickServ authentication
+## Themes
 
-For servers that use NickServ instead of (or in addition to) SASL, add `nickserv_password` to the server block. DojoIRC sends `PRIVMSG NickServ :IDENTIFY <password>` after the server's MOTD completes.
+Set `theme` in the `[ui]` block to any theme name from the list below. The name must match the `.toml` filename inside the `themes/` folder (without the extension).
+
+UplinkIRC ships with 55 built-in themes. A few popular ones:
+
+| Theme name | Description |
+|---|---|
+| `catppuccin-mocha` | Dark, muted purple tones |
+| `catppuccin-latte` | Light, warm pastel variant |
+| `nord` | Cool blue Arctic palette |
+| `dracula` | Dark purple and pink |
+| `gruvbox-dark` | Warm retro dark theme |
+| `solarized-dark` | Classic Solarized dark |
+| `solarized-light` | Classic Solarized light |
+| `tokyo-night` | Dark Tokyo Night |
+| `one-dark` | Atom One Dark |
+| `default` | Built-in fallback theme |
+
+To use a theme:
 
 ```toml
-[[server]]
-name              = "LinuxDojo"
-host              = "irc.linuxdojo.org"
-port              = 6697
-tls               = true
-nick              = "yournick"
-channels          = ["#dojoirc"]
-nickserv_password = "yourpassword"
+[ui]
+theme = "nord"
 ```
 
-Use NickServ **or** SASL — if the server supports SASL PLAIN, prefer that since authentication happens before JOIN.
+### Theme search path
+
+UplinkIRC looks for theme files in this order:
+
+1. `~/.config/LinuxDojo/UplinkIRC/themes/<name>.toml` — your personal themes folder
+2. `<exe directory>/themes/<name>.toml` — shipped themes next to the binary
+3. `themes/<name>.toml` — relative to the current working directory
+
+To add a custom theme, create a `.toml` file in `~/.config/LinuxDojo/UplinkIRC/themes/`. It appears in the hamburger menu immediately on next launch.
 
 ---
 
-## Multiple servers
+## Common mistakes
 
-Add as many `[[server]]` blocks as you want. Each gets its own entry in the sidebar.
+### Forgetting quotes around strings
+
+All string values in TOML must be in double quotes. The `#` character starts a TOML comment if it appears outside a string.
 
 ```toml
-[[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-tls      = true
-nick     = "joe"
-channels = ["#dojoirc"]
+# Wrong — these will cause a parse error
+name = LinuxDojo
+channels = [#uplink]
 
-[[server]]
-name     = "Libera"
-host     = "irc.libera.chat"
-port     = 6697
-tls      = true
-nick     = "joe"
-channels = ["#linux"]
-
-[server.sasl]
-mechanism = "PLAIN"
-username  = "joe"
-password  = "hunter2"
-
-[[server]]
-name     = "OFTC"
-host     = "irc.oftc.net"
-port     = 6697
-tls      = true
-nick     = "joe"
-channels = ["#debian"]
+# Correct
+name = "LinuxDojo"
 ```
 
----
+### Using single brackets for servers
 
-## Theme search path
+`[server]` (single brackets) defines a single table. `[[server]]` (double brackets) defines an array entry and is what UplinkIRC expects.
 
-DojoIRC looks for theme files in this order:
+```toml
+# Wrong — this only works for one server and is parsed differently
+[server]
+name = "LinuxDojo"
 
-1. `~/.config/dojoirc/themes/<name>.toml`
-2. `<exe directory>/themes/<name>.toml`
-3. `themes/<name>.toml` (relative to working directory)
+# Correct — works for one server or many
+[[server]]
+name = "LinuxDojo"
+```
 
-To add a custom theme, drop a `.toml` file in `~/.config/dojoirc/themes/` and reload config. It will appear in the theme picker immediately.
+### Channel block placed outside the server block
 
-See [Themes](themes.md) for the full theme format and color reference.
+The `[[server.channels]]` blocks must come **after** the `[[server]]` block they belong to, before the next `[[server]]` block.
+
+```toml
+# Wrong — channel is after the second server block
+[[server]]
+name = "LinuxDojo"
+...
+
+[[server]]
+name = "Libera"
+...
+
+[[server.channels]]  # This attaches to "Libera", not "LinuxDojo"!
+name = "#linux"
+
+# Correct — channel immediately follows its server
+[[server]]
+name = "LinuxDojo"
+...
+
+[[server.channels]]
+name = "#uplink"
+
+[[server]]
+name = "Libera"
+...
+```
+
+### Nick contains spaces or is too long
+
+IRC nicks cannot contain spaces. Most servers enforce a max length (usually 30 characters). Use only letters, numbers, `_`, `-`, `[`, `]`, `{`, `}`, `|`, `\`, `^`, and `` ` ``.
