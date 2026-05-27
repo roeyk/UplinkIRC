@@ -8,4 +8,4 @@ user    = "uplink"
 real    = "UplinkIRC User"
 
 [[server.channels]]
-name    = "#uplinkirc"
+name    = "#uplink"

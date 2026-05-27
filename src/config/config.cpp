@@ -25,7 +25,7 @@ user     = "uplink"
 realname = "UplinkIRC User"
 
 [[server.channels]]
-name = "#uplinkirc"
+name = "#uplink"
 )";
 
 // ---------------------------------------------------------------------------

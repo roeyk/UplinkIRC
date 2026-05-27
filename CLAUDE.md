@@ -8,7 +8,7 @@
 
 ## Default Network
 - **Server:** LinuxDojo — `irc.linuxdojo.org:6697` (SSL)
-- **Default channel:** `#uplinkirc`
+- **Default channel:** `#uplink`
 - **Config template:** `config.toml.example` — auto-copied to `~/.config/uplinkirc/config.toml` on first launch
 
 ## Key Directories
