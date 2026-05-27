@@ -6,6 +6,7 @@
 #include <QTextEdit>
 #include <QLineEdit>
 #include <QLabel>
+#include "config/config.h"
 
 class IrcClient;
 
@@ -14,7 +15,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(const Config &cfg, const QString &cfgPath, QWidget *parent = nullptr);
     ~MainWindow() override;
 
 private slots:
@@ -34,4 +35,6 @@ private:
     QListWidget *m_nickList;
 
     IrcClient   *m_client;
+    Config       m_config;
+    QString      m_configPath;
 };

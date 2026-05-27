@@ -7,10 +7,13 @@
 #include <QMenu>
 #include <QAction>
 #include <QStatusBar>
+#include <QApplication>
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(const Config &cfg, const QString &cfgPath, QWidget *parent)
     : QMainWindow(parent)
     , m_client(new IrcClient(this))
+    , m_config(cfg)
+    , m_configPath(cfgPath)
 {
     setWindowTitle("UplinkIRC");
     resize(1100, 700);

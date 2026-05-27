@@ -8,10 +8,13 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
+find_package(tomlplusplus REQUIRED)
 qt_standard_project_setup()
 
 qt_add_executable(UplinkIRC
     src/main.cpp
+    src/config/config.cpp
+    src/config/config.h
     src/ui/mainwindow.cpp
     src/ui/mainwindow.h
     src/irc/ircclient.cpp
@@ -26,6 +29,7 @@ target_link_libraries(UplinkIRC PRIVATE
     Qt6::Core
     Qt6::Widgets
     Qt6::Network
+    tomlplusplus::tomlplusplus
 )
 
 install(TARGETS UplinkIRC DESTINATION bin)
