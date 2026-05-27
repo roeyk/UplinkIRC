@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include "model/sessionmodel.h"
+#include "config/config.h"
 
 class TrayIcon;
 
@@ -21,7 +22,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(SessionModel *model, QWidget *parent = nullptr);
+    explicit MainWindow(SessionModel *model, const Config &cfg, QWidget *parent = nullptr);
     ~MainWindow() override;
 
 private slots:
@@ -76,6 +77,7 @@ private:
 
     SessionModel *m_model;
     TrayIcon     *m_tray{nullptr};
+    Config        m_config;
 
     // UI state (persisted to config eventually)
     bool m_showNickPrefix{true};

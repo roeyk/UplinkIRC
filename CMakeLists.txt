@@ -28,6 +28,8 @@ qt_add_executable(UplinkIRC
     src/ui/aboutdialog.cpp
     src/ui/aboutdialog.h
     src/ui/appicons.h
+    src/ui/themeloader.cpp
+    src/ui/themeloader.h
     src/irc/ircclient.cpp
     src/irc/ircclient.h
     src/irc/ircparser.cpp
@@ -41,6 +43,12 @@ target_link_libraries(UplinkIRC PRIVATE
     Qt6::Widgets
     Qt6::Network
     tomlplusplus::tomlplusplus
+)
+
+# Copy themes next to binary for development
+add_custom_command(TARGET UplinkIRC POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/themes $<TARGET_FILE_DIR:UplinkIRC>/themes
 )
 
 install(TARGETS UplinkIRC DESTINATION bin)

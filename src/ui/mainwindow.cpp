@@ -3,6 +3,7 @@
 #include "ui/trayicon.h"
 #include "ui/aboutdialog.h"
 #include "ui/appicons.h"
+#include "ui/themeloader.h"
 
 #include <QApplication>
 #include <QCloseEvent>
@@ -30,13 +31,16 @@
 // Construction
 // ---------------------------------------------------------------------------
 
-MainWindow::MainWindow(SessionModel *model, QWidget *parent)
+MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     : QMainWindow(parent)
     , m_model(model)
+    , m_config(cfg)
 {
     setWindowTitle("UplinkIRC");
     setWindowIcon(AppIcons::platformIcon());
     resize(1100, 700);
+
+    ThemeLoader::apply(m_config.ui.theme);
     setDockOptions(QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
 
     setupToolbar();
@@ -78,6 +82,15 @@ void MainWindow::setupToolbar()
     });
 
     menu->addAction("Documentation"); // TODO: open docs
+
+    // Theme picker submenu
+    auto *themeMenu = menu->addMenu("Theme");
+    for (const QString &name : ThemeLoader::availableThemes()) {
+        themeMenu->addAction(name, this, [this, name]{
+            m_config.ui.theme = name;
+            ThemeLoader::apply(name);
+        });
+    }
 
     menu->addSeparator();
 

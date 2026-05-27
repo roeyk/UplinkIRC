@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
     auto *model = new SessionModel;
 
-    MainWindow window(model);
+    MainWindow window(model, cfg);
     window.show();
 
     // Load config after MainWindow has connected its signals
