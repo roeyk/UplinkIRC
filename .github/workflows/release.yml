@@ -31,12 +31,18 @@ jobs:
             qt6-base-dev qt6-tools-dev libqt6svg6-dev \
             cmake ninja-build
 
+      - name: Setup Python (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install Qt (Windows)
         if: runner.os == 'Windows'
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.2'
-          arch: 'win64_msvc2019_64'
+          arch: 'win64_msvc2022_64'
           cache: true
 
       - name: Install Qt (macOS)
