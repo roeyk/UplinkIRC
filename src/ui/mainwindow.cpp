@@ -61,9 +61,6 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_showTopic      = cfg.ui.showTopic;
     m_showEmojiBtn   = cfg.ui.showEmojiButton;
 
-    // Sync icon preference from config (config takes precedence over QSettings)
-    AppIcons::setActiveIconName(m_config.ui.icon);
-
     setWindowTitle("UplinkIRC");
     setWindowIcon(AppIcons::appIcon());
     resize(1100, 700);
@@ -118,28 +115,6 @@ void MainWindow::setupToolbar()
         m_docsDialog->raise();
         m_docsDialog->activateWindow();
     });
-
-    // App icon picker
-    auto *iconMenu    = menu->addMenu("App Icon");
-    auto *iconDefault = iconMenu->addAction("Default");
-    auto *iconAlt     = iconMenu->addAction("Alternative");
-    iconDefault->setCheckable(true);
-    iconAlt->setCheckable(true);
-    iconDefault->setChecked(m_config.ui.icon == "maindefault");
-    iconAlt->setChecked(m_config.ui.icon == "mainalt");
-
-    auto applyIcon = [this, iconDefault, iconAlt](const QString &name) {
-        AppIcons::setActiveIconName(name);
-        m_config.ui.icon = name;
-        const QIcon icon = AppIcons::appIcon();
-        setWindowIcon(icon);
-        if (m_tray) m_tray->setBaseIcon(icon);
-        iconDefault->setChecked(name == "maindefault");
-        iconAlt->setChecked(name == "mainalt");
-        Config::save(m_config, Config::defaultPath());
-    };
-    connect(iconDefault, &QAction::triggered, this, [applyIcon]{ applyIcon("maindefault"); });
-    connect(iconAlt,     &QAction::triggered, this, [applyIcon]{ applyIcon("mainalt"); });
 
     // Theme picker
     auto *themeMenu = menu->addMenu("Theme");

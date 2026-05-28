@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Svg)
 find_package(tomlplusplus REQUIRED)
 qt_standard_project_setup()
 
@@ -45,6 +45,7 @@ target_link_libraries(UplinkIRC PRIVATE
     Qt6::Core
     Qt6::Widgets
     Qt6::Network
+    Qt6::Svg
     tomlplusplus::tomlplusplus
 )
 

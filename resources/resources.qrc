@@ -1,9 +1,6 @@
 <RCC>
     <qresource prefix="/icons">
-        <file alias="maindefault.png">icons/maindefault.png</file>
-        <file alias="mainalt.png">icons/mainalt.png</file>
-        <file alias="about.png">icons/about.png</file>
-        <file alias="about1.png">icons/about1.png</file>
+        <file alias="uplink.svg">icons/uplink.svg</file>
     </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>
