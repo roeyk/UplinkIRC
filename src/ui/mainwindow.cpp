@@ -626,6 +626,101 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
+static QString ircToHtml(const QString &raw)
+{
+    static const char* const kColors[] = {
+        "#FFFFFF","#000000","#00007F","#009300",
+        "#FF0000","#7F0000","#9C009C","#FC7F00",
+        "#FFFF00","#00FC00","#009393","#00FFFF",
+        "#0000FC","#FF00FF","#7F7F7F","#D2D2D2"
+    };
+
+    struct Fmt {
+        bool bold{false}, italic{false}, underline{false}, strike{false};
+        int  fg{-1}, bg{-1};
+        bool operator==(const Fmt &o) const {
+            return bold==o.bold && italic==o.italic && underline==o.underline
+                && strike==o.strike && fg==o.fg && bg==o.bg;
+        }
+    };
+
+    Fmt     cur;
+    int     openSpans = 0;
+    QString out;
+
+    auto closeAll = [&] {
+        for (int i = 0; i < openSpans; ++i) out += "</span>";
+        openSpans = 0;
+    };
+
+    auto applyFmt = [&](const Fmt &next) {
+        if (next == cur) return;
+        closeAll();
+        cur = next;
+        QString style;
+        if (cur.bold)      style += "font-weight:bold;";
+        if (cur.italic)    style += "font-style:italic;";
+        QString td;
+        if (cur.underline) td += "underline ";
+        if (cur.strike)    td += "line-through ";
+        if (!td.isEmpty()) style += "text-decoration:" + td.trimmed() + ";";
+        if (cur.fg >= 0 && cur.fg < 16) style += QString("color:%1;").arg(kColors[cur.fg]);
+        if (cur.bg >= 0 && cur.bg < 16) style += QString("background-color:%1;").arg(kColors[cur.bg]);
+        if (!style.isEmpty()) {
+            out += "<span style='" + style + "'>";
+            openSpans = 1;
+        }
+    };
+
+    int i = 0;
+    const int len = raw.size();
+    while (i < len) {
+        const ushort c = raw[i].unicode();
+        if (c == 0x02) {                          // bold
+            Fmt n = cur; n.bold = !cur.bold; applyFmt(n); ++i;
+        } else if (c == 0x1D) {                   // italic
+            Fmt n = cur; n.italic = !cur.italic; applyFmt(n); ++i;
+        } else if (c == 0x1F) {                   // underline
+            Fmt n = cur; n.underline = !cur.underline; applyFmt(n); ++i;
+        } else if (c == 0x1E) {                   // strikethrough
+            Fmt n = cur; n.strike = !cur.strike; applyFmt(n); ++i;
+        } else if (c == 0x16) {                   // reverse fg/bg
+            Fmt n = cur; std::swap(n.fg, n.bg); applyFmt(n); ++i;
+        } else if (c == 0x0F || c == 0x03 && i+1 < len && !raw[i+1].isDigit() && raw[i+1] != ',') {
+            // reset all (\x0F) or bare \x03
+            applyFmt({}); ++i;
+        } else if (c == 0x03) {                   // color \x03[fg[,bg]]
+            ++i;
+            Fmt n = cur;
+            if (i < len && raw[i].isDigit()) {
+                int fg = raw[i++].digitValue();
+                if (i < len && raw[i].isDigit()) fg = fg * 10 + raw[i++].digitValue();
+                n.fg = fg;
+                if (i < len && raw[i] == ',' && i+1 < len && raw[i+1].isDigit()) {
+                    ++i;
+                    int bg = raw[i++].digitValue();
+                    if (i < len && raw[i].isDigit()) bg = bg * 10 + raw[i++].digitValue();
+                    n.bg = bg;
+                }
+            } else {
+                n.fg = -1; n.bg = -1;
+            }
+            applyFmt(n);
+        } else if (c == 0x11) {                   // monospace — skip control char
+            ++i;
+        } else {
+            if      (raw[i] == '<') out += "&lt;";
+            else if (raw[i] == '>') out += "&gt;";
+            else if (raw[i] == '&') out += "&amp;";
+            else if (raw[i] == '"') out += "&quot;";
+            else                    out += raw[i];
+            ++i;
+        }
+    }
+    closeAll();
+    return out;
+}
+
 QString MainWindow::formatMessage(const Message &msg) const
 {
     const QString ts = msg.timestamp.toString("hh:mm");
@@ -643,17 +738,17 @@ QString MainWindow::formatMessage(const Message &msg) const
                        "<b style='color:%2'>&lt;%3&gt;</b> %4")
             .arg(ts, color,
                  msg.nick.toHtmlEscaped(),
-                 msg.text.toHtmlEscaped());
+                 ircToHtml(msg.text));
     }
     case MessageType::Action:
         return QString("<span style='color:gray'>%1</span> "
                        "<i>* %2 %3</i>")
-            .arg(ts, msg.nick.toHtmlEscaped(), msg.text.toHtmlEscaped());
+            .arg(ts, msg.nick.toHtmlEscaped(), ircToHtml(msg.text));
 
     case MessageType::Notice:
         return QString("<span style='color:gray'>%1</span> "
                        "<span style='color:#cc8800'>-%2- %3</span>")
-            .arg(ts, msg.nick.toHtmlEscaped(), msg.text.toHtmlEscaped());
+            .arg(ts, msg.nick.toHtmlEscaped(), ircToHtml(msg.text));
 
     case MessageType::Join:
         return wrap("seagreen",  ts + " → " + msg.text);
