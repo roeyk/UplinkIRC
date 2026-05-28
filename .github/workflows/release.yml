@@ -14,28 +14,49 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
-            qt-arch: gcc_64
+          - os: ubuntu-24.04
           - os: windows-latest
-            qt-arch: win64_msvc2019_64
           - os: macos-latest
-            qt-arch: ''
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Qt
+      - name: Install Qt (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            qt6-base-dev qt6-tools-dev libqt6svg6-dev \
+            cmake ninja-build
+
+      - name: Install Qt (Windows)
+        if: runner.os == 'Windows'
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.7.3'
-          arch: ${{ matrix.qt-arch }}
-
+          version: '6.8.2'
+          arch: 'win64_msvc2019_64'
           cache: true
 
-      - name: Configure
+      - name: Install Qt (macOS)
+        if: runner.os == 'macOS'
+        run: brew install qt cmake ninja
+
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH=$(brew --prefix qt)
 
       - name: Build
         run: cmake --build build --config Release
@@ -66,7 +87,7 @@ jobs:
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          macdeployqt build/UplinkIRC.app -dmg
+          $(brew --prefix qt)/bin/macdeployqt build/UplinkIRC.app -dmg
           mv build/UplinkIRC.dmg \
               UplinkIRC-${{ github.ref_name }}-macos-${{ runner.arch == 'ARM64' && 'arm64' || 'x86_64' }}.dmg
 
