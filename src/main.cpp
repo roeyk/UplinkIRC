@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QFont>
 #include <QInputDialog>
 #include "config/config.h"
 #include "model/sessionmodel.h"
@@ -10,6 +11,10 @@ int main(int argc, char *argv[])
     app.setApplicationName("UplinkIRC");
     app.setApplicationVersion("0.1.0");
     app.setOrganizationName("LinuxDojo");
+
+    QFont font("IBM Plex Mono", 10);
+    font.setStyleHint(QFont::Monospace);
+    app.setFont(font);
 
     const QString cfgPath = Config::defaultPath();
     Config cfg = Config::load(cfgPath);
