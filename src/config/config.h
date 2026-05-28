@@ -17,9 +17,10 @@ struct ServerConfig {
     QString            nick;
     QString            user;
     QString            realname;
-    QString            password;   // PASS / bouncer
+    QString            password;         // PASS / bouncer
     QString            saslUser;
     QString            saslPassword;
+    QString            nickservPassword; // NickServ IDENTIFY on connect
     QList<ChannelConfig> channels;
 };
 

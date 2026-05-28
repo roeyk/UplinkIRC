@@ -87,6 +87,7 @@ private:
     QString      m_saslUser;
     QString      m_saslPassword;
     bool         m_saslPending{false};
+    QString      m_nickservPassword;
     QString      m_buffer;
 
     QSet<QString>              m_requestedCaps;

@@ -100,6 +100,9 @@ void MainWindow::setupToolbar()
     auto *tb = addToolBar("Main");
     tb->setMovable(false);
     tb->setFloatable(false);
+    tb->setContentsMargins(0, 0, 0, 0);
+    if (tb->layout())
+        tb->layout()->setContentsMargins(0, 0, 0, 0);
 
     m_hamburger = new QToolButton;
     m_hamburger->setText("☰");
@@ -215,14 +218,6 @@ void MainWindow::setupToolbar()
 
     m_hamburger->setMenu(menu);
     tb->addWidget(m_hamburger);
-
-    m_appLabel = new QLabel("  Uplink");
-    QFont f = m_appLabel->font();
-    f.setBold(true);
-    m_appLabel->setFont(f);
-    tb->addWidget(m_appLabel);
-
-    tb->addSeparator();
 }
 
 void MainWindow::applyFontSizes()
@@ -237,7 +232,7 @@ void MainWindow::applyFontSizes()
     };
 
     if (m_hamburger) {
-        QFont f = makeFont(fs.toolbar);
+        QFont f = makeFont(fs.toolbar * 2);
         f.setBold(false);
         m_hamburger->setFont(f);
     }

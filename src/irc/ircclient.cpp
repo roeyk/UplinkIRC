@@ -27,9 +27,10 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_user     = cfg.user;
     m_realname = cfg.realname;
     m_password     = cfg.password;
-    m_saslUser     = cfg.saslUser;
-    m_saslPassword = cfg.saslPassword;
-    m_saslPending  = false;
+    m_saslUser         = cfg.saslUser;
+    m_saslPassword     = cfg.saslPassword;
+    m_saslPending      = false;
+    m_nickservPassword = cfg.nickservPassword;
 
     if (m_ssl)
         m_socket->connectToHostEncrypted(m_host, m_port);
@@ -339,6 +340,10 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 1:   // RPL_WELCOME
         emit connected(m_host);
         emit serverMessage(m_host, trailing);
+        if (!m_nickservPassword.isEmpty()) {
+            sendRaw("PRIVMSG NickServ :IDENTIFY " + m_nickservPassword);
+            emit serverMessage(m_host, "Sent NickServ IDENTIFY");
+        }
         break;
 
     case 2:   // RPL_YOURHOST

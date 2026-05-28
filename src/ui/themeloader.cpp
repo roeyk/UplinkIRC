@@ -125,14 +125,16 @@ QMainWindow, QDialog, QWidget {
     color: {{text}};
 }
 QToolBar {
-    background-color: {{bg}};
-    border-bottom: 1px solid {{border}};
-    spacing: 4px;
+    background-color: {{sidebarBg}};
+    border: none;
+    spacing: 0px;
+    margin: 0px;
+    padding: 0px;
 }
 QStatusBar {
-    background-color: {{bg}};
+    background-color: {{sidebarBg}};
     color: {{srvText}};
-    border-top: 1px solid {{border}};
+    border: none;
 }
 QMenuBar {
     background-color: {{bg}};
@@ -244,10 +246,10 @@ QSplitter::handle {
 
 /* ── Tool buttons ── */
 QToolButton {
-    background: transparent;
-    color: {{text}};
+    background-color: {{sidebarBg}};
+    color: {{sidebarText}};
     border: none;
-    padding: 2px 6px;
+    padding: 4px 10px 4px 0px;
 }
 QToolButton:hover {
     background-color: {{border}};
