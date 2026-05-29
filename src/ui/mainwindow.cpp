@@ -22,7 +22,6 @@
 #include <QToolButton>
 #include <QMenu>
 #include <QAction>
-#include <QDockWidget>
 #include <QTreeWidget>
 #include <QListWidget>
 #include <QListWidgetItem>
@@ -123,6 +122,12 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     restoreState(settings.value("windowState").toByteArray());
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
+
+    QTimer::singleShot(0, this, [this]{
+        const int total = m_mainSplitter->width();
+        if (total > 0)
+            m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
+    });
 
     connect(qApp, &QApplication::aboutToQuit, this, [this]{
         QSettings s("LinuxDojo", "UplinkIRC");
@@ -406,6 +411,9 @@ void MainWindow::applyFontSizes()
     if (m_nickToggleBtn)
         m_nickToggleBtn->setIcon(
             makeGearIcon(0, m_nickToggleBtn->palette().color(QPalette::WindowText)));
+    if (m_sidebarToggleBtn)
+        m_sidebarToggleBtn->setIcon(
+            makeGearIcon(0, m_sidebarToggleBtn->palette().color(QPalette::WindowText)));
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
     if (m_modesLabel)    m_modesLabel->setFont(makeFont(fs.topicBar));
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
@@ -440,36 +448,35 @@ void MainWindow::setupSidebar()
     m_sidebar->setMinimumWidth(140);
     m_sidebar->setObjectName("sidebar");
 
-    m_sidebarDock = new QDockWidget(this);
-    m_sidebarDock->setWidget(m_sidebar);
-    m_sidebarDock->setWindowTitle("");
-    m_sidebarDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    {
-        auto *bar = new QWidget; bar->setObjectName("dockTitleBar");
-        auto *hbox = new QHBoxLayout(bar);
-        hbox->setContentsMargins(2, 1, 2, 1); hbox->setSpacing(0);
-        hbox->addStretch(1);
-        auto *btn = new QToolButton; btn->setObjectName("dockFloatBtn");
-        btn->setText("⧉"); btn->setFixedSize(14, 14); btn->setAutoRaise(true);
-        connect(btn, &QToolButton::clicked, m_sidebarDock, [this]{ m_sidebarDock->setFloating(!m_sidebarDock->isFloating()); });
-        hbox->addWidget(btn);
-        m_sidebarDock->setTitleBarWidget(bar);
-    }
-    addDockWidget(Qt::LeftDockWidgetArea, m_sidebarDock);
-    connect(m_sidebarDock, &QDockWidget::visibilityChanged, this, [this](bool visible){
-        if (!visible && m_sidebarDock->isFloating()) {
-            addDockWidget(Qt::LeftDockWidgetArea, m_sidebarDock);
-            m_sidebarDock->setFloating(false);
-            m_sidebarDock->show();
-        }
-    });
-
     connect(m_sidebar, &QTreeWidget::currentItemChanged,
             this, [this](QTreeWidgetItem *, QTreeWidgetItem *){ onSidebarSelectionChanged(); });
-
     m_sidebar->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_sidebar, &QTreeWidget::customContextMenuRequested,
             this, &MainWindow::onSidebarContextMenu);
+
+    m_sidebarToggleBtn = new QToolButton;
+    m_sidebarToggleBtn->setFixedSize(22, 22);
+    m_sidebarToggleBtn->setAutoRaise(true);
+    m_sidebarToggleBtn->setObjectName("sidebarToggleBtn");
+    m_sidebarToggleBtn->setToolTip(tr("Toggle channel list"));
+    m_sidebarToggleBtn->setIcon(makeGearIcon(0, palette().color(QPalette::WindowText)));
+    connect(m_sidebarToggleBtn, &QToolButton::clicked, this, [this]{
+        m_sidebarExpanded = !m_sidebarExpanded;
+        m_sidebar->setVisible(m_sidebarExpanded);
+        const QList<int> sizes = m_mainSplitter->sizes();
+        const int total = sizes[0] + sizes[1];
+        if (m_sidebarExpanded)
+            m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
+        else
+            m_mainSplitter->setSizes({0, total});
+    });
+
+    m_sidebarPanel = new QWidget;
+    m_sidebarPanel->setObjectName("sidebarPanel");
+    auto *vbox = new QVBoxLayout(m_sidebarPanel);
+    vbox->setContentsMargins(0, 0, 0, 0);
+    vbox->setSpacing(0);
+    vbox->addWidget(m_sidebar, 1);
 }
 
 void MainWindow::setupNickPanel()
@@ -534,8 +541,8 @@ void MainWindow::setupNickPanel()
 
 void MainWindow::setupChatArea()
 {
-    auto *central = new QWidget;
-    auto *vbox    = new QVBoxLayout(central);
+    m_rightContent = new QWidget;
+    auto *vbox     = new QVBoxLayout(m_rightContent);
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
@@ -553,6 +560,7 @@ void MainWindow::setupChatArea()
 
     m_userInfoLabel = new QLabel;
     m_userInfoLabel->setObjectName("userInfoLabel");
+    tHbox->addWidget(m_sidebarToggleBtn);
     tHbox->addWidget(m_hamburger);
     tHbox->addWidget(m_topicLabel);
     tHbox->addWidget(m_userInfoLabel);
@@ -668,7 +676,14 @@ void MainWindow::setupChatArea()
     m_chatSplitter->setStretchFactor(1, 0);
     vbox->addWidget(m_chatSplitter, 1);
 
-    setCentralWidget(central);
+    m_mainSplitter = new QSplitter(Qt::Horizontal);
+    m_mainSplitter->setHandleWidth(0);
+    m_mainSplitter->addWidget(m_sidebarPanel);
+    m_mainSplitter->addWidget(m_rightContent);
+    m_mainSplitter->setStretchFactor(0, 0);
+    m_mainSplitter->setStretchFactor(1, 1);
+
+    setCentralWidget(m_mainSplitter);
 }
 
 void MainWindow::setupInputBar()
@@ -703,7 +718,7 @@ void MainWindow::setupInputBar()
     m_typingLabel->setContentsMargins(8, 2, 8, 2);
     m_typingLabel->setVisible(m_config.ui.typingIndicator);
 
-    auto *layout = qobject_cast<QVBoxLayout *>(centralWidget()->layout());
+    auto *layout = qobject_cast<QVBoxLayout *>(m_rightContent->layout());
     layout->addWidget(m_typingLabel);
     layout->addWidget(bar);
 

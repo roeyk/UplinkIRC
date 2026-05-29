@@ -163,6 +163,16 @@ QToolButton#hamburger {
     padding: 0px 6px;
 }
 QToolButton#hamburger:hover { color: {{accent}}; }
+QToolButton#sidebarToggleBtn {
+    background-color: {{inputBg}};
+    color: {{text}};
+    border: none;
+    padding: 0px 2px;
+}
+QToolButton#sidebarToggleBtn:hover { color: {{accent}}; }
+QWidget#sidebarPanel {
+    background-color: {{sidebarBg}};
+}
 QSizeGrip {
     width: 0px;
     height: 0px;
