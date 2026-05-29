@@ -1973,11 +1973,21 @@ QString MainWindow::formatMessage(const Message &msg) const
         const QString color = m_config.ui.coloredNicks
             ? nickColor(msg.nick).name()
             : (m_theme.valid ? m_theme.text : QStringLiteral("#cccccc"));
+        const QString &br = m_config.ui.nickBrackets;
+        QString nickOpen, nickClose;
+        if (!br.isEmpty()) {
+            if (br.length() % 2 == 0) {
+                nickOpen  = br.left(br.length() / 2).toHtmlEscaped();
+                nickClose = br.mid(br.length() / 2).toHtmlEscaped();
+            } else {
+                nickOpen  = QString(br.front()).toHtmlEscaped();
+                nickClose = QString(br.back()).toHtmlEscaped();
+            }
+        }
+        const QString nickDisplay = nickOpen + msg.nick.toHtmlEscaped() + nickClose;
         html = QString("<span style='color:gray'>%1</span> "
-                       "<b style='color:%2'>&lt;%3&gt;</b> %4")
-            .arg(ts, color,
-                 msg.nick.toHtmlEscaped(),
-                 linkifyHtml(ircToHtml(msg.text)));
+                       "<b style='color:%2'>%3</b> %4")
+            .arg(ts, color, nickDisplay, linkifyHtml(ircToHtml(msg.text)));
         break;
     }
     case MessageType::Action:

@@ -9,13 +9,14 @@
 
 static const char *kDefaultConfig = R"(
 [ui]
-theme           = "default"
-show_nick_prefix = true
-show_topic      = true
+theme             = "default"
+show_nick_prefix  = true
+show_topic        = true
 show_emoji_button = false
-colored_nicks      = true
-typing_indicator   = true
-font_family        = "IBM Plex Mono"
+colored_nicks     = true
+typing_indicator  = true
+nick_brackets     = "<>"         # "<>" angle, "[]" square, "::::" double-colon, "" none
+font_family       = "IBM Plex Mono"
 font_toolbar    = 10
 font_sidebar    = 10
 font_chat       = 10
@@ -76,6 +77,7 @@ Config Config::load(const QString &path)
             cfg.ui.showEmojiButton = (*ui)["show_emoji_button"].value_or(false);
             cfg.ui.coloredNicks          = (*ui)["colored_nicks"].value_or(true);
             cfg.ui.typingIndicator       = (*ui)["typing_indicator"].value_or(true);
+            cfg.ui.nickBrackets          = QString::fromStdString((*ui)["nick_brackets"].value_or<std::string>("<>"));
             cfg.ui.showConnStatus        = (*ui)["show_conn_status"].value_or(true);
             cfg.ui.appIcon               = QString::fromStdString((*ui)["app_icon"].value_or<std::string>("dark"));
             cfg.ui.fontFamily            = QString::fromStdString((*ui)["font_family"].value_or<std::string>(kDefaultFontFamily));
@@ -157,6 +159,7 @@ void Config::save(const Config &cfg, const QString &path)
     out << "show_emoji_button = " << (cfg.ui.showEmojiButton ? "true" : "false") << "\n";
     out << "colored_nicks     = " << (cfg.ui.coloredNicks     ? "true" : "false") << "\n";
     out << "typing_indicator  = " << (cfg.ui.typingIndicator  ? "true" : "false") << "\n";
+    out << "nick_brackets     = \"" << cfg.ui.nickBrackets << "\"\n";
     out << "show_conn_status  = " << (cfg.ui.showConnStatus   ? "true" : "false") << "\n";
     out << "app_icon          = \"" << cfg.ui.appIcon << "\"\n";
     out << "font_family       = \"" << cfg.ui.fontFamily << "\"\n";

@@ -2,6 +2,57 @@
 
 ---
 
+## v0.7.5 — 2026-05-29
+
+### Added
+- **Configurable nick brackets** — new `nick_brackets` key in `[ui]` controls
+  the characters that wrap nicks in chat messages. Value is split at its
+  midpoint: `"<>"` → `<nick>`, `"[]"` → `[nick]`, `"::::"` → `::nick::`,
+  `""` → no brackets. Defaults to `"<>"`. Existing configs without the key
+  are unaffected.
+
+---
+
+<!--
+Session summary — 2026-05-29  v0.7.5 — Configurable nick brackets
+
+What was built:
+  - nick_brackets config key in [ui] block. UiConfig gained a nickBrackets
+    field defaulting to "<>". Config::load() reads nick_brackets from TOML
+    with fallback to "<>". Config::save() writes it back. kDefaultConfig
+    updated with the new key and a comment (careful: TOML comments with "()"
+    inside R"()" raw strings close the literal — used safe comment text).
+
+  - formatMessage() in mainwindow.cpp now reads m_config.ui.nickBrackets,
+    splits at midpoint (even length) or first/last char (odd length), HTML-
+    escapes both halves, and wraps the nick. The old hardcoded &lt;%3&gt;
+    replaced with dynamic nickOpen + nick + nickClose. Empty string = no
+    brackets at all.
+
+  - docs/configuration.md: added "Nick bracket style" section with a table
+    of all supported values, copy-paste examples, and a note about the
+    midpoint-split parsing rule. Added nick_brackets to the full example
+    block and the [ui] options table.
+
+  - README.md: added nick_brackets with inline comment to the annotated
+    config block.
+
+  - v0.7.4 CI all green; Windows binary confirmed available.
+
+Bugs fixed:
+  - None (feature addition only)
+
+Known issues remaining:
+  - Link preview for title-only pages not verified
+  - Link preview cards lost on channel switch
+  - Hamburger menu briefly shrinks on theme switch
+  - Server errors (482 etc.) in (server) buffer not active channel
+  - DCC Send File not implemented
+  - AppImage packaging not done
+  - MODE prefix removal loses lower-ranked prefixes until next NAMES
+
+-->
+
 ## v0.7.4 — 2026-05-29
 
 ### Fixed

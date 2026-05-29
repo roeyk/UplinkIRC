@@ -67,6 +67,7 @@ struct UiConfig {
     bool      typingIndicator{true};
     bool      showConnStatus{true};
     QString   appIcon{"dark"};
+    QString   nickBrackets{"<>"};
 };
 
 struct Config {

@@ -28,6 +28,7 @@ show_topic        = true
 show_emoji_button = true               # shows 😊 button next to input bar
 colored_nicks     = true
 typing_indicator  = true
+nick_brackets     = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
 show_conn_status  = true
 app_icon          = "dark"
 font_family       = "IBM Plex Mono"   # Windows default is "Consolas"
@@ -76,6 +77,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `show_emoji_button` | bool | `false` | Show the 😊 emoji picker button next to the input box. Also works via `:shortcode:` typing. |
 | `colored_nicks` | bool | `true` | Give each nickname a unique color in chat and the nick list |
 | `typing_indicator` | bool | `true` | Show "nick is typing…" notifications (IRCv3 `draft/typing`) and send your own |
+| `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. See [Nick bracket style](#nick-bracket-style) below. |
 | `show_conn_status` | bool | `true` | Show the connection status label in the bottom-left status bar |
 | `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`, `"light-default"`, `"avatar"` |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
@@ -90,6 +92,41 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `font_typing` | integer | `9` | Font size (pt) for the "nick is typing…" indicator |
 
 All font sizes and the theme can be changed live from **Hamburger → Font Config...** and **Hamburger → Theme** without editing the file.
+
+---
+
+## Nick bracket style
+
+The `nick_brackets` key controls the characters that wrap nick names in chat messages.
+
+The value is a string split at its midpoint — the first half becomes the opening bracket and the second half becomes the closing bracket. An empty string removes brackets entirely.
+
+| Value | Result | How it looks |
+|---|---|---|
+| `"<>"` | angle brackets (default) | `<alice> hello` |
+| `"[]"` | square brackets | `[alice] hello` |
+| `"()"` | parentheses | `(alice) hello` |
+| `"{}"` | curly braces | `{alice} hello` |
+| `"::::"` | double colons | `::alice:: hello` |
+| `""` | no brackets | `alice hello` |
+
+**Examples:**
+
+```toml
+# Default IRC style
+nick_brackets = "<>"
+
+# Square bracket style
+nick_brackets = "[]"
+
+# Double colons (4 chars — split at 2, so :: on each side)
+nick_brackets = "::::"
+
+# No brackets at all — just the nick
+nick_brackets = ""
+```
+
+> **Note:** The string is always split at the midpoint. `"<>"` → open=`<`, close=`>`. `"::::"` → open=`::`, close=`::`. Odd-length strings use the first character as open and the last as close.
 
 ### Example
 
