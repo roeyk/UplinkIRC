@@ -76,6 +76,8 @@ Config Config::load(const QString &path)
             cfg.ui.showEmojiButton = (*ui)["show_emoji_button"].value_or(false);
             cfg.ui.coloredNicks          = (*ui)["colored_nicks"].value_or(true);
             cfg.ui.typingIndicator       = (*ui)["typing_indicator"].value_or(true);
+            cfg.ui.showConnStatus        = (*ui)["show_conn_status"].value_or(true);
+            cfg.ui.appIcon               = QString::fromStdString((*ui)["app_icon"].value_or<std::string>("dark"));
             cfg.ui.fontFamily            = QString::fromStdString((*ui)["font_family"].value_or<std::string>("IBM Plex Mono"));
             cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10);
             cfg.ui.fontSizes.serverHeader = (*ui)["font_server_header"].value_or(9);
@@ -150,6 +152,8 @@ void Config::save(const Config &cfg, const QString &path)
     out << "show_emoji_button = " << (cfg.ui.showEmojiButton ? "true" : "false") << "\n";
     out << "colored_nicks     = " << (cfg.ui.coloredNicks     ? "true" : "false") << "\n";
     out << "typing_indicator  = " << (cfg.ui.typingIndicator  ? "true" : "false") << "\n";
+    out << "show_conn_status  = " << (cfg.ui.showConnStatus   ? "true" : "false") << "\n";
+    out << "app_icon          = \"" << cfg.ui.appIcon << "\"\n";
     out << "font_family       = \"" << cfg.ui.fontFamily << "\"\n";
     out << "font_toolbar       = " << cfg.ui.fontSizes.toolbar      << "\n";
     out << "font_server_header = " << cfg.ui.fontSizes.serverHeader << "\n";

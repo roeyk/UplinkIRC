@@ -55,6 +55,8 @@ struct UiConfig {
     QString   fontFamily{"IBM Plex Mono"};
     FontSizes fontSizes;
     bool      typingIndicator{true};
+    bool      showConnStatus{true};
+    QString   appIcon{"dark"};
 };
 
 struct Config {

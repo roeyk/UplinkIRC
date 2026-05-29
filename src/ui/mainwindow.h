@@ -75,6 +75,7 @@ private:
     void appendMessage  (const Message &msg, bool autoPreview = false);
     void applyFontSizes();
     void updateTypingLabel();
+    void applyAppIcon(const QString &choice);
 
     QString    formatMessage(const Message &msg) const;
     static QColor nickColor(const QString &nick);
@@ -119,6 +120,7 @@ private:
 
     // Typing indicator state
     QTimer                      *m_typingOutTimer{nullptr};
+    bool                         m_typingActive{false};
     QHash<QString, QSet<QString>> m_typingNicks;       // "host|channel" → nicks
     QHash<QString, QTimer*>       m_typingNickTimers;  // "host|channel|nick" → timeout
 
@@ -133,4 +135,6 @@ private:
     bool m_showNickPrefix{true};
     bool m_showEmojiBtn{false};
     bool m_showTopic{true};
+
+    QLabel *m_connStatusLabel{nullptr};
 };

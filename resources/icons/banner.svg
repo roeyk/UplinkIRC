@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="2200" height="900" viewBox="0 0 2200 900"
+     role="img" aria-labelledby="title desc">
+  <title id="title">Uplink top banner SVG</title>
+  <desc id="desc">Detailed top banner for the Uplink IRCv3 client with clean Uplink wordmark and correctly aligned tagline bullets.</desc>
+
+  <defs>
+    <linearGradient id="uBlue" x1="140" y1="260" x2="555" y2="790" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22C8FF"/>
+      <stop offset="44%" stop-color="#126CFF"/>
+      <stop offset="100%" stop-color="#0448D8"/>
+    </linearGradient>
+
+    <linearGradient id="uHighlight" x1="180" y1="295" x2="485" y2="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8CEAFF" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#8CEAFF" stop-opacity="0.04"/>
+    </linearGradient>
+
+    <linearGradient id="towerGrad" x1="310" y1="330" x2="310" y2="575" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#102A4C"/>
+      <stop offset="100%" stop-color="#06172E"/>
+    </linearGradient>
+
+    <style><![CDATA[
+      .word {
+        font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-size: 270px;
+        font-weight: 900;
+        letter-spacing: -6px;
+        fill: #071B33;
+      }
+      .tagline {
+        font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-size: 62px;
+        font-weight: 650;
+        letter-spacing: -1px;
+        fill: #65768B;
+      }
+      .bullet {
+        fill: #126CFF;
+      }
+    ]]></style>
+  </defs>
+
+  <rect width="2200" height="900" fill="#FFFFFF"/>
+
+  <!-- U / antenna / chat mark -->
+  <g id="uplink-mark" transform="translate(105 38)">
+    <!-- radio waves: full top arc with clear margin -->
+    <path d="M125 96 C225 -4 385 -4 485 96"
+          fill="none" stroke="#126CFF" stroke-width="34" stroke-linecap="round"/>
+    <path d="M180 154 C252 82 358 82 430 154"
+          fill="none" stroke="#126CFF" stroke-width="34" stroke-linecap="round"/>
+    <path d="M235 211 C282 166 328 166 375 211"
+          fill="none" stroke="#126CFF" stroke-width="34" stroke-linecap="round"/>
+
+    <!-- main U body -->
+    <path d="
+      M88 270
+      H195
+      V529
+      C195 641 235 707 305 707
+      C375 707 415 641 415 529
+      V270
+      H522
+      V541
+      C522 720 440 795 305 795
+      C170 795 88 720 88 541
+      Z"
+      fill="url(#uBlue)"/>
+
+    <!-- inner depth/highlight -->
+    <path d="
+      M132 310
+      H166
+      V527
+      C166 659 215 732 305 732
+      C395 732 444 659 444 527
+      V310
+      H478"
+      fill="none" stroke="url(#uHighlight)" stroke-width="27" stroke-linecap="round"/>
+
+    <path d="
+      M164 310
+      V525
+      C164 648 209 710 305 710
+      C401 710 446 648 446 525
+      V310"
+      fill="none" stroke="#77DFFF" stroke-width="11" stroke-linecap="round" stroke-opacity="0.18"/>
+
+    <!-- antenna node -->
+    <circle cx="305" cy="295" r="45" fill="#126CFF"/>
+
+    <!-- radio tower -->
+    <path d="M305 336 L382 566 H228 Z" fill="url(#towerGrad)"/>
+    <path d="M305 365 L351 566 H259 Z" fill="#FFFFFF" opacity="0.95"/>
+    <path d="M305 378 L338 566 H272 Z" fill="url(#towerGrad)"/>
+
+    <!-- tower braces -->
+    <path d="M254 529 L356 427
+             M356 529 L254 427
+             M271 483 L339 411
+             M339 483 L271 411"
+          fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" opacity="0.96"/>
+
+    <!-- chat bubble -->
+    <path d="
+      M202 611
+      C202 573 233 546 278 546
+      H358
+      C403 546 434 573 434 611
+      C434 650 403 676 358 676
+      H293
+      L220 730
+      L231 671
+      C213 660 202 638 202 611
+      Z"
+      fill="#FFFFFF"/>
+
+    <circle cx="274" cy="612" r="14" fill="#126CFF"/>
+    <circle cx="318" cy="612" r="14" fill="#126CFF"/>
+    <circle cx="362" cy="612" r="14" fill="#126CFF"/>
+  </g>
+
+  <!-- Wordmark is one real text object so the l and i stay correctly spaced -->
+  <text x="785" y="474" class="word">Uplink</text>
+
+  <!-- Tagline is one real text object with bullet glyphs on the same baseline -->
+  <text x="1350" y="610" class="tagline" text-anchor="middle">
+    IRCv3 Client <tspan class="bullet">•</tspan> Secure <tspan class="bullet">•</tspan> Fast <tspan class="bullet">•</tspan> Lightweight
+  </text>
+</svg>

@@ -18,6 +18,7 @@
 #include <QToolButton>
 #include <QMenu>
 #include <QAction>
+#include <QWidgetAction>
 #include <QDockWidget>
 #include <QTreeWidget>
 #include <QListWidget>
@@ -83,7 +84,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_showEmojiBtn   = cfg.ui.showEmojiButton;
 
     setWindowTitle("UplinkIRC");
-    setWindowIcon(AppIcons::appIcon());
+    setWindowIcon(AppIcons::appIcon(m_config.ui.appIcon));
     resize(1100, 700);
 
     ThemeLoader::apply(m_config.ui.theme);
@@ -100,8 +101,14 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     if (QSystemTrayIcon::isSystemTrayAvailable())
         m_tray = new TrayIcon(model, this);
 
-    statusBar()->showMessage("UplinkIRC ready");
     statusBar()->setSizeGripEnabled(false);
+    m_connStatusLabel = new QLabel("Connecting...");
+    m_connStatusLabel->setContentsMargins(4, 0, 4, 0);
+    QFont sbFont = m_connStatusLabel->font();
+    sbFont.setPointSize(8);
+    m_connStatusLabel->setFont(sbFont);
+    statusBar()->addWidget(m_connStatusLabel);
+    m_connStatusLabel->setVisible(m_config.ui.showConnStatus);
 
     QSettings settings("LinuxDojo", "UplinkIRC");
     restoreGeometry(settings.value("geometry").toByteArray());
@@ -138,6 +145,13 @@ void MainWindow::setupToolbar()
 
     auto *menu = new QMenu(m_hamburger);
 
+    // About
+    auto *aboutAct = menu->addAction("About UplinkIRC");
+    connect(aboutAct, &QAction::triggered, this, [this]{
+        AboutDialog dlg(this);
+        dlg.exec();
+    });
+
     // Manage servers
     auto *manageAct = menu->addAction("Manage Servers...");
     connect(manageAct, &QAction::triggered, this, [this]{
@@ -173,13 +187,6 @@ void MainWindow::setupToolbar()
 
     menu->addSeparator();
 
-    // About
-    auto *aboutAct = menu->addAction("About UplinkIRC");
-    connect(aboutAct, &QAction::triggered, this, [this]{
-        AboutDialog dlg(this);
-        dlg.exec();
-    });
-
     // Documentation
     auto *docsAct = menu->addAction("Documentation");
     connect(docsAct, &QAction::triggered, this, [this]{
@@ -205,16 +212,64 @@ void MainWindow::setupToolbar()
         }
     });
 
-    // Theme picker
+    // Theme picker — QListWidget inside a QWidgetAction for reliable scrolling
     auto *themeMenu = menu->addMenu("Theme");
-    themeMenu->setStyleSheet("QMenu { max-height: 280px; } QMenu::item { padding: 2px 20px 2px 8px; }");
-    for (const QString &name : ThemeLoader::availableThemes()) {
-        themeMenu->addAction(name, this, [this, name]{
-            m_config.ui.theme = name;
-            ThemeLoader::apply(name);
-            Config::save(m_config, Config::defaultPath());
-        });
-    }
+    auto *themeList = new QListWidget;
+    themeList->setFrameShape(QFrame::NoFrame);
+    themeList->setFixedHeight(260);
+    themeList->setMinimumWidth(160);
+    for (const QString &name : ThemeLoader::availableThemes())
+        themeList->addItem(name);
+    connect(themeList, &QListWidget::itemClicked, this, [this, themeMenu](QListWidgetItem *item){
+        m_config.ui.theme = item->text();
+        ThemeLoader::apply(item->text());
+        Config::save(m_config, Config::defaultPath());
+        themeMenu->close();
+    });
+    connect(themeMenu, &QMenu::aboutToShow, this, [this, themeList]{
+        const auto matches = themeList->findItems(m_config.ui.theme, Qt::MatchExactly);
+        if (!matches.isEmpty()) {
+            themeList->setCurrentItem(matches.first());
+            themeList->scrollToItem(matches.first());
+        }
+    });
+    auto *themeAction = new QWidgetAction(themeMenu);
+    themeAction->setDefaultWidget(themeList);
+    themeMenu->addAction(themeAction);
+
+    // App icon picker
+    auto *iconMenu = menu->addMenu("App Icon");
+    const QList<QPair<QString,QString>> iconChoices = {
+        { "dark",          "Dark" },
+        { "light-default", "Light (default)" },
+        { "light",         "Light" },
+        { "avatar",        "Avatar" },
+    };
+    auto *iconList = new QListWidget;
+    iconList->setFrameShape(QFrame::NoFrame);
+    iconList->setFixedHeight(static_cast<int>(iconChoices.size()) * 24 + 8);
+    iconList->setMinimumWidth(150);
+    for (const auto &[key, label] : iconChoices)
+        iconList->addItem(label);
+    connect(iconList, &QListWidget::itemClicked, this, [this, iconMenu, iconList, iconChoices](QListWidgetItem *item){
+        const int idx = iconList->row(item);
+        if (idx < 0 || idx >= iconChoices.size()) return;
+        m_config.ui.appIcon = iconChoices[idx].first;
+        Config::save(m_config, Config::defaultPath());
+        applyAppIcon(m_config.ui.appIcon);
+        iconMenu->close();
+    });
+    connect(iconMenu, &QMenu::aboutToShow, this, [this, iconList, iconChoices]{
+        for (int i = 0; i < iconChoices.size(); ++i) {
+            if (iconChoices[i].first == m_config.ui.appIcon) {
+                iconList->setCurrentRow(i);
+                break;
+            }
+        }
+    });
+    auto *iconAction = new QWidgetAction(iconMenu);
+    iconAction->setDefaultWidget(iconList);
+    iconMenu->addAction(iconAction);
 
     menu->addSeparator();
 
@@ -261,11 +316,22 @@ void MainWindow::setupToolbar()
         Config::save(m_config, Config::defaultPath());
         if (!on) {
             m_typingOutTimer->stop();
+            m_typingActive = false;
             m_typingNicks.clear();
             for (auto *t : std::as_const(m_typingNickTimers)) { t->stop(); t->deleteLater(); }
             m_typingNickTimers.clear();
             m_typingLabel->setVisible(false);
         }
+    });
+
+    // Connection status bar toggle
+    auto *connStatusAct = menu->addAction("Connection Status Bar");
+    connStatusAct->setCheckable(true);
+    connStatusAct->setChecked(m_config.ui.showConnStatus);
+    connect(connStatusAct, &QAction::toggled, this, [this](bool on){
+        m_config.ui.showConnStatus = on;
+        Config::save(m_config, Config::defaultPath());
+        if (m_connStatusLabel) m_connStatusLabel->setVisible(on);
     });
 
     // Colored nicks toggle
@@ -281,11 +347,21 @@ void MainWindow::setupToolbar()
     });
 
     connect(m_hamburger, &QToolButton::clicked, this, [this, menu]{
+        const QSize sh = menu->sizeHint();
         QPoint pos = m_hamburger->mapToGlobal(QPoint(m_hamburger->width(), 0));
+        pos.rx() -= sh.width();
+        pos.ry() -= sh.height();
         menu->popup(pos);
     });
     m_hamburger->setObjectName("hamburger");
     tb->hide();
+}
+
+void MainWindow::applyAppIcon(const QString &choice)
+{
+    const QIcon icon = AppIcons::appIcon(choice);
+    setWindowIcon(icon);
+    if (m_tray) m_tray->setBaseIcon(icon);
 }
 
 void MainWindow::applyFontSizes()
@@ -586,16 +662,17 @@ void MainWindow::setupInputBar()
 
     layout->addWidget(bar);
 
-    // Debounce timer: sends typing=active 1s after the user starts typing
+    // Inactivity timer: sends typing=paused after 5s with no keypresses
     m_typingOutTimer = new QTimer(this);
     m_typingOutTimer->setSingleShot(true);
-    m_typingOutTimer->setInterval(1000);
+    m_typingOutTimer->setInterval(5000);
     connect(m_typingOutTimer, &QTimer::timeout, this, [this]{
         if (!m_config.ui.typingIndicator) return;
         const QString host = m_model->activeHost();
         const QString ch   = m_model->activeChannel();
         if (ch.isEmpty() || ch == "(server)") return;
-        m_model->sendTyping(host, ch, "active");
+        m_typingActive = false;
+        m_model->sendTyping(host, ch, "paused");
     });
 
     connect(m_input, &QLineEdit::textChanged, this, [this](const QString &text){
@@ -604,10 +681,17 @@ void MainWindow::setupInputBar()
         const QString ch   = m_model->activeChannel();
         if (ch.isEmpty() || ch == "(server)") return;
         if (!text.isEmpty()) {
+            if (!m_typingActive) {
+                m_typingActive = true;
+                m_model->sendTyping(host, ch, "active");
+            }
             m_typingOutTimer->start();
         } else {
             m_typingOutTimer->stop();
-            m_model->sendTyping(host, ch, "done");
+            if (m_typingActive) {
+                m_typingActive = false;
+                m_model->sendTyping(host, ch, "done");
+            }
         }
     });
 
@@ -803,6 +887,9 @@ void MainWindow::onServerAdded(const QString &host)
     f.setBold(true);
     item->setFont(0, f);
     item->setForeground(0, QColor("#6c7086"));
+
+    if (m_connStatusLabel)
+        m_connStatusLabel->setText("Connecting to " + host + "...");
 }
 
 void MainWindow::onServerConnected(const QString &host)
@@ -811,7 +898,8 @@ void MainWindow::onServerConnected(const QString &host)
     if (item) {
         item->setIcon(0, makeConnectedIcon());
     }
-    statusBar()->showMessage("Connected to " + host);
+    if (m_connStatusLabel)
+        m_connStatusLabel->setText("Connected to " + host);
 }
 
 void MainWindow::onServerDisconnected(const QString &host)
@@ -820,7 +908,8 @@ void MainWindow::onServerDisconnected(const QString &host)
     if (item) {
         item->setIcon(0, QIcon());
     }
-    statusBar()->showMessage("Disconnected from " + host);
+    if (m_connStatusLabel)
+        m_connStatusLabel->setText("Disconnected from " + host);
 }
 
 void MainWindow::onChannelAdded(const QString &host, const QString &channel)
@@ -1188,8 +1277,10 @@ void MainWindow::onInputSubmit()
 
     // Stop typing notification on send
     m_typingOutTimer->stop();
-    if (m_config.ui.typingIndicator && channel != "(server)")
+    if (m_typingActive && m_config.ui.typingIndicator && channel != "(server)") {
+        m_typingActive = false;
         m_model->sendTyping(host, channel, "done");
+    }
 
     if (text.startsWith('/')) {
         const QString cmd  = text.section(' ', 0, 0).toLower();

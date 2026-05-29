@@ -1,6 +1,10 @@
 <RCC>
     <qresource prefix="/icons">
-        <file alias="uplink.svg">icons/uplink.svg</file>
+        <file alias="app-icon-dark.svg">icons/app-icon-dark.svg</file>
+        <file alias="app-icon-light-default.svg">icons/app-icon-light-default.svg</file>
+        <file alias="app-icon-light.svg">icons/app-icon-light.svg</file>
+        <file alias="app-icon-avatar.svg">icons/app-icon-avatar.svg</file>
+        <file alias="banner.svg">icons/banner.svg</file>
     </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>

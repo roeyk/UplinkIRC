@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/about.png" alt="UplinkIRC" width="480" />
+  <img src="assets/banner.svg" alt="UplinkIRC" width="800" />
 </p>
 
 A fast, secure, IRCv3-featured IRC client built with Qt6 and C++.  

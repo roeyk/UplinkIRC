@@ -19,7 +19,7 @@ AboutDialog::AboutDialog(QWidget *parent)
 
     // Brand image — About.png is a wide horizontal logo
     auto *logo = new QLabel;
-    logo->setPixmap(AppIcons::aboutIcon().pixmap(400, 100));
+    logo->setPixmap(AppIcons::aboutBanner().pixmap(420, 115));
     logo->setAlignment(Qt::AlignCenter);
     layout->addWidget(logo);
 
