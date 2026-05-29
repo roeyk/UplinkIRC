@@ -101,6 +101,51 @@ Next priorities:
   - Desktop notifications on mention/PM
 -->
 
+<!--
+Session summary — 2026-05-29  v0.7.10
+
+What was built / fixed:
+  - Windows autojoin fix: toml::parse_file() was silently failing on Windows
+    paths with non-ASCII characters (e.g. accented usernames in AppData).
+    Replaced with Qt-native QFile read + toml::parse(string) so Qt handles
+    the path and toml++ only parses the content string.
+
+  - Simplified channel config format: [[server.channels]] array-of-tables
+    replaced with a single comma-separated string on the [[server]] block:
+      channels = "#uplink, #dojoirc"
+    Load handles the new string format. Save always writes the new format.
+    Legacy [[server.channels]] format removed entirely — no backward compat.
+
+  - Reload Config now syncs channel list: SessionModel::syncServers() added;
+    called from the Reload Config handler so manually edited channels in
+    config.toml take effect immediately on the next reconnect without restart.
+
+  - Close / Close Query in sidebar right-click: SessionModel::closeBuffer()
+    added — for channels it sends PART then removes the buffer from the hash;
+    for PM queries it removes the buffer directly. onChannelRemoved deletes
+    the sidebar item. Channels show Close (after Rejoin/Leave); PM queries
+    show Close Query (was previously no menu at all).
+
+  - All docs updated: config.toml.example, docs/configuration.md (full
+    example, minimal block, all bouncer/SASL/multi-server examples, channels
+    section rewritten, old ordering gotcha removed), README.md (minimal +
+    annotated examples, download badges bumped), CHANGELOG.md, docs/index.html
+    feature card blurb updated.
+
+Known issues remaining:
+  - Link preview cards lost on channel switch (not in message history)
+  - Link preview for title-only pages (no og:title) unverified
+  - DCC Send File not implemented
+  - AppImage packaging not done
+  - Desktop notifications not implemented
+
+Next priorities:
+  - Desktop notifications on mention/PM
+  - Link preview persistence across channel switches
+  - AppImage packaging for Linux
+  - DCC Send File
+-->
+
 ## [0.7.10] — 2026-05-29
 
 ### Changed

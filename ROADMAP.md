@@ -77,7 +77,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Status bar text shrunk — 7pt via QSS
 - [x] Clickable URLs in chat messages — http/https links in PRIVMSG, actions, and notices open in browser
 - [x] Reconnect with exponential backoff — auto-reconnect on unexpected disconnect; 5s→10s→20s→40s→60s; deliberate quit disables it
-- [x] Sidebar right-click context menus — server items: Disconnect/Reconnect; channel items: Leave/Rejoin
+- [x] Sidebar right-click context menus — server items: Disconnect/Reconnect; channel items: Rejoin/Leave/Close; PM queries: Close Query
 - [x] v0.3.0 released
 - [x] macOS release CI fixed — MACOSX_BUNDLE property set; .app bundle produced; macdeployqt succeeds; v0.3.0 re-tagged and all three platform builds pass
 - [x] Link preview — hover tooltip shows domain + page title; inline card with og:image thumbnail auto-appears below live URL messages
@@ -133,6 +133,9 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Bot nick indicators — 🤖/👾 shown for +B mode nicks; auto-detected on join via WHO reply; randomly assigned per nick each session, cached for stability
 - [x] Configurable nick brackets — `nick_brackets` in `[ui]`; `"<>"` `"[]"` `"::::"` `""` supported; also configurable live from Hamburger → Nick Brackets
 - [x] Autojoin regression fix — editing a server in the GUI no longer wipes auto-join channels; Auto-join field added to Add/Edit Server dialog
+- [x] Autojoin Windows fix — config loading now uses Qt file I/O instead of toml::parse_file; paths with non-ASCII characters load correctly on Windows
+- [x] Simplified channel config — `channels = "#uplink, #linux"` replaces `[[server.channels]]` array-of-tables; Reload Config syncs changes live via SessionModel::syncServers()
+- [x] Close/Close Query in sidebar — right-clicking a channel shows Close (PARTs + removes buffer); right-clicking a PM query shows Close Query (removes buffer)
 - [x] Channel focus on join — joining a channel now always switches focus to it
 - [x] Native Windows style — windows11 Qt style by default; no alien dark theme on fresh installs
 - [ ] FreeBSD port skeleton

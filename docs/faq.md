@@ -40,7 +40,7 @@ Open it in any text editor and restart UplinkIRC to apply changes.
 
 ### My config change isn't taking effect
 
-UplinkIRC reads the config once at startup. After editing `config.toml`, close and reopen the app. Live reload is planned for a future release.
+Edit `config.toml`, then click **☰ → Reload Config** to apply changes without restarting. Channel list changes take effect on the next reconnect. For all other settings (theme, fonts, toggles) they apply immediately.
 
 ### TOML parse error on startup
 
@@ -49,27 +49,16 @@ All string values in TOML must be wrapped in double quotes. The `#` character st
 ```toml
 # Wrong — causes a parse error
 name = LinuxDojo
-channels = [#uplink]
 
 # Correct
-name     = "LinuxDojo"
-```
-
-For channels, each one needs its own `[[server.channels]]` block:
-
-```toml
-[[server.channels]]
-name = "#uplink"
-
-[[server.channels]]
-name = "#linux"
+name = "LinuxDojo"
 ```
 
 See [Configuration](configuration.md) for the full format reference.
 
 ### Where do I set the channel to auto-join?
 
-Add a `[[server.channels]]` block inside the server entry:
+Add a `channels` key to the `[[server]]` block — comma-separated, all on one line:
 
 ```toml
 [[server]]
@@ -80,10 +69,10 @@ ssl      = true
 nick     = "yournick"
 user     = "uplink"
 realname = "UplinkIRC User"
-
-[[server.channels]]
-name = "#uplink"
+channels = "#uplink, #linux"
 ```
+
+You can also set this from **☰ → Preferences → Manage Servers → Edit** using the **Auto-join** field.
 
 ---
 
@@ -102,9 +91,7 @@ ssl      = true
 nick     = "yournick"
 user     = "uplink"
 realname = "UplinkIRC User"
-
-[[server.channels]]
-name = "#uplink"
+channels = "#uplink"
 
 [[server]]
 name     = "Libera"
@@ -114,9 +101,7 @@ ssl      = true
 nick     = "yournick"
 user     = "uplink"
 realname = "UplinkIRC User"
-
-[[server.channels]]
-name = "#linux"
+channels = "#linux"
 ```
 
 ### UplinkIRC disconnected — will it reconnect?
@@ -170,9 +155,7 @@ user     = "uplink"
 realname = "UplinkIRC User"
 password = "joe/libera:mysecretpassword"
 bouncer  = "znc"
-
-[[server.channels]]
-name = "#linux"
+channels = "#linux"
 ```
 
 With `bouncer = "znc"`, UplinkIRC negotiates `znc.in/playback` and replays missed messages on connect, and echoes messages you sent from other clients via `znc.in/self-message`.
@@ -191,9 +174,7 @@ realname        = "UplinkIRC User"
 password        = "joe:mysecretpassword"
 bouncer         = "soju"
 bouncer_network = "libera"
-
-[[server.channels]]
-name = "#linux"
+channels        = "#linux"
 ```
 
 With `bouncer = "soju"`, UplinkIRC negotiates `soju.im/bouncer-networks` (lists your networks in the server buffer), `soju.im/read` (syncs your read position across clients), and `soju.im/no-implicit-names`.
