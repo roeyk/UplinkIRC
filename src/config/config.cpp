@@ -34,9 +34,7 @@ ssl      = true
 nick     = "yournick"
 user     = "yournick"
 realname = "UplinkIRC User"
-
-[[server.channels]]
-name = "#uplink"
+channels = "#uplink"
 )";
 
 // ---------------------------------------------------------------------------
@@ -67,7 +65,13 @@ Config Config::load(const QString &path)
     Config cfg;
 
     try {
-        auto tbl = toml::parse_file(path.toStdString());
+        QFile f(path);
+        if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning() << "UplinkIRC: could not open config at" << path;
+            return cfg;
+        }
+        const std::string content = f.readAll().toStdString();
+        auto tbl = toml::parse(content, path.toStdString());
 
         // [ui]
         if (auto ui = tbl["ui"].as_table()) {
@@ -117,16 +121,11 @@ Config Config::load(const QString &path)
                 else                   sc.bouncerType = BouncerType::None;
                 sc.bouncerNetwork = QString::fromStdString((*s)["bouncer_network"].value_or<std::string>(""));
 
-                if (auto chans = (*s)["channels"].as_array()) {
-                    for (auto &cn : *chans) {
-                        auto *ct = cn.as_table();
-                        if (!ct) continue;
-                        ChannelConfig cc;
-                        cc.name     = QString::fromStdString((*ct)["name"].value_or<std::string>(""));
-                        cc.password = QString::fromStdString((*ct)["password"].value_or<std::string>(""));
-                        if (!cc.name.isEmpty())
-                            sc.channels.append(cc);
-                    }
+                const std::string chanStr = (*s)["channels"].value_or<std::string>("");
+                for (const QString &part : QString::fromStdString(chanStr).split(',', Qt::SkipEmptyParts)) {
+                    const QString name = part.trimmed();
+                    if (!name.isEmpty())
+                        sc.channels.append({name, {}});
                 }
 
                 if (!sc.host.isEmpty())
@@ -197,11 +196,11 @@ void Config::save(const Config &cfg, const QString &path)
             out << "bouncer           = \"soju\"\n";
         if (!s.bouncerNetwork.isEmpty())
             out << "bouncer_network   = \"" << s.bouncerNetwork << "\"\n";
-        for (const auto &ch : s.channels) {
-            out << "\n[[server.channels]]\n";
-            out << "name = \"" << ch.name << "\"\n";
-            if (!ch.password.isEmpty())
-                out << "password = \"" << ch.password << "\"\n";
+        if (!s.channels.isEmpty()) {
+            QStringList names;
+            for (const auto &ch : s.channels)
+                names << ch.name;
+            out << "channels = \"" << names.join(", ") << "\"\n";
         }
         out << "\n";
     }

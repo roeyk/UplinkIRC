@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     app.setApplicationName("UplinkIRC");
-    app.setApplicationVersion("0.1.0");
+    app.setApplicationVersion("0.7.10");
     app.setOrganizationName("LinuxDojo");
 
 #if defined(Q_OS_WIN)
