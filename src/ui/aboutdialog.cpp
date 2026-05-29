@@ -5,6 +5,8 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QDialogButtonBox>
+#include <QScreen>
+#include <QGuiApplication>
 
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent)
@@ -12,6 +14,11 @@ AboutDialog::AboutDialog(QWidget *parent)
     setWindowTitle("About UplinkIRC");
     setWindowIcon(AppIcons::appIcon());
     setFixedSize(460, 280);
+
+    if (parent) {
+        const QRect pg = parent->geometry();
+        move(pg.center().x() - 230, pg.center().y() - 140);
+    }
 
     auto *layout = new QVBoxLayout(this);
     layout->setSpacing(10);
@@ -38,7 +45,7 @@ AboutDialog::AboutDialog(QWidget *parent)
         "irc.linuxdojo.org  •  #uplink"
     );
     desc->setAlignment(Qt::AlignCenter);
-    desc->setStyleSheet("color: palette(mid);");
+    desc->setStyleSheet("color: palette(text);");
     layout->addWidget(desc);
 
     layout->addStretch();
