@@ -1735,6 +1735,14 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
         menu.addAction("Leave", this, [this, host, channel]{
             m_model->sendPart(host, channel);
         });
+        menu.addAction("Close", this, [this, host, channel]{
+            m_model->closeBuffer(host, channel);
+        });
+    } else if (!channel.isEmpty() && channel != "(server)") {
+        // PM / user query
+        menu.addAction("Close Query", this, [this, host, channel]{
+            m_model->closeBuffer(host, channel);
+        });
     }
 
     if (!menu.actions().isEmpty())

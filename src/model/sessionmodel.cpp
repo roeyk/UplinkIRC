@@ -75,6 +75,21 @@ void SessionModel::syncServers(const QList<ServerConfig> &servers)
     }
 }
 
+void SessionModel::closeBuffer(const QString &host, const QString &target)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+
+    const bool isChannel = target.startsWith('#') || target.startsWith('&');
+    if (isChannel) {
+        for (IrcClient *cl : m_clients)
+            if (cl->host() == host) { cl->part(target); break; }
+    }
+
+    sess->channels.remove(target.toLower());
+    emit channelRemoved(host, target);
+}
+
 ServerSession *SessionModel::session(const QString &host)
 {
     for (auto &s : m_sessions)

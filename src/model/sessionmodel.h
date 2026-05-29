@@ -21,6 +21,7 @@ public:
     void removeServer(const QString &host);
     void updateServer(const QString &oldHost, const ServerConfig &sc);
     void syncServers(const QList<ServerConfig> &servers);
+    void closeBuffer(const QString &host, const QString &target);
 
     // Read access for UI
     const QList<ServerSession> &sessions() const { return m_sessions; }
