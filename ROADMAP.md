@@ -18,8 +18,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Data model — Message, Channel, ServerSession, SessionModel
 - [x] Message buffer cap — 2000 messages per channel (RAM-flat on long sessions)
 - [x] Nick list — sorted by prefix rank (~&@%+), live updates on JOIN/PART/QUIT/NICK
-- [x] Main window UI — toolbar, sidebar (server/channel tree), chat view, nick list dock, topic bar, input bar
-- [x] QDockWidget nick list — movable left or right
+- [x] Main window UI — toolbar, sidebar (server/channel tree), chat view, nick list panel, topic bar, input bar
+- [x] Nick list panel — embedded on the right side of the chat view in a QSplitter
 - [x] Topic bar — shows topic text + channel modes, toggleable from hamburger
 - [x] Hamburger menu — About, Documentation (stub), App Icon picker, Theme picker, topic/nick/emoji toggles
 - [x] Persistent Preferences dialog — hamburger now opens a non-modal QDialog; stays open while browsing themes/toggles; replaces dismiss-on-click QMenu
@@ -65,14 +65,14 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Font Config: Network Name and Typing Indicator size controls
 - [x] Info bar always visible with channel, modes, network, user count
 - [x] Topic display — separate drop-down area with chat-window background, toggled by Show Topic
-- [x] Panel detach/float — sidebar and nick list panels can be detached, re-docked, and survive close without disappearing
+- [x] Panel detach/float — sidebar panel can be detached, re-docked, and survives close without disappearing
 - [x] Topic bar layout — network/user count next to channel label, not far right
 - [x] /topic channel-name parsing — `/topic #channel text` correctly separates channel from topic text
 - [x] Topic bar background matches input area — info bar visually joins the input row
 - [x] Mode string spacing — gap between `(modes)` and `* Network` fixed
 - [x] Clickable URLs in topic display — http/https links open in browser
 - [x] Toolbar removed — nothing above the info bar; all panels start flush at top
-- [x] Minimal dock title bars — sidebar and nick list have a 16px bar with only a ⧉ float button
+- [x] Minimal dock title bar — sidebar has a slim bar with only a ⧉ float button
 - [x] Hamburger menu relocated — now in topic bar, left of #channel label
 - [x] Status bar text shrunk — 7pt via QSS
 - [x] Clickable URLs in chat messages — http/https links in PRIVMSG, actions, and notices open in browser
@@ -94,7 +94,6 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## In Progress
 
 - [ ] Link preview for title-only pages — pages without og:title (plain `<title>` only) may not preview; needs verification and potential fix
-- [ ] Link preview persistence — cards lost on channel switch; store in message history to survive re-render
 
 ---
 
@@ -118,7 +117,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [ ] Message search — search within current channel buffer
 - [ ] Logging — per-channel log files at `~/.config/LinuxDojo/UplinkIRC/logs/`
 - [x] URL detection + click to open — http/https links in chat open in browser (v0.3.0)
-- [ ] Link preview persistence — cards currently lost when switching channels
+- [x] Link preview persistence — cards survive channel switches (stored in Channel struct)
 - [ ] DCC file transfer — send/receive files
 - [ ] Split view — view two channels side by side
 
@@ -137,6 +136,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Simplified channel config — `channels = "#uplink, #linux"` replaces `[[server.channels]]` array-of-tables; Reload Config syncs changes live via SessionModel::syncServers()
 - [x] Close/Close Query in sidebar — right-clicking a channel shows Close (PARTs + removes buffer); right-clicking a PM query shows Close Query (removes buffer)
 - [x] Channel focus on join — joining a channel now always switches focus to it
+- [x] Nick panel redesign — replaced detachable QDockWidget with embedded panel in QSplitter; gear button (⚙) in header animates a full spin before toggling the user list; gear and user count remain visible when collapsed; panel background matches chat buffer color across all themes
 - [x] Native Windows style — windows11 Qt style by default; no alien dark theme on fresh installs
 - [ ] FreeBSD port skeleton
 - [ ] AppImage packaging for Linux
@@ -155,10 +155,9 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 ## Known Issues — UI
 
-- Dock separator lines visible at left/right edges of chat area — QMainWindow::separator extends into toolbar region
+- Dock separator line may be visible at the left edge of the chat area (sidebar dock border)
 
 ## Known Issues
 
-- Link preview cards lost when switching channels (not stored in message history)
 - Link preview for title-only pages (no og:title) — may not preview; needs verification
 - DCC Send File in nick menu is disabled — not yet implemented

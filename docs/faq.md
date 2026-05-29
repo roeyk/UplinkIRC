@@ -204,9 +204,9 @@ Click ☰ to open Preferences, then pick a theme from the list. The theme applie
 theme = "nord"
 ```
 
-### How do I move the nick list?
+### How do I hide or show the user list?
 
-The nick list panel is a floating dock — drag its title bar to the left or right to reposition it. You can also drag the edge of the panel to resize it. Both position and size are saved automatically when you quit and restored on the next launch.
+Click the ⚙ button in the header above the user list. The gear animates a brief spin, then the list collapses. The gear button and user count stay visible so you can click again to expand. You can also drag the splitter handle between the chat view and the user list to resize the panel.
 
 ### How do I show the channel topic?
 

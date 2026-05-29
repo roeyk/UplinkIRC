@@ -24,15 +24,15 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.10-linux-x86_64.tar.gz">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.11-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20Linux-x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.10-windows-x64.zip">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.11-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.10-macos-arm64.dmg">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.11-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -96,7 +96,7 @@
 | **Hamburger menu** | Click ☰ for About, Documentation, Preferences, Open Config (opens `config.toml` in your editor), and Reload Config (applies changes without restarting). |
 | **Native Windows style** | On Windows, the `windows11` Qt style is used by default. No alien dark theme on fresh installs. Custom themes still available. |
 | **Per-widget font sizes** | Independent size control for chat, sidebar, nick list, topic bar, input, and typing indicator. **Preferences → Font Config...** |
-| **Panel persistence** | Dock sizes and positions saved on quit, restored on relaunch. |
+| **Panel persistence** | Sidebar size and position saved on quit, restored on relaunch. |
 
 ### 💬 Chat Features
 
@@ -115,6 +115,7 @@
 
 | Feature | Details |
 |---|---|
+| **Embedded nick panel** | User list sits in a panel on the right side of the chat view. Click the ⚙ button in the panel header to collapse or expand it — the gear animates a full spin before toggling. The user count is always visible in the header. |
 | **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (randomly assigned per nick each session, stable across refreshes). |
 | **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from **☰ → Preferences**. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
