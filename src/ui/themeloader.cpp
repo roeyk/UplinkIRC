@@ -290,6 +290,24 @@ QSplitter::handle {
     background: {{border}};
 }
 
+/* ── Embedded nick panel ── */
+QWidget#nickPanel,
+QWidget#nickPanelHeader {
+    background-color: {{bufferBg}};
+}
+QWidget#nickPanel QListWidget {
+    background-color: {{bufferBg}};
+    color: {{text}};
+}
+QWidget#nickPanelHeader QToolButton {
+    background-color: transparent;
+    color: {{text}};
+}
+QWidget#nickPanelHeader QLabel {
+    background-color: transparent;
+    color: {{text}};
+}
+
 /* ── Tool buttons ── */
 QToolButton {
     background-color: {{sidebarBg}};

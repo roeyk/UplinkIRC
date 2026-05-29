@@ -54,6 +54,7 @@
 #include <QMouseEvent>
 #include <QTextDocument>
 #include <QTextCursor>
+#include <QBuffer>
 #include <QRandomGenerator>
 #if defined(Q_OS_WIN)
 #  include <windows.h>
@@ -99,7 +100,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     setupToolbar();
     setupSidebar();
-    setupNickDock();
+    setupNickPanel();
     setupChatArea();
     setupInputBar();
     connectModel();
@@ -347,6 +348,24 @@ void MainWindow::applyAppIcon(const QString &choice)
     if (m_tray) m_tray->setBaseIcon(icon);
 }
 
+static QIcon makeGearIcon(int angleDeg, const QColor &color)
+{
+    const int sz = 16;
+    QPixmap pix(sz, sz);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::TextAntialiasing);
+    p.translate(sz / 2.0, sz / 2.0);
+    p.rotate(angleDeg);
+    p.translate(-sz / 2.0, -sz / 2.0);
+    QFont f;
+    f.setPixelSize(sz - 1);
+    p.setFont(f);
+    p.setPen(color);
+    p.drawText(QRect(0, 0, sz, sz), Qt::AlignCenter, QStringLiteral("⚙"));
+    return QIcon(pix);
+}
+
 void MainWindow::applyFontSizes()
 {
     const QString &fam = m_config.ui.fontFamily;
@@ -380,7 +399,10 @@ void MainWindow::applyFontSizes()
     }
     if (m_chatView)       m_chatView->setFont(makeFont(fs.chat));
     if (m_nickList)       m_nickList->setFont(makeFont(fs.nickList));
-    if (m_nickDock)       m_nickDock->setFont(makeFont(fs.nickDock));
+    if (m_nickPanel)      m_nickPanel->setFont(makeFont(fs.nickDock));
+    if (m_nickToggleBtn)
+        m_nickToggleBtn->setIcon(
+            makeGearIcon(0, m_nickToggleBtn->palette().color(QPalette::WindowText)));
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
     if (m_modesLabel)    m_modesLabel->setFont(makeFont(fs.topicBar));
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
@@ -447,43 +469,63 @@ void MainWindow::setupSidebar()
             this, &MainWindow::onSidebarContextMenu);
 }
 
-void MainWindow::setupNickDock()
+void MainWindow::setupNickPanel()
 {
     m_nickList = new QListWidget;
-    m_nickList->setMinimumWidth(120);
     m_nickList->setSpacing(0);
     m_nickList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_nickList, &QListWidget::customContextMenuRequested,
             this, &MainWindow::onNickListContextMenu);
 
-    auto *nickContainer = new QWidget;
-    nickContainer->setObjectName("nickContainer");
-    auto *nickVbox = new QVBoxLayout(nickContainer);
-    nickVbox->setContentsMargins(0, 0, 0, 0); nickVbox->setSpacing(0);
-    nickVbox->addWidget(m_nickList);
+    m_nickCountLabel = new QLabel(QStringLiteral("0 users"));
+    m_nickCountLabel->setObjectName("nickCountLabel");
+    m_nickCountLabel->setContentsMargins(4, 0, 4, 0);
 
-    m_nickDock = new QDockWidget(this);
-    m_nickDock->setWidget(nickContainer);
-    m_nickDock->setWindowTitle("");
-    m_nickDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    {
-        auto *bar = new QWidget; bar->setObjectName("dockTitleBar");
-        auto *hbox = new QHBoxLayout(bar);
-        hbox->setContentsMargins(2, 1, 2, 1); hbox->setSpacing(0);
-        hbox->addStretch(1);
-        auto *btn = new QToolButton; btn->setObjectName("dockFloatBtn");
-        btn->setText("⧉"); btn->setFixedSize(14, 14); btn->setAutoRaise(true);
-        connect(btn, &QToolButton::clicked, m_nickDock, [this]{ m_nickDock->setFloating(!m_nickDock->isFloating()); });
-        hbox->addWidget(btn);
-        m_nickDock->setTitleBarWidget(bar);
-    }
-    connect(m_nickDock, &QDockWidget::visibilityChanged, this, [this](bool visible){
-        if (!visible && m_nickDock->isFloating()) {
-            m_nickDock->setFloating(false);
-            m_nickDock->show();
-        }
+    m_nickToggleBtn = new QToolButton;
+    m_nickToggleBtn->setFixedSize(22, 22);
+    m_nickToggleBtn->setAutoRaise(true);
+    m_nickToggleBtn->setToolTip(tr("Toggle user list"));
+    m_nickToggleBtn->setIcon(makeGearIcon(0, palette().color(QPalette::WindowText)));
+
+    m_gearTimer = new QTimer(this);
+    m_gearTimer->setInterval(16);
+    connect(m_gearTimer, &QTimer::timeout, this, [this]{
+        m_gearAngle += 12;
+        m_nickToggleBtn->setIcon(
+            makeGearIcon(m_gearAngle, m_nickToggleBtn->palette().color(QPalette::WindowText)));
+        if (m_gearAngle < 360) return;
+
+        m_gearTimer->stop();
+        m_gearAngle = 0;
+        m_nickExpanded = !m_nickExpanded;
+        m_nickList->setVisible(m_nickExpanded);
+
+        m_nickToggleBtn->setIcon(
+            makeGearIcon(0, m_nickToggleBtn->palette().color(QPalette::WindowText)));
     });
-    addDockWidget(Qt::RightDockWidgetArea, m_nickDock);
+
+    connect(m_nickToggleBtn, &QToolButton::clicked, this, [this]{
+        if (m_gearTimer->isActive()) return;
+        m_gearAngle = 0;
+        m_gearTimer->start();
+    });
+
+    auto *header = new QWidget;
+    header->setObjectName("nickPanelHeader");
+    auto *hbox = new QHBoxLayout(header);
+    hbox->setContentsMargins(2, 2, 2, 2);
+    hbox->setSpacing(2);
+    hbox->addWidget(m_nickToggleBtn);
+    hbox->addWidget(m_nickCountLabel, 1);
+
+    m_nickPanel = new QWidget;
+    m_nickPanel->setObjectName("nickPanel");
+    m_nickPanel->setMinimumWidth(24);
+    auto *vbox = new QVBoxLayout(m_nickPanel);
+    vbox->setContentsMargins(0, 0, 0, 0);
+    vbox->setSpacing(0);
+    vbox->addWidget(header);
+    vbox->addWidget(m_nickList, 1);
 }
 
 void MainWindow::setupChatArea()
@@ -562,18 +604,19 @@ void MainWindow::setupChatArea()
         const QString channel = it->second;
         m_previewChannels.erase(it);
 
-        if (host != m_model->activeHost() ||
-            channel.toLower() != m_model->activeChannel().toLower())
-            return;
+        auto *ch = m_model->channel(host, channel);
+        if (!ch) return;
 
-        // Register thumbnail as a document resource
         QString imgHtml;
         if (!thumbnail.isNull()) {
-            const QString resKey = "preview://" + QString::number(qHash(urlStr));
-            m_chatView->document()->addResource(
-                QTextDocument::ImageResource, QUrl(resKey), QVariant(thumbnail));
+            QByteArray imgData;
+            QBuffer imgBuf(&imgData);
+            imgBuf.open(QIODevice::WriteOnly);
+            thumbnail.save(&imgBuf, "PNG");
+            const QString dataUri = "data:image/png;base64,"
+                                  + QString::fromLatin1(imgData.toBase64());
             imgHtml = QString("<td><img src=\"%1\" width=\"%2\" height=\"%3\"/></td>")
-                .arg(resKey).arg(thumbnail.width()).arg(thumbnail.height());
+                .arg(dataUri).arg(thumbnail.width()).arg(thumbnail.height());
         }
 
         const QColor bg     = m_chatView->palette().color(QPalette::AlternateBase);
@@ -598,6 +641,12 @@ void MainWindow::setupChatArea()
                  imgHtml.isEmpty() ? "" : " style=\"padding-left:6px\"",
                  fg.name(), titleEsc, sub.name(), domainEsc);
 
+        ch->previews.insert(urlStr, cardHtml);
+
+        if (host != m_model->activeHost() ||
+            channel.toLower() != m_model->activeChannel().toLower())
+            return;
+
         QScrollBar *sb = m_chatView->verticalScrollBar();
         const bool atBottom = sb->value() >= sb->maximum() - 4;
 
@@ -607,7 +656,13 @@ void MainWindow::setupChatArea()
             sb->setValue(sb->maximum());
     });
 
-    vbox->addWidget(m_chatView, 1);
+    m_chatSplitter = new QSplitter(Qt::Horizontal);
+    m_chatSplitter->setHandleWidth(0);
+    m_chatSplitter->addWidget(m_chatView);
+    m_chatSplitter->addWidget(m_nickPanel);
+    m_chatSplitter->setStretchFactor(0, 1);
+    m_chatSplitter->setStretchFactor(1, 0);
+    vbox->addWidget(m_chatSplitter, 1);
 
     setCentralWidget(central);
 }
@@ -1803,8 +1858,26 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
     m_chatView->clear();
     auto *ch = m_model->channel(host, channel);
     if (!ch) return;
-    for (const auto &msg : std::as_const(ch->messages))
+
+    static const QRegularExpression urlRe(
+        R"(https?://[^\s<>"]+)",
+        QRegularExpression::CaseInsensitiveOption);
+
+    for (const auto &msg : std::as_const(ch->messages)) {
         appendMessage(msg);
+        if (!ch->previews.isEmpty() &&
+            (msg.type == MessageType::Privmsg ||
+             msg.type == MessageType::Action  ||
+             msg.type == MessageType::Notice)) {
+            auto it = urlRe.globalMatch(msg.text);
+            while (it.hasNext()) {
+                const QString urlStr = it.next().captured(0);
+                const auto p = ch->previews.constFind(urlStr);
+                if (p != ch->previews.constEnd())
+                    m_chatView->append(p.value());
+            }
+        }
+    }
 }
 
 void MainWindow::refreshNickList(const QString &host, const QString &channel)
@@ -1830,7 +1903,8 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
         m_nickList->addItem(item);
     }
 
-    m_nickDock->setWindowTitle("");
+    if (m_nickCountLabel)
+        m_nickCountLabel->setText(QString::number(ch->nicks.size()) + " users");
 }
 
 static QString linkifyTopic(const QString &text)

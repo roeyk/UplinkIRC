@@ -26,6 +26,7 @@ class QPushButton;
 class QDockWidget;
 class QListWidget;
 class QToolButton;
+class QSplitter;
 class QAction;
 
 class MainWindow : public QMainWindow
@@ -67,7 +68,7 @@ private:
     void setupToolbar();
     void setupSidebar();
     void setupChatArea();
-    void setupNickDock();
+    void setupNickPanel();
     void setupInputBar();
     void connectModel();
     void connectPreferences();
@@ -115,9 +116,15 @@ private:
     QLineEdit    *m_input;
     QLabel       *m_nickPrefix;
     QPushButton  *m_emojiBtn;
-    QDockWidget  *m_nickDock;
     QDockWidget  *m_sidebarDock{nullptr};
     QListWidget  *m_nickList;
+    QWidget      *m_nickPanel{nullptr};
+    QLabel       *m_nickCountLabel{nullptr};
+    QToolButton  *m_nickToggleBtn{nullptr};
+    QSplitter    *m_chatSplitter{nullptr};
+    QTimer       *m_gearTimer{nullptr};
+    int           m_gearAngle{0};
+    bool          m_nickExpanded{true};
     QWidget      *m_topicBar;               // info bar — always visible
     QLabel       *m_topicLabel{nullptr};    // #channel (modes)
     QLabel       *m_modesLabel{nullptr};    // stretch spacer
