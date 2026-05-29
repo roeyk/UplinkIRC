@@ -22,9 +22,26 @@ What was built / fixed:
   - Link preview persistence: added previews QHash to Channel struct so card
     HTML is retained across channel switches.
 
+Design decisions:
+  - Iterated on collapsed state: initial design hid the user count label and
+    shrank panel to 24px; user preferred keeping gear + count visible with the
+    list hidden and panel width unchanged. Simpler code — removed all
+    splitter-resize logic from the toggle path.
+  - makeGearIcon() placed before applyFontSizes() to resolve forward-decl
+    link error on first build.
+
 Known issues remaining:
   - DCC Send File not implemented
   - AppImage packaging not done
+  - Link preview for title-only pages (no og:title) needs verification
+  - Nick panel splitter width does not persist across restarts (no QSettings
+    save for QSplitter position in central widget)
+
+Next priorities:
+  - Desktop notifications on mention/PM when window is not focused
+  - Link preview for title-only pages — verify and fix if needed
+  - Connection status indicator per server (currently global status bar only)
+  - AppImage packaging for Linux
 -->
 
 ## v0.7.11 — 2026-05-29

@@ -126,7 +126,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## Planned — Polish + Distribution
 
 - [ ] Virtual scrolling — render only visible messages (performance on busy channels)
-- [x] Window state persistence — dock sizes and positions saved via QSettings on quit, restored on launch
+- [x] Window state persistence — sidebar dock size and position saved via QSettings on quit, restored on launch
+- [ ] Nick panel width persistence — QSplitter position in central widget not yet saved; resets to default on relaunch
 - [x] Config editor UI — Manage Servers dialog covers server-level editing
 - [x] Emoji picker — searchable popup grid with :shortcode: autocomplete and auto-substitution
 - [x] Bot nick indicators — 🤖/👾 shown for +B mode nicks; auto-detected on join via WHO reply; randomly assigned per nick each session, cached for stability
