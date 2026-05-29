@@ -16,6 +16,13 @@ LinkPreview::LinkPreview(QObject *parent)
     , m_nam(new QNetworkAccessManager(this))
 {}
 
+static bool isImageUrl(const QUrl &url)
+{
+    const QString p = url.path().toLower();
+    return p.endsWith(".png") || p.endsWith(".jpg") || p.endsWith(".jpeg")
+        || p.endsWith(".gif") || p.endsWith(".webp");
+}
+
 void LinkPreview::fetch(const QUrl &url)
 {
     const QString key = url.toString();
@@ -32,6 +39,12 @@ void LinkPreview::fetch(const QUrl &url)
         m_reply->abort();
         m_reply->deleteLater();
         m_reply = nullptr;
+    }
+
+    if (isImageUrl(url)) {
+        const QString filename = url.fileName();
+        fetchImage(url, filename.isEmpty() ? url.host() : filename, url);
+        return;
     }
 
     m_pendingUrl = url;

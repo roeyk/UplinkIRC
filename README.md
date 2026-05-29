@@ -35,6 +35,14 @@
   <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.0-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
+  &nbsp;
+  <a href="#install-dependencies-first">
+    <img src="https://img.shields.io/badge/FreeBSD-build%20from%20src-AB2B28?style=for-the-badge&logo=freebsd&logoColor=white" alt="FreeBSD build from source" />
+  </a>
+</p>
+
+<p align="center">
+  <img src="resources/cross-platform-OS-characters.png" alt="Cross-platform" width="380" />
 </p>
 
 ---

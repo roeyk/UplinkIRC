@@ -107,3 +107,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: UplinkIRC-${{ github.ref_name }}-*
           generate_release_notes: true
+
