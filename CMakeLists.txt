@@ -20,7 +20,7 @@ if(NOT tomlplusplus_FOUND)
 endif()
 qt_standard_project_setup()
 
-qt_add_executable(UplinkIRC
+qt_add_executable(UplinkIRC WIN32
     resources/resources.qrc
     src/main.cpp
     src/config/config.cpp
