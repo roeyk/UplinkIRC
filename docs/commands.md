@@ -13,7 +13,8 @@ Type any of these commands in the message input box and press Enter.
 | `/part [#channel]` | Leave a channel. Defaults to the current channel if omitted |
 | `/part #channel reason` | Leave with a part message |
 | `/topic` | Show the current channel topic |
-| `/topic <text>` | Set the channel topic |
+| `/topic <text>` | Set the current channel topic |
+| `/topic #channel <text>` | Set the topic on a specific channel |
 | `/kick <nick> [reason]` | Kick a user from the current channel (requires op) |
 
 ### Examples
@@ -24,6 +25,7 @@ Type any of these commands in the message input box and press Enter.
 /part
 /part #linux see you later
 /topic new topic here
+/topic #uplink Welcome to the server
 /kick baduser spamming
 ```
 

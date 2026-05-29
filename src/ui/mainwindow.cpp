@@ -303,11 +303,18 @@ void MainWindow::setupSidebar()
     m_sidebar->setMinimumWidth(140);
     m_sidebar->setObjectName("sidebar");
 
-    auto *dock = new QDockWidget(this);
-    dock->setWidget(m_sidebar);
-    dock->setTitleBarWidget(new QWidget(dock));
-    dock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    addDockWidget(Qt::LeftDockWidgetArea, dock);
+    m_sidebarDock = new QDockWidget(this);
+    m_sidebarDock->setWidget(m_sidebar);
+    m_sidebarDock->setWindowTitle("");
+    m_sidebarDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    addDockWidget(Qt::LeftDockWidgetArea, m_sidebarDock);
+    connect(m_sidebarDock, &QDockWidget::visibilityChanged, this, [this](bool visible){
+        if (!visible && m_sidebarDock->isFloating()) {
+            addDockWidget(Qt::LeftDockWidgetArea, m_sidebarDock);
+            m_sidebarDock->setFloating(false);
+            m_sidebarDock->show();
+        }
+    });
 
     connect(m_sidebar, &QTreeWidget::currentItemChanged,
             this, [this](QTreeWidgetItem *, QTreeWidgetItem *){ onSidebarSelectionChanged(); });
@@ -323,8 +330,14 @@ void MainWindow::setupNickDock()
 
     m_nickDock = new QDockWidget(this);
     m_nickDock->setWidget(m_nickList);
-    m_nickDock->setTitleBarWidget(new QWidget(m_nickDock));
+    m_nickDock->setWindowTitle("");
     m_nickDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    connect(m_nickDock, &QDockWidget::visibilityChanged, this, [this](bool visible){
+        if (!visible && m_nickDock->isFloating()) {
+            m_nickDock->setFloating(false);
+            m_nickDock->show();
+        }
+    });
     addDockWidget(Qt::RightDockWidgetArea, m_nickDock);
 }
 
@@ -350,8 +363,8 @@ void MainWindow::setupChatArea()
     m_userInfoLabel = new QLabel;
     m_userInfoLabel->setObjectName("userInfoLabel");
     tHbox->addWidget(m_topicLabel);
-    tHbox->addWidget(m_modesLabel, 1);
     tHbox->addWidget(m_userInfoLabel);
+    tHbox->addWidget(m_modesLabel, 1);
     m_topicBar->setObjectName("topicBar");
     vbox->addWidget(m_topicBar);
 
@@ -1026,10 +1039,16 @@ void MainWindow::onInputSubmit()
         } else if (cmd == "/whois") {
             m_model->sendRaw(host, "WHOIS " + args.trimmed());
         } else if (cmd == "/topic") {
-            if (args.isEmpty())
-                m_model->sendRaw(host, "TOPIC " + channel);
+            QString topicTarget = channel;
+            QString topicText   = args;
+            if (args.startsWith('#') || args.startsWith('&')) {
+                topicTarget = args.section(' ', 0, 0);
+                topicText   = args.section(' ', 1);
+            }
+            if (topicText.isEmpty())
+                m_model->sendRaw(host, "TOPIC " + topicTarget);
             else
-                m_model->sendRaw(host, "TOPIC " + channel + " :" + args);
+                m_model->sendRaw(host, "TOPIC " + topicTarget + " :" + topicText);
         } else if (cmd == "/kick") {
             const QString target = args.section(' ', 0, 0);
             const QString reason = args.section(' ', 1);
@@ -1178,7 +1197,7 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
         m_nickList->addItem(item);
     }
 
-    m_nickDock->setWindowTitle(QString("Users (%1)").arg(ch->nicks.size()));
+    m_nickDock->setWindowTitle("");
 }
 
 void MainWindow::refreshTopicBar(const QString &host, const QString &channel)

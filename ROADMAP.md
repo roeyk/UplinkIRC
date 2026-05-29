@@ -60,6 +60,9 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Font Config: Network Name and Typing Indicator size controls
 - [x] Info bar always visible with channel, modes, network, user count
 - [x] Topic display — separate drop-down area with chat-window background, toggled by Show Topic
+- [x] Panel detach/float — sidebar and nick list panels can be detached, re-docked, and survive close without disappearing
+- [x] Topic bar layout — network/user count next to channel label, not far right
+- [x] /topic channel-name parsing — `/topic #channel text` correctly separates channel from topic text
 
 ---
 
@@ -75,6 +78,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] SASL authentication — PLAIN mechanism (CAP negotiation, AUTHENTICATE, 903/904/906)
 - [ ] SASL EXTERNAL — certificate-based auth (not yet implemented)
 - [x] NickServ IDENTIFY auto — `nickserv_password` in config; sent to NickServ on RPL_WELCOME
+- [ ] Server error routing — 482 and other server errors shown in active channel buffer, not just (server)
 - [ ] Multiple servers — add/remove servers from UI, not just config
 - [ ] Reconnect logic — auto-reconnect with backoff on disconnect
 - [ ] Connection status indicator — visual connected/disconnected state per server
@@ -119,6 +123,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## Known Issues
 
 - No reconnect on disconnect — must restart app
+- Server errors (482 channel-op-needed etc.) appear in the (server) buffer, not the active channel — topic set failures are silent when in a channel
 - Emoji button toggle wired but picker not yet implemented
 - DCC Send File in nick menu is disabled — not yet implemented
 - Sidebar/userlist not fully Halloy-matched visually (WIP)

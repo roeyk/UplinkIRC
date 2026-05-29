@@ -100,6 +100,7 @@ private:
     QLabel       *m_nickPrefix;
     QPushButton  *m_emojiBtn;
     QDockWidget  *m_nickDock;
+    QDockWidget  *m_sidebarDock{nullptr};
     QListWidget  *m_nickList;
     QWidget      *m_topicBar;               // info bar — always visible
     QLabel       *m_topicLabel{nullptr};    // #channel (modes)

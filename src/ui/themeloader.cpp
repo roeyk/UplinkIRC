@@ -232,11 +232,11 @@ QLineEdit::placeholder-text {
 /* ── Dock widgets ── */
 QDockWidget {
     color: {{text}};
+    titlebar-close-icon: none;
 }
 QDockWidget::title {
     background-color: {{sidebarBg}};
-    padding: 4px;
-    border-bottom: 1px solid {{border}};
+    padding: 0px 2px;
 }
 
 /* ── Scroll bars ── */

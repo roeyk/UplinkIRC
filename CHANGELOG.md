@@ -3,6 +3,53 @@
 ---
 
 <!--
+Session summary — 2026-05-28 panel/dock + topic fixes:
+
+What was fixed:
+  - Panel detach restored: both sidebar and nick list panels can now be
+    floated (detached) and re-docked using the float button in their title
+    bars. Root cause: setTitleBarWidget(new QWidget) replaced the Qt title
+    bar with a 0-height invisible widget, removing the float button entirely.
+    Fix: removed custom title bar widgets; switched to Qt default title bar
+    with empty title string and minimal QSS (0px padding, no border). Docks
+    now show only a small float button with no text label.
+  - "Users (N)" text removed from nick list panel: refreshNickList() was
+    calling m_nickDock->setWindowTitle("Users (N)") on every nick list
+    refresh, overwriting the empty title set at construction.
+  - Sidebar re-dock location fixed: when the floating sidebar was closed
+    (X button), it was re-appearing in the center/wrong area. Fix: the
+    visibilityChanged handler now explicitly calls
+    addDockWidget(Qt::LeftDockWidgetArea, m_sidebarDock) before setFloating
+    to ensure it snaps back to the left.
+  - Floating dock disappear fixed: closing a floating dock window now
+    re-docks it to its home area instead of hiding it. Both sidebar and
+    nick list docks have visibilityChanged handlers for this.
+  - Sidebar dock stored as m_sidebarDock member (was anonymous local) to
+    support the above.
+  - Topic bar layout fixed: "* NetworkName — N users" label was positioned
+    at the far right of the info bar. Moved to be immediately right of the
+    "#channel (modes)" label, with the stretch spacer on the right.
+  - /topic command parsing fixed: typing "/topic #channel new topic" now
+    correctly sends TOPIC #channel :new topic. Previously the entire args
+    string (including the channel name) was used as the topic text, causing
+    the topic to be prefixed with the channel name or sending a malformed
+    topic.
+
+Known issues left open:
+  - Topic set errors (482 channel-op-needed) go to the (server) buffer, not
+    the active channel — user sees "nothing" when rejected. Needs error
+    routing to active channel.
+  - No reconnect on disconnect
+  - DCC Send File not implemented
+  - Emoji picker not built
+
+Next priorities:
+  - Route server errors (482, etc.) to active channel buffer
+  - Reconnect with backoff
+  - Connection status indicator per server
+-->
+
+<!--
 Session summary — 2026-05-28 sprint #3:
 
 What was built:
@@ -399,6 +446,18 @@ Known issues open:
 -->
 
 ## [Unreleased]
+
+**Panel detach, topic bar layout, /topic fix**
+
+- Panel detach restored — sidebar (server/channel list) and nick list panels can now be floated and re-docked using the float button; closing a floating panel re-docks it instead of hiding it
+- Topic bar layout — `* NetworkName — N users` now sits right next to `#channel (modes)`, not at the far right
+- `/topic` command — now accepts `/topic #channel new topic` (channel name optional; correctly separates it from the topic text)
+
+**Fix:** Nick list panel was showing "Users (N)" label above the list — stopped refreshNickList from overwriting the dock title  
+**Fix:** Sidebar panel re-docked to wrong area (behind chat) — now explicitly re-adds to left dock area  
+**Fix:** `/topic #uplink some text` was sending the channel name as part of the topic string  
+
+---
 
 **PM tabs, nick menu, sidebar redesign, topic bar, font config additions**
 
