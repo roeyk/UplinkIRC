@@ -334,6 +334,9 @@ void MainWindow::setupToolbar()
             for (auto *t : std::as_const(m_typingNickTimers)) { t->stop(); t->deleteLater(); }
             m_typingNickTimers.clear();
             m_typingLabel->setVisible(false);
+        } else {
+            m_typingLabel->setText("");
+            m_typingLabel->setVisible(true);
         }
     });
 
@@ -673,7 +676,7 @@ void MainWindow::setupInputBar()
     m_typingLabel = new QLabel;
     m_typingLabel->setObjectName("typingLabel");
     m_typingLabel->setContentsMargins(8, 2, 8, 2);
-    m_typingLabel->setVisible(false);
+    m_typingLabel->setVisible(m_config.ui.typingIndicator);
 
     auto *layout = qobject_cast<QVBoxLayout *>(centralWidget()->layout());
     layout->addWidget(m_typingLabel);
@@ -1210,8 +1213,13 @@ void MainWindow::updateTypingLabel()
     const QString key = m_model->activeHost() + "|" + m_model->activeChannel();
     const QSet<QString> &typers = m_typingNicks.value(key);
 
-    if (typers.isEmpty() || !m_config.ui.typingIndicator) {
+    if (!m_config.ui.typingIndicator) {
         m_typingLabel->setVisible(false);
+        return;
+    }
+
+    if (typers.isEmpty()) {
+        m_typingLabel->setText("");
         return;
     }
 
@@ -1225,7 +1233,6 @@ void MainWindow::updateTypingLabel()
         text = QString::number(names.size()) + " people are typing...";
 
     m_typingLabel->setText(text);
-    m_typingLabel->setVisible(true);
 }
 
 // ---------------------------------------------------------------------------

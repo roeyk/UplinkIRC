@@ -417,6 +417,18 @@ static void parseBotModes(const QString &modeStr, QSet<QString> &botSet, bool is
     }
 }
 
+static QChar modeToPrefix(QChar m)
+{
+    switch (m.unicode()) {
+    case 'q': return '~';
+    case 'a': return '&';
+    case 'o': return '@';
+    case 'h': return '%';
+    case 'v': return '+';
+    default:  return ' ';
+    }
+}
+
 void SessionModel::onModesReceived(const QString &host, const QString &channel, const QString &modes)
 {
     auto *sess = session(host);
@@ -429,6 +441,35 @@ void SessionModel::onModesReceived(const QString &host, const QString &channel, 
         if (ch) {
             ch->modes = modes;
             parseBotModes(modes, ch->botNicks, true);
+
+            // Update per-nick prefixes for privilege mode changes (+o/-o etc.)
+            static const QString prefixModes = QStringLiteral("qaohv");
+            static const QString argModes    = QStringLiteral("ovhaqBe");
+            const QStringList parts = modes.split(' ', Qt::SkipEmptyParts);
+            bool adding = true;
+            int  argIdx = 1;
+            for (QChar c : parts.value(0)) {
+                if (c == '+') { adding = true;  continue; }
+                if (c == '-') { adding = false; continue; }
+                const QChar pre = modeToPrefix(c);
+                if (pre != ' ' && argIdx < parts.size()) {
+                    const QString target = parts[argIdx];
+                    for (auto &e : ch->nicks) {
+                        if (e.nick.toLower() == target.toLower()) {
+                            if (adding) {
+                                if (prefixRank(pre) > prefixRank(e.prefix))
+                                    e.prefix = pre;
+                            } else {
+                                if (e.prefix == pre) e.prefix = ' ';
+                            }
+                            break;
+                        }
+                    }
+                }
+                if (argModes.contains(c)) ++argIdx;
+            }
+            std::sort(ch->nicks.begin(), ch->nicks.end());
+            emit nickListChanged(host, channel);
         }
         postMessage(host, channel, Message::make(MessageType::Server, "", "Mode " + channel + " " + modes));
         emit modesChanged(host, channel);

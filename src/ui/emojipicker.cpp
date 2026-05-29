@@ -42,6 +42,10 @@ EmojiPicker::EmojiPicker(QWidget *parent)
     m_gridLayout = new QGridLayout(m_gridWidget);
     m_gridLayout->setSpacing(2);
     m_gridLayout->setContentsMargins(2, 2, 2, 2);
+    // Lock column widths so partial search results don't stretch unevenly
+    for (int c = 0; c < kCols; ++c)
+        m_gridLayout->setColumnMinimumWidth(c, kBtnSize + 2);
+    m_gridLayout->setColumnStretch(kCols, 1); // absorb leftover space after col 8
     m_scroll->setWidget(m_gridWidget);
 
     buildButtons();
@@ -63,6 +67,8 @@ void EmojiPicker::buildButtons()
         btn->setAutoRaise(true);
         btn->setToolTip(entry.shortcode);
         btn->setFocusPolicy(Qt::NoFocus);
+        // Override global QToolButton padding (designed for sidebar nav, not emoji)
+        btn->setStyleSheet("QToolButton { padding: 0; text-align: center; }");
 
         connect(btn, &QToolButton::clicked, this, [this, ch = entry.ch]{
             hide();

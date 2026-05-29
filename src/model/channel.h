@@ -62,13 +62,13 @@ struct Channel {
         for (const QString &n : raw) {
             if (n.isEmpty()) continue;
             NickEntry e;
-            QChar first = n[0];
-            if (prefixRank(first) > 0) {
-                e.prefix = first;
-                e.nick   = n.mid(1);
-            } else {
-                e.nick = n;
+            int i = 0;
+            while (i < n.size() && prefixRank(n[i]) > 0) {
+                if (prefixRank(n[i]) > prefixRank(e.prefix))
+                    e.prefix = n[i];
+                ++i;
             }
+            e.nick = n.mid(i);
             nicks.append(e);
         }
         std::sort(nicks.begin(), nicks.end());
@@ -77,12 +77,13 @@ struct Channel {
     void addNick(const QString &raw)
     {
         NickEntry e;
-        if (!raw.isEmpty() && prefixRank(raw[0]) > 0) {
-            e.prefix = raw[0];
-            e.nick   = raw.mid(1);
-        } else {
-            e.nick = raw;
+        int i = 0;
+        while (i < raw.size() && prefixRank(raw[i]) > 0) {
+            if (prefixRank(raw[i]) > prefixRank(e.prefix))
+                e.prefix = raw[i];
+            ++i;
         }
+        e.nick = raw.mid(i);
         // avoid duplicates
         for (const auto &n : std::as_const(nicks))
             if (n.nick.toLower() == e.nick.toLower()) return;
