@@ -21,6 +21,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - Nick list right-click menu — Message, Whois, Give Op, Give Voice, Version
 - Typing indicator — IRCv3 `draft/typing`; shows "nick is typing..." in real time
 - Per-widget font sizes — independent size control for every UI zone including network name and typing indicator
+- **Manage Servers** dialog — add, edit, and remove server connections from within the app; changes take effect immediately without restart
 - 55 built-in themes, switchable from the hamburger menu (bottom-right of the user list panel)
 - Clickable URLs in the topic bar — http/https links open in the browser
 - System tray: left-click toggles window; minimizes to tray on close

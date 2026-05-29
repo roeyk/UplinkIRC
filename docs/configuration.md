@@ -13,7 +13,7 @@ UplinkIRC is configured with a single TOML file. On first launch it is created a
 | Windows | `%APPDATA%\LinuxDojo\UplinkIRC\config.toml` |
 | FreeBSD | `~/.config/LinuxDojo/UplinkIRC/config.toml` |
 
-Open the file in any text editor. Changes take effect on the next launch (live reload is planned).
+Open the file in any text editor, or use **Hamburger → Manage Servers...** to add, edit, and remove server connections from within the app. Changes made through the dialog take effect immediately and are saved to the config file automatically.
 
 ---
 

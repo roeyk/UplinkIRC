@@ -86,7 +86,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [ ] SASL EXTERNAL — certificate-based auth (not yet implemented)
 - [x] NickServ IDENTIFY auto — `nickserv_password` in config; sent to NickServ on RPL_WELCOME
 - [ ] Server error routing — 482 and other server errors shown in active channel buffer, not just (server)
-- [ ] Multiple servers — add/remove servers from UI, not just config
+- [x] Multiple servers — Manage Servers dialog: add, edit, remove with live connect/disconnect
 - [ ] Reconnect logic — auto-reconnect with backoff on disconnect
 - [ ] Connection status indicator — visual connected/disconnected state per server
 
@@ -111,7 +111,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 - [ ] Virtual scrolling — render only visible messages (performance on busy channels)
 - [x] Window state persistence — dock sizes and positions saved via QSettings on quit, restored on launch
-- [ ] Config editor UI — edit servers/channels from within the app
+- [x] Config editor UI — Manage Servers dialog covers server-level editing
 - [ ] FreeBSD port skeleton
 - [ ] AppImage packaging for Linux
 - [ ] Auto-update check
@@ -126,6 +126,10 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [ ] SOCKS5 proxy support
 
 ---
+
+## Known Issues — UI
+
+- Hamburger menu briefly shrinks when a theme is applied — `QMenu` re-polish on `setStyleSheet()` computes a different sizeHint; explicit item padding added but root cause not fully resolved
 
 ## Known Issues
 

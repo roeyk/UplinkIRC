@@ -3,6 +3,45 @@
 ---
 
 <!--
+Session summary — 2026-05-28 hamburger menu + server management:
+
+What was built:
+  - Hamburger menu now opens above the button, anchored to the top-right
+    corner using popup() with the button's top-right global position.
+    Qt's screen-edge detection handles the flip automatically.
+  - Theme list in hamburger is now scrollable and compact: uses
+    QMenu::max-height stylesheet for native scroll arrows, compact item
+    padding (2px). Individual actions used (not QWidgetAction) so the
+    menu closes cleanly on selection.
+  - ServerDialog: Add Server dialog with three sections — Connection
+    (name, host, port, SSL checkbox), Identity (nick, user, realname),
+    Authentication (server password, SASL user/password, NickServ
+    password). Password fields use echo mode Password.
+  - ManageServersDialog: list of all configured servers with Add, Edit
+    (double-click or button), and Remove. Edit pre-fills the form.
+  - SessionModel.addServer(), removeServer(), updateServer() — runtime
+    server management without restart; connect/disconnect/reconnect live.
+  - ServerConfig operator== added for dirty-checking on edit.
+  - Hamburger menu entry changed from "Add Server..." to "Manage Servers..."
+  - Explicit QMenu::item padding added to theme stylesheet to stabilize
+    menu item height across theme switches.
+
+Known issues left open:
+  - Burger menu still visually shrinks when a theme is applied — root
+    cause not yet identified; QMenu re-polish on setStyleSheet() appears
+    to be computing a different sizeHint despite explicit item padding.
+  - No reconnect on disconnect.
+  - Server errors (482 etc.) appear in (server) buffer, not active channel.
+  - URL click-to-open only in topic bar, not chat messages.
+  - DCC Send File not implemented.
+
+Next priorities:
+  - Reconnect with exponential backoff
+  - URL detection + click-to-open in chat messages
+  - Route 482/channel errors to active buffer
+-->
+
+<!--
 Session summary — 2026-05-28 UI layout + hamburger relocation:
 
 What was built/fixed:
@@ -511,6 +550,23 @@ Known issues left open:
   - DCC Send File not implemented
   - Emoji picker not built
 -->
+
+## [Unreleased] — 2026-05-28
+
+**Server management UI + hamburger menu improvements**
+
+- Hamburger menu now opens above the button, anchored top-right — no more downward popup
+- Theme list is scrollable with compact item padding — all 55 themes reachable via scroll arrows
+- Theme application no longer causes visual glitch on menu close
+- **Manage Servers...** dialog — view, add, edit, and remove servers from within the app; no config file editing required
+- Add Server dialog — three-section form: Connection (name, host, port, SSL), Identity (nick, username, real name), Authentication (server password, SASL user/password, NickServ password)
+- Edit server pre-fills the form with existing values; changes reconnect immediately
+- Remove server disconnects immediately and removes from config
+- All server changes persisted to `config.toml` on OK
+- Fix: explicit `QMenu::item` padding in theme stylesheet stabilizes menu height across theme switches
+- Known: menu still briefly shrinks on theme switch (investigation ongoing)
+
+---
 
 ## [Unreleased]
 
