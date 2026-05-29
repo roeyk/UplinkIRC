@@ -30,8 +30,6 @@
 #include <QSplitter>
 #include <QTextCharFormat>
 #include <QScrollBar>
-#include <QWidgetAction>
-#include <QFrame>
 #include <QInputDialog>
 #include <QSysInfo>
 #include <QTimer>
@@ -165,25 +163,14 @@ void MainWindow::setupToolbar()
 
     // Theme picker
     auto *themeMenu = menu->addMenu("Theme");
-    auto *themeAction = new QWidgetAction(themeMenu);
-    auto *themeList = new QListWidget;
-    themeList->setFrameShape(QFrame::NoFrame);
-    themeList->setFixedHeight(240);
-    themeList->setFixedWidth(200);
-    themeList->setStyleSheet("QListWidget::item { padding: 2px 4px; }");
-    for (const QString &name : ThemeLoader::availableThemes())
-        themeList->addItem(name);
-    connect(themeList, &QListWidget::itemClicked, this, [this, menu](QListWidgetItem *item){
-        const QString name = item->text();
-        menu->close();
-        QTimer::singleShot(0, this, [this, name]{
+    themeMenu->setStyleSheet("QMenu { max-height: 280px; } QMenu::item { padding: 2px 20px 2px 8px; }");
+    for (const QString &name : ThemeLoader::availableThemes()) {
+        themeMenu->addAction(name, this, [this, name]{
             m_config.ui.theme = name;
             ThemeLoader::apply(name);
             Config::save(m_config, Config::defaultPath());
         });
-    });
-    themeAction->setDefaultWidget(themeList);
-    themeMenu->addAction(themeAction);
+    }
 
     menu->addSeparator();
 
@@ -250,9 +237,8 @@ void MainWindow::setupToolbar()
     });
 
     connect(m_hamburger, &QToolButton::clicked, this, [this, menu]{
-        QSize sh = menu->sizeHint();
-        QPoint tr = m_hamburger->mapToGlobal(QPoint(m_hamburger->width(), 0));
-        menu->exec(QPoint(tr.x() - sh.width(), tr.y() - sh.height()));
+        QPoint pos = m_hamburger->mapToGlobal(QPoint(m_hamburger->width(), 0));
+        menu->popup(pos);
     });
     m_hamburger->setObjectName("hamburger");
     tb->hide();

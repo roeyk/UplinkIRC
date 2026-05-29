@@ -181,6 +181,9 @@ QMenu {
     color: {{text}};
     border: 1px solid {{border}};
 }
+QMenu::item {
+    padding: 4px 20px 4px 20px;
+}
 QMenu::item:selected {
     background-color: {{accent}};
 }
