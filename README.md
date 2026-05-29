@@ -92,8 +92,8 @@
 
 | Feature | Details |
 |---|---|
-| **55 built-in themes** | Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and many more. Switch live from the Preferences dialog — it stays open while you browse. |
-| **Persistent Preferences dialog** | Click ☰ to open a dialog that stays open. Change themes, toggle options, pick an icon — no more dismiss-on-click. |
+| **55 built-in themes** | Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and many more. Switch live from the Preferences dialog. |
+| **Hamburger menu** | Click ☰ for About, Documentation, Preferences, Open Config (opens `config.toml` in your editor), and Reload Config (applies changes without restarting). |
 | **Native Windows style** | On Windows, the `windows11` Qt style is used by default. No alien dark theme on fresh installs. Custom themes still available. |
 | **Per-widget font sizes** | Independent size control for chat, sidebar, nick list, topic bar, input, and typing indicator. **Preferences → Font Config...** |
 | **Panel persistence** | Dock sizes and positions saved on quit, restored on relaunch. |
@@ -116,7 +116,7 @@
 | Feature | Details |
 |---|---|
 | **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (randomly assigned per nick each session, stable across refreshes). |
-| **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from hamburger. |
+| **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from **☰ → Preferences**. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
 | **Right-click menu** | Message, Whois, Give Op, Give Voice, Version on any nick. |
 | **Unread dots** | `● #channel` in the sidebar when there are new messages. Clears on focus. |

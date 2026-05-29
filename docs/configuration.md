@@ -12,7 +12,11 @@ UplinkIRC is configured with a single TOML file. On first launch it is created a
 | macOS | `~/Library/Application Support/LinuxDojo/UplinkIRC/config.toml` |
 | Windows | `%APPDATA%\LinuxDojo\UplinkIRC\config.toml` |
 
-Open the file in any text editor, or click ☰ to open the **Preferences** dialog and use **Manage Servers...** to add, edit, and remove server connections from within the app. Changes take effect immediately and are saved automatically.
+You can edit the file directly, or use the in-app tools under ☰:
+
+- **Open Config** — opens `config.toml` in your system's default text editor
+- **Reload Config** — re-applies all settings from disk without restarting (useful after a manual edit)
+- **Preferences** — GUI for themes, font sizes, UI toggles, and server management; changes are saved automatically
 
 ---
 

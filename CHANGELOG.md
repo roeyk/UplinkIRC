@@ -25,6 +25,16 @@ Known issues remaining:
   - Hamburger menu briefly shrinks on theme switch (now less relevant — dialog stays open)
 -->
 
+## [0.7.8] — 2026-05-29
+
+### Changed
+- **Hamburger menu restored as dropdown** — ☰ now opens a small menu with:
+  **About UplinkIRC**, **Documentation**, **Preferences** (opens the settings dialog),
+  **Open Config** (opens `config.toml` in your system editor), and **Reload Config**
+  (re-applies all settings from disk without restarting).
+
+---
+
 ## [0.7.7] — 2026-05-29
 
 ### Added
