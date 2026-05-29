@@ -257,6 +257,16 @@ sasl_password = "yourpassword"
 
 UplinkIRC will negotiate the `sasl` CAP and authenticate during the connection handshake. The server buffer shows `SASL authentication successful` when it works. Use this instead of `nickserv_password` on networks that support it (Libera.Chat, OFTC, etc.).
 
+### How do link previews work?
+
+When a live message arrives containing an `http://` or `https://` URL, UplinkIRC fetches up to 16KB of the page in the background, extracts the `og:title` and `og:image` metadata, and appends a small preview card below the message. The card shows the page title, domain, and a thumbnail image (if `og:image` is available).
+
+Hovering over any URL in the chat shows the domain immediately in the status bar, then updates to the full page title when the fetch completes.
+
+Cards are fetched automatically — no clicks required. Preview fetches are lightweight: HTML is capped at 16KB, images at 200KB, and results are cached in memory for the session.
+
+**Note:** Preview cards appear only for messages received while that channel is active. If you switch away and back, the cards will not re-appear (this is a known limitation to be addressed in a future release).
+
 ### The emoji button doesn't do anything
 
 The emoji picker UI is not built yet. Toggle the emoji button in the hamburger menu to show or hide the button — the picker will be wired up in a future release.

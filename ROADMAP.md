@@ -74,12 +74,14 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Reconnect with exponential backoff — auto-reconnect on unexpected disconnect; 5s→10s→20s→40s→60s; deliberate quit disables it
 - [x] Sidebar right-click context menus — server items: Disconnect/Reconnect; channel items: Leave/Rejoin
 - [x] v0.3.0 released
+- [x] macOS release CI fixed — MACOSX_BUNDLE property set; .app bundle produced; macdeployqt succeeds; v0.3.0 re-tagged and all three platform builds pass
+- [x] Link preview — hover tooltip shows domain + page title; inline card with og:image thumbnail auto-appears below live URL messages
 
 ---
 
 ## In Progress
 
-- [ ] Release workflow — v0.3.0 CI running at session close; confirm binaries attached to release
+- [ ] Release workflow — v0.3.0 re-tagged and all CI passing; confirm all three platform binaries are attached to the GitHub release
 
 ---
 
@@ -103,7 +105,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [ ] Chathistory IRCv3 — replay from bouncer on join
 - [ ] Message search — search within current channel buffer
 - [ ] Logging — per-channel log files at `~/.config/LinuxDojo/UplinkIRC/logs/`
-- [ ] URL detection + click to open — detect URLs in messages, open in browser
+- [x] URL detection + click to open — http/https links in chat open in browser (v0.3.0)
+- [ ] Link preview persistence — cards currently lost when switching channels; store in channel message history to survive re-render
 - [ ] Desktop notifications — notify on mention/PM when window not focused
 - [ ] Emoji picker — emoji button in input bar opens picker panel
 - [ ] DCC file transfer — send/receive files

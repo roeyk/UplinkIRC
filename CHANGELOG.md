@@ -3,6 +3,60 @@
 ---
 
 <!--
+Session summary — 2026-05-29 macOS CI fix + link preview:
+
+What was built/fixed:
+  - macOS release CI was failing: MACOSX_BUNDLE not set in CMakeLists.txt,
+    so CMake produced a plain binary instead of a .app bundle. macdeployqt
+    requires a .app and errored out. Fixed by adding:
+      if(APPLE) set_target_properties(UplinkIRC PROPERTIES MACOSX_BUNDLE TRUE) endif()
+    v0.3.0 tag deleted, commit pushed, tag re-applied at new HEAD and pushed.
+    All three platform builds (Linux, Windows, macOS) now pass.
+
+  - LinkPreview class (src/ui/linkpreview.{h,cpp}) added:
+    * Fetches up to 16KB of HTML per URL (abort-on-cap)
+    * Extracts og:title (both attribute orders) + <title> fallback
+    * Extracts og:image URL and fetches thumbnail (200KB cap, 120x90px max)
+    * WhatsApp/2 User-Agent for better og:title hit rate on gated sites
+    * 50-entry in-memory cache; one in-flight page fetch at a time
+    * Concurrent image fetches (independent QNetworkReply per image)
+    * Crash fix: abort() can fire finished() synchronously; old code called
+      deleteLater() on m_reply after finished() had already nulled it.
+      Fixed by disconnect(this) before abort() + stable local reply pointer
+      in lambdas guarded by m_reply != reply check.
+
+  - Hover tooltip: event filter on chat viewport + anchorAt(); shows domain
+    name immediately on hover, updates to page title when fetch completes.
+    Status bar also mirrors the title. Wayland-safe: uses mapToGlobal from
+    mouse event position rather than QCursor::pos() in async callbacks.
+
+  - Inline preview card: auto-triggered for live Privmsg/Action/Notice
+    messages containing http/https URLs. Card appended to active channel
+    view when cardReady fires. Layout: bordered table with thumbnail (if
+    available) + bold title + domain. Colors drawn from Qt palette for
+    theme compatibility.
+
+Bugs fixed:
+  - macOS CI crash (MACOSX_BUNDLE missing)
+  - LinkPreview crash: null deref in fetch() when abort() fired finished()
+    synchronously
+
+Known issues left open:
+  - Link preview cards don't survive channel switching (re-render doesn't
+    re-fetch; would need to store cards in channel message history)
+  - Hamburger menu still shrinks on theme switch (root cause unknown)
+  - Server errors (482 etc.) still go to (server) buffer, not active channel
+  - AppImage packaging not done
+  - DCC Send File not implemented
+
+Next priorities:
+  - Route server errors (482 etc.) to active channel buffer
+  - Connection status indicator per server in sidebar
+  - AppImage packaging for Linux
+  - DCC Send File
+-->
+
+<!--
 Session summary — 2026-05-28 .gitignore cleanup:
 
 What was fixed:
@@ -601,6 +655,17 @@ Next priorities:
   - Connection status indicator per server in sidebar
   - AppImage packaging for Linux
 -->
+
+## [Unreleased] — 2026-05-29
+
+**macOS CI fix, link preview card with thumbnail**
+
+- macOS release build fixed — `MACOSX_BUNDLE` property now set in CMakeLists.txt so CMake produces a `.app` bundle; `macdeployqt` can now find and package it. v0.3.0 re-tagged.
+- Link preview on hover — hovering any `http/https` URL in chat shows the domain name in the status bar and a tooltip; the page title replaces it when the fetch completes
+- Inline preview card — URLs in live messages auto-fetch `og:title` + `og:image` and render a small card below the message: bold title, domain, and thumbnail image (capped at 120×90px, 200KB)
+- Fix: crash in `LinkPreview::fetch()` when `abort()` fired `finished()` synchronously, causing a null-pointer `deleteLater()` call
+
+---
 
 ## [0.3.0] — 2026-05-29
 

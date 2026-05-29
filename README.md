@@ -26,6 +26,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - Sidebar right-click menus — right-click a server to Disconnect/Reconnect; right-click a channel to Leave/Rejoin
 - 55 built-in themes, switchable from the hamburger menu (bottom-right of the user list panel)
 - Clickable URLs in chat and topic bar — http/https links in messages and topic open in the browser
+- Link preview cards — URLs in live messages auto-fetch og:title and og:image; a small card with title, domain, and thumbnail appears inline below the message; hovering any URL shows the page title in a tooltip
 - System tray: left-click toggles window; minimizes to tray on close
 - Unread dot indicator in sidebar (`● #channel`) — clears when channel is focused
 - Message buffer cap (2000 per channel) for stable long sessions
