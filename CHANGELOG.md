@@ -25,6 +25,40 @@ Known issues remaining:
   - Hamburger menu briefly shrinks on theme switch (now less relevant — dialog stays open)
 -->
 
+<!--
+Session summary — 2026-05-29  v0.7.8
+
+What was built / fixed:
+  - Hamburger menu restored as dropdown: ☰ now shows About UplinkIRC, Documentation,
+    Preferences (opens dialog), Open Config (opens config.toml in system editor),
+    Reload Config (re-applies all settings from disk without restarting). Order is
+    intentional: About / Docs / Preferences / sep / Open Config / Reload Config.
+  - About dialog: replaced wide banner.svg with the 96×96 dark app icon (app-icon-dark.svg).
+  - New slash commands: /j (join alias), /ping <nick>, /invite <nick> [#ch], /mode,
+    /op, /deop, /voice, /devoice, /ban, /unban, /clear. All added to /help output
+    and docs/commands.md.
+  - /ping round-trip time: CTCP PING reply is now intercepted in IrcClient; latency
+    computed from echoed timestamp; displayed as "Ping reply from nick: Nms" in the
+    active channel (not the server buffer). A new ctcpPingReply signal routes it through
+    SessionModel::onCtcpPingReply which posts to m_activeChannel.
+  - Tab completion for slash commands: handleTabComplete() now handles prefix.startsWith('/')
+    by matching against a static sorted command list. Suffix is always a space (not ": ").
+    Nick completion behavior is unchanged.
+
+Known issues left open:
+  - Server errors (482 etc.) in (server) buffer, not active channel
+  - Link preview cards lost on channel switch
+  - Link preview for title-only pages not verified
+  - DCC Send File not implemented
+  - AppImage packaging not done
+  - MODE prefix removal loses lower-ranked prefixes until next NAMES
+
+Next priorities:
+  - Route server errors to active channel buffer
+  - Link preview persistence across channel switches
+  - Desktop notifications on mention/PM
+-->
+
 ## [0.7.8] — 2026-05-29
 
 ### Added

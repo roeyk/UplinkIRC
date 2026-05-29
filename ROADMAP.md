@@ -23,12 +23,14 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Topic bar — shows topic text + channel modes, toggleable from hamburger
 - [x] Hamburger menu — About, Documentation (stub), App Icon picker, Theme picker, topic/nick/emoji toggles
 - [x] Persistent Preferences dialog — hamburger now opens a non-modal QDialog; stays open while browsing themes/toggles; replaces dismiss-on-click QMenu
-- [x] Input commands — /join, /part, /nick, /me, /msg, /quote, /raw, /quit
+- [x] Hamburger restored as dropdown — ☰ opens About UplinkIRC, Documentation, Preferences, Open Config, Reload Config
+- [x] Open Config / Reload Config — Open Config opens config.toml in system editor; Reload Config re-applies all settings from disk without restarting
+- [x] Input commands — /join, /j, /part, /nick, /me, /msg, /quote, /raw, /quit, /ping, /invite, /mode, /op, /deop, /voice, /devoice, /ban, /unban, /clear
 - [x] System tray — minimize to tray on close, left-click shows window, right-click menu (Show/Quit)
 - [x] Unread badge — tray icon gets red dot on unread messages, balloon notification when hidden
 - [x] Theme loader — 55 TOML themes, applies as QSS stylesheet, live switching from hamburger
 - [x] App icon — single uplink.svg via Qt6::Svg; icon picker removed (one icon)
-- [x] About dialog — horizontal Uplink IRC Client brand image, version, server info
+- [x] About dialog — shows dark app icon (96×96), version, and server info
 - [x] Signal ordering fix — config loads after MainWindow connects signals
 - [x] Version baked into binary — `version.h` generated from CMake `PROJECT_VERSION` at build time
 - [x] Full documentation — configuration.md, commands.md, faq.md, ircv3.md, keyboard-shortcuts.md (beginner-friendly, real examples)
@@ -37,6 +39,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] README beautification — badges, icon gallery, feature tables, annotated config, commands table, download buttons
 - [x] Global git hook — strips all AI attribution lines from every commit machine-wide
 - [x] Nick completion — Tab key completes nicks in input bar
+- [x] Slash command tab completion — Tab also completes /commands (e.g. /pi → /ping)
 - [x] Input history — Up/Down arrow cycles through sent messages
 - [x] Colored nicks — consistent hash color per nick in chat and nick list
 - [x] In-app Documentation panel — Hamburger → Documentation opens tabbed help viewer
