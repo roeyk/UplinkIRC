@@ -746,6 +746,65 @@ Next priorities:
   - AppImage packaging for Linux
 -->
 
+<!--
+Session summary — 2026-05-29  v0.7.0 — new dark banner + link preview fix
+
+What was built / fixed:
+  - New dark banner (uplink-top-banner-dark.svg) — replaces assets/banner.svg
+    (GitHub README) and resources/icons/banner.svg (About dialog via QRC).
+    Both locations updated in the same commit; QRC picks it up automatically.
+
+  - Link preview fixed for regular URLs (e.g. linuxdojo.org):
+    Root cause 1: Qt does not follow redirects by default.
+      Fix: QNetworkRequest::RedirectPolicyAttribute →
+           NoLessSafeRedirectPolicy on both page and image fetches.
+           This was the primary blocker for bare-domain and http→https URLs.
+    Root cause 2: WhatsApp/2 User-Agent blocked or returns minimal HTML
+      on many sites.
+      Fix: Switched to a standard Chrome/Linux UA with Accept + Accept-Language
+           headers so servers return full HTML.
+    Root cause 3: 16 KB HTML cap too small; some sites have large <head>
+      sections before <title>.
+      Fix: Raised to 32 KB; also updated title regex from [^<]{1,200} to
+           [\s\S]{1,300}? so multi-line <title> tags are matched, then
+           .simplified() collapses whitespace.
+    Timeout also raised from 4 s to 6 s.
+
+Bugs fixed:
+  - Link preview silently failing for sites with http→https redirects
+  - Link preview silently failing for sites that reject WhatsApp/2 UA
+  - Link preview missing for sites with late or multi-line <title> tags
+
+Regressions: none — og:title / og:image still extracted as before;
+  thumbnail path unchanged.
+
+Known issues remaining:
+  - Link preview cards lost when switching channels (not in message history)
+  - Server errors (482 etc.) still route to (server) buffer, not active channel
+  - DCC Send File stub not yet implemented
+  - Hamburger shrink on theme switch (root cause unknown)
+
+Next priorities:
+  - Route server errors to active channel buffer
+  - Link preview persistence across channel switches
+  - Desktop notifications on mention/PM
+  - AppImage packaging for Linux
+-->
+
+## [0.7.0] — 2026-05-29
+
+**New dark banner; link preview works for regular URLs**
+
+- New dark banner (`uplink-top-banner-dark.svg`) used in both the GitHub README and the About dialog
+- Fix: link preview now works for plain websites like `linuxdojo.org`
+  — Qt redirect policy set to `NoLessSafeRedirectPolicy` (was silently not following http→https or bare-domain redirects)
+  — User-Agent switched from `WhatsApp/2` to a standard Chrome UA with `Accept` headers (many sites rejected the old UA)
+  — HTML fetch buffer raised from 16 KB to 32 KB so late `<title>` tags are reached
+  — Title regex updated to match multi-line `<title>` content
+  — Timeout raised from 4 s to 6 s
+
+---
+
 ## [Unreleased] — 2026-05-29
 
 **Repository beautification**

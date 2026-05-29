@@ -345,3 +345,21 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 - Join **#uplink** on `irc.linuxdojo.org` — the UplinkIRC development channel
 - File bugs and feature requests on the GitHub Issues page
 - Browse the full documentation index at [docs/index.md](index.md)
+
+---
+
+## Link previews
+
+### Link previews don't appear for some URLs
+
+UplinkIRC fetches the page title and thumbnail for URLs posted in chat. If a preview isn't appearing:
+
+- **The site redirects** (e.g. `http://` → `https://`, or bare domain → `www.`) — fixed in v0.7.0; redirects are now followed automatically.
+- **The site has a large `<head>` section** — fixed in v0.7.0; the HTML buffer was raised from 16 KB to 32 KB.
+- **The site blocks bots** — some sites check the User-Agent and return minimal content. UplinkIRC now uses a standard browser UA.
+- **SSL certificate errors** — self-signed or expired certs will block the fetch silently. There is no per-site cert bypass yet.
+- **The page has no `<title>` tag** — no preview will appear; there is nothing to show.
+
+### Previews disappear when I switch channels
+
+Known limitation — preview cards are appended to the chat view but not stored in the message history, so they don't survive a channel switch. This is tracked for a future fix.

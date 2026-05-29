@@ -77,6 +77,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] v0.3.0 released
 - [x] macOS release CI fixed — MACOSX_BUNDLE property set; .app bundle produced; macdeployqt succeeds; v0.3.0 re-tagged and all three platform builds pass
 - [x] Link preview — hover tooltip shows domain + page title; inline card with og:image thumbnail auto-appears below live URL messages
+- [x] Link preview fixed for regular URLs — redirect following, proper UA, 32 KB buffer, multi-line title regex
+- [x] Dark banner — uplink-top-banner-dark.svg used in README and About dialog
 
 ---
 
