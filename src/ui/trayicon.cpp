@@ -106,11 +106,8 @@ void TrayIcon::onUnreadChanged(const QString &, const QString &, int)
 
 void TrayIcon::setUnread(bool hasUnread)
 {
-    setIcon(hasUnread ? withUnreadBadge(m_baseIcon) : m_baseIcon);
-    if (hasUnread && !m_window->isVisible())
-        showMessage("UplinkIRC",
-                    QString("%1 unread message(s)").arg(m_totalUnread),
-                    QSystemTrayIcon::Information, 3000);
+    Q_UNUSED(hasUnread)
+    setIcon(m_baseIcon);
 }
 
 void TrayIcon::updateTooltip()

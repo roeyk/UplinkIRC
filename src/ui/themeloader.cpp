@@ -175,6 +175,12 @@ QTreeWidget::item:selected {
 QTreeWidget::item:hover {
     background-color: {{border}};
 }
+QTreeWidget::branch {
+    background-color: {{sidebarBg}};
+    border: none;
+    image: none;
+    width: 0px;
+}
 
 /* ── Chat view ── */
 QTextEdit {
@@ -190,6 +196,9 @@ QListWidget {
     color: {{nicklistText}};
     border: none;
     outline: none;
+}
+QListWidget::item {
+    padding: 1px 4px;
 }
 QListWidget::item:selected {
     background-color: {{accent}};

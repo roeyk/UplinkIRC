@@ -77,14 +77,16 @@ Config Config::load(const QString &path)
             cfg.ui.coloredNicks          = (*ui)["colored_nicks"].value_or(true);
             cfg.ui.typingIndicator       = (*ui)["typing_indicator"].value_or(true);
             cfg.ui.fontFamily            = QString::fromStdString((*ui)["font_family"].value_or<std::string>("IBM Plex Mono"));
-            cfg.ui.fontSizes.toolbar     = (*ui)["font_toolbar"].value_or(10);
-            cfg.ui.fontSizes.sidebar     = (*ui)["font_sidebar"].value_or(10);
-            cfg.ui.fontSizes.chat        = (*ui)["font_chat"].value_or(10);
-            cfg.ui.fontSizes.nickList    = (*ui)["font_nick_list"].value_or(10);
-            cfg.ui.fontSizes.nickDock    = (*ui)["font_nick_dock"].value_or(10);
-            cfg.ui.fontSizes.topicBar    = (*ui)["font_topic_bar"].value_or(10);
-            cfg.ui.fontSizes.inputNick   = (*ui)["font_input_nick"].value_or(10);
-            cfg.ui.fontSizes.input       = (*ui)["font_input"].value_or(10);
+            cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10);
+            cfg.ui.fontSizes.serverHeader = (*ui)["font_server_header"].value_or(9);
+            cfg.ui.fontSizes.sidebar      = (*ui)["font_sidebar"].value_or(10);
+            cfg.ui.fontSizes.chat         = (*ui)["font_chat"].value_or(10);
+            cfg.ui.fontSizes.nickList     = (*ui)["font_nick_list"].value_or(10);
+            cfg.ui.fontSizes.nickDock     = (*ui)["font_nick_dock"].value_or(10);
+            cfg.ui.fontSizes.topicBar     = (*ui)["font_topic_bar"].value_or(10);
+            cfg.ui.fontSizes.inputNick    = (*ui)["font_input_nick"].value_or(10);
+            cfg.ui.fontSizes.input        = (*ui)["font_input"].value_or(10);
+            cfg.ui.fontSizes.typing       = (*ui)["font_typing"].value_or(9);
         }
 
         // [[server]]
@@ -149,14 +151,16 @@ void Config::save(const Config &cfg, const QString &path)
     out << "colored_nicks     = " << (cfg.ui.coloredNicks     ? "true" : "false") << "\n";
     out << "typing_indicator  = " << (cfg.ui.typingIndicator  ? "true" : "false") << "\n";
     out << "font_family       = \"" << cfg.ui.fontFamily << "\"\n";
-    out << "font_toolbar      = " << cfg.ui.fontSizes.toolbar   << "\n";
-    out << "font_sidebar      = " << cfg.ui.fontSizes.sidebar   << "\n";
-    out << "font_chat         = " << cfg.ui.fontSizes.chat      << "\n";
-    out << "font_nick_list    = " << cfg.ui.fontSizes.nickList  << "\n";
-    out << "font_nick_dock    = " << cfg.ui.fontSizes.nickDock  << "\n";
-    out << "font_topic_bar    = " << cfg.ui.fontSizes.topicBar  << "\n";
-    out << "font_input_nick   = " << cfg.ui.fontSizes.inputNick << "\n";
-    out << "font_input        = " << cfg.ui.fontSizes.input     << "\n\n";
+    out << "font_toolbar       = " << cfg.ui.fontSizes.toolbar      << "\n";
+    out << "font_server_header = " << cfg.ui.fontSizes.serverHeader << "\n";
+    out << "font_sidebar       = " << cfg.ui.fontSizes.sidebar      << "\n";
+    out << "font_chat          = " << cfg.ui.fontSizes.chat         << "\n";
+    out << "font_nick_list     = " << cfg.ui.fontSizes.nickList     << "\n";
+    out << "font_nick_dock     = " << cfg.ui.fontSizes.nickDock     << "\n";
+    out << "font_topic_bar     = " << cfg.ui.fontSizes.topicBar     << "\n";
+    out << "font_input_nick    = " << cfg.ui.fontSizes.inputNick    << "\n";
+    out << "font_input         = " << cfg.ui.fontSizes.input        << "\n";
+    out << "font_typing        = " << cfg.ui.fontSizes.typing       << "\n\n";
 
     for (const auto &s : cfg.servers) {
         out << "[[server]]\n";

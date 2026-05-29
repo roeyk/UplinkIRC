@@ -38,6 +38,8 @@
 #include <QFile>
 #include <QTextStream>
 #include <QProcess>
+#include <QPainter>
+#include <QPixmap>
 #include "version.h"
 
 // ---------------------------------------------------------------------------
@@ -254,7 +256,16 @@ void MainWindow::applyFontSizes()
         f.setBold(true);
         m_appLabel->setFont(f);
     }
-    if (m_sidebar)        m_sidebar->setFont(makeFont(fs.sidebar));
+    if (m_sidebar) {
+        m_sidebar->setFont(makeFont(fs.sidebar));
+        // Update server header items with their dedicated font size
+        for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
+            auto *srv = m_sidebar->topLevelItem(i);
+            QFont f = makeFont(fs.serverHeader);
+            f.setBold(true);
+            srv->setFont(0, f);
+        }
+    }
     if (m_chatView)       m_chatView->setFont(makeFont(fs.chat));
     if (m_nickList)       m_nickList->setFont(makeFont(fs.nickList));
     if (m_nickDock)       m_nickDock->setFont(makeFont(fs.nickDock));
@@ -264,19 +275,33 @@ void MainWindow::applyFontSizes()
     if (m_nickPrefix)   m_nickPrefix->setFont(makeFont(fs.inputNick));
     if (m_input)        m_input->setFont(makeFont(fs.input));
     if (m_typingLabel) {
-        QFont f = makeFont(qMax(fs.input - 1, 7));
+        QFont f = makeFont(fs.typing);
         f.setItalic(true);
         m_typingLabel->setFont(f);
     }
+}
+
+static QIcon makeConnectedIcon()
+{
+    QPixmap pm(10, 10);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setBrush(QColor("#a6adc8"));
+    p.setPen(Qt::NoPen);
+    p.drawEllipse(1, 1, 8, 8);
+    return QIcon(pm);
 }
 
 void MainWindow::setupSidebar()
 {
     m_sidebar = new QTreeWidget;
     m_sidebar->setHeaderHidden(true);
-    m_sidebar->setRootIsDecorated(true);
-    m_sidebar->setIndentation(12);
+    m_sidebar->setRootIsDecorated(false);
+    m_sidebar->setItemsExpandable(false);
+    m_sidebar->setIndentation(8);
     m_sidebar->setMinimumWidth(140);
+    m_sidebar->setObjectName("sidebar");
 
     auto *dock = new QDockWidget("Servers", this);
     dock->setWidget(m_sidebar);
@@ -554,20 +579,23 @@ void MainWindow::onServerAdded(const QString &host)
     for (const auto &sc : std::as_const(m_config.servers))
         if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
     auto *item = new QTreeWidgetItem(m_sidebar);
-    item->setText(0, label);
+    item->setText(0, label.toUpper());
     item->setData(0, Qt::UserRole,     host);
     item->setData(0, Qt::UserRole + 1, QString("(server)"));
     item->setExpanded(true);
+    // Section header style — not selectable
+    item->setFlags(Qt::ItemIsEnabled);
+    QFont f(m_config.ui.fontFamily, m_config.ui.fontSizes.serverHeader);
+    f.setBold(true);
+    item->setFont(0, f);
+    item->setForeground(0, QColor("#6c7086"));
 }
 
 void MainWindow::onServerConnected(const QString &host)
 {
     auto *item = findServerItem(host);
     if (item) {
-        QString label = host;
-        for (const auto &sc : std::as_const(m_config.servers))
-            if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
-        item->setText(0, label);
+        item->setIcon(0, makeConnectedIcon());
     }
     statusBar()->showMessage("Connected to " + host);
 }
@@ -576,10 +604,7 @@ void MainWindow::onServerDisconnected(const QString &host)
 {
     auto *item = findServerItem(host);
     if (item) {
-        QString label = host;
-        for (const auto &sc : std::as_const(m_config.servers))
-            if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
-        item->setText(0, label + " (disconnected)");
+        item->setIcon(0, QIcon());
     }
     statusBar()->showMessage("Disconnected from " + host);
 }
@@ -640,18 +665,7 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
         for (const auto &sc : std::as_const(m_config.servers))
             if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
     }
-    item->setText(0, count > 0 ? label + " (" + QString::number(count) + ")" : label);
-    if (count > 0) {
-        item->setForeground(0, QColor("#89b4fa"));
-        QFont f = item->font(0);
-        f.setBold(true);
-        item->setFont(0, f);
-    } else {
-        item->setForeground(0, QBrush());
-        QFont f = item->font(0);
-        f.setBold(false);
-        item->setFont(0, f);
-    }
+    item->setText(0, count > 0 ? "● " + label : label);
 }
 
 void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)

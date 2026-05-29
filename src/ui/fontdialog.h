@@ -17,6 +17,7 @@ public:
 private:
     QFontComboBox *m_familyBox;
     QSpinBox      *m_spToolbar;
+    QSpinBox      *m_spServerHeader;
     QSpinBox      *m_spSidebar;
     QSpinBox      *m_spChat;
     QSpinBox      *m_spNickList;
@@ -24,6 +25,7 @@ private:
     QSpinBox      *m_spTopicBar;
     QSpinBox      *m_spInputNick;
     QSpinBox      *m_spInput;
+    QSpinBox      *m_spTyping;
     QLabel        *m_preview;
 
     QSpinBox *makeSpinBox(int value);

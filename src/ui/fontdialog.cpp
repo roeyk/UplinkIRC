@@ -17,14 +17,16 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     m_familyBox = new QFontComboBox;
     m_familyBox->setCurrentFont(QFont(family));
 
-    m_spToolbar   = makeSpinBox(sizes.toolbar);
-    m_spSidebar   = makeSpinBox(sizes.sidebar);
-    m_spChat      = makeSpinBox(sizes.chat);
-    m_spNickList  = makeSpinBox(sizes.nickList);
-    m_spNickDock  = makeSpinBox(sizes.nickDock);
-    m_spTopicBar  = makeSpinBox(sizes.topicBar);
-    m_spInputNick = makeSpinBox(sizes.inputNick);
-    m_spInput     = makeSpinBox(sizes.input);
+    m_spToolbar      = makeSpinBox(sizes.toolbar);
+    m_spServerHeader = makeSpinBox(sizes.serverHeader);
+    m_spSidebar      = makeSpinBox(sizes.sidebar);
+    m_spChat         = makeSpinBox(sizes.chat);
+    m_spNickList     = makeSpinBox(sizes.nickList);
+    m_spNickDock     = makeSpinBox(sizes.nickDock);
+    m_spTopicBar     = makeSpinBox(sizes.topicBar);
+    m_spInputNick    = makeSpinBox(sizes.inputNick);
+    m_spInput        = makeSpinBox(sizes.input);
+    m_spTyping       = makeSpinBox(sizes.typing);
 
     m_preview = new QLabel("The quick brown fox — AaBbCc 0123");
     m_preview->setAlignment(Qt::AlignCenter);
@@ -43,15 +45,17 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     auto *form = new QFormLayout;
-    form->addRow("Family:",      m_familyBox);
-    form->addRow("Toolbar:",     m_spToolbar);
-    form->addRow("Sidebar:",     m_spSidebar);
-    form->addRow("Chat:",        m_spChat);
-    form->addRow("User List:",   m_spNickList);
-    form->addRow("Users Title:", m_spNickDock);
-    form->addRow("Topic Bar:",   m_spTopicBar);
-    form->addRow("Nick Label:",  m_spInputNick);
-    form->addRow("Input:",       m_spInput);
+    form->addRow("Family:",         m_familyBox);
+    form->addRow("Toolbar:",        m_spToolbar);
+    form->addRow("Network Name:",   m_spServerHeader);
+    form->addRow("Channels:",       m_spSidebar);
+    form->addRow("Chat:",           m_spChat);
+    form->addRow("User List:",      m_spNickList);
+    form->addRow("Users Title:",    m_spNickDock);
+    form->addRow("Topic Bar:",      m_spTopicBar);
+    form->addRow("Nick Label:",     m_spInputNick);
+    form->addRow("Input:",          m_spInput);
+    form->addRow("Typing Indicator:", m_spTyping);
 
     auto *layout = new QVBoxLayout(this);
     layout->addLayout(form);
@@ -71,7 +75,8 @@ QSpinBox *FontDialog::makeSpinBox(int value)
 QString   FontDialog::selectedFamily() const { return m_familyBox->currentFont().family(); }
 FontSizes FontDialog::selectedSizes()  const
 {
-    return { m_spToolbar->value(), m_spSidebar->value(), m_spChat->value(),
-             m_spNickList->value(), m_spNickDock->value(), m_spTopicBar->value(),
-             m_spInputNick->value(), m_spInput->value() };
+    return { m_spToolbar->value(), m_spServerHeader->value(), m_spSidebar->value(),
+             m_spChat->value(), m_spNickList->value(), m_spNickDock->value(),
+             m_spTopicBar->value(), m_spInputNick->value(), m_spInput->value(),
+             m_spTyping->value() };
 }
