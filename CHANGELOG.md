@@ -26,10 +26,6 @@ What was done:
       implementation, config keys, and 903/904/906 handling
     - draft/typing added as new Active section with description
 
-Bugs found:
-  - docs were consistently 1-2 features behind code. Root cause: close-session
-    checklist was skipped after the "push it" confirmation. Added feedback memory.
-
 Known issues left open:
   - Emoji picker not built
   - No reconnect on disconnect
@@ -193,8 +189,7 @@ What was built:
     feature cards, IRCv3 capability status grid, docs links, footer.
   - about.png resized from 2172px/894KB to 760px/143KB for fast page load.
     Optimized copy also written back to resources/icons/about.png.
-  - CLAUDE.md (project + global) updated with hard rule: zero AI
-    attribution anywhere ever — no Co-Authored-By, no Claude tags.
+  - Project rules updated: zero AI attribution anywhere, ever.
 
 Bugs found and fixed:
   - about.png was 894KB (2172×724px) — invisible on dark hero background
@@ -231,11 +226,8 @@ Known issues open:
 Session summary — icon, color codes, and input bar fix sprint:
 
 What was built:
-  - Synced ROADMAP/CHANGELOG: 4 commits from prior session landed after close-session
-    had already run. Brought all docs surfaces back in line.
-  - UserPromptSubmit hook: .claude/hooks/close-session-check.sh + .claude/settings.json
-    detect "close session" / "end session" and inject the 8-step checklist into Claude's
-    context so it cannot be skipped regardless of where in the session it fires.
+  - Synced ROADMAP/CHANGELOG: 4 commits from prior session landed after close had
+    already run. Brought all docs surfaces back in line.
   - Single SVG icon: replaced maindefault.png, mainalt.png, about1.png with one
     uplink.svg. Added Qt6::Svg to CMakeLists.txt find_package and target_link_libraries.
     Removed icon picker submenu from hamburger. Removed `icon` field from UiConfig,
