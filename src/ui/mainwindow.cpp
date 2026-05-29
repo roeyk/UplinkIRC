@@ -377,6 +377,10 @@ void MainWindow::setupSidebar()
 
     connect(m_sidebar, &QTreeWidget::currentItemChanged,
             this, [this](QTreeWidgetItem *, QTreeWidgetItem *){ onSidebarSelectionChanged(); });
+
+    m_sidebar->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_sidebar, &QTreeWidget::customContextMenuRequested,
+            this, &MainWindow::onSidebarContextMenu);
 }
 
 void MainWindow::setupNickDock()
@@ -1207,6 +1211,48 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
 
     setWindowTitle("UplinkIRC — " + channel + " @ " + host);
     updateTypingLabel();
+}
+
+void MainWindow::onSidebarContextMenu(const QPoint &pos)
+{
+    auto *item = m_sidebar->itemAt(pos);
+    if (!item) return;
+
+    const QString host    = item->data(0, Qt::UserRole).toString();
+    const QString channel = item->data(0, Qt::UserRole + 1).toString();
+
+    QMenu menu(this);
+
+    if (channel == "(server)") {
+        auto *sess = m_model->session(host);
+        if (sess && sess->connected) {
+            menu.addAction("Disconnect", this, [this, host]{
+                if (auto *cl = m_model->clientFor(host))
+                    cl->quit();
+            });
+        } else {
+            menu.addAction("Reconnect", this, [this, host]{
+                auto *cl = m_model->clientFor(host);
+                if (!cl) return;
+                for (const auto &sc : std::as_const(m_config.servers)) {
+                    if (sc.host == host) { cl->connectToServer(sc); break; }
+                }
+            });
+        }
+    } else if (channel.startsWith('#') || channel.startsWith('&')) {
+        menu.addAction("Rejoin", this, [this, host, channel]{
+            m_model->sendPart(host, channel);
+            QTimer::singleShot(500, this, [this, host, channel]{
+                m_model->sendJoin(host, channel);
+            });
+        });
+        menu.addAction("Leave", this, [this, host, channel]{
+            m_model->sendPart(host, channel);
+        });
+    }
+
+    if (!menu.actions().isEmpty())
+        menu.exec(m_sidebar->viewport()->mapToGlobal(pos));
 }
 
 void MainWindow::onNickListContextMenu(const QPoint &pos)

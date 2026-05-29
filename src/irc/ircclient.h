@@ -4,6 +4,7 @@
 #include <QSslSocket>
 #include <QHash>
 #include <QSet>
+#include <QTimer>
 
 struct ServerConfig;
 
@@ -70,11 +71,13 @@ private slots:
     void onReadyRead();
     void onSslErrors(const QList<QSslError> &errors);
     void onErrorOccurred(QAbstractSocket::SocketError error);
+    void doReconnect();
 
 private:
     void processLine(const QString &line);
     void handleCap   (const QStringList &params, const QString &trailing);
     void handleNumeric(const QString &cmd, const QStringList &params, const QString &trailing);
+    void scheduleReconnect();
 
     QSslSocket  *m_socket;
     QString      m_host;
@@ -89,6 +92,10 @@ private:
     bool         m_saslPending{false};
     QString      m_nickservPassword;
     QString      m_buffer;
+
+    QTimer      *m_reconnectTimer{nullptr};
+    bool         m_intentionalDisconnect{false};
+    int          m_reconnectDelay{5};  // seconds, doubles on each attempt up to 60
 
     QSet<QString>              m_requestedCaps;
     QHash<QString, QStringList> m_namesBuffer; // channel -> partial nick list

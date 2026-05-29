@@ -4,6 +4,7 @@
 #include "version.h"
 
 #include <QSslSocket>
+#include <QTimer>
 
 IrcClient::IrcClient(QObject *parent)
     : QObject(parent)
@@ -14,12 +15,20 @@ IrcClient::IrcClient(QObject *parent)
     connect(m_socket, &QSslSocket::readyRead,       this, &IrcClient::onReadyRead);
     connect(m_socket, &QSslSocket::sslErrors,       this, &IrcClient::onSslErrors);
     connect(m_socket, &QAbstractSocket::errorOccurred, this, &IrcClient::onErrorOccurred);
+
+    m_reconnectTimer = new QTimer(this);
+    m_reconnectTimer->setSingleShot(true);
+    connect(m_reconnectTimer, &QTimer::timeout, this, &IrcClient::doReconnect);
 }
 
 IrcClient::~IrcClient() = default;
 
 void IrcClient::connectToServer(const ServerConfig &cfg)
 {
+    m_reconnectTimer->stop();
+    m_intentionalDisconnect = false;
+    m_reconnectDelay = 5;
+
     m_host     = cfg.host;
     m_port     = cfg.port;
     m_ssl      = cfg.ssl;
@@ -45,6 +54,8 @@ bool IrcClient::isConnected() const
 
 void IrcClient::quit(const QString &reason)
 {
+    m_intentionalDisconnect = true;
+    m_reconnectTimer->stop();
     sendRaw("QUIT :" + reason);
     m_socket->disconnectFromHost();
 }
@@ -93,6 +104,9 @@ void IrcClient::sendRaw(const QString &line)
 
 void IrcClient::onConnected()
 {
+    m_reconnectTimer->stop();
+    m_reconnectDelay = 5;
+
     // CAP negotiation before registration
     sendRaw("CAP LS 302");
 
@@ -109,6 +123,8 @@ void IrcClient::onDisconnected()
     m_requestedCaps.clear();
     m_saslPending = false;
     emit disconnected(m_host);
+    scheduleReconnect();
+    m_intentionalDisconnect = false;
 }
 
 void IrcClient::onReadyRead()
@@ -135,6 +151,25 @@ void IrcClient::onErrorOccurred(QAbstractSocket::SocketError)
 {
     emit socketError(m_host, m_socket->errorString());
     emit disconnected(m_host);
+    scheduleReconnect();
+}
+
+void IrcClient::scheduleReconnect()
+{
+    if (m_intentionalDisconnect || m_reconnectTimer->isActive() || m_host.isEmpty()) return;
+    emit serverMessage(m_host, QString("Reconnecting in %1s…").arg(m_reconnectDelay));
+    m_reconnectTimer->start(m_reconnectDelay * 1000);
+    m_reconnectDelay = qMin(m_reconnectDelay * 2, 60);
+}
+
+void IrcClient::doReconnect()
+{
+    emit serverMessage(m_host, "Reconnecting…");
+    m_saslPending = false;
+    if (m_ssl)
+        m_socket->connectToHostEncrypted(m_host, m_port);
+    else
+        m_socket->connectToHost(m_host, m_port);
 }
 
 // ---------------------------------------------------------------------------
