@@ -191,6 +191,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::namesReceived,   this, &SessionModel::onNamesReceived);
     connect(cl, &IrcClient::whoEntryReceived,this, &SessionModel::onWhoEntry);
     connect(cl, &IrcClient::serverMessage,   this, &SessionModel::onServerMessage);
+    connect(cl, &IrcClient::ctcpPingReply,   this, &SessionModel::onCtcpPingReply);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
     connect(cl, &IrcClient::typingReceived,  this, &SessionModel::typingReceived);
 
@@ -524,6 +525,16 @@ void SessionModel::onWhoEntry(const QString &host, const QString &channel,
 void SessionModel::onServerMessage(const QString &host, const QString &text)
 {
     postMessage(host, "(server)", Message::make(MessageType::Server, "", text));
+}
+
+void SessionModel::onCtcpPingReply(const QString &host, const QString &nick, qint64 rttMs)
+{
+    const QString text = rttMs >= 0
+        ? QString("Ping reply from %1: %2ms").arg(nick).arg(rttMs)
+        : QString("Ping reply from %1").arg(nick);
+    const QString target = (host == m_activeHost && !m_activeChannel.isEmpty())
+        ? m_activeChannel : "(server)";
+    postMessage(host, target, Message::make(MessageType::Server, "", text));
 }
 
 void SessionModel::onSelfNickChanged(const QString &host, const QString &nick)

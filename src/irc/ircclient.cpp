@@ -297,10 +297,7 @@ void IrcClient::processLine(const QString &line)
                 bool ok = false;
                 const qint64 sent = ctcp.section(' ', 1).toLongLong(&ok);
                 const qint64 rtt  = QDateTime::currentMSecsSinceEpoch() - sent;
-                const QString fmt = ok
-                    ? QString("Ping reply from %1: %2ms").arg(msg.nick).arg(rtt)
-                    : QString("Ping reply from %1").arg(msg.nick);
-                emit serverMessage(m_host, fmt);
+                emit ctcpPingReply(m_host, msg.nick, ok ? rtt : -1);
             } else {
                 emit serverMessage(m_host, "CTCP reply from " + msg.nick + ": " + ctcp);
             }
