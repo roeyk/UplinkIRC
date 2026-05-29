@@ -23,6 +23,44 @@ void SessionModel::loadConfig(const Config &cfg)
     }
 }
 
+void SessionModel::addServer(const ServerConfig &sc)
+{
+    m_config.servers.append(sc);
+
+    ServerSession sess;
+    sess.name = sc.name;
+    sess.host = sc.host;
+    sess.nick = sc.nick;
+    m_sessions.append(sess);
+    emit serverAdded(sc.host);
+
+    auto *client = new IrcClient(this);
+    attachClient(client, sc);
+    m_clients.append(client);
+    client->connectToServer(sc);
+}
+
+void SessionModel::removeServer(const QString &host)
+{
+    for (int i = 0; i < m_clients.size(); ++i) {
+        if (m_clients[i]->host() == host) {
+            m_clients[i]->quit("Removed");
+            m_clients[i]->deleteLater();
+            m_clients.removeAt(i);
+            break;
+        }
+    }
+    m_sessions.removeIf([&](const ServerSession &s){ return s.host == host; });
+    m_config.servers.removeIf([&](const ServerConfig &s){ return s.host == host; });
+    emit serverDisconnected(host);
+}
+
+void SessionModel::updateServer(const QString &oldHost, const ServerConfig &sc)
+{
+    removeServer(oldHost);
+    addServer(sc);
+}
+
 ServerSession *SessionModel::session(const QString &host)
 {
     for (auto &s : m_sessions)

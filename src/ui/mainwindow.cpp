@@ -4,6 +4,8 @@
 #include "ui/aboutdialog.h"
 #include "ui/docsdialog.h"
 #include "ui/fontdialog.h"
+#include "ui/serverdialog.h"
+#include "ui/manageserversdialog.h"
 #include "ui/appicons.h"
 #include "ui/themeloader.h"
 #include "config/config.h"
@@ -128,6 +130,41 @@ void MainWindow::setupToolbar()
     connect(m_hamburger, &QWidget::customContextMenuRequested, this, [](const QPoint&){});
 
     auto *menu = new QMenu(m_hamburger);
+
+    // Manage servers
+    auto *manageAct = menu->addAction("Manage Servers...");
+    connect(manageAct, &QAction::triggered, this, [this]{
+        ManageServersDialog dlg(m_config.servers, this);
+        if (dlg.exec() != QDialog::Accepted) return;
+
+        const QList<ServerConfig> updated = dlg.servers();
+
+        // Disconnect servers that were removed
+        for (const ServerConfig &old : m_config.servers) {
+            const bool stillPresent = std::any_of(updated.begin(), updated.end(),
+                [&](const ServerConfig &s){ return s.host == old.host; });
+            if (!stillPresent)
+                m_model->removeServer(old.host);
+        }
+
+        // Connect new servers and reconnect edited ones
+        for (const ServerConfig &sc : updated) {
+            const ServerConfig *existing = nullptr;
+            for (const ServerConfig &old : m_config.servers)
+                if (old.host == sc.host) { existing = &old; break; }
+
+            if (!existing) {
+                m_model->addServer(sc);
+            } else if (*existing != sc) {
+                m_model->updateServer(existing->host, sc);
+            }
+        }
+
+        m_config.servers = updated;
+        Config::save(m_config, Config::defaultPath());
+    });
+
+    menu->addSeparator();
 
     // About
     auto *aboutAct = menu->addAction("About UplinkIRC");

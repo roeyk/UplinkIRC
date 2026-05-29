@@ -40,6 +40,10 @@ qt_add_executable(UplinkIRC
     src/ui/docsdialog.h
     src/ui/fontdialog.cpp
     src/ui/fontdialog.h
+    src/ui/serverdialog.cpp
+    src/ui/serverdialog.h
+    src/ui/manageserversdialog.cpp
+    src/ui/manageserversdialog.h
     src/ui/appicons.h
     src/ui/themeloader.cpp
     src/ui/themeloader.h

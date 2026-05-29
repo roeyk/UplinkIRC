@@ -22,6 +22,15 @@ struct ServerConfig {
     QString            saslPassword;
     QString            nickservPassword; // NickServ IDENTIFY on connect
     QList<ChannelConfig> channels;
+
+    bool operator==(const ServerConfig &o) const {
+        return host == o.host && port == o.port && ssl == o.ssl
+            && nick == o.nick && user == o.user && realname == o.realname
+            && name == o.name && password == o.password
+            && saslUser == o.saslUser && saslPassword == o.saslPassword
+            && nickservPassword == o.nickservPassword;
+    }
+    bool operator!=(const ServerConfig &o) const { return !(*this == o); }
 };
 
 struct FontSizes {

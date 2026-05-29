@@ -16,6 +16,9 @@ public:
 
     // Create a client for each server in config and start connecting
     void loadConfig(const Config &cfg);
+    void addServer(const ServerConfig &sc);
+    void removeServer(const QString &host);
+    void updateServer(const QString &oldHost, const ServerConfig &sc);
 
     // Read access for UI
     const QList<ServerSession> &sessions() const { return m_sessions; }
