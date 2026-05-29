@@ -8,6 +8,7 @@
 #include <QPair>
 #include "model/sessionmodel.h"
 #include "config/config.h"
+#include "ui/themeloader.h"
 
 class TrayIcon;
 class DocsDialog;
@@ -141,6 +142,7 @@ private:
     QPoint        m_hoverGlobalPos;
     QHash<QString, QPair<QString,QString>> m_previewChannels; // url → {host, channel}
     Config        m_config;
+    Theme         m_theme;
 
     bool m_showNickPrefix{true};
     bool m_showEmojiBtn{false};

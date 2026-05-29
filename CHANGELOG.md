@@ -2,6 +2,25 @@
 
 ---
 
+## v0.7.2 — 2026-05-29
+
+### Fixed
+- **Windows: links invisible on dark themes** — `QTextBrowser` link color now
+  set from the theme accent via `setDefaultStyleSheet`; previously links
+  inherited the document default (black) regardless of theme.
+- **Windows: nicks black when Colored Nicks is off** — replaced `palette(text)`
+  (QSS-only syntax) with the theme's actual text color in inline HTML; on
+  Windows `palette(text)` was falling back to black inside the HTML renderer.
+- **Windows: `/sysinfo` returning Unknown for CPU/MEM/GPU/Uptime** — added
+  Windows implementations: CPU from registry, MEM via `GlobalMemoryStatusEx`,
+  GPU via PowerShell `Get-CimInstance`, Uptime via `GetTickCount64`.
+- **Font Config dialog: fonts squashed on Windows** — `QFontComboBox` now has a
+  minimum height so font names render at a readable size.
+- **Font Config dialog: visual clutter** — size controls reorganized into a
+  two-column grid (5 rows instead of 10); all options preserved.
+
+---
+
 <!--
 Session summary — 2026-05-29  v0.7.1 — Bug fixes: /nick label, image preview, typing indicator layout
 

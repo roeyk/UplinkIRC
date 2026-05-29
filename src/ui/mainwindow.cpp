@@ -55,6 +55,9 @@
 #include <QMouseEvent>
 #include <QTextDocument>
 #include <QTextCursor>
+#if defined(Q_OS_WIN)
+#  include <windows.h>
+#endif
 
 // ---------------------------------------------------------------------------
 // Nick color — consistent hash-based color per nick
@@ -91,6 +94,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     resize(1100, 700);
 
     ThemeLoader::apply(m_config.ui.theme);
+    m_theme = ThemeLoader::load(m_config.ui.theme);
     setDockOptions(QMainWindow::AllowNestedDocks | QMainWindow::AllowTabbedDocks);
 
     setupToolbar();
@@ -227,6 +231,10 @@ void MainWindow::setupToolbar()
     connect(themeList, &QListWidget::itemClicked, this, [this, themeMenu](QListWidgetItem *item){
         m_config.ui.theme = item->text();
         ThemeLoader::apply(item->text());
+        m_theme = ThemeLoader::load(item->text());
+        if (m_chatView && m_theme.valid)
+            m_chatView->document()->setDefaultStyleSheet(
+                QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
         Config::save(m_config, Config::defaultPath());
         themeMenu->close();
     });
@@ -557,6 +565,9 @@ void MainWindow::setupChatArea()
     m_chatView->setReadOnly(true);
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
     m_chatView->setOpenLinks(false);
+    if (m_theme.valid)
+        m_chatView->document()->setDefaultStyleSheet(
+            QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
     connect(m_chatView, &QTextBrowser::anchorClicked,
             this, [](const QUrl &url){ QDesktopServices::openUrl(url); });
 
@@ -1303,6 +1314,12 @@ static QString sysinfoCPU()
     p.waitForFinished(2000);
     const QString model = QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed();
     return model.isEmpty() ? "Unknown" : model;
+#elif defined(Q_OS_WIN)
+    QSettings reg(
+        "HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+        QSettings::NativeFormat);
+    const QString name = reg.value("ProcessorNameString").toString().trimmed();
+    return name.isEmpty() ? QSysInfo::currentCpuArchitecture() : name;
 #else
     return QSysInfo::currentCpuArchitecture();
 #endif
@@ -1330,6 +1347,12 @@ static QString sysinfoMEM()
     const quint64 total = QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed().toULongLong();
     if (total > 0)
         return QString("%1 GB").arg((total + 512ULL*1024*1024) / (1024ULL*1024*1024));
+    return "Unknown";
+#elif defined(Q_OS_WIN)
+    MEMORYSTATUSEX ms{};
+    ms.dwLength = sizeof(ms);
+    if (GlobalMemoryStatusEx(&ms))
+        return QString("%1 GB").arg((ms.ullTotalPhys + 512ULL*1024*1024) / (1024ULL*1024*1024));
     return "Unknown";
 #else
     return "Unknown";
@@ -1376,6 +1399,15 @@ static QString sysinfoGPU()
                     return line.mid(c2 + 1).section('(', 0, 0).trimmed();
             }
         }
+    }
+    return "Unknown";
+#elif defined(Q_OS_WIN)
+    QProcess p;
+    p.start("powershell", {"-NoProfile", "-Command",
+        "(Get-CimInstance Win32_VideoController | Select-Object -First 1).Name"});
+    if (p.waitForFinished(5000)) {
+        const QString out = QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed();
+        if (!out.isEmpty()) return out;
     }
     return "Unknown";
 #else
@@ -1426,6 +1458,18 @@ static QString sysinfoUptime()
         return parts.join(' ') + " ago";
     }
     return "Unknown";
+#elif defined(Q_OS_WIN)
+    const quint64 s = GetTickCount64() / 1000;
+    const quint64 days    = s / 86400;
+    const quint64 hours   = (s % 86400) / 3600;
+    const quint64 minutes = (s % 3600) / 60;
+    const quint64 seconds = s % 60;
+    QStringList parts;
+    if (days > 0)    parts << QString("%1 day%2").arg(days).arg(days != 1 ? "s" : "");
+    if (hours > 0)   parts << QString("%1 hour%2").arg(hours).arg(hours != 1 ? "s" : "");
+    if (minutes > 0) parts << QString("%1 minute%2").arg(minutes).arg(minutes != 1 ? "s" : "");
+    parts << QString("%1 second%2").arg(seconds).arg(seconds != 1 ? "s" : "");
+    return parts.join(' ') + " ago";
 #else
     return "Unknown";
 #endif
@@ -1921,7 +1965,7 @@ QString MainWindow::formatMessage(const Message &msg) const
     case MessageType::Privmsg: {
         const QString color = m_config.ui.coloredNicks
             ? nickColor(msg.nick).name()
-            : QString("palette(text)");
+            : (m_theme.valid ? m_theme.text : QStringLiteral("#cccccc"));
         html = QString("<span style='color:gray'>%1</span> "
                        "<b style='color:%2'>&lt;%3&gt;</b> %4")
             .arg(ts, color,
