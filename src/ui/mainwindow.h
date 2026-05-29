@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QHash>
 #include <QSet>
+#include <QPair>
 #include "model/sessionmodel.h"
 #include "config/config.h"
 
@@ -71,7 +72,7 @@ private:
     void refreshChatView(const QString &host, const QString &channel);
     void refreshNickList(const QString &host, const QString &channel);
     void refreshTopicBar(const QString &host, const QString &channel);
-    void appendMessage  (const Message &msg);
+    void appendMessage  (const Message &msg, bool autoPreview = false);
     void applyFontSizes();
     void updateTypingLabel();
 
@@ -125,6 +126,8 @@ private:
     TrayIcon     *m_tray{nullptr};
     LinkPreview  *m_linkPreview{nullptr};
     QString       m_hoveredUrl;
+    QPoint        m_hoverGlobalPos;
+    QHash<QString, QPair<QString,QString>> m_previewChannels; // url → {host, channel}
     Config        m_config;
 
     bool m_showNickPrefix{true};

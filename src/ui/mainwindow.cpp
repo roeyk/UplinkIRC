@@ -48,6 +48,9 @@
 #include <QRegularExpression>
 #include <QToolTip>
 #include <QCursor>
+#include <QMouseEvent>
+#include <QTextDocument>
+#include <QTextCursor>
 
 // ---------------------------------------------------------------------------
 // Nick color — consistent hash-based color per nick
@@ -478,20 +481,68 @@ void MainWindow::setupChatArea()
 
     m_linkPreview = new LinkPreview(this);
 
-    connect(m_chatView, &QTextBrowser::highlighted, this, [this](const QUrl &url){
-        if (url.isEmpty()) {
-            m_hoveredUrl.clear();
-            QToolTip::hideText();
-            return;
-        }
-        m_hoveredUrl = url.toString();
-        m_linkPreview->fetch(url);
-    });
+    m_chatView->viewport()->setMouseTracking(true);
+    m_chatView->viewport()->installEventFilter(this);
 
     connect(m_linkPreview, &LinkPreview::titleReady, this, [this](const QUrl &url, const QString &title){
         if (url.toString() != m_hoveredUrl) return;
         const QString display = title.length() > 80 ? title.left(79) + QChar(0x2026) : title;
-        QToolTip::showText(QCursor::pos(), display, m_chatView);
+        statusBar()->showMessage(display);
+        QToolTip::showText(m_hoverGlobalPos, display, m_chatView->viewport());
+    });
+
+    connect(m_linkPreview, &LinkPreview::cardReady, this,
+            [this](const QUrl &pageUrl, const QString &title, const QPixmap &thumbnail){
+        const QString urlStr = pageUrl.toString();
+        auto it = m_previewChannels.find(urlStr);
+        if (it == m_previewChannels.end()) return;
+        const QString host    = it->first;
+        const QString channel = it->second;
+        m_previewChannels.erase(it);
+
+        if (host != m_model->activeHost() ||
+            channel.toLower() != m_model->activeChannel().toLower())
+            return;
+
+        // Register thumbnail as a document resource
+        QString imgHtml;
+        if (!thumbnail.isNull()) {
+            const QString resKey = "preview://" + QString::number(qHash(urlStr));
+            m_chatView->document()->addResource(
+                QTextDocument::ImageResource, QUrl(resKey), QVariant(thumbnail));
+            imgHtml = QString("<td><img src=\"%1\" width=\"%2\" height=\"%3\"/></td>")
+                .arg(resKey).arg(thumbnail.width()).arg(thumbnail.height());
+        }
+
+        const QColor bg     = m_chatView->palette().color(QPalette::AlternateBase);
+        const QColor border = m_chatView->palette().color(QPalette::Mid);
+        const QColor fg     = m_chatView->palette().color(QPalette::Text);
+        const QColor sub    = m_chatView->palette().color(QPalette::PlaceholderText);
+
+        const QString titleEsc  = title.toHtmlEscaped().left(120);
+        const QString domainEsc = pageUrl.host().toHtmlEscaped();
+
+        const QString cardHtml = QString(
+            "<table cellpadding=\"5\" cellspacing=\"0\" "
+            "style=\"margin:1px 0 3px 20px;"
+            "border-left:3px solid %1;"
+            "background-color:%2\">"
+            "<tr>%3"
+            "<td valign=\"top\"%4>"
+            "<span style=\"color:%5;font-weight:bold\">%6</span><br/>"
+            "<span style=\"color:%7;font-size:8pt\">%8</span>"
+            "</td></tr></table>")
+            .arg(border.name(), bg.name(), imgHtml,
+                 imgHtml.isEmpty() ? "" : " style=\"padding-left:6px\"",
+                 fg.name(), titleEsc, sub.name(), domainEsc);
+
+        QScrollBar *sb = m_chatView->verticalScrollBar();
+        const bool atBottom = sb->value() >= sb->maximum() - 4;
+
+        m_chatView->append(cardHtml);
+
+        if (atBottom)
+            sb->setValue(sb->maximum());
     });
 
     vbox->addWidget(m_chatView, 1);
@@ -588,6 +639,33 @@ void MainWindow::connectModel()
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+    if (obj == m_chatView->viewport()) {
+        if (event->type() == QEvent::MouseMove) {
+            auto *me = static_cast<QMouseEvent *>(event);
+            const QString anchor = m_chatView->anchorAt(me->position().toPoint());
+            if (anchor != m_hoveredUrl) {
+                m_hoveredUrl = anchor;
+                if (anchor.isEmpty()) {
+                    QToolTip::hideText();
+                    statusBar()->clearMessage();
+                } else {
+                    m_hoverGlobalPos = m_chatView->viewport()->mapToGlobal(
+                        me->position().toPoint());
+                    const QUrl url(anchor);
+                    statusBar()->showMessage(url.host());
+                    QToolTip::showText(m_hoverGlobalPos, url.host(),
+                                       m_chatView->viewport());
+                    m_linkPreview->fetch(url);
+                }
+            }
+        } else if (event->type() == QEvent::Leave) {
+            m_hoveredUrl.clear();
+            QToolTip::hideText();
+            statusBar()->clearMessage();
+        }
+        return false;
+    }
+
     if (obj != m_input || event->type() != QEvent::KeyPress)
         return QMainWindow::eventFilter(obj, event);
 
@@ -772,7 +850,7 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
     if (host == m_model->activeHost() &&
         channel.toLower() == m_model->activeChannel().toLower())
     {
-        appendMessage(msg);
+        appendMessage(msg, true);
     }
 }
 
@@ -1400,9 +1478,28 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
     }
 }
 
-void MainWindow::appendMessage(const Message &msg)
+void MainWindow::appendMessage(const Message &msg, bool autoPreview)
 {
     m_chatView->append(formatMessage(msg));
+
+    if (autoPreview &&
+        (msg.type == MessageType::Privmsg ||
+         msg.type == MessageType::Action  ||
+         msg.type == MessageType::Notice)) {
+        static const QRegularExpression urlRe(
+            R"(https?://[^\s<>"]+)",
+            QRegularExpression::CaseInsensitiveOption);
+        auto it = urlRe.globalMatch(msg.text);
+        while (it.hasNext()) {
+            const QString urlStr = it.next().captured(0);
+            if (!m_previewChannels.contains(urlStr)) {
+                m_previewChannels.insert(urlStr,
+                    {m_model->activeHost(), m_model->activeChannel()});
+                m_linkPreview->fetch(QUrl(urlStr));
+            }
+        }
+    }
+
     auto *sb = m_chatView->verticalScrollBar();
     sb->setValue(sb->maximum());
 }

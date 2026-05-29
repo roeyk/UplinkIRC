@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QHash>
 #include <QUrl>
+#include <QPixmap>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -16,13 +17,21 @@ public:
 
 signals:
     void titleReady(const QUrl &url, const QString &title);
+    void cardReady(const QUrl &pageUrl, const QString &title, const QPixmap &thumbnail);
 
 private:
-    QString extractTitle(const QByteArray &data) const;
+    struct CachedCard {
+        QString title;
+        QPixmap thumbnail;
+    };
 
-    QNetworkAccessManager *m_nam;
-    QNetworkReply         *m_reply{nullptr};
-    QUrl                   m_pendingUrl;
-    QByteArray             m_buf;
-    QHash<QString, QString> m_cache;
+    void fetchImage(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl);
+    QString extractTitle(const QByteArray &data) const;
+    QUrl    extractImageUrl(const QByteArray &data) const;
+
+    QNetworkAccessManager   *m_nam;
+    QNetworkReply           *m_reply{nullptr};
+    QUrl                     m_pendingUrl;
+    QByteArray               m_buf;
+    QHash<QString, CachedCard> m_cache;
 };

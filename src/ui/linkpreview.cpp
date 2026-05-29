@@ -4,10 +4,12 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
+#include <memory>
 
-static constexpr int kMaxBytes  = 16384;
-static constexpr int kMaxCache  = 50;
-static constexpr int kTimeoutMs = 4000;
+static constexpr int kMaxBytes    = 16384;
+static constexpr int kMaxImgBytes = 204800;  // 200 KB
+static constexpr int kMaxCache    = 50;
+static constexpr int kTimeoutMs   = 4000;
 
 LinkPreview::LinkPreview(QObject *parent)
     : QObject(parent)
@@ -19,11 +21,14 @@ void LinkPreview::fetch(const QUrl &url)
     const QString key = url.toString();
 
     if (m_cache.contains(key)) {
-        emit titleReady(url, m_cache.value(key));
+        const CachedCard &c = m_cache[key];
+        emit titleReady(url, c.title);
+        emit cardReady(url, c.title, c.thumbnail);
         return;
     }
 
     if (m_reply) {
+        m_reply->disconnect(this);
         m_reply->abort();
         m_reply->deleteLater();
         m_reply = nullptr;
@@ -37,29 +42,72 @@ void LinkPreview::fetch(const QUrl &url)
     req.setTransferTimeout(kTimeoutMs);
 
     m_reply = m_nam->get(req);
+    QNetworkReply *reply = m_reply;
 
-    connect(m_reply, &QNetworkReply::readyRead, this, [this]{
-        const int remaining = kMaxBytes - m_buf.size();
-        if (remaining <= 0) { m_reply->abort(); return; }
-        m_buf.append(m_reply->read(remaining));
-        if (m_buf.size() >= kMaxBytes)
-            m_reply->abort();
+    connect(reply, &QNetworkReply::readyRead, this, [this, reply]{
+        if (m_reply != reply) return;
+        const int rem = kMaxBytes - m_buf.size();
+        if (rem <= 0) { reply->abort(); return; }
+        m_buf.append(reply->read(rem));
+        if (m_buf.size() >= kMaxBytes) reply->abort();
     });
 
-    connect(m_reply, &QNetworkReply::finished, this, [this]{
-        const QUrl url   = m_pendingUrl;
-        const QString title = extractTitle(m_buf);
-        m_reply->deleteLater();
+    connect(reply, &QNetworkReply::finished, this, [this, reply]{
+        if (m_reply != reply) return;
+        const QUrl    pageUrl = m_pendingUrl;
+        const QString title   = extractTitle(m_buf);
+        const QUrl    imgUrl  = extractImageUrl(m_buf);
         m_reply = nullptr;
         m_buf.clear();
+        reply->deleteLater();
 
         if (title.isEmpty()) return;
 
-        if (m_cache.size() >= kMaxCache)
-            m_cache.erase(m_cache.begin());
-        m_cache.insert(url.toString(), title);
+        emit titleReady(pageUrl, title);
 
-        emit titleReady(url, title);
+        if (imgUrl.isValid())
+            fetchImage(pageUrl, title, imgUrl);
+        else {
+            if (m_cache.size() >= kMaxCache) m_cache.erase(m_cache.begin());
+            m_cache.insert(pageUrl.toString(), {title, {}});
+            emit cardReady(pageUrl, title, {});
+        }
+    });
+}
+
+void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl)
+{
+    QNetworkRequest req(imageUrl);
+    req.setRawHeader("User-Agent", "WhatsApp/2");
+    req.setTransferTimeout(kTimeoutMs);
+
+    auto *imgReply = m_nam->get(req);
+    auto  imgBuf   = std::make_shared<QByteArray>();
+
+    connect(imgReply, &QNetworkReply::readyRead, this, [imgReply, imgBuf]{
+        const int rem = kMaxImgBytes - imgBuf->size();
+        if (rem <= 0) { imgReply->abort(); return; }
+        imgBuf->append(imgReply->read(rem));
+        if (imgBuf->size() >= kMaxImgBytes) imgReply->abort();
+    });
+
+    connect(imgReply, &QNetworkReply::finished, this,
+            [this, imgReply, imgBuf, pageUrl, title]{
+        QPixmap pm;
+        if (!imgBuf->isEmpty()) {
+            pm.loadFromData(*imgBuf);
+            if (!pm.isNull()) {
+                if (pm.width() > 120)
+                    pm = pm.scaledToWidth(120, Qt::SmoothTransformation);
+                if (pm.height() > 90)
+                    pm = pm.scaledToHeight(90, Qt::SmoothTransformation);
+            }
+        }
+        imgReply->deleteLater();
+
+        if (m_cache.size() >= kMaxCache) m_cache.erase(m_cache.begin());
+        m_cache.insert(pageUrl.toString(), {title, pm});
+        emit cardReady(pageUrl, title, pm);
     });
 }
 
@@ -67,26 +115,48 @@ QString LinkPreview::extractTitle(const QByteArray &data) const
 {
     const QString html = QString::fromUtf8(data);
 
-    // og:title — property before content
     static const QRegularExpression ogPropFirst(
         R"(<meta[^>]+property\s*=\s*["']og:title["'][^>]+content\s*=\s*["']([^"']{1,200})["'])",
         QRegularExpression::CaseInsensitiveOption);
     auto m = ogPropFirst.match(html);
     if (m.hasMatch()) return m.captured(1).trimmed();
 
-    // og:title — content before property
     static const QRegularExpression ogContentFirst(
         R"(<meta[^>]+content\s*=\s*["']([^"']{1,200})["'][^>]+property\s*=\s*["']og:title["'])",
         QRegularExpression::CaseInsensitiveOption);
     m = ogContentFirst.match(html);
     if (m.hasMatch()) return m.captured(1).trimmed();
 
-    // <title> fallback
     static const QRegularExpression titleTag(
         R"(<title[^>]*>([^<]{1,200})</title>)",
         QRegularExpression::CaseInsensitiveOption);
     m = titleTag.match(html);
     if (m.hasMatch()) return m.captured(1).trimmed();
+
+    return {};
+}
+
+QUrl LinkPreview::extractImageUrl(const QByteArray &data) const
+{
+    const QString html = QString::fromUtf8(data);
+
+    static const QRegularExpression ogPropFirst(
+        R"(<meta[^>]+property\s*=\s*["']og:image["'][^>]+content\s*=\s*["']([^"']{1,500})["'])",
+        QRegularExpression::CaseInsensitiveOption);
+    auto m = ogPropFirst.match(html);
+    if (m.hasMatch()) {
+        const QUrl u(m.captured(1).trimmed());
+        if (u.isValid() && u.scheme().startsWith("http")) return u;
+    }
+
+    static const QRegularExpression ogContentFirst(
+        R"(<meta[^>]+content\s*=\s*["']([^"']{1,500})["'][^>]+property\s*=\s*["']og:image["'])",
+        QRegularExpression::CaseInsensitiveOption);
+    m = ogContentFirst.match(html);
+    if (m.hasMatch()) {
+        const QUrl u(m.captured(1).trimmed());
+        if (u.isValid() && u.scheme().startsWith("http")) return u;
+    }
 
     return {};
 }
