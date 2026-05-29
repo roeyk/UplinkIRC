@@ -153,13 +153,65 @@ void MainWindow::setupToolbar()
     tb->hide();
 
     connect(m_hamburger, &QToolButton::clicked, this, [this]{
-        if (!m_prefsDialog) {
-            m_prefsDialog = new PreferencesDialog(m_config, this);
-            connectPreferences();
-        }
-        m_prefsDialog->show();
-        m_prefsDialog->raise();
-        m_prefsDialog->activateWindow();
+        auto *menu = new QMenu(m_hamburger);
+        menu->setAttribute(Qt::WA_DeleteOnClose);
+
+        menu->addAction(MenuIcons::about(), "About UplinkIRC", this, [this]{
+            AboutDialog dlg(this);
+            dlg.exec();
+        });
+
+        menu->addAction(MenuIcons::documentation(), "Documentation", this, [this]{
+            if (!m_docsDialog)
+                m_docsDialog = new DocsDialog(this);
+            m_docsDialog->show();
+            m_docsDialog->raise();
+            m_docsDialog->activateWindow();
+        });
+
+        menu->addAction(MenuIcons::fontConfig(), "Preferences", this, [this]{
+            if (!m_prefsDialog) {
+                m_prefsDialog = new PreferencesDialog(m_config, this);
+                connectPreferences();
+            }
+            m_prefsDialog->show();
+            m_prefsDialog->raise();
+            m_prefsDialog->activateWindow();
+        });
+
+        menu->addSeparator();
+
+        menu->addAction(MenuIcons::servers(), "Open Config", this, [this]{
+            QDesktopServices::openUrl(QUrl::fromLocalFile(Config::defaultPath()));
+        });
+
+        menu->addAction(MenuIcons::connStatus(), "Reload Config", this, [this]{
+            m_config = Config::load(Config::defaultPath());
+
+            m_showNickPrefix = m_config.ui.showNickPrefix;
+            m_showTopic      = m_config.ui.showTopic;
+            m_showEmojiBtn   = m_config.ui.showEmojiButton;
+
+            ThemeLoader::apply(m_config.ui.theme);
+            m_theme = ThemeLoader::load(m_config.ui.theme);
+            if (m_chatView && m_theme.valid)
+                m_chatView->document()->setDefaultStyleSheet(
+                    QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
+
+            applyAppIcon(m_config.ui.appIcon);
+
+            QApplication::setFont(QFont(m_config.ui.fontFamily));
+            applyFontSizes();
+
+            if (m_topicDisplay)     m_topicDisplay->setVisible(m_showTopic);
+            if (m_nickPrefix)       m_nickPrefix->setVisible(m_showNickPrefix);
+            if (m_emojiBtn)         m_emojiBtn->setVisible(m_showEmojiBtn);
+            if (m_connStatusLabel)  m_connStatusLabel->setVisible(m_config.ui.showConnStatus);
+            if (m_typingLabel)      m_typingLabel->setVisible(m_config.ui.typingIndicator);
+        });
+
+        QPoint pos = m_hamburger->mapToGlobal(QPoint(0, m_hamburger->height()));
+        menu->exec(pos);
     });
 }
 
