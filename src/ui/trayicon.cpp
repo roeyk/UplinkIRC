@@ -72,12 +72,14 @@ void TrayIcon::updateShowAction()
 void TrayIcon::onActivated(QSystemTrayIcon::ActivationReason reason)
 {
     if (reason == QSystemTrayIcon::Trigger) {
-        // Left click — always show and raise
-        m_window->show();
-        m_window->raise();
-        m_window->activateWindow();
+        if (m_window->isVisible()) {
+            m_window->hide();
+        } else {
+            m_window->show();
+            m_window->raise();
+            m_window->activateWindow();
+        }
     }
-    // Right click is handled automatically by the context menu
 }
 
 void TrayIcon::onServerConnected(const QString &host)

@@ -641,6 +641,17 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
             if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
     }
     item->setText(0, count > 0 ? label + " (" + QString::number(count) + ")" : label);
+    if (count > 0) {
+        item->setForeground(0, QColor("#89b4fa"));
+        QFont f = item->font(0);
+        f.setBold(true);
+        item->setFont(0, f);
+    } else {
+        item->setForeground(0, QBrush());
+        QFont f = item->font(0);
+        f.setBold(false);
+        item->setFont(0, f);
+    }
 }
 
 void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
