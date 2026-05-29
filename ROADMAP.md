@@ -125,7 +125,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Window state persistence — dock sizes and positions saved via QSettings on quit, restored on launch
 - [x] Config editor UI — Manage Servers dialog covers server-level editing
 - [x] Emoji picker — searchable popup grid with :shortcode: autocomplete and auto-substitution
-- [x] Bot nick indicators — 🤖/👾 shown for +B mode nicks; auto-detected on join via WHO reply; icon displayed to right of nick name
+- [x] Bot nick indicators — 🤖/👾 shown for +B mode nicks; auto-detected on join via WHO reply; randomly assigned per nick each session, cached for stability
 - [x] Configurable nick brackets — `nick_brackets` in `[ui]`; `"<>"` `"[]"` `"::::"` `""` supported; also configurable live from Hamburger → Nick Brackets
 - [x] Autojoin regression fix — editing a server in the GUI no longer wipes auto-join channels; Auto-join field added to Add/Edit Server dialog
 - [x] Channel focus on join — joining a channel now always switches focus to it

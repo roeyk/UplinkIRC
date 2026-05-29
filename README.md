@@ -115,7 +115,7 @@
 
 | Feature | Details |
 |---|---|
-| **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (assigned per nick by hash, stable across refreshes). |
+| **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (randomly assigned per nick each session, stable across refreshes). |
 | **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from hamburger. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
 | **Right-click menu** | Message, Whois, Give Op, Give Voice, Version on any nick. |

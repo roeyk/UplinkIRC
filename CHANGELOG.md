@@ -3,6 +3,34 @@
 ---
 
 <!--
+Session summary — 2026-05-29  post-v0.7.6
+
+What was built / fixed:
+  - Bot icon randomization: +B nicks now get a truly random icon (🤖 or 👾) assigned
+    on first appearance. Icon is cached per nick for the session so it stays stable
+    across nick list refreshes. Previously used qHash(nick) & 1 which was deterministic
+    — BeeMO always got the same one. Now rolls fresh each session.
+
+Known issues remaining (unchanged from v0.7.6):
+  - Link preview cards lost on channel switch
+  - Link preview for title-only pages not verified
+  - Server errors (482 etc.) in (server) buffer, not active channel
+  - Hamburger menu briefly shrinks on theme switch
+  - DCC Send File not implemented
+  - AppImage packaging not done
+  - MODE prefix removal loses lower-ranked prefixes until next NAMES
+-->
+
+## [Unreleased]
+
+### Changed
+- **Bot icon randomization** — `+B` nicks now receive a randomly assigned icon (🤖 or 👾)
+  on first appearance instead of a hash-derived one. The choice is cached per nick for
+  the session so it stays stable across nick list refreshes.
+
+---
+
+<!--
 Session summary — 2026-05-29  v0.7.6
 
 What was built / fixed:
