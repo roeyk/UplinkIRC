@@ -445,7 +445,53 @@ Known issues open:
   - /help command not yet implemented.
 -->
 
+<!--
+Session summary — 2026-05-28 UI polish sprint:
+
+What was fixed:
+  - Toolbar/hamburger right-click context menu eliminated. Qt's built-in toolbar
+    visibility menu ("Main") appeared on right-click because right-click events
+    propagated from the QToolButton → QToolBar → QMainWindow, where QMainWindow
+    rendered the toolbar list menu despite NoContextMenu on the toolbar. Fix:
+    switched both toolbar and hamburger to CustomContextMenu policy with a no-op
+    lambda, which absorbs the event before it reaches QMainWindow.
+  - Size grip (grey square, bottom-right corner) removed. Two-pronged fix:
+    statusBar()->setSizeGripEnabled(false) in code, plus QSizeGrip { width: 0;
+    height: 0; image: none } in the theme stylesheet.
+  - Sidebar and nick list item spacing tightened. Items had 2px/1px vertical
+    padding and Qt's default row height. Fixed with height: 18px in QSS for both
+    QTreeWidget::item and QListWidget::item, plus setSpacing(0) on the nick list
+    widget.
+
+Investigated but reverted this session (not committed):
+  - QMainWindow::separator styling attempts (transparent, sidebarBg, red diagnostic)
+  - setFrameShape(QFrame::NoFrame) on sidebar, nick list, chat view
+  - setTitleBarWidget(new QWidget()) on dock widgets (broke panel detach)
+  - setCorner() calls to constrain dock separator height
+  - Fusion style forced via QStyleFactory (app.setStyle)
+  - Input bar bottom padding reduction
+  - QSplitter refactor replacing dock widgets (broke entire layout, fully reverted)
+  - windowState key renamed to windowState_v2
+
+Known issues left open:
+  - Dock separator lines visible at left/right edges of chat area, extending into
+    the toolbar region — root cause confirmed as QMainWindow::separator; color
+    and size changes did not fully suppress them; QSplitter refactor would fix
+    this definitively but was reverted due to regressions
+  - No reconnect on disconnect
+  - DCC Send File not implemented
+  - Emoji picker not built
+-->
+
 ## [Unreleased]
+
+**UI polish — right-click menu, size grip, item spacing**
+
+- Toolbar and hamburger right-click context menu suppressed — Qt's "Main" toolbar visibility popup no longer appears on right-click
+- Status bar size grip (grey square, bottom-right corner) removed
+- Sidebar channel list and nick list items tighter — reduced vertical padding and row height
+
+---
 
 **Panel detach, topic bar layout, /topic fix**
 

@@ -126,4 +126,4 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - Server errors (482 channel-op-needed etc.) appear in the (server) buffer, not the active channel — topic set failures are silent when in a channel
 - Emoji button toggle wired but picker not yet implemented
 - DCC Send File in nick menu is disabled — not yet implemented
-- Sidebar/userlist not fully Halloy-matched visually (WIP)
+- Dock separator lines visible at left/right edges of chat area — QMainWindow::separator extends into toolbar region; QSplitter refactor would fix definitively
