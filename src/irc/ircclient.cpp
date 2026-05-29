@@ -291,8 +291,19 @@ void IrcClient::processLine(const QString &line)
     if (cmd == "NOTICE" && msg.params.size() >= 1) {
         const QString text = msg.trailing;
         if (text.startsWith('\x01') && text.endsWith('\x01')) {
-            emit serverMessage(m_host, "CTCP reply from " + msg.nick + ": "
-                               + text.mid(1, text.size() - 2));
+            const QString ctcp    = text.mid(1, text.size() - 2);
+            const QString ctcpCmd = ctcp.section(' ', 0, 0).toUpper();
+            if (ctcpCmd == "PING") {
+                bool ok = false;
+                const qint64 sent = ctcp.section(' ', 1).toLongLong(&ok);
+                const qint64 rtt  = QDateTime::currentMSecsSinceEpoch() - sent;
+                const QString fmt = ok
+                    ? QString("Ping reply from %1: %2ms").arg(msg.nick).arg(rtt)
+                    : QString("Ping reply from %1").arg(msg.nick);
+                emit serverMessage(m_host, fmt);
+            } else {
+                emit serverMessage(m_host, "CTCP reply from " + msg.nick + ": " + ctcp);
+            }
         } else {
             emit noticeReceived(m_host, msg.params[0], msg.nick, text, serverTime, false);
         }
