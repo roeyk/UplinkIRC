@@ -5,7 +5,7 @@
 #include <QNetworkRequest>
 #include <QRegularExpression>
 
-static constexpr int kMaxBytes  = 8192;
+static constexpr int kMaxBytes  = 16384;
 static constexpr int kMaxCache  = 50;
 static constexpr int kTimeoutMs = 4000;
 
@@ -33,7 +33,7 @@ void LinkPreview::fetch(const QUrl &url)
     m_buf.clear();
 
     QNetworkRequest req(url);
-    req.setRawHeader("User-Agent", "UplinkIRC/1.0");
+    req.setRawHeader("User-Agent", "WhatsApp/2");
     req.setTransferTimeout(kTimeoutMs);
 
     m_reply = m_nam->get(req);
