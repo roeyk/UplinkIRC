@@ -3,6 +3,41 @@
 ---
 
 <!--
+Session summary — 2026-05-29  v0.7.11
+
+What was built / fixed:
+  - Nick panel redesign: replaced the detachable QDockWidget with an embedded
+    panel on the right side of the chat view inside a QSplitter. The panel is
+    no longer floatable or detachable.
+  - Animated gear toggle: a gear button (⚙) in the nick panel header spins one
+    full rotation (~500ms) on click before collapsing the user list to a thin
+    strip. Clicking again re-expands. The animation uses a QTimer at 16ms with
+    a QPainter-rotated pixmap icon; debounce prevents double-firing mid-spin.
+  - Collapsed state: only the nick list hides; the gear button and user count
+    label remain visible in the header so the panel width stays unchanged.
+  - Nick panel styling: background and text color now match the chat buffer
+    ({{bufferBg}} / {{text}}) across all themes. Header tool button and label
+    use transparent backgrounds. Splitter handle width set to 0 — no border
+    between chat and nick panel.
+  - Link preview persistence: added previews QHash to Channel struct so card
+    HTML is retained across channel switches.
+
+Known issues remaining:
+  - DCC Send File not implemented
+  - AppImage packaging not done
+-->
+
+## v0.7.11 — 2026-05-29
+
+- Nick panel embedded in chat splitter — no longer a floating/detachable dock
+- Gear button (⚙) animates a full spin before collapsing or expanding the user list; gear and user count remain visible when collapsed
+- Nick panel background and text match the active theme's chat buffer colors
+- Splitter handle hidden — chat and user list share a seamless background
+- Link preview cards now persist across channel switches
+
+---
+
+<!--
 Session summary — 2026-05-29  v0.7.9
 
 What was built / fixed:
