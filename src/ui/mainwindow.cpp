@@ -564,6 +564,7 @@ void MainWindow::setupChatArea()
 
     m_chatView->viewport()->setMouseTracking(true);
     m_chatView->viewport()->installEventFilter(this);
+    m_chatView->installEventFilter(this);
 
     connect(m_linkPreview, &LinkPreview::titleReady, this, [this](const QUrl &url, const QString &title){
         if (url.toString() != m_hoveredUrl) return;
@@ -659,15 +660,13 @@ void MainWindow::setupInputBar()
     bar->setObjectName("inputBar");
 
     auto *layout = qobject_cast<QVBoxLayout *>(centralWidget()->layout());
-
-    // Typing indicator label — sits just above the input bar
-    m_typingLabel = new QLabel;
-    m_typingLabel->setObjectName("typingLabel");
-    m_typingLabel->setContentsMargins(6, 1, 6, 1);
-    m_typingLabel->setVisible(false);
-    layout->addWidget(m_typingLabel);
-
     layout->addWidget(bar);
+
+    // Typing indicator — overlaid on the chat view, not a separate row
+    m_typingLabel = new QLabel(m_chatView);
+    m_typingLabel->setObjectName("typingLabel");
+    m_typingLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_typingLabel->setVisible(false);
 
     // Emoji picker popup
     m_emojiPicker = new EmojiPicker(this);
@@ -784,6 +783,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             QToolTip::hideText();
             statusBar()->clearMessage();
         }
+        return false;
+    }
+
+    if (obj == m_chatView && event->type() == QEvent::Resize) {
+        repositionTypingLabel();
         return false;
     }
 
@@ -1185,6 +1189,17 @@ void MainWindow::onTypingReceived(const QString &host, const QString &channel,
     updateTypingLabel();
 }
 
+void MainWindow::repositionTypingLabel()
+{
+    if (!m_typingLabel || !m_chatView) return;
+    m_typingLabel->adjustSize();
+    const int pad = 8;
+    const int x = pad;
+    const int y = m_chatView->height() - m_typingLabel->height() - pad;
+    m_typingLabel->move(x, qMax(0, y));
+    m_typingLabel->raise();
+}
+
 void MainWindow::updateTypingLabel()
 {
     const QString key = m_model->activeHost() + "|" + m_model->activeChannel();
@@ -1206,6 +1221,7 @@ void MainWindow::updateTypingLabel()
 
     m_typingLabel->setText(text);
     m_typingLabel->setVisible(true);
+    repositionTypingLabel();
 }
 
 // ---------------------------------------------------------------------------

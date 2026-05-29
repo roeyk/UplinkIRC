@@ -352,7 +352,7 @@ QLabel#topicText {
 QLabel#typingLabel {
     color: {{placeholder}};
     background: transparent;
-    padding: 1px 6px;
+    padding: 0;
 }
 )";
 

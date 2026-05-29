@@ -92,6 +92,7 @@ private:
     void checkEmojiAutocomplete(const QString &text);
     void commitEmojiAutocomplete(int row);
     void hideEmojiAutocomplete();
+    void repositionTypingLabel();
     QListWidget *m_emojiCompleter{nullptr};
     int          m_emojiTriggerPos{-1};
 
