@@ -8,6 +8,7 @@
 #include "ui/manageserversdialog.h"
 #include "ui/appicons.h"
 #include "ui/themeloader.h"
+#include "ui/linkpreview.h"
 #include "config/config.h"
 
 #include <QApplication>
@@ -45,6 +46,8 @@
 #include <QPixmap>
 #include "version.h"
 #include <QRegularExpression>
+#include <QToolTip>
+#include <QCursor>
 
 // ---------------------------------------------------------------------------
 // Nick color — consistent hash-based color per nick
@@ -472,6 +475,25 @@ void MainWindow::setupChatArea()
     m_chatView->setOpenLinks(false);
     connect(m_chatView, &QTextBrowser::anchorClicked,
             this, [](const QUrl &url){ QDesktopServices::openUrl(url); });
+
+    m_linkPreview = new LinkPreview(this);
+
+    connect(m_chatView, &QTextBrowser::highlighted, this, [this](const QUrl &url){
+        if (url.isEmpty()) {
+            m_hoveredUrl.clear();
+            QToolTip::hideText();
+            return;
+        }
+        m_hoveredUrl = url.toString();
+        m_linkPreview->fetch(url);
+    });
+
+    connect(m_linkPreview, &LinkPreview::titleReady, this, [this](const QUrl &url, const QString &title){
+        if (url.toString() != m_hoveredUrl) return;
+        const QString display = title.length() > 80 ? title.left(79) + QChar(0x2026) : title;
+        QToolTip::showText(QCursor::pos(), display, m_chatView);
+    });
+
     vbox->addWidget(m_chatView, 1);
 
     setCentralWidget(central);

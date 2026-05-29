@@ -10,6 +10,7 @@
 
 class TrayIcon;
 class DocsDialog;
+class LinkPreview;
 
 class QTimer;
 class QTreeWidget;
@@ -122,6 +123,8 @@ private:
 
     SessionModel *m_model;
     TrayIcon     *m_tray{nullptr};
+    LinkPreview  *m_linkPreview{nullptr};
+    QString       m_hoveredUrl;
     Config        m_config;
 
     bool m_showNickPrefix{true};

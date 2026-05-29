@@ -45,6 +45,8 @@ qt_add_executable(UplinkIRC
     src/ui/manageserversdialog.cpp
     src/ui/manageserversdialog.h
     src/ui/appicons.h
+    src/ui/linkpreview.cpp
+    src/ui/linkpreview.h
     src/ui/themeloader.cpp
     src/ui/themeloader.h
     src/irc/ircclient.cpp
