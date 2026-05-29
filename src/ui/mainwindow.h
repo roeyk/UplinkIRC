@@ -44,7 +44,8 @@ private slots:
     void onChannelRemoved   (const QString &host, const QString &channel);
     void onMessageAdded     (const QString &host, const QString &channel, const Message &msg);
     void onTopicChanged     (const QString &host, const QString &channel, const QString &topic);
-    void onNickListChanged  (const QString &host, const QString &channel);
+    void onNickListChanged     (const QString &host, const QString &channel);
+    void onNickListContextMenu (const QPoint &pos);
     void onUnreadChanged    (const QString &host, const QString &channel, int count);
     void onSelfNickChanged  (const QString &host, const QString &nick);
 

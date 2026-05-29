@@ -291,6 +291,9 @@ void MainWindow::setupNickDock()
 {
     m_nickList = new QListWidget;
     m_nickList->setMinimumWidth(120);
+    m_nickList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_nickList, &QListWidget::customContextMenuRequested,
+            this, &MainWindow::onNickListContextMenu);
 
     m_nickDock = new QDockWidget("Users", this);
     m_nickDock->setWidget(m_nickList);
@@ -961,7 +964,11 @@ void MainWindow::onInputSubmit()
         } else if (cmd == "/me") {
             m_model->sendAction(host, channel, args);
         } else if (cmd == "/msg") {
-            m_model->sendMessage(host, args.section(' ', 0, 0), args.section(' ', 1));
+            const QString target = args.section(' ', 0, 0);
+            const QString text   = args.section(' ', 1);
+            m_model->sendMessage(host, target, text);
+            if (!target.startsWith('#') && !target.startsWith('&'))
+                switchToChannel(host, target);
         } else if (cmd == "/notice") {
             const QString target = args.section(' ', 0, 0);
             const QString msg    = args.section(' ', 1);
@@ -1060,6 +1067,55 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
     updateTypingLabel();
 }
 
+void MainWindow::onNickListContextMenu(const QPoint &pos)
+{
+    auto *item = m_nickList->itemAt(pos);
+    if (!item) return;
+
+    const QString nick    = item->data(Qt::UserRole).toString();
+    const QString host    = m_model->activeHost();
+    const QString channel = m_model->activeChannel();
+    if (nick.isEmpty() || host.isEmpty()) return;
+
+    QMenu menu(this);
+
+    QAction *title = menu.addAction(nick);
+    title->setEnabled(false);
+    QFont tf = title->font();
+    tf.setBold(true);
+    title->setFont(tf);
+    menu.addSeparator();
+
+    connect(menu.addAction("Message"), &QAction::triggered, this, [this, host, nick]{
+        m_model->openPM(host, nick);
+        switchToChannel(host, nick);
+        if (m_input) m_input->setFocus();
+    });
+
+    QAction *fileAct = menu.addAction("Send File");
+    fileAct->setEnabled(false);  // DCC not yet implemented
+
+    connect(menu.addAction("Whois"), &QAction::triggered, this, [this, host, nick]{
+        m_model->sendRaw(host, "WHOIS " + nick);
+    });
+
+    connect(menu.addAction("Give Op"), &QAction::triggered, this, [this, host, channel, nick]{
+        if (!channel.isEmpty() && channel != "(server)")
+            m_model->sendRaw(host, "MODE " + channel + " +o " + nick);
+    });
+
+    connect(menu.addAction("Give Voice"), &QAction::triggered, this, [this, host, channel, nick]{
+        if (!channel.isEmpty() && channel != "(server)")
+            m_model->sendRaw(host, "MODE " + channel + " +v " + nick);
+    });
+
+    connect(menu.addAction("Version"), &QAction::triggered, this, [this, host, nick]{
+        m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01VERSION\x01");
+    });
+
+    menu.exec(m_nickList->mapToGlobal(pos));
+}
+
 void MainWindow::refreshChatView(const QString &host, const QString &channel)
 {
     m_chatView->clear();
@@ -1077,6 +1133,7 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
 
     for (const auto &e : std::as_const(ch->nicks)) {
         auto *item = new QListWidgetItem(e.display());
+        item->setData(Qt::UserRole, e.nick);
         if (m_config.ui.coloredNicks)
             item->setForeground(nickColor(e.nick));
         m_nickList->addItem(item);

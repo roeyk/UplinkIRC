@@ -43,11 +43,25 @@ IrcClient *SessionModel::clientFor(const QString &host)
     return nullptr;
 }
 
+void SessionModel::openPM(const QString &host, const QString &nick)
+{
+    auto *sess = session(host);
+    if (!sess || nick.isEmpty() || nick.startsWith('#') || nick.startsWith('&')) return;
+    const bool isNew = !sess->get(nick);
+    sess->getOrCreate(nick);
+    if (isNew)
+        emit channelAdded(host, nick);
+}
+
 void SessionModel::sendMessage(const QString &host, const QString &target, const QString &text)
 {
     auto *cl = clientFor(host);
     if (!cl) return;
     cl->privmsg(target, text);
+    // Open a PM tab for outgoing private messages
+    const bool isPM = !target.startsWith('#') && !target.startsWith('&')
+                      && !target.startsWith('!') && target != "(server)";
+    if (isPM) openPM(host, target);
     // Echo own message into the model
     auto *sess = session(host);
     if (sess)
@@ -206,7 +220,11 @@ void SessionModel::onSocketError(const QString &host, const QString &error)
 void SessionModel::onMessage(const QString &host, const QString &target,
                              const QString &nick, const QString &text)
 {
-    postMessage(host, target, Message::make(MessageType::Privmsg, nick, text));
+    const bool isPM = !target.startsWith('#') && !target.startsWith('&')
+                      && !target.startsWith('!');
+    const QString buf = isPM ? nick : target;
+    if (isPM) openPM(host, nick);
+    postMessage(host, buf, Message::make(MessageType::Privmsg, nick, text));
 }
 
 void SessionModel::onNotice(const QString &host, const QString &target,

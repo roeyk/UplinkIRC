@@ -35,6 +35,7 @@ public:
     void sendNick   (const QString &host, const QString &nick);
     void sendAction (const QString &host, const QString &target, const QString &text);
     void sendTyping (const QString &host, const QString &channel, const QString &state);
+    void openPM    (const QString &host, const QString &nick);
     IrcClient *clientFor(const QString &host);
 
 signals:
