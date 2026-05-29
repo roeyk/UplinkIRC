@@ -54,17 +54,12 @@ ssl      = true
 nick     = "yournick"
 user     = "uplink"
 realname = "UplinkIRC User"
+channels = "#uplink, #linux"           # comma-separated channels to join on connect
 # sasl_user         = "yournick"       # uncomment to enable SASL PLAIN
 # sasl_password     = "yourpassword"
 # nickserv_password = "yourpassword"   # alternative: NickServ IDENTIFY on connect
 # bouncer           = "soju"           # "znc" or "soju" — enables bouncer-specific caps
 # bouncer_network   = "libera"         # soju only: which network to attach to
-
-[[server.channels]]
-name = "#uplink"
-
-[[server.channels]]
-name = "#linux"
 ```
 
 ---
@@ -180,6 +175,7 @@ ssl      = true
 nick     = "yournick"
 user     = "uplink"
 realname = "UplinkIRC User"
+channels = "#uplink"
 ```
 
 ---
@@ -199,6 +195,7 @@ ssl               = true
 nick              = "yournick"
 user              = "uplink"
 realname          = "UplinkIRC User"
+channels          = "#uplink"
 nickserv_password = "yourpassword"
 ```
 
@@ -217,11 +214,9 @@ ssl           = true
 nick          = "yournick"
 user          = "uplink"
 realname      = "UplinkIRC User"
+channels      = "#linux"
 sasl_user     = "yournick"
 sasl_password = "yourpassword"
-
-[[server.channels]]
-name = "#linux"
 ```
 
 The server buffer shows `SASL authentication successful` on connect. Authentication failure does not disconnect — the connection continues without services authentication.
@@ -251,12 +246,7 @@ user     = "uplink"
 realname = "UplinkIRC User"
 password = "joe/libera:mysecretpassword"
 bouncer  = "znc"
-
-[[server.channels]]
-name = "#linux"
-
-[[server.channels]]
-name = "#archlinux"
+channels = "#linux, #archlinux"
 ```
 
 If your ZNC instance carries multiple networks, add one `[[server]]` block per network, each with its own `password` entry using the correct network name:
@@ -272,9 +262,7 @@ user     = "uplink"
 realname = "UplinkIRC User"
 password = "joe/libera:mysecretpassword"
 bouncer  = "znc"
-
-[[server.channels]]
-name = "#linux"
+channels = "#linux"
 
 [[server]]
 name     = "ZNC — OFTC"
@@ -286,9 +274,7 @@ user     = "uplink"
 realname = "UplinkIRC User"
 password = "joe/oftc:mysecretpassword"
 bouncer  = "znc"
-
-[[server.channels]]
-name = "#debian"
+channels = "#debian"
 ```
 
 ### Connecting to soju
@@ -311,9 +297,7 @@ realname        = "UplinkIRC User"
 password        = "joe:mysecretpassword"
 bouncer         = "soju"
 bouncer_network = "libera"
-
-[[server.channels]]
-name = "#linux"
+channels        = "#linux"
 ```
 
 If your soju instance only carries one network, omit `bouncer_network`:
@@ -329,9 +313,7 @@ user     = "uplink"
 realname = "UplinkIRC User"
 password = "joe:mysecretpassword"
 bouncer  = "soju"
-
-[[server.channels]]
-name = "#uplink"
+channels = "#uplink"
 ```
 
 ### Chat history replay
@@ -346,36 +328,22 @@ No configuration is required — history replay happens automatically whenever t
 
 ---
 
-## The `[[server.channels]]` block
+## Channels (`channels`)
 
-Channels to auto-join on connect. You can set these directly in the config file, or click ☰ → **Manage Servers... → Edit** and use the **Auto-join** field (comma-separated channel names, e.g. `#uplink,#linux`). Changes made through the dialog are saved automatically.
+Channels to auto-join on connect. Set `channels` to a comma-separated list of channel names directly in the `[[server]]` block. You can also use ☰ → **Manage Servers... → Edit** and fill in the **Auto-join** field — changes are saved automatically. **Reload Config** picks up manual edits without a restart.
 
-| Key | Type | Required | Description |
-|---|---|---|---|
-| `name` | string | yes | Channel name including the `#` |
-| `password` | string | no | Channel key, for password-protected channels |
+| Key | Type | Description |
+|---|---|---|
+| `channels` | string | Comma-separated channel names to join on connect (e.g. `"#uplink, #linux"`) |
 
-### Example — multiple channels with a key
+### Examples
 
 ```toml
-[[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
-realname = "UplinkIRC User"
+# Single channel
+channels = "#uplink"
 
-[[server.channels]]
-name = "#uplink"
-
-[[server.channels]]
-name = "#linux"
-
-[[server.channels]]
-name = "#secret"
-password = "channelkey"
+# Multiple channels
+channels = "#uplink, #linux, #dojoirc"
 ```
 
 ---
@@ -396,26 +364,19 @@ ssl      = true
 nick     = "yournick"
 user     = "uplink"
 realname = "UplinkIRC User"
-
-[[server.channels]]
-name = "#uplink"
+channels = "#uplink"
 
 [[server]]
-name     = "Libera"
-host     = "irc.libera.chat"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
-realname = "UplinkIRC User"
+name          = "Libera"
+host          = "irc.libera.chat"
+port          = 6697
+ssl           = true
+nick          = "yournick"
+user          = "uplink"
+realname      = "UplinkIRC User"
+channels      = "#linux, #archlinux"
 sasl_user     = "yournick"
 sasl_password = "yourpassword"
-
-[[server.channels]]
-name = "#linux"
-
-[[server.channels]]
-name = "#archlinux"
 ```
 
 ---
@@ -477,36 +438,6 @@ name = "LinuxDojo"
 # Correct
 [[server]]
 name = "LinuxDojo"
-```
-
-### Channel block placed after the wrong server
-
-`[[server.channels]]` blocks attach to the most recently opened `[[server]]` block. Place each channel block immediately after its server.
-
-```toml
-# Wrong — #linux attaches to "Libera", not "LinuxDojo"
-[[server]]
-name = "LinuxDojo"
-...
-
-[[server]]
-name = "Libera"
-...
-
-[[server.channels]]
-name = "#linux"
-
-# Correct
-[[server]]
-name = "LinuxDojo"
-...
-
-[[server.channels]]
-name = "#linux"
-
-[[server]]
-name = "Libera"
-...
 ```
 
 ### Nick contains spaces or invalid characters

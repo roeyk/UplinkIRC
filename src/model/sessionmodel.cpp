@@ -63,6 +63,18 @@ void SessionModel::updateServer(const QString &oldHost, const ServerConfig &sc)
     addServer(sc);
 }
 
+void SessionModel::syncServers(const QList<ServerConfig> &servers)
+{
+    for (const ServerConfig &sc : servers) {
+        for (ServerConfig &existing : m_config.servers) {
+            if (existing.host == sc.host) {
+                existing.channels = sc.channels;
+                break;
+            }
+        }
+    }
+}
+
 ServerSession *SessionModel::session(const QString &host)
 {
     for (auto &s : m_sessions)

@@ -17,18 +17,7 @@ ssl      = true                   # always use TLS
 nick     = "yournick"             # change this to your nickname
 user     = "uplink"               # username in your hostmask
 realname = "UplinkIRC User"       # shown in WHOIS
-
-[[server.channels]]
-name = "#uplink"                  # channel to join on connect
-
-# Optional: join additional channels
-# [[server.channels]]
-# name = "#linux"
-
-# Optional: password-protected channel
-# [[server.channels]]
-# name = "#secret"
-# password = "channelkey"
+channels = "#uplink, #linux"      # channels to join on connect (comma-separated)
 
 # Optional: server password (used for bouncers like ZNC or soju)
 # password = "joe/network:mypassword"
@@ -44,6 +33,4 @@ name = "#uplink"                  # channel to join on connect
 # nick     = "yournick"
 # user     = "uplink"
 # realname = "UplinkIRC User"
-#
-# [[server.channels]]
-# name = "#linux"
+# channels = "#linux, #archlinux"

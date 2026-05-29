@@ -101,6 +101,16 @@ Next priorities:
   - Desktop notifications on mention/PM
 -->
 
+## [0.7.10] — 2026-05-29
+
+### Changed
+- **Simplified channel config** — `channels = "#uplink, #dojoirc"` replaces the old `[[server.channels]]` array-of-tables blocks. All channels for a server go on one line, comma-separated. The Manage Servers dialog and Reload Config both honour the new format.
+
+### Fixed
+- **Config loading on Windows** — replaced `toml::parse_file()` with Qt-native file I/O so paths containing non-ASCII characters (e.g. usernames with accented letters) load correctly on Windows.
+
+---
+
 ## [0.7.9] — 2026-05-29
 
 ### Added

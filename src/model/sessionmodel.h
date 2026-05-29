@@ -20,6 +20,7 @@ public:
     void addServer(const ServerConfig &sc);
     void removeServer(const QString &host);
     void updateServer(const QString &oldHost, const ServerConfig &sc);
+    void syncServers(const QList<ServerConfig> &servers);
 
     // Read access for UI
     const QList<ServerSession> &sessions() const { return m_sessions; }

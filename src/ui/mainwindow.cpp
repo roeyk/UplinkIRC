@@ -187,6 +187,7 @@ void MainWindow::setupToolbar()
 
         menu->addAction(MenuIcons::connStatus(), "Reload Config", this, [this]{
             m_config = Config::load(Config::defaultPath());
+            m_model->syncServers(m_config.servers);
 
             m_showNickPrefix = m_config.ui.showNickPrefix;
             m_showTopic      = m_config.ui.showTopic;
