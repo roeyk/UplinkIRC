@@ -208,7 +208,7 @@ theme = "nord"
 
 Click the ⚙ gear button at the **left end of the info bar** (just left of the ☰ hamburger). The sidebar collapses completely, giving the chat area the full window width. Click the gear again to bring it back. The gear stays visible in the info bar at all times, so you can always get the sidebar back.
 
-The sidebar width is fixed at its default size — it is not drag-resizable.
+You can also drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.
 
 ### How do I hide or show the user list?
 

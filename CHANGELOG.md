@@ -3,6 +3,37 @@
 ---
 
 <!--
+Session summary — 2026-05-29  post-v0.7.12
+
+What was built / fixed:
+  - Sidebar is now drag-resizable. The handle between the sidebar panel and
+    the chat area can be dragged left/right; the splitterMoved signal updates
+    m_sidebarExpandedWidth live so the toggle button always restores to the
+    last user-set width.
+  - Sidebar width persists across sessions via QSettings key "sidebarWidth",
+    saved on quit and restored at startup before the first layout pass.
+  - Sidebar minimum width reduced from 140 px to 112 px (~4 character widths
+    narrower) so users can squeeze it down more.
+  - docs/faq.md updated: removed "sidebar is not drag-resizable" note; now
+    describes drag-resize + persistence matching the nick panel entry.
+  - ROADMAP: window state persistence item updated; "Sidebar not drag-resizable"
+    known issue removed.
+
+Known issues remaining:
+  - DCC Send File not implemented
+  - AppImage packaging not done
+  - Link preview for title-only pages (no og:title) needs verification
+-->
+
+## v0.7.12-post — 2026-05-29
+
+- Sidebar is now drag-resizable — drag the divider between the channel list and chat area to set the width
+- Sidebar width persists across sessions (saved/restored via QSettings)
+- Sidebar minimum width reduced slightly so it can be squeezed narrower
+
+---
+
+<!--
 Session summary — 2026-05-29  v0.7.12
 
 What was built / fixed:

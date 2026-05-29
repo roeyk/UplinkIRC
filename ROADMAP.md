@@ -126,7 +126,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## Planned — Polish + Distribution
 
 - [ ] Virtual scrolling — render only visible messages (performance on busy channels)
-- [x] Window state persistence — sidebar dock size and position saved via QSettings on quit, restored on launch
+- [x] Window state persistence — sidebar width and nick panel width saved via QSettings on quit, restored on launch; sidebar is drag-resizable
 - [x] Nick panel width persistence — QSplitter position saved via QSettings on quit, restored on launch
 - [x] Config editor UI — Manage Servers dialog covers server-level editing
 - [x] Emoji picker — searchable popup grid with :shortcode: autocomplete and auto-substitution
@@ -156,8 +156,6 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ---
 
 ## Known Issues — UI
-
-- Sidebar is not drag-resizable by design; only the gear toggle controls its visibility
 
 ## Known Issues
 
