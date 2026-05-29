@@ -13,6 +13,10 @@ AboutDialog::AboutDialog(QWidget *parent)
     setWindowIcon(AppIcons::appIcon());
     setFixedSize(460, 280);
 
+    if (parent) {
+        move(parent->width()  / 2 - 230,
+             parent->height() / 2 - 140);
+    }
 
     auto *layout = new QVBoxLayout(this);
     layout->setSpacing(10);
