@@ -70,5 +70,9 @@ add_custom_command(TARGET UplinkIRC POST_BUILD
         ${CMAKE_SOURCE_DIR}/themes $<TARGET_FILE_DIR:UplinkIRC>/themes
 )
 
+if(APPLE)
+    set_target_properties(UplinkIRC PROPERTIES MACOSX_BUNDLE TRUE)
+endif()
+
 install(TARGETS UplinkIRC DESTINATION bin)
 install(DIRECTORY themes/ DESTINATION share/uplinkirc/themes)
