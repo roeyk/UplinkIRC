@@ -96,7 +96,8 @@
 | **Hamburger menu** | Click ☰ for About, Documentation, Preferences, Open Config (opens `config.toml` in your editor), and Reload Config (applies changes without restarting). |
 | **Native Windows style** | On Windows, the `windows11` Qt style is used by default. No alien dark theme on fresh installs. Custom themes still available. |
 | **Per-widget font sizes** | Independent size control for chat, sidebar, nick list, topic bar, input, and typing indicator. **Preferences → Font Config...** |
-| **Panel persistence** | Sidebar size and position saved on quit, restored on relaunch. |
+| **Panel persistence** | Nick panel width saved on quit, restored on relaunch. |
+| **Sidebar toggle** | ⚙ gear in the info bar (left of ☰) collapses the server/channel list to give the chat full window width. Click again to restore. |
 
 ### 💬 Chat Features
 
@@ -115,7 +116,8 @@
 
 | Feature | Details |
 |---|---|
-| **Embedded nick panel** | User list sits in a panel on the right side of the chat view. Click the ⚙ button in the panel header to collapse or expand it — the gear animates a full spin before toggling. The user count is always visible in the header. |
+| **Embedded nick panel** | User list sits in a panel on the right side of the chat view. Click the ⚙ button in the panel header to collapse or expand it — the gear animates a full spin before toggling. The gear and user count are always visible in the header. Panel width persists across sessions. |
+| **Embedded sidebar** | Server/channel list is a fixed-width panel on the left. The ⚙ gear in the info bar collapses it fully (chat fills the window) and restores it. |
 | **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (randomly assigned per nick each session, stable across refreshes). |
 | **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from **☰ → Preferences**. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
