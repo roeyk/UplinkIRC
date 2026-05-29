@@ -122,6 +122,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     restoreState(settings.value("windowState").toByteArray());
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
+    if (settings.contains("sidebarWidth"))
+        m_sidebarExpandedWidth = settings.value("sidebarWidth").toInt();
 
     QTimer::singleShot(0, this, [this]{
         const int total = m_mainSplitter->width();
@@ -129,11 +131,20 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
     });
 
+    connect(m_mainSplitter, &QSplitter::splitterMoved, this, [this](int, int){
+        if (m_sidebarExpanded) {
+            const int w = m_mainSplitter->sizes().value(0);
+            if (w > 0)
+                m_sidebarExpandedWidth = w;
+        }
+    });
+
     connect(qApp, &QApplication::aboutToQuit, this, [this]{
         QSettings s("LinuxDojo", "UplinkIRC");
         s.setValue("geometry", saveGeometry());
         s.setValue("windowState", saveState());
         s.setValue("nickSplitter", m_chatSplitter->saveState());
+        s.setValue("sidebarWidth", m_sidebarExpandedWidth);
     });
 }
 
@@ -445,7 +456,7 @@ void MainWindow::setupSidebar()
     m_sidebar->setRootIsDecorated(false);
     m_sidebar->setItemsExpandable(false);
     m_sidebar->setIndentation(8);
-    m_sidebar->setMinimumWidth(140);
+    m_sidebar->setMinimumWidth(112);
     m_sidebar->setObjectName("sidebar");
 
     connect(m_sidebar, &QTreeWidget::currentItemChanged,
