@@ -5,8 +5,6 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QDialogButtonBox>
-#include <QScreen>
-#include <QGuiApplication>
 
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent)
@@ -16,8 +14,8 @@ AboutDialog::AboutDialog(QWidget *parent)
     setFixedSize(460, 280);
 
     if (parent) {
-        const QRect pg = parent->geometry();
-        move(pg.center().x() - 230, pg.center().y() - 140);
+        const QPoint center = parent->frameGeometry().center();
+        move(center.x() - width() / 2, center.y() - height() / 2);
     }
 
     auto *layout = new QVBoxLayout(this);
