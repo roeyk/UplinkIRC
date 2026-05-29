@@ -841,11 +841,25 @@ void MainWindow::handleTabComplete()
         m_tabCandidateIndex = 0;
         m_tabActive = true;
 
-        auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
-        if (ch) {
-            for (const auto &e : std::as_const(ch->nicks))
-                if (e.nick.startsWith(prefix, Qt::CaseInsensitive))
-                    m_tabCandidates << e.nick;
+        if (prefix.startsWith('/')) {
+            static const QStringList commands = {
+                "/away", "/back", "/ban", "/clear", "/ctcp",
+                "/deop", "/devoice", "/invite", "/j", "/join",
+                "/kick", "/me", "/mode", "/motd", "/msg",
+                "/nick", "/notice", "/op", "/part", "/ping",
+                "/quit", "/quote", "/raw", "/sysinfo", "/topic",
+                "/unban", "/version", "/voice", "/whois",
+            };
+            for (const QString &cmd : commands)
+                if (cmd.startsWith(prefix, Qt::CaseInsensitive))
+                    m_tabCandidates << cmd;
+        } else {
+            auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
+            if (ch) {
+                for (const auto &e : std::as_const(ch->nicks))
+                    if (e.nick.startsWith(prefix, Qt::CaseInsensitive))
+                        m_tabCandidates << e.nick;
+            }
         }
     }
 
@@ -854,10 +868,11 @@ void MainWindow::handleTabComplete()
     const QString completed = m_tabCandidates[m_tabCandidateIndex];
     m_tabCandidateIndex = (m_tabCandidateIndex + 1) % m_tabCandidates.size();
 
-    // Suffix: ": " at start of line, " " otherwise (only when at end of input)
+    // Commands always get a space suffix; nicks get ": " at line start, " " otherwise
     QString suffix;
     if (pos == text.length())
-        suffix = (wordStart == 0) ? QStringLiteral(": ") : QStringLiteral(" ");
+        suffix = (wordStart == 0 && !completed.startsWith('/'))
+            ? QStringLiteral(": ") : QStringLiteral(" ");
 
     m_input->setText(text.left(wordStart) + completed + suffix + text.mid(pos));
     m_input->setCursorPosition(wordStart + completed.length() + suffix.length());
