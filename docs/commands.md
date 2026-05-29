@@ -34,7 +34,7 @@ Type any of these commands in the message input box and press Enter.
 | Command | Description |
 |---|---|
 | `/me <text>` | Send an action message. Shown as `* yournick text` in chat |
-| `/msg <nick> <text>` | Send a private message to a user |
+| `/msg <nick> <text>` | Send a private message — opens a PM buffer in the sidebar for the conversation |
 | `/notice <target> <text>` | Send a NOTICE to a user or channel |
 
 ### Examples

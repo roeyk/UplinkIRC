@@ -16,14 +16,17 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - Full IRC numerics and commands: JOIN, PART, QUIT, NICK, KICK, MODE, TOPIC, PRIVMSG, NOTICE, CTCP
 - Slash commands: `/help`, `/join`, `/part`, `/nick`, `/me`, `/msg`, `/away`, `/back`, `/motd`, `/whois`, `/topic`, `/kick`, `/notice`, `/version`, `/ctcp`, `/sysinfo`, `/raw`, `/quote`, `/quit`
 - Nick list sorted by prefix rank (~&@%+) with live updates
-- Topic bar — shows `#channel (modes)` and topic text, toggleable
+- Info bar — always shows `#channel (modes) * Network — N users`; topic drops below when enabled
+- PM tabs — `/msg <nick>` opens a private message buffer in the sidebar
+- Nick list right-click menu — Message, Whois, Give Op, Give Voice, Version
 - Typing indicator — IRCv3 `draft/typing`; shows "nick is typing..." in real time
-- Per-widget font sizes — independent font size control for every UI zone
+- Per-widget font sizes — independent size control for every UI zone including network name and typing indicator
 - 55 built-in themes, switchable from the hamburger menu
-- System tray: minimizes to tray on close, unread badge, balloon notifications
+- System tray: left-click toggles window; minimizes to tray on close
+- Unread dot indicator in sidebar (`● #channel`) — clears when channel is focused
 - Message buffer cap (2000 per channel) for stable long sessions
 - Panel size persistence — sidebar and nick list sizes remembered across restarts
-- Movable nick list dock (left or right)
+- Flat sidebar — Halloy-style: servers as section headers, no expand arrows
 - Tab nick completion and input history (Up/Down)
 - mIRC color code rendering — bold, italic, underline, colors in chat
 - CTCP auto-replies for VERSION and PING

@@ -3,6 +3,48 @@
 ---
 
 <!--
+Session summary — 2026-05-28 sprint #3:
+
+What was built:
+  - PM tabs: incoming PRIVMSGs open a sidebar buffer named after the sender.
+    /msg <nick> opens the buffer and switches to it. Outgoing messages echo
+    into the PM buffer. openPM() in SessionModel emits channelAdded for new
+    conversations.
+  - Nick list right-click menu: nick name (bold, disabled title), Message,
+    Send File (disabled — DCC pending), Whois, Give Op, Give Voice, Version.
+    Clean nick stored in Qt::UserRole on each list item.
+  - Tray icon left-click now toggles window visibility (hide if visible,
+    show+raise if hidden).
+  - Unread indicator: dot only (● #channel) in sidebar — no color/bold change
+    on the channel text. Tray badge removed entirely.
+  - Sidebar flat list redesign: no expand arrows, no collapse, servers as
+    muted uppercase section headers. Small grey circle icon on connected
+    server. Branch lines hidden via QSS. Dock title bars ("Servers",
+    "Users (N)") removed. Server header hover no longer causes visual shift.
+  - Font Config additions: Network Name and Typing Indicator size controls
+    (font_server_header, font_typing). Both persist to config.toml.
+  - Nick list item padding tightened (1px vs 2px).
+  - Topic bar redesign: info bar always visible showing #channel (modes)
+    left and "* NetworkName — N users" right. User count updates live.
+    Separate topic display (bufferBg background) drops below when Show Topic
+    is toggled. Topic no longer appears inline in the info bar.
+  - Channels indented 8px from server name (was 14px).
+
+Bugs fixed:
+  - Modes never populated in info bar because MODE #channel was never
+    requested; fixed by sending MODE after 366 RPL_ENDOFNAMES.
+  - Topic text was stored but never displayed; now shown in topic display.
+  - CLAUDE.md was tracked in git despite being in .gitignore; untracked.
+    AI-referencing language stripped from changelog comment blocks.
+
+Known issues left open:
+  - No reconnect on disconnect
+  - DCC Send File not implemented
+  - Emoji picker not built
+  - Halloy-style sidebar/userlist aesthetic not fully matched
+-->
+
+<!--
 Session summary — 2026-05-28 doc audit:
 
 What was done:
@@ -357,6 +399,23 @@ Known issues open:
 -->
 
 ## [Unreleased]
+
+**PM tabs, nick menu, sidebar redesign, topic bar, font config additions**
+
+- PM tabs — `/msg <nick>` opens a sidebar buffer; incoming PMs land in sender's buffer; both sides echoed
+- Nick list right-click menu — Message, Send File (disabled), Whois, Give Op, Give Voice, Version
+- Tray icon left-click toggles window — hides if visible, shows if hidden
+- Unread indicator — dot only (`● #uplink`) in sidebar; no tray badge
+- Sidebar flat list — no expand arrows, servers as muted uppercase section headers, grey circle icon on connected server, dock titles removed, hover on server headers fixed
+- Font Config — added "Network Name" and "Typing Indicator" size controls; persist as `font_server_header` / `font_typing`
+- Info bar always visible — `#uplink (+nt)` left, `* LinuxDojo — 42 users` right; user count live
+- Topic display — separate area below info bar with chat-window background, shown/hidden by "Show Topic" toggle
+- Channels indented 8px from server name; nick list items tighter
+
+**Fix:** Modes never populated — `MODE #channel` now sent after `366 RPL_ENDOFNAMES`  
+**Fix:** Topic text was stored but never shown — now displayed in topic display area  
+
+---
 
 **Doc audit — fixed stale content across index.html, faq.md, ircv3.md**
 

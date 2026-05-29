@@ -143,6 +143,12 @@ If your preferred nick is taken, UplinkIRC appends `_` and tries again (e.g. `yo
 
 Type `/join #channelname` in the input box and press Enter.
 
+### How do I send a private message?
+
+Use `/msg <nick> <text>`. A PM buffer for that user opens in the sidebar where you can continue the conversation. Incoming PMs from others open their own buffers automatically.
+
+You can also right-click a nick in the user list and choose **Message** to open the PM buffer without typing a command.
+
 ### How do I use a bouncer (ZNC or soju)?
 
 Set the `password` field in your server block. UplinkIRC sends it as `PASS` before registration, which is how bouncers authenticate.
@@ -192,13 +198,13 @@ theme = "nord"
 
 The nick list panel is a floating dock — drag its title bar to the left or right to reposition it. You can also drag the edge of the panel to resize it. Both position and size are saved automatically when you quit and restored on the next launch.
 
-### How do I hide the topic bar?
+### How do I show the channel topic?
 
-Open **Hamburger menu** and toggle the **Topic** option. You can also set it in config:
+The info bar at the top of the chat area always shows `#channel (modes) * NetworkName — N users`. To see the actual channel topic text, open **Hamburger menu** and toggle **Show Topic Bar** — a topic line will drop down below the info bar. You can also set it in config:
 
 ```toml
 [ui]
-show_topic = false
+show_topic = true
 ```
 
 ### How do I hide my nick next to the input box?

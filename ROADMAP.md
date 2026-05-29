@@ -52,6 +52,14 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] GitHub Actions CI — builds on every push across Linux, Windows, macOS
 - [x] GitHub Actions release workflow — builds platform binaries on tag push, attaches to GitHub releases
 - [x] v0.2.0 released
+- [x] PM tabs — /msg opens sidebar buffer; incoming PMs land in sender's buffer
+- [x] Nick list right-click menu — Message, Send File (stub), Whois, Give Op, Give Voice, Version
+- [x] Tray icon left-click toggles window visibility
+- [x] Unread dot indicator in sidebar (dot-only, no color/bold change, no tray badge)
+- [x] Sidebar flat list — Halloy-style: no arrows, servers as section headers, connected icon, dock titles removed
+- [x] Font Config: Network Name and Typing Indicator size controls
+- [x] Info bar always visible with channel, modes, network, user count
+- [x] Topic display — separate drop-down area with chat-window background, toggled by Show Topic
 
 ---
 
@@ -112,3 +120,5 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 - No reconnect on disconnect — must restart app
 - Emoji button toggle wired but picker not yet implemented
+- DCC Send File in nick menu is disabled — not yet implemented
+- Sidebar/userlist not fully Halloy-matched visually (WIP)
