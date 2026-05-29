@@ -3,6 +3,39 @@
 ---
 
 <!--
+Session summary — 2026-05-28 doc audit:
+
+What was done:
+  Full audit of all documentation against actual implemented features.
+  Found and fixed stale/wrong content across three files:
+
+  docs/index.html:
+    - Version badge updated v0.1.0 → v0.2.0 (nav + footer)
+    - SASL cap entry changed from "planned" (grey) to "active" (green)
+    - draft/typing cap added as active (was missing entirely)
+    - Two new feature cards added: SASL & NickServ, Persistent layout
+
+  docs/faq.md:
+    - "position is not persisted yet" updated to reflect panel persistence fix
+    - Stale App Icon Picker FAQ removed (feature was removed from UI)
+    - New entry: NickServ auto-identify setup with full config example
+    - New entry: SASL PLAIN setup with full config example and network advice
+
+  docs/ircv3.md:
+    - SASL section moved from Planned to Active; updated to describe PLAIN
+      implementation, config keys, and 903/904/906 handling
+    - draft/typing added as new Active section with description
+
+Bugs found:
+  - docs were consistently 1-2 features behind code. Root cause: close-session
+    checklist was skipped after the "push it" confirmation. Added feedback memory.
+
+Known issues left open:
+  - Emoji picker not built
+  - No reconnect on disconnect
+-->
+
+<!--
 Session summary — 2026-05-28 sprint #2:
 
 What was built:
@@ -332,6 +365,14 @@ Known issues open:
 -->
 
 ## [Unreleased]
+
+**Doc audit — fixed stale content across index.html, faq.md, ircv3.md**
+
+- `docs/index.html` — version updated to v0.2.0; SASL cap marked active; `draft/typing` cap added; SASL/NickServ and panel persistence feature cards added
+- `docs/faq.md` — panel persistence FAQ updated; NickServ IDENTIFY and SASL PLAIN FAQ entries added with full config examples
+- `docs/ircv3.md` — SASL moved from Planned to Active with full description; `draft/typing` added as Active
+
+---
 
 **NickServ auto-identify, UI polish, panel persistence, topic bar fix, /sysinfo v2**
 
