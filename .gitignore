@@ -1,6 +1,4 @@
 # Private / local
-CLAUDE.md
-.claude/
 .env
 config.toml
 
