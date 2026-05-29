@@ -65,6 +65,8 @@ signals:
     void modesReceived    (const QString &server, const QString &channel, const QString &modes);
     void namesReceived    (const QString &server, const QString &channel, const QStringList &nicks);
     void namesDone        (const QString &server, const QString &channel);
+    void whoEntryReceived (const QString &server, const QString &channel,
+                           const QString &nick,   const QString &flags);
 
     void serverMessage(const QString &server, const QString &text);
     void rawReceived  (const QString &line);

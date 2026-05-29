@@ -67,8 +67,11 @@ void EmojiPicker::buildButtons()
         btn->setAutoRaise(true);
         btn->setToolTip(entry.shortcode);
         btn->setFocusPolicy(Qt::NoFocus);
-        // Override global QToolButton padding (designed for sidebar nav, not emoji)
-        btn->setStyleSheet("QToolButton { padding: 0; text-align: center; }");
+        // Override global QToolButton styling (sidebar nav rules don't apply here)
+        btn->setStyleSheet(
+            "QToolButton { padding: 0; text-align: center;"
+            "              background: transparent; border: none; }"
+            "QToolButton:hover { background: rgba(128,128,128,0.2); }");
 
         connect(btn, &QToolButton::clicked, this, [this, ch = entry.ch]{
             hide();

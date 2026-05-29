@@ -90,6 +90,8 @@ private:
     void onTopicReceived  (const QString &host, const QString &channel, const QString &topic);
     void onModesReceived  (const QString &host, const QString &channel, const QString &modes);
     void onNamesReceived  (const QString &host, const QString &channel, const QStringList &nicks);
+    void onWhoEntry       (const QString &host, const QString &channel,
+                           const QString &nick, const QString &flags);
     void onServerMessage  (const QString &host, const QString &text);
     void onSelfNickChanged(const QString &host, const QString &nick);
 

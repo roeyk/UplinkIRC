@@ -2,6 +2,30 @@
 
 ---
 
+## v0.7.4 — 2026-05-29
+
+### Fixed
+- **Nick list: multi-prefix nicks** — `@+nick` was storing `+nick` as the nick
+  name due to only stripping one leading prefix char; now consumes all leading
+  prefix characters and keeps the highest-ranked one.
+- **Nick list: MODE changes not refreshing display** — `+o`, `-o`, `+v`, `+B`
+  etc. received after the initial NAMES reply now update `NickEntry.prefix` in
+  place, re-sort the list, and emit `nickListChanged` so the display reflects
+  immediately. Previously `modesChanged` only refreshed the topic bar.
+- **Bot icons not showing on join** — client now sends `WHO #channel` after
+  NAMES; `352 RPL_WHOREPLY` flags field (`B`) populates `botNicks` on every
+  join/restart, matching Halloy behaviour.
+- **Bot icons moved to right of nick name** — was `🤖 @nick`, now `@nick 🤖`.
+- **Emoji picker: colored squares behind buttons** — global QSS
+  `QToolButton { background-color: sidebarBg }` was leaking into the picker;
+  buttons are now transparent with a subtle semi-transparent hover tint.
+- **Typing indicator: layout shift** — label row now stays visible (empty text)
+  when nobody is typing so the chat view height never shifts; hides only when
+  the typing indicator feature is toggled off entirely.
+- **Scrollbar width** — halved from 8 px to 4 px (border-radius 4 → 2 px).
+
+---
+
 ## v0.7.2 — 2026-05-29
 
 ### Fixed
@@ -20,6 +44,99 @@
   two-column grid (5 rows instead of 10); all options preserved.
 
 ---
+
+<!--
+Session summary — 2026-05-29  v0.7.4 — Windows polish, nick list correctness, WHO bot detection, emoji picker
+
+What was built / fixed:
+  - Windows theme colors: QTextBrowser link color and nick color when
+    coloredNicks=off were both black on Windows. Root cause: palette(text)
+    in inline HTML CSS doesn't resolve in Qt's HTML renderer on Windows
+    (only works in QSS widget rules). Fixed by storing the loaded Theme struct
+    as m_theme on MainWindow and using m_theme.text directly. Link color fixed
+    by setting document()->setDefaultStyleSheet() with theme accent color,
+    updated on theme change.
+
+  - /sysinfo Windows: all four sysinfo functions returned "Unknown" on Windows.
+    Added #if defined(Q_OS_WIN) branches: CPU from registry
+    HKLM\...\CentralProcessor\0\ProcessorNameString, MEM via
+    GlobalMemoryStatusEx, GPU via PowerShell Get-CimInstance
+    Win32_VideoController, Uptime via GetTickCount64().
+
+  - Font Config dialog Windows: QFontComboBox was rendering fonts in a tiny
+    sliver because global QSS QToolButton padding was leaking in. Fixed with
+    setMinimumHeight(30). Also reorganized 10 individual size rows into a
+    2-column grid (5 rows) to reduce visual clutter while keeping all options.
+
+  - Scrollbar width: halved from 8px to 4px (border-radius 4→2px).
+
+  - Typing indicator layout shift: label was being setVisible(false) when
+    nobody was typing, causing the chat view to resize on every typing event.
+    Fixed by keeping label always visible with empty text; only truly hides
+    when the typing feature is toggled off.
+
+  - Nick list multi-prefix: setNicks() and addNick() in channel.h only stripped
+    one leading prefix char. With multi-prefix negotiated, @+nick stored as
+    nick="+nick". Fixed by consuming all leading prefix chars in a while loop,
+    keeping highest-ranked.
+
+  - Nick list MODE updates: onModesReceived() called parseBotModes() and emitted
+    modesChanged (→ topic bar refresh only). Nick prefixes never updated live.
+    Added modeToPrefix() helper mapping o→@, h→%, v→+, a→&, q→~. Now parses
+    mode string, updates NickEntry.prefix in place, re-sorts, emits
+    nickListChanged. Also emits nickListChanged after parseBotModes so +B takes
+    effect immediately.
+
+  - WHO-based bot detection: previously bots only showed icons if a +B MODE
+    change arrived while connected. On restart/join, server doesn't replay
+    existing umodes. Fixed by sending WHO #channel after 366 ENDOFNAMES.
+    Added whoEntryReceived signal to IrcClient, case 352 handler extracts
+    nick and flags, onWhoEntry() in SessionModel checks for 'B' in flags and
+    updates ch->botNicks, emits nickListChanged.
+
+  - Bot icons moved to right: was botIconForNick + " " + e.display(), now
+    e.display() + " " + botIconForNick.
+
+  - Emoji picker colored squares: global QSS QToolButton { background-color:
+    sidebarBg; padding: 4px 10px 4px 0px } was applied to emoji picker buttons.
+    Asymmetric padding shifted emoji off-center; sidebarBg made colored squares
+    visible. Per-button setStyleSheet() overrides to transparent background,
+    0 padding, and semi-transparent hover tint.
+
+  - Emoji picker search grid alignment: when fewer than 9 results returned,
+    QGridLayout stretched partial columns to fill scroll area width. Fixed by
+    setting column minimum widths for all 9 columns and adding a stretch to
+    column kCols to absorb leftover space.
+
+  - docs/index.html: added Download section with direct binary links for all
+    three platforms, updated version badge v0.2.0→v0.7.2, added Download to
+    nav, changed hero primary button to "Download v0.7.2".
+
+  - README download badges: hardcoded v0.7.1 filename in /releases/latest/
+    download/ URLs; updated to v0.7.2.
+
+Bugs fixed:
+  - Windows: links black on dark themes
+  - Windows: nicks black when coloredNicks=off
+  - Windows: /sysinfo all Unknown
+  - Windows: Font Config fonts squashed + too many rows
+  - Nick list: multi-prefix nicks showing wrong nick name
+  - Nick list: MODE changes not updating prefix display
+  - Bot icons: not shown on join/restart (only on live MODE change)
+  - Bot icons: on left instead of right
+  - Emoji picker: colored squares behind buttons on all platforms
+  - Emoji picker: search results spread across full width
+  - Typing indicator: chat view height shifting up/down
+
+Known issues remaining:
+  - Link preview for title-only pages not fully verified
+  - Link preview cards lost on channel switch
+  - Hamburger menu briefly shrinks on theme switch (root cause unknown)
+  - Server errors (482 etc.) appear in (server) buffer, not active channel
+  - DCC Send File not implemented
+  - AppImage packaging not done
+
+-->
 
 <!--
 Session summary — 2026-05-29  v0.7.1 — Bug fixes: /nick label, image preview, typing indicator layout

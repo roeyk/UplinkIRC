@@ -1764,7 +1764,7 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
         const bool isBot = (ch->botNicks.contains(e.nick.toLower()))
                         || (sess && sess->botNicks.contains(e.nick.toLower()));
         const QString label = isBot
-            ? botIconForNick(e.nick) + " " + e.display()
+            ? e.display() + " " + botIconForNick(e.nick)
             : e.display();
         auto *item = new QListWidgetItem(label);
         item->setData(Qt::UserRole, e.nick);

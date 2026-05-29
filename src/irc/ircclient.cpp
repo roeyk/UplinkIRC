@@ -565,12 +565,24 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
     }
 
+    case 352: { // RPL_WHOREPLY — <client> <channel> <user> <host> <server> <nick> <flags> :<hop> <real>
+        if (params.size() >= 7) {
+            const QString channel = params[1];
+            const QString nick    = params[5];
+            const QString flags   = params[6];
+            if (channel.startsWith('#') || channel.startsWith('&'))
+                emit whoEntryReceived(m_host, channel, nick, flags);
+        }
+        break;
+    }
+
     case 366: { // RPL_ENDOFNAMES
         if (params.size() >= 2) {
             const QString channel = params[1];
             emit namesReceived(m_host, channel, m_namesBuffer.take(channel));
             emit namesDone(m_host, channel);
             sendRaw("MODE " + channel);
+            sendRaw("WHO " + channel);
             // Request chat history on join
             if (m_ackedCaps.contains("chathistory"))
                 requestHistory(channel, 100);

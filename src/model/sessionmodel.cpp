@@ -189,6 +189,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::topicReceived,   this, &SessionModel::onTopicReceived);
     connect(cl, &IrcClient::modesReceived,   this, &SessionModel::onModesReceived);
     connect(cl, &IrcClient::namesReceived,   this, &SessionModel::onNamesReceived);
+    connect(cl, &IrcClient::whoEntryReceived,this, &SessionModel::onWhoEntry);
     connect(cl, &IrcClient::serverMessage,   this, &SessionModel::onServerMessage);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
     connect(cl, &IrcClient::typingReceived,  this, &SessionModel::typingReceived);
@@ -497,6 +498,26 @@ void SessionModel::onNamesReceived(const QString &host, const QString &channel, 
     if (!sess) return;
     auto &ch = sess->getOrCreate(channel);
     ch.setNicks(nicks);
+    emit nickListChanged(host, channel);
+}
+
+void SessionModel::onWhoEntry(const QString &host, const QString &channel,
+                              const QString &nick, const QString &flags)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+    auto *ch = sess->get(channel);
+    if (!ch) return;
+
+    const bool isBot = flags.contains('B');
+    const QString key = nick.toLower();
+    const bool changed = isBot ? !ch->botNicks.contains(key)
+                                :  ch->botNicks.contains(key);
+    if (!changed) return;
+
+    if (isBot) ch->botNicks.insert(key);
+    else        ch->botNicks.remove(key);
+
     emit nickListChanged(host, channel);
 }
 

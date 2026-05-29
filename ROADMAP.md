@@ -125,7 +125,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Window state persistence — dock sizes and positions saved via QSettings on quit, restored on launch
 - [x] Config editor UI — Manage Servers dialog covers server-level editing
 - [x] Emoji picker — searchable popup grid with :shortcode: autocomplete and auto-substitution
-- [x] Bot nick indicators — 🤖/👾 shown for +B mode nicks
+- [x] Bot nick indicators — 🤖/👾 shown for +B mode nicks; auto-detected on join via WHO reply; icon displayed to right of nick name
 - [x] Native Windows style — windows11 Qt style by default; no alien dark theme on fresh installs
 - [ ] FreeBSD port skeleton
 - [ ] AppImage packaging for Linux
@@ -151,4 +151,6 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 - Server errors (482 channel-op-needed etc.) appear in the (server) buffer, not the active channel
 - Link preview cards lost when switching channels (not stored in message history)
+- Link preview for title-only pages (no og:title) — may not preview; needs verification
 - DCC Send File in nick menu is disabled — not yet implemented
+- MODE prefix removal (e.g. `-o`) on a nick with multiple active prefixes only clears the removed prefix; lower-ranked prefixes are not re-displayed until a fresh NAMES reply (WHO only fetches highest active flag)
