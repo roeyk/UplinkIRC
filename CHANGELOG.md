@@ -221,6 +221,22 @@ Known issues remaining:
   - SASL EXTERNAL (cert-based) not implemented
 -->
 
+## v0.9.0 — 2026-05-30
+
+### Added
+
+- **DCC Send File** — right-click any nick in the user list and choose **Send File** to open a file picker and initiate a direct transfer. The recipient sees an accept/reject dialog showing the filename and size; accepted transfers save to a user-chosen path. Both sides get a live progress dialog with a cancel button. Outgoing transfers listen on a local TCP port (standard 4-byte big-endian ACK protocol); incoming transfers connect directly to the sender. A 60-second timeout fires if no connection arrives; a 30-second timeout fires on the receiver side if the sender never responds.
+- **SASL EXTERNAL (certificate authentication)** — add `sasl_external = true`, `client_cert`, and `client_key` to a server block to authenticate via a TLS client certificate instead of a password. UplinkIRC loads the PEM certificate and key before the TLS handshake, negotiates `AUTHENTICATE EXTERNAL` during CAP, and sends an empty response — the server derives your identity from the certificate. Both RSA and EC (ECDSA) keys are supported. The Server dialog (☰ → Preferences → Manage Servers → Edit) gains a checkbox and browse buttons for cert/key paths.
+- **AppImage packaging** — `packaging/build-appimage.sh` produces a self-contained `UplinkIRC-VERSION-ARCH.AppImage`. The AppImage embeds zsync metadata so users can update in-place with `appimageupdatetool` without a full re-download.
+- **Automated release builds** — pushing a `v*` tag triggers CI on Linux (AppImage + tar.gz), Windows (zip), and macOS (DMG). All artifacts upload to the GitHub release automatically.
+
+### Fixed
+
+- **Link preview entity decoding** — page titles containing HTML entities (`&amp;`, `&#39;`, `&lt;`, etc.) are now decoded via `QTextDocument` before being displayed. Both `og:title` and the plain `<title>` fallback path are affected.
+- **MSVC `std::min` conflict** — replaced `std::min` calls in `mainwindow.cpp` with ternary expressions to avoid the `min`/`max` macro collision on MSVC (Windows builds).
+
+---
+
 ## v0.8.1 — 2026-05-29
 
 ### Fix
@@ -622,20 +638,6 @@ Next priorities:
   - DCC NAT traversal or passive DCC
   - In-app update check button (trigger appimageupdatetool or show version badge)
 -->
-
-## [0.9.0] — 2026-05-30
-
-### Added
-- **DCC Send File** — right-click any nick in the user list and choose **Send File** to open a file picker and initiate a direct transfer. The recipient sees an accept/reject dialog showing the filename and size; accepted transfers save to a user-chosen path. Both sides get a live progress dialog with a cancel button. Outgoing transfers listen on a local TCP port (standard 4-byte big-endian ACK protocol); incoming transfers connect directly to the sender. A 60-second timeout fires if no connection arrives; a 30-second timeout fires on the receiver side if the sender never responds.
-- **SASL EXTERNAL (certificate authentication)** — add `sasl_external = true`, `client_cert`, and `client_key` to a server block to authenticate via a TLS client certificate instead of a password. UplinkIRC loads the PEM certificate and key before the TLS handshake, negotiates `AUTHENTICATE EXTERNAL` during CAP, and sends an empty response — the server derives your identity from the certificate. Both RSA and EC (ECDSA) keys are supported. The Server dialog (☰ → Preferences → Manage Servers → Edit) gains a checkbox and browse buttons for cert/key paths.
-- **AppImage packaging** — `packaging/build-appimage.sh` produces a self-contained `UplinkIRC-VERSION-ARCH.AppImage`. The AppImage embeds zsync metadata so users can update in-place with `appimageupdatetool` without a full re-download.
-- **Automated release builds** — pushing a `v*` tag triggers CI on Linux (AppImage + tar.gz), Windows (zip), and macOS (DMG). All artifacts upload to the GitHub release automatically.
-
-### Fixed
-- **Link preview entity decoding** — page titles containing HTML entities (`&amp;`, `&#39;`, `&lt;`, etc.) are now decoded via `QTextDocument` before being displayed. Both `og:title` and the plain `<title>` fallback path are affected.
-- **MSVC `std::min` conflict** — replaced `std::min` calls in `mainwindow.cpp` with ternary expressions to avoid the `min`/`max` macro collision on MSVC (Windows builds).
-
----
 
 ## [0.8.1] — 2026-05-30
 
