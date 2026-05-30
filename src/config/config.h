@@ -28,6 +28,9 @@ struct ServerConfig {
     QString            password;         // PASS / bouncer
     QString            saslUser;
     QString            saslPassword;
+    bool               saslExternal{false};
+    QString            clientCertFile;
+    QString            clientKeyFile;
     QString            nickservPassword;
     BouncerType        bouncerType{BouncerType::None};
     QString            bouncerNetwork;   // soju network name, or empty
@@ -38,6 +41,8 @@ struct ServerConfig {
             && nick == o.nick && user == o.user && realname == o.realname
             && name == o.name && password == o.password
             && saslUser == o.saslUser && saslPassword == o.saslPassword
+            && saslExternal == o.saslExternal
+            && clientCertFile == o.clientCertFile && clientKeyFile == o.clientKeyFile
             && nickservPassword == o.nickservPassword;
     }
     bool operator!=(const ServerConfig &o) const { return !(*this == o); }

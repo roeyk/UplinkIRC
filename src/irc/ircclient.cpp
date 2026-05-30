@@ -3,6 +3,9 @@
 #include "config/config.h"
 #include "version.h"
 
+#include <QFile>
+#include <QSslCertificate>
+#include <QSslKey>
 #include <QSslSocket>
 #include <QTimer>
 
@@ -42,10 +45,28 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_password        = cfg.password;
     m_saslUser        = cfg.saslUser;
     m_saslPassword    = cfg.saslPassword;
+    m_saslExternal    = cfg.saslExternal;
     m_saslPending     = false;
     m_nickservPassword = cfg.nickservPassword;
     m_bouncerType     = cfg.bouncerType;
     m_bouncerNetwork  = cfg.bouncerNetwork;
+
+    if (m_saslExternal && !cfg.clientCertFile.isEmpty() && !cfg.clientKeyFile.isEmpty()) {
+        QFile certFile(cfg.clientCertFile);
+        if (certFile.open(QIODevice::ReadOnly)) {
+            const QSslCertificate cert(certFile.readAll(), QSsl::Pem);
+            if (!cert.isNull())
+                m_socket->setLocalCertificate(cert);
+        }
+        QFile keyFile(cfg.clientKeyFile);
+        if (keyFile.open(QIODevice::ReadOnly)) {
+            const QByteArray keyData = keyFile.readAll();
+            QSslKey key(keyData, QSsl::Rsa, QSsl::Pem);
+            if (key.isNull()) key = QSslKey(keyData, QSsl::Ec, QSsl::Pem);
+            if (!key.isNull())
+                m_socket->setPrivateKey(key);
+        }
+    }
 
     if (m_ssl)
         m_socket->connectToHostEncrypted(m_host, m_port);
@@ -56,6 +77,13 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
 bool IrcClient::isConnected() const
 {
     return m_socket->state() == QAbstractSocket::ConnectedState;
+}
+
+quint32 IrcClient::localIpv4() const
+{
+    bool ok = false;
+    const quint32 v4 = m_socket->localAddress().toIPv4Address(&ok);
+    return ok ? v4 : 0;
 }
 
 void IrcClient::quit(const QString &reason)
@@ -270,10 +298,14 @@ void IrcClient::processLine(const QString &line)
 
     if (cmd == "AUTHENTICATE") {
         if (!msg.params.isEmpty() && msg.params[0] == "+") {
-            const QByteArray payload =
-                QByteArray("\0", 1) + m_saslUser.toUtf8() +
-                QByteArray("\0", 1) + m_saslPassword.toUtf8();
-            sendRaw("AUTHENTICATE " + QString::fromLatin1(payload.toBase64()));
+            if (m_saslExternal) {
+                sendRaw("AUTHENTICATE +");
+            } else {
+                const QByteArray payload =
+                    QByteArray("\0", 1) + m_saslUser.toUtf8() +
+                    QByteArray("\0", 1) + m_saslPassword.toUtf8();
+                sendRaw("AUTHENTICATE " + QString::fromLatin1(payload.toBase64()));
+            }
         }
         return;
     }
@@ -355,6 +387,21 @@ void IrcClient::processLine(const QString &line)
                     m_ctcpTimestamps.insert(rkey, now);
                     QString payload = ctcp.section(' ', 1).left(32);
                     sendRaw("NOTICE " + msg.nick + " :\x01PING " + payload + "\x01");
+                }
+            } else if (ctcpCmd == "DCC") {
+                const QString dccType = ctcp.section(' ', 1, 1).toUpper();
+                if (dccType == "SEND") {
+                    const QString fn = ctcp.section(' ', 2, 2);
+                    bool ok1, ok2, ok3;
+                    const quint32 ip       = ctcp.section(' ', 3, 3).toUInt(&ok1);
+                    const quint16 port     = ctcp.section(' ', 4, 4).toUShort(&ok2);
+                    const qint64  filesize = ctcp.section(' ', 5, 5).toLongLong(&ok3);
+                    if (ok1 && ok2 && ok3 && !fn.isEmpty())
+                        emit dccSendReceived(m_host, msg.nick, fn, ip, port, filesize);
+                    else
+                        emit serverMessage(m_host, "DCC SEND from " + msg.nick + " (malformed)");
+                } else {
+                    emit serverMessage(m_host, "DCC " + dccType + " from " + msg.nick + " (unsupported)");
                 }
             } else {
                 emit serverMessage(m_host, "CTCP " + ctcpCmd + " from " + msg.nick);
@@ -550,7 +597,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
                     << "soju.im/no-implicit-names";
         }
 
-        if (!m_saslUser.isEmpty() && !m_saslPassword.isEmpty())
+        if ((!m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) || m_saslExternal)
             desired << "sasl";
 
         QStringList want;
@@ -572,9 +619,10 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         for (const QString &cap : acked)
             m_ackedCaps.insert(cap.startsWith('-') ? cap.mid(1) : cap);
 
-        if (acked.contains("sasl") && !m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) {
+        if (acked.contains("sasl") &&
+            ((!m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) || m_saslExternal)) {
             m_saslPending = true;
-            sendRaw("AUTHENTICATE PLAIN");
+            sendRaw(m_saslExternal ? "AUTHENTICATE EXTERNAL" : "AUTHENTICATE PLAIN");
         } else {
             sendRaw("CAP END");
         }

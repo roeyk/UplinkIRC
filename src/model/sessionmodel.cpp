@@ -238,6 +238,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::ctcpTimeReply,   this, &SessionModel::onCtcpTimeReply);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
     connect(cl, &IrcClient::typingReceived,  this, &SessionModel::typingReceived);
+    connect(cl, &IrcClient::dccSendReceived, this, &SessionModel::dccSendReceived);
     connect(cl, &IrcClient::pingRtt,         this, &SessionModel::pingRtt);
     connect(cl, &IrcClient::reconnecting,    this, &SessionModel::serverReconnecting);
 

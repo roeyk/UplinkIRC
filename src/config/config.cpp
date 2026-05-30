@@ -127,6 +127,9 @@ Config Config::load(const QString &path)
                 sc.password     = QString::fromStdString((*s)["password"].value_or<std::string>(""));
                 sc.saslUser         = QString::fromStdString((*s)["sasl_user"].value_or<std::string>(""));
                 sc.saslPassword     = QString::fromStdString((*s)["sasl_password"].value_or<std::string>(""));
+                sc.saslExternal     = (*s)["sasl_external"].value_or(false);
+                sc.clientCertFile   = QString::fromStdString((*s)["client_cert"].value_or<std::string>(""));
+                sc.clientKeyFile    = QString::fromStdString((*s)["client_key"].value_or<std::string>(""));
                 sc.nickservPassword = QString::fromStdString((*s)["nickserv_password"].value_or<std::string>(""));
                 const std::string bt = (*s)["bouncer"].value_or<std::string>("none");
                 if      (bt == "znc")  sc.bouncerType = BouncerType::ZNC;
@@ -202,6 +205,12 @@ void Config::save(const Config &cfg, const QString &path)
             out << "sasl_user         = " << tomlQuote(s.saslUser) << "\n";
         if (!s.saslPassword.isEmpty())
             out << "sasl_password     = " << tomlQuote(s.saslPassword) << "\n";
+        if (s.saslExternal)
+            out << "sasl_external     = true\n";
+        if (!s.clientCertFile.isEmpty())
+            out << "client_cert       = " << tomlQuote(s.clientCertFile) << "\n";
+        if (!s.clientKeyFile.isEmpty())
+            out << "client_key        = " << tomlQuote(s.clientKeyFile) << "\n";
         if (!s.nickservPassword.isEmpty())
             out << "nickserv_password = " << tomlQuote(s.nickservPassword) << "\n";
         if (s.bouncerType == BouncerType::ZNC)

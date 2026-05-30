@@ -17,6 +17,8 @@ class DocsDialog;
 class PreferencesDialog;
 class LinkPreview;
 class EmojiPicker;
+class DccSend;
+class DccReceive;
 
 class QTimer;
 class QTreeWidget;

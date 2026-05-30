@@ -4,6 +4,7 @@
 
 class QComboBox;
 class QLineEdit;
+class QPushButton;
 class QSpinBox;
 class QCheckBox;
 
@@ -24,9 +25,12 @@ private:
     QLineEdit *m_user;
     QLineEdit *m_realname;
     QLineEdit *m_password;
-    QLineEdit *m_saslUser;
-    QLineEdit *m_saslPassword;
-    QLineEdit *m_nickservPassword;
+    QLineEdit   *m_saslUser;
+    QLineEdit   *m_saslPassword;
+    QCheckBox   *m_saslExternal;
+    QLineEdit   *m_clientCert;
+    QLineEdit   *m_clientKey;
+    QLineEdit   *m_nickservPassword;
     QComboBox *m_bouncerType;
     QLineEdit *m_bouncerNetwork;
     QLineEdit *m_autoJoin;

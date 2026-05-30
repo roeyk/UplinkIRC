@@ -39,6 +39,7 @@ public:
     QString host()        const { return m_host; }
     bool    isConnected() const;
     bool    hasCap(const QString &cap) const { return m_ackedCaps.contains(cap); }
+    quint32 localIpv4()  const;
 
 signals:
     void connected(const QString &server);
@@ -77,6 +78,8 @@ signals:
     void ctcpTimeReply  (const QString &server, const QString &nick, const QString &timeStr);
     void rawReceived  (const QString &line);
     void selfNickChanged(const QString &server, const QString &newNick);
+    void dccSendReceived(const QString &server, const QString &fromNick,
+                         const QString &filename, quint32 ip, quint16 port, qint64 filesize);
     void typingReceived(const QString &server, const QString &channel,
                         const QString &nick,   const QString &state);
 
@@ -114,6 +117,7 @@ private:
     QString      m_password;
     QString      m_saslUser;
     QString      m_saslPassword;
+    bool         m_saslExternal{false};
     bool         m_saslPending{false};
     QString      m_nickservPassword;
     QString      m_buffer;

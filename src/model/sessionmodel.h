@@ -73,6 +73,10 @@ signals:
     void typingReceived(const QString &host, const QString &channel,
                         const QString &nick, const QString &state);
 
+    // DCC
+    void dccSendReceived(const QString &server, const QString &fromNick,
+                         const QString &filename, quint32 ip, quint16 port, qint64 filesize);
+
 private:
     void attachClient(IrcClient *client, const ServerConfig &cfg);
     void spawnSession(const ServerConfig &sc, bool addToConfig);

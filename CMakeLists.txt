@@ -60,6 +60,10 @@ qt_add_executable(UplinkIRC WIN32
     src/irc/ircclient.h
     src/irc/ircparser.cpp
     src/irc/ircparser.h
+    src/irc/dccsend.cpp
+    src/irc/dccsend.h
+    src/irc/dccreceive.cpp
+    src/irc/dccreceive.h
 )
 
 configure_file(src/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)

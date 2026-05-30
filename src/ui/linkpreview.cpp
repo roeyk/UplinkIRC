@@ -7,6 +7,7 @@
 #include <QHostAddress>
 #include <QBuffer>
 #include <QImageReader>
+#include <QTextDocument>
 #include <memory>
 
 static constexpr int kMaxBytes    = 32768;   // 32 KB — more room for late <title> tags
@@ -24,6 +25,13 @@ static bool isImageUrl(const QUrl &url)
     const QString p = url.path().toLower();
     return p.endsWith(".png") || p.endsWith(".jpg") || p.endsWith(".jpeg")
         || p.endsWith(".gif") || p.endsWith(".webp");
+}
+
+static QString decodeEntities(const QString &s)
+{
+    QTextDocument doc;
+    doc.setHtml(s);
+    return doc.toPlainText();
 }
 
 static bool isPrivateUrl(const QUrl &url)
@@ -173,20 +181,20 @@ QString LinkPreview::extractTitle(const QByteArray &data) const
         R"(<meta[^>]+property\s*=\s*["']og:title["'][^>]+content\s*=\s*["']([^"']{1,200})["'])",
         QRegularExpression::CaseInsensitiveOption);
     auto m = ogPropFirst.match(html);
-    if (m.hasMatch()) return m.captured(1).trimmed();
+    if (m.hasMatch()) return decodeEntities(m.captured(1).trimmed());
 
     static const QRegularExpression ogContentFirst(
         R"(<meta[^>]+content\s*=\s*["']([^"']{1,200})["'][^>]+property\s*=\s*["']og:title["'])",
         QRegularExpression::CaseInsensitiveOption);
     m = ogContentFirst.match(html);
-    if (m.hasMatch()) return m.captured(1).trimmed();
+    if (m.hasMatch()) return decodeEntities(m.captured(1).trimmed());
 
     static const QRegularExpression titleTag(
         R"(<title[^>]*>([\s\S]{1,300}?)</title>)",
         QRegularExpression::CaseInsensitiveOption);
     m = titleTag.match(html);
     if (m.hasMatch()) {
-        QString t = m.captured(1).simplified();
+        QString t = decodeEntities(m.captured(1).simplified());
         if (!t.isEmpty()) return t;
     }
 

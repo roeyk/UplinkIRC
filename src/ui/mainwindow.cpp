@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "irc/ircclient.h"
+#include "irc/dccsend.h"
+#include "irc/dccreceive.h"
 #include "ui/trayicon.h"
 #include "ui/aboutdialog.h"
 #include "ui/docsdialog.h"
@@ -55,6 +57,9 @@
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QBuffer>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QProgressDialog>
 #include <QRandomGenerator>
 #if defined(Q_OS_WIN)
 #  include <windows.h>
@@ -847,6 +852,49 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::unreadChanged,     this, &MainWindow::onUnreadChanged);
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
     connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
+
+    connect(m_model, &SessionModel::dccSendReceived, this,
+            [this](const QString &server, const QString &fromNick,
+                   const QString &filename, quint32 ip, quint16 port, qint64 filesize)
+    {
+        const QString sizeStr = filesize >= 1024*1024
+            ? QString::number(filesize / (1024*1024)) + " MB"
+            : QString::number(filesize / 1024) + " KB";
+
+        const int ret = QMessageBox::question(this, "Incoming DCC File",
+            fromNick + " wants to send you:\n" + filename
+            + "  (" + sizeStr + ")\n\nAccept?",
+            QMessageBox::Yes | QMessageBox::No);
+        if (ret != QMessageBox::Yes) return;
+
+        const QString savePath = QFileDialog::getSaveFileName(this, "Save File", filename);
+        if (savePath.isEmpty()) return;
+
+        auto *dcc  = new DccReceive(savePath, ip, port, filesize, this);
+        auto *prog = new QProgressDialog("Receiving " + filename + " from " + fromNick,
+                                          "Cancel", 0, (int)std::min(filesize, (qint64)INT_MAX), this);
+        prog->setWindowModality(Qt::NonModal);
+        prog->setAttribute(Qt::WA_DeleteOnClose);
+
+        connect(dcc, &DccReceive::progress, prog, [prog, filesize](qint64 received, qint64){
+            prog->setValue((int)(filesize > INT_MAX
+                ? received * INT_MAX / filesize : received));
+        });
+        connect(dcc, &DccReceive::finished, this, [this, prog, dcc](const QString &path){
+            prog->setValue(prog->maximum());
+            dcc->deleteLater();
+            QMessageBox::information(this, "DCC", "File received:\n" + path);
+        });
+        connect(dcc, &DccReceive::error, this, [this, prog, dcc](const QString &msg){
+            prog->close();
+            dcc->deleteLater();
+            QMessageBox::warning(this, "DCC Error", msg);
+        });
+        connect(prog, &QProgressDialog::canceled, dcc, [dcc]{ dcc->deleteLater(); });
+
+        dcc->start();
+        prog->show();
+    });
 
     connect(m_model, &SessionModel::pingRtt, this, [this](const QString &host, int ms){
         if (m_signalBars && host == m_model->activeHost())
@@ -1921,8 +1969,48 @@ void MainWindow::onNickListContextMenu(const QPoint &pos)
         if (m_input) m_input->setFocus();
     });
 
-    QAction *fileAct = menu.addAction("Send File");
-    fileAct->setEnabled(false);  // DCC not yet implemented
+    connect(menu.addAction("Send File"), &QAction::triggered, this, [this, host, nick]{
+        const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick);
+        if (path.isEmpty()) return;
+
+        IrcClient *client = m_model->clientFor(host);
+        if (!client) return;
+
+        auto *dcc = new DccSend(path, this);
+        if (!dcc->listen()) { dcc->deleteLater(); return; }
+
+        const quint32 ip   = client->localIpv4();
+        const quint16 port = dcc->port();
+        const QString fn   = dcc->filename();
+        const qint64  size = dcc->filesize();
+
+        m_model->sendRaw(host,
+            "PRIVMSG " + nick + " :\x01""DCC SEND "
+            + fn + " " + QString::number(ip)
+            + " " + QString::number(port)
+            + " " + QString::number(size) + "\x01");
+
+        auto *prog = new QProgressDialog("Sending " + fn + " to " + nick,
+                                          "Cancel", 0, (int)std::min(size, (qint64)INT_MAX), this);
+        prog->setWindowModality(Qt::NonModal);
+        prog->setAttribute(Qt::WA_DeleteOnClose);
+
+        connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
+            prog->setValue((int)(size > INT_MAX ? sent * INT_MAX / size : sent));
+        });
+        connect(dcc, &DccSend::finished, prog, [prog, dcc]{
+            prog->setValue(prog->maximum());
+            dcc->deleteLater();
+        });
+        connect(dcc, &DccSend::error, this, [this, prog, dcc](const QString &msg){
+            prog->close();
+            dcc->deleteLater();
+            QMessageBox::warning(this, "DCC Error", msg);
+        });
+        connect(prog, &QProgressDialog::canceled, dcc, [dcc]{ dcc->deleteLater(); });
+
+        prog->show();
+    });
 
     connect(menu.addAction("Whois"), &QAction::triggered, this, [this, host, nick]{
         m_model->sendRaw(host, "WHOIS " + nick);

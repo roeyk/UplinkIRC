@@ -3,9 +3,12 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QFileDialog>
 #include <QFormLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QSpinBox>
 #include <QVBoxLayout>
 
@@ -32,6 +35,11 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_saslUser         = new QLineEdit;
     m_saslPassword     = new QLineEdit;
     m_saslPassword->setEchoMode(QLineEdit::Password);
+    m_saslExternal     = new QCheckBox("Use SASL EXTERNAL (client certificate)");
+    m_clientCert       = new QLineEdit;
+    m_clientCert->setPlaceholderText("path/to/client.crt (PEM)");
+    m_clientKey        = new QLineEdit;
+    m_clientKey->setPlaceholderText("path/to/client.key (PEM)");
     m_nickservPassword = new QLineEdit;
     m_nickservPassword->setEchoMode(QLineEdit::Password);
     m_nickservPassword->setPlaceholderText("optional");
@@ -56,10 +64,28 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow("Username:",  m_user);
     form->addRow("Real Name:", m_realname);
 
+    auto makeBrowseRow = [](QLineEdit *edit, const QString &filter, QWidget *parent) {
+        auto *row    = new QWidget(parent);
+        auto *hbox   = new QHBoxLayout(row);
+        hbox->setContentsMargins(0, 0, 0, 0);
+        hbox->addWidget(edit);
+        auto *btn = new QPushButton("Browse…", row);
+        btn->setFixedWidth(70);
+        hbox->addWidget(btn);
+        QObject::connect(btn, &QPushButton::clicked, edit, [edit, filter, parent]{
+            const QString p = QFileDialog::getOpenFileName(parent, "Select File", {}, filter);
+            if (!p.isEmpty()) edit->setText(p);
+        });
+        return row;
+    };
+
     form->addRow(makeHeader("Authentication"));
     form->addRow("Server Password:", m_password);
     form->addRow("SASL User:",       m_saslUser);
     form->addRow("SASL Password:",   m_saslPassword);
+    form->addRow("",                 m_saslExternal);
+    form->addRow("Client Cert:",     makeBrowseRow(m_clientCert, "Certificates (*.crt *.pem *.cer);;All (*)", this));
+    form->addRow("Client Key:",      makeBrowseRow(m_clientKey,  "Keys (*.key *.pem);;All (*)", this));
     form->addRow("NickServ:",        m_nickservPassword);
 
     m_autoJoin = new QLineEdit;
@@ -102,6 +128,9 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     m_password->setText(existing.password);
     m_saslUser->setText(existing.saslUser);
     m_saslPassword->setText(existing.saslPassword);
+    m_saslExternal->setChecked(existing.saslExternal);
+    m_clientCert->setText(existing.clientCertFile);
+    m_clientKey->setText(existing.clientKeyFile);
     m_nickservPassword->setText(existing.nickservPassword);
     m_bouncerType->setCurrentIndex(static_cast<int>(existing.bouncerType));
     m_bouncerNetwork->setText(existing.bouncerNetwork);
@@ -125,6 +154,9 @@ ServerConfig ServerDialog::serverConfig() const
     sc.password         = m_password->text();
     sc.saslUser         = m_saslUser->text().trimmed();
     sc.saslPassword     = m_saslPassword->text();
+    sc.saslExternal     = m_saslExternal->isChecked();
+    sc.clientCertFile   = m_clientCert->text().trimmed();
+    sc.clientKeyFile    = m_clientKey->text().trimmed();
     sc.nickservPassword = m_nickservPassword->text();
     sc.bouncerType      = static_cast<BouncerType>(m_bouncerType->currentData().toInt());
     sc.bouncerNetwork   = m_bouncerNetwork->text().trimmed();
