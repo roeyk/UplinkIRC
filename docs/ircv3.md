@@ -6,7 +6,7 @@ UplinkIRC aims to be a first-class IRCv3 client. Below is the full status of eve
 
 ## How capability negotiation works
 
-UplinkIRC uses **CAP LS 302** — it requests the server's full capability list before deciding what to ask for, and only requests capabilities the server actually advertises. This avoids failures from batching unsupported caps together. After the server acknowledges the requested caps (CAP ACK), UplinkIRC completes registration or starts SASL if needed.
+UplinkIRC uses **CAP LS 302** — it requests the server's full capability list before deciding what to ask for, and only requests capabilities the server actually advertises. This avoids failures from batching unsupported caps together. Multi-line CAP LS responses (marked with `*`) are fully buffered before any `CAP REQ` is sent, and capabilities advertised in `name=value` form (e.g. `sasl=PLAIN,EXTERNAL`) are matched correctly. After the server acknowledges the requested caps (CAP ACK), UplinkIRC completes registration or starts SASL if needed.
 
 ---
 

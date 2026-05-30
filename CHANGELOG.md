@@ -3,6 +3,50 @@
 ---
 
 <!--
+Session summary — 2026-05-30 (v0.9.5 — SASL + tray notification fixes)
+
+What was built / fixed:
+  - SASL authentication was silently failing on Libera.Chat and similar servers
+    that advertise capabilities in "name=value" form (e.g. sasl=PLAIN,EXTERNAL).
+    The cap-matching code did an exact string comparison and never matched "sasl",
+    so SASL was never negotiated even when sasl_user/sasl_password were set.
+    Fixed with a prefix-match helper (a == cap || a.startsWith(cap + "=")).
+  - CAP LS multi-line buffering: servers that send CAP LS across multiple lines
+    (marked with params[2] == "*") caused premature CAP REQ before all caps were
+    seen. Client now buffers all lines into m_capLsBuffer and only processes on
+    the final (non-starred) line. m_capLsBuffer cleared on disconnect.
+  - "Tray Notifications" toggle moved from an ad-hoc "Interface" burger submenu
+    into Preferences > Interface, consistent with all other toggles. Renamed
+    from "Desktop Notifications" to "Tray Notifications" to match what it actually
+    controls (the tray icon dot, not OS-level desktop notifications).
+  - Disabling Tray Notifications now immediately clears both the green mention
+    dot and the red unread dot via TrayIcon::setNotificationsEnabled(false).
+    Previously the dot persisted until the window was focused. Also applies the
+    config value at tray creation time so the setting is honoured from launch.
+
+Known issues remaining:
+  - DCC over internet (NAT/firewall blocks direct TCP)
+  - No in-app update check UI
+  - Message search not implemented
+  - Per-channel logging not implemented
+  - Split view not implemented
+  - Plaintext passwords in config.toml
+
+Next priorities:
+  - msgid (prerequisite for reactions, reply threading, redaction)
+  - Message search (Ctrl+F in channel buffer)
+  - Per-channel log files
+  - echo-message
+-->
+
+## v0.9.5 — 2026-05-30
+
+- Fix: SASL authentication now works on Libera.Chat and any server advertising `sasl=PLAIN,EXTERNAL` — capability matching extended to handle `name=value` form
+- Fix: CAP LS multi-line responses now buffered correctly; `CAP REQ` no longer sent before all advertised capabilities are received
+- Fix: "Tray Notifications" toggle moved into **Preferences → Interface** as a proper checkbox alongside the other UI toggles
+- Fix: Disabling tray notifications now immediately clears the tray dot (both green mention and red unread); previously the dot persisted until window focus
+
+<!--
 Session summary — 2026-05-30 (planning — IRCv3 roadmap audit)
 
 No code written this session. Analysis and planning only.
