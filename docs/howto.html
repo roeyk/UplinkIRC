@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UplinkIRC — How-To Guide</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #1e1e2e;
+      --surface:  #181825;
+      --overlay:  #313244;
+      --muted:    #6c7086;
+      --subtle:   #45475a;
+      --text:     #cdd6f4;
+      --subtext:  #a6adc8;
+      --blue:     #89b4fa;
+      --lavender: #b4befe;
+      --green:    #a6e3a1;
+      --yellow:   #f9e2af;
+      --peach:    #fab387;
+      --mauve:    #cba6f7;
+      --red:      #f38ba8;
+      --teal:     #94e2d5;
+      --nav-w:    260px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── LEFT NAV ──────────────────────────────────── */
+    #sidenav {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--nav-w);
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--subtle);
+      overflow-y: auto;
+      padding: 1.5rem 0 3rem;
+      z-index: 50;
+    }
+
+    .nav-logo {
+      padding: 0 1.25rem 1.25rem;
+      border-bottom: 1px solid var(--subtle);
+      margin-bottom: 1rem;
+    }
+    .nav-logo a {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--blue);
+      display: block;
+    }
+    .nav-logo span {
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .nav-section {
+      padding: 0.25rem 1.25rem 0;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 1.25rem;
+      margin-bottom: 0.25rem;
+    }
+
+    #sidenav ul { list-style: none; }
+    #sidenav ul li a {
+      display: block;
+      padding: 0.3rem 1.25rem 0.3rem 1.5rem;
+      font-size: 0.85rem;
+      color: var(--subtext);
+      border-left: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    #sidenav ul li a:hover,
+    #sidenav ul li a.active {
+      color: var(--blue);
+      border-left-color: var(--blue);
+      text-decoration: none;
+      background: rgba(137,180,250,0.06);
+    }
+
+    /* ── MAIN CONTENT ──────────────────────────────── */
+    main {
+      margin-left: var(--nav-w);
+      flex: 1;
+      max-width: 820px;
+      padding: 3rem 3rem 6rem;
+    }
+
+    /* ── SECTIONS ──────────────────────────────────── */
+    section {
+      margin-bottom: 4rem;
+      scroll-margin-top: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--blue);
+      margin-bottom: 0.5rem;
+    }
+    h1 .sub {
+      font-size: 1rem;
+      color: var(--subtext);
+      font-weight: 400;
+      display: block;
+      margin-top: 0.25rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      color: var(--lavender);
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--subtle);
+    }
+
+    h3 {
+      font-size: 1rem;
+      color: var(--peach);
+      margin: 1.5rem 0 0.5rem;
+      font-weight: 600;
+    }
+
+    p { margin-bottom: 0.85rem; color: var(--text); }
+
+    ul, ol {
+      margin: 0.5rem 0 0.85rem 1.5rem;
+      color: var(--text);
+    }
+    li { margin-bottom: 0.3rem; }
+
+    /* ── CODE ──────────────────────────────────────── */
+    code {
+      background: var(--overlay);
+      color: var(--green);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: "Fira Code", "Cascadia Code", "IBM Plex Mono", Consolas, monospace;
+      font-size: 0.87em;
+    }
+
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--subtle);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 0.5rem 0 1.25rem;
+      font-family: "Fira Code", "Cascadia Code", "IBM Plex Mono", Consolas, monospace;
+      font-size: 0.87rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    /* comment lines in config blocks */
+    pre .c { color: var(--muted); }
+    pre .k { color: var(--blue); }
+    pre .s { color: var(--green); }
+    pre .n { color: var(--peach); }
+
+    /* ── CALLOUTS ──────────────────────────────────── */
+    .tip, .warn, .note {
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin: 0.75rem 0 1.25rem;
+      font-size: 0.9rem;
+    }
+    .tip  { background: rgba(166,227,161,0.08); border-left: 3px solid var(--green);  color: var(--green);  }
+    .warn { background: rgba(243,139,168,0.08); border-left: 3px solid var(--red);    color: var(--red);    }
+    .note { background: rgba(137,180,250,0.08); border-left: 3px solid var(--blue);   color: var(--subtext);}
+    .tip strong, .warn strong, .note strong { color: inherit; }
+
+    /* ── TABLE ─────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75rem 0 1.25rem;
+      font-size: 0.88rem;
+    }
+    th {
+      text-align: left;
+      color: var(--subtext);
+      font-weight: 600;
+      border-bottom: 1px solid var(--subtle);
+      padding: 0.4rem 0.6rem;
+    }
+    td {
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid var(--overlay);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── STEP BADGES ───────────────────────────────── */
+    .step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: var(--surface);
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-right: 0.5rem;
+      flex-shrink: 0;
+    }
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+    .step-row > div { flex: 1; }
+
+    /* ── PLATFORM TABS ─────────────────────────────── */
+    .tabs { margin: 0.75rem 0 0; }
+    .tab-labels {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: -1px;
+    }
+    .tab-label {
+      padding: 0.35rem 0.85rem;
+      background: var(--overlay);
+      border: 1px solid var(--subtle);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      font-size: 0.82rem;
+      color: var(--subtext);
+      cursor: pointer;
+      user-select: none;
+    }
+    .tab-label.active { background: var(--surface); color: var(--blue); }
+    .tab-panel {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--subtle);
+      border-radius: 0 8px 8px 8px;
+      padding: 1rem 1.25rem;
+    }
+    .tab-panel.active { display: block; }
+    .tab-panel pre { margin: 0; border: none; background: transparent; padding: 0; }
+
+    /* ── KEY BADGE ─────────────────────────────────── */
+    kbd {
+      background: var(--overlay);
+      border: 1px solid var(--subtle);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: inherit;
+      font-size: 0.82em;
+      color: var(--text);
+    }
+
+    /* ── HR ────────────────────────────────────────── */
+    hr { border: none; border-top: 1px solid var(--subtle); margin: 2rem 0; }
+
+    /* ── FOOTER ────────────────────────────────────── */
+    footer {
+      margin-left: var(--nav-w);
+      padding: 1.5rem 3rem;
+      border-top: 1px solid var(--subtle);
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LEFT NAVIGATION ──────────────────────────────── -->
+<nav id="sidenav">
+  <div class="nav-logo">
+    <a href="index.html">⬡ UplinkIRC</a>
+    <span>How-To Guide</span>
+  </div>
+
+  <div class="nav-section">Getting Started</div>
+  <ul>
+    <li><a href="#what-is">What is UplinkIRC?</a></li>
+    <li><a href="#download">Download (pre-built)</a></li>
+    <li><a href="#dependencies">Install dependencies</a></li>
+    <li><a href="#build">Build from source</a></li>
+    <li><a href="#first-launch">First launch</a></li>
+  </ul>
+
+  <div class="nav-section">Basic Setup</div>
+  <ul>
+    <li><a href="#config-file">Config file location</a></li>
+    <li><a href="#set-nick">Set your nickname</a></li>
+    <li><a href="#connect-linuxdojo">Connect to LinuxDojo</a></li>
+    <li><a href="#connect-any">Connect to any server</a></li>
+    <li><a href="#auto-join">Auto-join channels</a></li>
+  </ul>
+
+  <div class="nav-section">Authentication</div>
+  <ul>
+    <li><a href="#nickserv">NickServ auto-identify</a></li>
+    <li><a href="#sasl">SASL PLAIN</a></li>
+  </ul>
+
+  <div class="nav-section">Multiple Servers</div>
+  <ul>
+    <li><a href="#multi-server">Two servers at once</a></li>
+    <li><a href="#znc">ZNC bouncer</a></li>
+    <li><a href="#soju">soju bouncer</a></li>
+  </ul>
+
+  <div class="nav-section">The Interface</div>
+  <ul>
+    <li><a href="#topic-bar">Topic bar</a></li>
+    <li><a href="#sidebar">Sidebar</a></li>
+    <li><a href="#chat-area">Chat area</a></li>
+    <li><a href="#nick-panel">Nick list panel</a></li>
+    <li><a href="#signal-bars">Signal bars</a></li>
+    <li><a href="#tray">System tray</a></li>
+  </ul>
+
+  <div class="nav-section">Chatting</div>
+  <ul>
+    <li><a href="#sending">Sending messages</a></li>
+    <li><a href="#commands">Slash commands</a></li>
+    <li><a href="#pm">Private messages</a></li>
+    <li><a href="#formatting">IRC formatting</a></li>
+    <li><a href="#emoji">Emoji &amp; shortcodes</a></li>
+    <li><a href="#tab">Tab completion</a></li>
+    <li><a href="#history">Input history</a></li>
+    <li><a href="#link-previews">Link previews</a></li>
+  </ul>
+
+  <div class="nav-section">Tweaks</div>
+  <ul>
+    <li><a href="#themes">Picking a theme</a></li>
+    <li><a href="#fonts">Font sizes</a></li>
+    <li><a href="#brackets">Nick brackets</a></li>
+    <li><a href="#panels">Show/hide panels</a></li>
+    <li><a href="#app-icon">App icon</a></li>
+    <li><a href="#notifications">Notifications</a></li>
+  </ul>
+
+  <div class="nav-section">Troubleshooting</div>
+  <ul>
+    <li><a href="#ts-build">Build errors</a></li>
+    <li><a href="#ts-config">Config problems</a></li>
+    <li><a href="#ts-nick">Nick in use</a></li>
+    <li><a href="#ts-themes">Theme not loading</a></li>
+    <li><a href="#ts-previews">Link previews</a></li>
+  </ul>
+</nav>
+
+<!-- ── MAIN ─────────────────────────────────────────── -->
+<main>
+
+  <!-- INTRO -->
+  <section id="what-is">
+    <h1>UplinkIRC How-To Guide
+      <span class="sub">Everything from installation to tweaks, step by step.</span>
+    </h1>
+
+    <h2>What is UplinkIRC?</h2>
+    <p>UplinkIRC is a fast, secure IRC chat client built with Qt6 and C++17. It connects over TLS (encrypted) by default, supports IRCv3 features like chat history, typing indicators, and SASL authentication, and ships with 55 built-in color themes. The default server is <strong>irc.linuxdojo.org:6697</strong>, channel <strong>#uplink</strong>.</p>
+    <p>It runs on Linux, macOS, Windows, and FreeBSD.</p>
+
+    <div class="note">
+      <strong>New to IRC?</strong> IRC is a real-time chat protocol that has been running since 1988. You connect to a <em>server</em>, join <em>channels</em> (chat rooms that start with <code>#</code>), and chat with other people. UplinkIRC handles all the protocol details — you just type.
+    </div>
+  </section>
+
+  <!-- DOWNLOAD -->
+  <section id="download">
+    <h2>Download (pre-built binaries)</h2>
+    <p>The easiest way to get started is to download a pre-built release. No compiler needed.</p>
+
+    <table>
+      <tr><th>Platform</th><th>Download</th><th>How to run</th></tr>
+      <tr>
+        <td>Linux x86_64</td>
+        <td><a href="https://github.com/joehonkey/UplinkIRC/releases/latest">Latest release ↗</a></td>
+        <td>Extract the <code>.tar.gz</code>, run <code>./UplinkIRC</code></td>
+      </tr>
+      <tr>
+        <td>Windows x64</td>
+        <td><a href="https://github.com/joehonkey/UplinkIRC/releases/latest">Latest release ↗</a></td>
+        <td>Extract the <code>.zip</code>, double-click <code>UplinkIRC.exe</code></td>
+      </tr>
+      <tr>
+        <td>macOS arm64</td>
+        <td><a href="https://github.com/joehonkey/UplinkIRC/releases/latest">Latest release ↗</a></td>
+        <td>Open the <code>.dmg</code>, drag UplinkIRC to Applications</td>
+      </tr>
+      <tr>
+        <td>FreeBSD</td>
+        <td>Build from source (see below)</td>
+        <td><code>./UplinkIRC</code></td>
+      </tr>
+    </table>
+
+    <div class="tip">
+      <strong>Linux users:</strong> make sure Qt6 runtime libraries are installed. On Arch: <code>sudo pacman -S qt6-base qt6-svg</code>. On Ubuntu 22.04+: <code>sudo apt install libqt6widgets6 libqt6network6</code>.
+    </div>
+  </section>
+
+  <!-- DEPENDENCIES -->
+  <section id="dependencies">
+    <h2>Install dependencies</h2>
+    <p>If you're building from source, install these packages first. If you downloaded a pre-built binary, skip this section.</p>
+
+    <div class="tabs">
+      <div class="tab-labels">
+        <div class="tab-label active" onclick="switchTab(this,'arch')">Arch Linux</div>
+        <div class="tab-label" onclick="switchTab(this,'ubuntu')">Ubuntu / Debian</div>
+        <div class="tab-label" onclick="switchTab(this,'fedora')">Fedora</div>
+        <div class="tab-label" onclick="switchTab(this,'freebsd')">FreeBSD</div>
+        <div class="tab-label" onclick="switchTab(this,'macos')">macOS</div>
+        <div class="tab-label" onclick="switchTab(this,'windows')">Windows</div>
+      </div>
+      <div class="tab-panel active" id="tab-arch">
+        <pre>sudo pacman -S qt6-base qt6-svg cmake tomlplusplus</pre>
+      </div>
+      <div class="tab-panel" id="tab-ubuntu">
+        <pre>sudo apt install cmake qt6-base-dev libqt6svg6-dev libtomlplusplus-dev</pre>
+      </div>
+      <div class="tab-panel" id="tab-fedora">
+        <pre>sudo dnf install cmake qt6-qtbase-devel qt6-qtsvg-devel tomlplusplus-devel</pre>
+      </div>
+      <div class="tab-panel" id="tab-freebsd">
+        <pre>sudo pkg install cmake qt6-base qt6-svg tomlplusplus</pre>
+      </div>
+      <div class="tab-panel" id="tab-macos">
+        <pre>brew install cmake qt tomlplusplus</pre>
+        <p style="margin-top:0.75rem;font-size:0.85rem;color:var(--subtext);">Then set Qt in your PATH: <code>export PATH="$(brew --prefix qt)/bin:$PATH"</code></p>
+      </div>
+      <div class="tab-panel" id="tab-windows">
+        <p style="font-size:0.85rem;color:var(--subtext);margin-bottom:0.5rem;">Install <a href="https://www.qt.io/download-qt-installer">Qt 6 via the Qt Online Installer</a> (select Qt 6.x → MSVC 2022 x64 or MinGW). Install CMake from <a href="https://cmake.org/download/">cmake.org</a>. tomlplusplus is fetched automatically by CMake if not found.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUILD -->
+  <section id="build">
+    <h2>Build from source</h2>
+    <p>Three commands. CMake downloads tomlplusplus automatically if your package manager doesn't have it.</p>
+
+    <pre>git clone https://github.com/joehonkey/UplinkIRC.git
+cd UplinkIRC
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build</pre>
+
+    <p>The binary is at <code>build/UplinkIRC</code> (or <code>build\UplinkIRC.exe</code> on Windows). Run it from there — the <code>themes/</code> folder is copied next to the binary automatically.</p>
+
+    <div class="note">
+      <strong>macOS:</strong> after building, run <code>cmake --install build</code> to produce a proper <code>.app</code> bundle, or launch <code>build/UplinkIRC.app/Contents/MacOS/UplinkIRC</code> directly.
+    </div>
+  </section>
+
+  <!-- FIRST LAUNCH -->
+  <section id="first-launch">
+    <h2>First launch</h2>
+    <p>On the very first run, UplinkIRC creates your config file and may show a <strong>nick dialog</strong> asking for your nickname. Type the name you want to use on IRC and click OK.</p>
+
+    <p>The app then connects to <strong>irc.linuxdojo.org</strong> and joins <strong>#uplink</strong> automatically. You'll see the server list on the left, the chat area in the middle, and the user list on the right.</p>
+
+    <p>To open the hamburger menu (the <code>☰</code> button in the top-left), click it to reach Preferences, Documentation, and other settings.</p>
+
+    <div class="tip">
+      <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>☰ → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>☰ → Reload Config</strong>.
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- CONFIG FILE -->
+  <section id="config-file">
+    <h2>Config file location</h2>
+    <p>All settings live in a single <code>config.toml</code> file. UplinkIRC creates it automatically on first launch.</p>
+
+    <table>
+      <tr><th>Platform</th><th>Path</th></tr>
+      <tr><td>Linux / FreeBSD</td><td><code>~/.config/LinuxDojo/UplinkIRC/config.toml</code></td></tr>
+      <tr><td>macOS</td><td><code>~/Library/Application Support/LinuxDojo/UplinkIRC/config.toml</code></td></tr>
+      <tr><td>Windows</td><td><code>%APPDATA%\LinuxDojo\UplinkIRC\config.toml</code></td></tr>
+    </table>
+
+    <p>Edit the file in any text editor. To apply changes without restarting, click <strong>☰ → Reload Config</strong>. You can also click <strong>☰ → Open Config</strong> to open the file in your system editor directly from UplinkIRC.</p>
+  </section>
+
+  <!-- SET NICK -->
+  <section id="set-nick">
+    <h2>Set your nickname</h2>
+    <p>Open <code>config.toml</code> and change the <code>nick</code> field in your server block:</p>
+
+    <pre>[[server]]
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl  = true
+<span style="color:var(--peach)">nick = "alice"</span>       # ← change this to your nick
+user = "uplink"
+realname = "UplinkIRC User"
+channels = "#uplink"</pre>
+
+    <p>Save, then click <strong>☰ → Reload Config</strong>. The new nick takes effect on the next connect. To change your nick while already connected, type <code>/nick yournewnick</code> in the input box.</p>
+  </section>
+
+  <!-- CONNECT LINUXDOJO -->
+  <section id="connect-linuxdojo">
+    <h2>Connect to LinuxDojo</h2>
+    <p>LinuxDojo is the default server. You only need to set your nickname — everything else is already configured.</p>
+
+    <pre>[[server]]
+name     = "LinuxDojo"
+host     = "irc.linuxdojo.org"
+port     = 6697
+ssl      = true
+nick     = "alice"
+user     = "uplink"
+realname = "UplinkIRC User"
+channels = "#uplink"</pre>
+
+    <p>Click <strong>☰ → Reload Config</strong>, or restart UplinkIRC. The server appears in the sidebar and connects automatically.</p>
+  </section>
+
+  <!-- CONNECT ANY -->
+  <section id="connect-any">
+    <h2>Connect to any IRC server</h2>
+    <p>Add a <code>[[server]]</code> block for every server you want to connect to. The double brackets (<code>[[]]</code>) mean "add another entry to the list" — this is standard TOML array-of-tables syntax.</p>
+
+    <pre>[[server]]
+name     = "Libera.Chat"
+host     = "irc.libera.chat"
+port     = 6697
+ssl      = true
+nick     = "alice"
+user     = "uplink"
+realname = "UplinkIRC User"
+channels = "#linux, #archlinux"</pre>
+
+    <div class="warn">
+      <strong>Always use port 6697 with <code>ssl = true</code>.</strong> UplinkIRC does not support plain-text IRC connections — TLS is required.
+    </div>
+
+    <p>Common IRC networks and their TLS hostnames:</p>
+    <table>
+      <tr><th>Network</th><th>Host</th><th>Port</th></tr>
+      <tr><td>LinuxDojo</td><td><code>irc.linuxdojo.org</code></td><td>6697</td></tr>
+      <tr><td>Libera.Chat</td><td><code>irc.libera.chat</code></td><td>6697</td></tr>
+      <tr><td>OFTC</td><td><code>irc.oftc.net</code></td><td>6697</td></tr>
+      <tr><td>EFnet</td><td><code>irc.efnet.org</code></td><td>6697</td></tr>
+      <tr><td>IRCnet</td><td><code>open.ircnet.net</code></td><td>6697</td></tr>
+    </table>
+  </section>
+
+  <!-- AUTO-JOIN -->
+  <section id="auto-join">
+    <h2>Auto-join channels</h2>
+    <p>Set the <code>channels</code> key in a server block to a comma-separated list. UplinkIRC joins them all automatically on connect.</p>
+
+    <pre>[[server]]
+name     = "Libera.Chat"
+host     = "irc.libera.chat"
+port     = 6697
+ssl      = true
+nick     = "alice"
+user     = "uplink"
+realname = "UplinkIRC User"
+channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
+
+    <p>You can also set channels from the GUI: click <strong>☰ → Preferences → Manage Servers → Edit</strong> and fill in the Auto-join field.</p>
+    <p>To join a channel while connected without editing the config, type <code>/join #channelname</code> in the input box.</p>
+  </section>
+
+  <hr />
+
+  <!-- NICKSERV -->
+  <section id="nickserv">
+    <h2>NickServ auto-identify</h2>
+    <p>If you have a registered nick on a server, add <code>nickserv_password</code>. UplinkIRC sends <code>PRIVMSG NickServ :IDENTIFY yourpassword</code> automatically after connecting.</p>
+
+    <pre>[[server]]
+name              = "LinuxDojo"
+host              = "irc.linuxdojo.org"
+port              = 6697
+ssl               = true
+nick              = "alice"
+user              = "uplink"
+realname          = "UplinkIRC User"
+channels          = "#uplink"
+nickserv_password = "mysecretpassword"   # ← add this</pre>
+
+    <p>The server buffer shows <code>Sent NickServ IDENTIFY</code> when it fires. For networks that support SASL, use that instead (below) — SASL identifies you before you even appear on the network.</p>
+  </section>
+
+  <!-- SASL -->
+  <section id="sasl">
+    <h2>SASL PLAIN authentication</h2>
+    <p>SASL is the preferred way to authenticate on Libera.Chat, OFTC, and other modern IRC networks. It logs you in during the connection handshake, before you appear to other users.</p>
+
+    <pre>[[server]]
+name          = "Libera.Chat"
+host          = "irc.libera.chat"
+port          = 6697
+ssl           = true
+nick          = "alice"
+user          = "uplink"
+realname      = "UplinkIRC User"
+channels      = "#linux"
+sasl_user     = "alice"            # ← your registered nick
+sasl_password = "mysecretpassword" # ← your NickServ password</pre>
+
+    <p>The server buffer shows <code>SASL authentication successful</code> on connect. If it fails, the connection continues — you'll just appear without services authentication.</p>
+
+    <div class="tip">
+      <strong>SASL or NickServ?</strong> Use SASL if the server supports it (Libera, OFTC). Use <code>nickserv_password</code> for servers that don't (LinuxDojo, older networks).
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- MULTI SERVER -->
+  <section id="multi-server">
+    <h2>Two servers at the same time</h2>
+    <p>Add one <code>[[server]]</code> block per server. UplinkIRC connects to all of them on launch and shows each one in the sidebar independently.</p>
+
+    <pre>[ui]
+theme = "catppuccin-mocha"
+
+[[server]]
+name     = "LinuxDojo"
+host     = "irc.linuxdojo.org"
+port     = 6697
+ssl      = true
+nick     = "alice"
+user     = "uplink"
+realname = "UplinkIRC User"
+channels = "#uplink"
+
+[[server]]
+name          = "Libera.Chat"
+host          = "irc.libera.chat"
+port          = 6697
+ssl           = true
+nick          = "alice"
+user          = "uplink"
+realname      = "UplinkIRC User"
+channels      = "#linux, #archlinux"
+sasl_user     = "alice"
+sasl_password = "mysecretpassword"</pre>
+
+    <p>Each server's channels appear under its heading in the sidebar. Click any channel to switch to it.</p>
+  </section>
+
+  <!-- ZNC -->
+  <section id="znc">
+    <h2>ZNC bouncer</h2>
+    <p>A bouncer keeps you connected to IRC 24/7 and replays missed messages when you reconnect. Set <code>bouncer = "znc"</code> to activate ZNC-specific features like playback and self-message echo.</p>
+
+    <p>ZNC expects the password in <code>username/network:password</code> format, passed as the connection <code>password</code>:</p>
+
+    <pre>[[server]]
+name     = "ZNC → Libera"
+host     = "znc.example.com"   # your ZNC host
+port     = 6697
+ssl      = true
+nick     = "alice"
+user     = "uplink"
+realname = "UplinkIRC User"
+password = "alice/libera:myzncpassword"   # username/network:password
+bouncer  = "znc"
+channels = "#linux, #archlinux"</pre>
+
+    <p>With <code>bouncer = "znc"</code>, UplinkIRC negotiates <code>znc.in/playback</code> and requests all missed messages after connecting. Messages you sent from other IRC clients are echoed back via <code>znc.in/self-message</code>.</p>
+
+    <p>If your ZNC carries multiple networks, add one block per network — just change the network name in the password:</p>
+
+    <pre>[[server]]
+name     = "ZNC → OFTC"
+host     = "znc.example.com"
+port     = 6697
+ssl      = true
+nick     = "alice"
+user     = "uplink"
+realname = "UplinkIRC User"
+password = "alice/oftc:myzncpassword"   # different network
+bouncer  = "znc"
+channels = "#debian"</pre>
+  </section>
+
+  <!-- SOJU -->
+  <section id="soju">
+    <h2>soju bouncer</h2>
+    <p>soju is a modern IRC bouncer with excellent IRCv3 support. Set <code>bouncer = "soju"</code>. The password is <code>username:password</code>. If your soju instance manages more than one IRC network, use <code>bouncer_network</code> to pick one.</p>
+
+    <pre>[[server]]
+name            = "soju → Libera"
+host            = "soju.example.com"
+port            = 6697
+ssl             = true
+nick            = "alice"
+user            = "uplink"
+realname        = "UplinkIRC User"
+password        = "alice:mysojupassword"   # username:password
+bouncer         = "soju"
+bouncer_network = "libera"                 # omit if only one network
+channels        = "#linux"</pre>
+
+    <p>With <code>bouncer = "soju"</code>, UplinkIRC negotiates <code>soju.im/bouncer-networks</code> (lists your networks in the server buffer), <code>soju.im/read</code> (syncs your read position across all connected clients), and requests chat history on each join.</p>
+
+    <div class="note">
+      <strong>Chat history replay</strong> is automatic on both ZNC and soju (and any server supporting the <code>chathistory</code> CAP). UplinkIRC requests the last 100 messages for each channel on join. History messages appear at reduced opacity with their original timestamps so you can tell them apart from live messages.
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- TOPIC BAR -->
+  <section id="topic-bar">
+    <h2>The topic bar</h2>
+    <p>The bar across the very top of the window is the <strong>topic bar</strong>. It spans the full window width.</p>
+
+    <ul>
+      <li><strong>Left side</strong> — always shows the <code>☰</code> hamburger menu and the <code>⚙</code> gear. These are always visible regardless of sidebar state.</li>
+      <li><strong>Right side</strong> — shows the signal bars, current channel name, channel modes, and user count.</li>
+    </ul>
+
+    <p><strong>☰ Hamburger</strong> — opens a menu with: About, Documentation, Preferences, Open Config, Reload Config.</p>
+    <p><strong>⚙ Gear (left)</strong> — collapses or expands the server/channel sidebar below it. The gear and hamburger stay pinned — only the list underneath disappears.</p>
+  </section>
+
+  <!-- SIDEBAR -->
+  <section id="sidebar">
+    <h2>Sidebar — server &amp; channel list</h2>
+    <p>The sidebar on the left shows all your servers and channels. Each server is a heading; its channels are listed beneath it.</p>
+
+    <ul>
+      <li>Click a channel to open it in the chat area.</li>
+      <li>Channels with new activity show <code>🔥</code>. Channels where your nick was mentioned show <code>💡</code> in red.</li>
+      <li>Right-click a channel for options: Rejoin, Leave, Close.</li>
+      <li>Right-click a server for: Disconnect, Reconnect.</li>
+      <li>Drag the divider between the sidebar and chat area to resize it — the width is saved and restored on the next launch.</li>
+      <li>Click the <code>⚙</code> gear in the topic bar (top-left) to collapse the sidebar entirely so the chat fills the window. Click it again to bring it back.</li>
+    </ul>
+  </section>
+
+  <!-- CHAT AREA -->
+  <section id="chat-area">
+    <h2>Chat area</h2>
+    <p>The large center panel is the chat area. Messages appear in reverse-chronological order (newest at the bottom). History messages replayed by your bouncer or server appear dimmed at the top with their original timestamps.</p>
+
+    <ul>
+      <li>Click any URL to open it in your browser.</li>
+      <li>When a URL is posted, UplinkIRC fetches a preview card (title + thumbnail) automatically.</li>
+      <li>When someone mentions your nick, it is highlighted in red and bold.</li>
+      <li>A transparent "nick is typing…" line appears at the bottom of the chat when someone with IRCv3 typing support is composing a message.</li>
+    </ul>
+  </section>
+
+  <!-- NICK PANEL -->
+  <section id="nick-panel">
+    <h2>Nick list panel</h2>
+    <p>The user list sits in a panel on the right side of the chat. The header shows a <code>⚙</code> gear and the user count.</p>
+
+    <ul>
+      <li>Click the <code>⚙</code> gear to collapse or expand the panel. The gear animates a full spin before toggling.</li>
+      <li>Drag the divider between the chat and the nick panel to resize it — width is saved.</li>
+      <li>Nicks are sorted by prefix rank: <code>~</code> owner, <code>&amp;</code> admin, <code>@</code> op, <code>%</code> halfop, <code>+</code> voice, then alphabetical.</li>
+      <li>Nicks with <code>+B</code> (bot mode) show a bot indicator (🤖 or 👾).</li>
+      <li>Right-click any nick for options: Message, Whois, Give Op, Give Voice, Version.</li>
+    </ul>
+  </section>
+
+  <!-- SIGNAL BARS -->
+  <section id="signal-bars">
+    <h2>Signal bars</h2>
+    <p>Four stair-step bars appear in the topic bar, showing your connection quality to the current server.</p>
+
+    <table>
+      <tr><th>Appearance</th><th>Meaning</th></tr>
+      <tr><td>4 solid green bars</td><td>Connected, ping &lt; 50 ms (excellent)</td></tr>
+      <tr><td>3 solid green bars</td><td>Connected, ping 50–150 ms (good)</td></tr>
+      <tr><td>2 solid green bars</td><td>Connected, ping 150–300 ms (fair)</td></tr>
+      <tr><td>1 solid green bar</td><td>Connected, ping &gt; 300 ms (slow)</td></tr>
+      <tr><td>Blue flashing</td><td>Connecting or reconnecting</td></tr>
+      <tr><td>Red flashing</td><td>Disconnected</td></tr>
+    </table>
+
+    <p>UplinkIRC sends a <code>PING</code> every 30 seconds and measures the round-trip time. The bar count updates automatically.</p>
+  </section>
+
+  <!-- TRAY -->
+  <section id="tray">
+    <h2>System tray</h2>
+    <p>Closing the window minimizes UplinkIRC to the system tray — it keeps running in the background.</p>
+
+    <ul>
+      <li><strong>Left-click</strong> the tray icon to show or hide the window.</li>
+      <li><strong>Right-click</strong> for a menu with Show and Quit.</li>
+      <li>A <strong>green dot</strong> on the tray icon means you have an unread mention or PM and the window is not focused. It clears when you focus the window.</li>
+      <li>A <strong>red dot</strong> means there are unread messages in any channel.</li>
+    </ul>
+
+    <p>To control the notification dot, go to <strong>☰ → Preferences → Desktop Notifications</strong>, or set in config:</p>
+    <pre>notifications = true   # green dot on tray for mentions/PMs</pre>
+  </section>
+
+  <hr />
+
+  <!-- SENDING -->
+  <section id="sending">
+    <h2>Sending messages</h2>
+    <p>Click on a channel in the sidebar to make it active. Type your message in the input box at the bottom and press <kbd>Enter</kbd> to send.</p>
+
+    <p>To perform an action (like <em>* alice waves</em>), use <code>/me</code>:</p>
+    <pre>/me waves at everyone</pre>
+  </section>
+
+  <!-- COMMANDS -->
+  <section id="commands">
+    <h2>Slash commands</h2>
+    <p>Type a <code>/</code> to start a command. Tab-completion works on command names too — type <code>/p</code> and press <kbd>Tab</kbd> to cycle through <code>/part</code>, <code>/ping</code>, etc.</p>
+
+    <table>
+      <tr><th>Command</th><th>What it does</th><th>Example</th></tr>
+      <tr><td><code>/join #channel</code></td><td>Join a channel</td><td><code>/join #linux</code></td></tr>
+      <tr><td><code>/part [reason]</code></td><td>Leave the current channel</td><td><code>/part goodbye</code></td></tr>
+      <tr><td><code>/nick newnick</code></td><td>Change your nickname</td><td><code>/nick alice_</code></td></tr>
+      <tr><td><code>/me action</code></td><td>CTCP action</td><td><code>/me waves</code></td></tr>
+      <tr><td><code>/msg nick text</code></td><td>Send a private message</td><td><code>/msg bob hey there</code></td></tr>
+      <tr><td><code>/topic text</code></td><td>Set the channel topic (requires op)</td><td><code>/topic Welcome!</code></td></tr>
+      <tr><td><code>/kick nick reason</code></td><td>Kick a user (requires op)</td><td><code>/kick bob bye</code></td></tr>
+      <tr><td><code>/op nick</code></td><td>Give someone channel op</td><td><code>/op bob</code></td></tr>
+      <tr><td><code>/voice nick</code></td><td>Give someone voice</td><td><code>/voice carol</code></td></tr>
+      <tr><td><code>/ban mask</code></td><td>Ban a hostmask</td><td><code>/ban *!*@badhost.net</code></td></tr>
+      <tr><td><code>/ping nick</code></td><td>Measure round-trip time to a nick</td><td><code>/ping bob</code></td></tr>
+      <tr><td><code>/whois nick</code></td><td>Look up a nick's info</td><td><code>/whois bob</code></td></tr>
+      <tr><td><code>/away message</code></td><td>Set yourself away</td><td><code>/away at lunch</code></td></tr>
+      <tr><td><code>/back</code></td><td>Clear your away status</td><td><code>/back</code></td></tr>
+      <tr><td><code>/clear</code></td><td>Clear the chat buffer</td><td><code>/clear</code></td></tr>
+      <tr><td><code>/quote raw line</code></td><td>Send a raw IRC line</td><td><code>/quote PRIVMSG #test :hi</code></td></tr>
+      <tr><td><code>/quit [message]</code></td><td>Disconnect</td><td><code>/quit see ya</code></td></tr>
+      <tr><td><code>/sysinfo</code></td><td>Post OS/CPU/RAM info to channel</td><td><code>/sysinfo</code></td></tr>
+      <tr><td><code>/help</code></td><td>List all commands</td><td><code>/help</code></td></tr>
+    </table>
+  </section>
+
+  <!-- PM -->
+  <section id="pm">
+    <h2>Private messages</h2>
+    <p>Use <code>/msg nick message</code> to send a PM. A new buffer for that person appears in the sidebar. Incoming PMs also open their own buffer automatically.</p>
+    <p>You can also right-click a nick in the user list and choose <strong>Message</strong> to open the buffer without typing a command.</p>
+    <pre>/msg bob hey, are you around?</pre>
+  </section>
+
+  <!-- FORMATTING -->
+  <section id="formatting">
+    <h2>IRC colors and formatting</h2>
+    <p>UplinkIRC renders all standard IRC formatting codes in received messages:</p>
+
+    <table>
+      <tr><th>Code</th><th>Effect</th></tr>
+      <tr><td><kbd>Ctrl+B</kbd> (bold marker)</td><td><strong>Bold text</strong></td></tr>
+      <tr><td><kbd>Ctrl+I</kbd></td><td><em>Italic text</em></td></tr>
+      <tr><td><kbd>Ctrl+U</kbd></td><td>Underline text</td></tr>
+      <tr><td><kbd>Ctrl+S</kbd></td><td><s>Strikethrough</s></td></tr>
+      <tr><td>IRC color codes (03xx)</td><td>16 foreground + background colors</td></tr>
+    </table>
+
+    <p>Most IRC clients let you insert formatting codes by pressing the key combinations above in the input box. UplinkIRC displays whatever formatting codes come through from the server.</p>
+  </section>
+
+  <!-- EMOJI -->
+  <section id="emoji">
+    <h2>Emoji and shortcodes</h2>
+    <p>There are three ways to use emoji in UplinkIRC:</p>
+
+    <h3>1. Type a shortcode — inline autocomplete</h3>
+    <p>Start typing <code>:</code> followed by the emoji name. A completion list pops up:</p>
+    <pre>:fire    →  shows completion list: 🔥 fire, ...
+:thumbs  →  shows: 👍 thumbsup, 👎 thumbsdown, ...</pre>
+    <p>Navigate with <kbd>↑</kbd> / <kbd>↓</kbd>, select with <kbd>Enter</kbd> or <kbd>Tab</kbd>, dismiss with <kbd>Escape</kbd>.</p>
+
+    <h3>2. Type a full shortcode — instant substitution</h3>
+    <p>Type the opening colon, the name, and the closing colon. The emoji replaces it instantly:</p>
+    <pre>:trident:   →  🔱  (substituted as you type the closing colon)
+:joy:       →  😂
+:100:       →  💯</pre>
+
+    <h3>3. Emoji picker button</h3>
+    <p>Enable the button in config or Preferences, then click 😊 to open a searchable grid of ~400 emoji.</p>
+    <pre>[ui]
+show_emoji_button = true</pre>
+  </section>
+
+  <!-- TAB COMPLETION -->
+  <section id="tab">
+    <h2>Tab completion</h2>
+    <p>Press <kbd>Tab</kbd> to complete nicknames and slash commands.</p>
+
+    <ul>
+      <li>Type the first few letters of a nick and press <kbd>Tab</kbd>. If there's one match, it fills in immediately. If there are several, pressing <kbd>Tab</kbd> again cycles through them.</li>
+      <li>Works for commands too — type <code>/jo</code> and press <kbd>Tab</kbd> to get <code>/join</code>.</li>
+      <li>At the start of a line, the completed nick gets a colon appended: <code>alice:</code> (the IRC convention for addressing someone).</li>
+    </ul>
+
+    <pre>al[Tab]   →  alice:  (if alice is in the channel)
+/p[Tab]   →  /part  (or cycles /part → /ping → /privmsg)</pre>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="history">
+    <h2>Input history</h2>
+    <p>Press <kbd>↑</kbd> in the input box to scroll back through messages you've sent in this session. Press <kbd>↓</kbd> to go forward again. The history is per-session and is not saved to disk.</p>
+  </section>
+
+  <!-- LINK PREVIEWS -->
+  <section id="link-previews">
+    <h2>Link previews</h2>
+    <p>When a message contains a URL, UplinkIRC fetches a small preview card automatically and appends it below the message:</p>
+
+    <ul>
+      <li><strong>Web pages</strong> — shows the page title (from <code>og:title</code> or <code>&lt;title&gt;</code>) and a thumbnail if an Open Graph image is set.</li>
+      <li><strong>Direct image links</strong> — <code>.png .jpg .jpeg .gif .webp</code> URLs are detected and shown as a thumbnail without any HTML parsing.</li>
+    </ul>
+
+    <p>Previews are lightweight — HTML is capped at 32 KB, images at 200 KB, results are cached for the session.</p>
+  </section>
+
+  <hr />
+
+  <!-- THEMES -->
+  <section id="themes">
+    <h2>Picking a theme</h2>
+    <p>UplinkIRC ships with 55 built-in color themes. The fastest way is to try them live:</p>
+
+    <div class="step-row"><span class="step">1</span><div>Click <strong>☰</strong> to open Preferences.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Choose a theme from the list — it applies instantly.</div></div>
+    <div class="step-row"><span class="step">3</span><div>The choice is saved automatically to <code>config.toml</code>.</div></div>
+
+    <p>Or set it directly in the config:</p>
+    <pre>[ui]
+theme = "catppuccin-mocha"</pre>
+
+    <p>Popular choices:</p>
+    <table>
+      <tr><th>Name</th><th>Style</th></tr>
+      <tr><td><code>catppuccin-mocha</code></td><td>Dark, muted purple — the fan favourite</td></tr>
+      <tr><td><code>catppuccin-latte</code></td><td>Light, warm pastels</td></tr>
+      <tr><td><code>nord</code></td><td>Cool blue Arctic palette</td></tr>
+      <tr><td><code>dracula</code></td><td>Dark purple and pink</td></tr>
+      <tr><td><code>gruvbox-dark</code></td><td>Warm retro dark theme</td></tr>
+      <tr><td><code>tokyo-night</code></td><td>Dark Tokyo Night</td></tr>
+      <tr><td><code>solarized-dark</code></td><td>Classic Solarized dark</td></tr>
+      <tr><td><code>one-dark</code></td><td>Atom One Dark</td></tr>
+      <tr><td><code>default</code></td><td>Native OS look (best on Windows)</td></tr>
+    </table>
+
+    <div class="tip">
+      <strong>Custom themes:</strong> drop a <code>.toml</code> file into <code>~/.config/LinuxDojo/UplinkIRC/themes/</code> and it appears in the list on next launch. The format matches the shipped themes in the <code>themes/</code> folder.
+    </div>
+  </section>
+
+  <!-- FONTS -->
+  <section id="fonts">
+    <h2>Font sizes</h2>
+    <p>Every part of the UI has its own independent font size. Go to <strong>☰ → Preferences → Font Config...</strong> and drag the sliders, or set them in config:</p>
+
+    <pre>[ui]
+font_family   = "IBM Plex Mono"   # any installed monospace font
+
+# Each zone is independently sized (all in points)
+font_chat     = 11   # message area
+font_sidebar  = 10   # server/channel list
+font_nick_list= 10   # user list on the right
+font_input    = 11   # message input box
+font_topic_bar= 10   # topic bar at the top
+font_typing   = 9    # "nick is typing..." indicator</pre>
+
+    <p>Changes from the Font Config dialog are applied and saved immediately — no restart needed.</p>
+  </section>
+
+  <!-- BRACKETS -->
+  <section id="brackets">
+    <h2>Nick brackets</h2>
+    <p>The characters that wrap nicks in chat messages are configurable. Set <code>nick_brackets</code> in <code>[ui]</code>:</p>
+
+    <table>
+      <tr><th>Value</th><th>How nicks look</th></tr>
+      <tr><td><code>"&lt;&gt;"</code></td><td><code>&lt;alice&gt; hello</code> (default)</td></tr>
+      <tr><td><code>"[]"</code></td><td><code>[alice] hello</code></td></tr>
+      <tr><td><code>"()"</code></td><td><code>(alice) hello</code></td></tr>
+      <tr><td><code>"{}"</code></td><td><code>{alice} hello</code></td></tr>
+      <tr><td><code>"::::"</code></td><td><code>::alice:: hello</code></td></tr>
+      <tr><td><code>""</code></td><td><code>alice hello</code> (no brackets)</td></tr>
+    </table>
+
+    <pre>[ui]
+nick_brackets = "[]"   # square brackets</pre>
+
+    <p>You can also change this live from <strong>☰ → Preferences → Nick Brackets</strong>.</p>
+  </section>
+
+  <!-- PANELS -->
+  <section id="panels">
+    <h2>Show and hide panels</h2>
+
+    <h3>Sidebar (server/channel list)</h3>
+    <p>Click the <code>⚙</code> gear at the <strong>top-left</strong> of the topic bar. The sidebar collapses; the hamburger and gear stay pinned. Click again to restore.</p>
+    <p>Drag the divider between the sidebar and the chat to resize it. Width is saved on quit.</p>
+
+    <h3>Nick list (user list)</h3>
+    <p>Click the <code>⚙</code> gear in the <strong>header above the user list</strong>. The gear spins, then the list collapses. The header and user count stay visible. Click again to expand.</p>
+    <p>Drag the divider between the chat and the nick panel to resize it. Width is saved on quit.</p>
+
+    <h3>Topic display</h3>
+    <p>A second text bar showing the full channel topic can be toggled:</p>
+    <pre>[ui]
+show_topic = true   # drops a topic line below the info bar</pre>
+    <p>Or toggle live from <strong>☰ → Preferences → Show Topic Bar</strong>.</p>
+
+    <h3>Nick label in input box</h3>
+    <pre>[ui]
+show_nick_prefix = false   # hides "alice ▸" next to the input</pre>
+  </section>
+
+  <!-- APP ICON -->
+  <section id="app-icon">
+    <h2>App icon variant</h2>
+    <p>UplinkIRC ships five icon variants. Switch at runtime from <strong>☰ → App Icon</strong>, or set in config:</p>
+
+    <pre>[ui]
+app_icon = "dark"   # "dark" | "light" | "light-default" | "avatar" | "mark"</pre>
+
+    <table>
+      <tr><th>Value</th><th>Description</th></tr>
+      <tr><td><code>"dark"</code></td><td>Dark background icon (default)</td></tr>
+      <tr><td><code>"light-default"</code></td><td>Light variant, recommended for light OS themes</td></tr>
+      <tr><td><code>"light"</code></td><td>Light variant, alternate style</td></tr>
+      <tr><td><code>"avatar"</code></td><td>Circular avatar style</td></tr>
+      <tr><td><code>"mark"</code></td><td>Minimal mark / wordless</td></tr>
+    </table>
+  </section>
+
+  <!-- NOTIFICATIONS -->
+  <section id="notifications">
+    <h2>Desktop notifications</h2>
+    <p>When your nick is mentioned or you receive a PM while the window is not focused, a <strong>green dot</strong> appears on the tray icon. It clears the moment you focus the window.</p>
+
+    <p>Toggle from <strong>☰ → Preferences → Desktop Notifications</strong>, or in config:</p>
+    <pre>[ui]
+notifications = true</pre>
+  </section>
+
+  <hr />
+
+  <!-- TROUBLESHOOTING -->
+  <section id="ts-build">
+    <h2>Troubleshooting — Build errors</h2>
+
+    <h3>CMake can't find Qt6</h3>
+    <p>If Qt is installed but CMake can't find it, pass its location explicitly:</p>
+    <pre>cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 -B build</pre>
+    <p>On Homebrew macOS:</p>
+    <pre>cmake -DCMAKE_PREFIX_PATH=$(brew --prefix qt) -B build</pre>
+
+    <h3>tomlplusplus not found</h3>
+    <p>Install the package for your platform, or let CMake fetch it automatically (it will on the first run if not found):</p>
+    <pre># Arch
+sudo pacman -S tomlplusplus
+
+# Ubuntu
+sudo apt install libtomlplusplus-dev
+
+# Fedora
+sudo dnf install tomlplusplus-devel
+
+# FreeBSD
+sudo pkg install tomlplusplus
+
+# macOS
+brew install tomlplusplus</pre>
+
+    <h3>Linker errors on Linux</h3>
+    <p>Make sure <code>qt6-base</code>, <code>qt6-svg</code>, and the Network module are all installed and that you're linking against Qt6, not Qt5.</p>
+  </section>
+
+  <section id="ts-config">
+    <h2>Troubleshooting — Config problems</h2>
+
+    <h3>TOML parse error on startup</h3>
+    <p>All string values in TOML must be in double quotes. The <code>#</code> character starts a comment if it appears outside a string.</p>
+    <pre># Wrong — causes a parse error
+name = LinuxDojo
+
+# Correct
+name = "LinuxDojo"</pre>
+
+    <h3>Using single brackets for servers</h3>
+    <pre># Wrong — defines a single table, not an array
+[server]
+name = "LinuxDojo"
+
+# Correct — double brackets = array entry
+[[server]]
+name = "LinuxDojo"</pre>
+
+    <h3>My config change isn't taking effect</h3>
+    <p>Click <strong>☰ → Reload Config</strong>. Channel list changes take effect on the next reconnect — right-click the server in the sidebar and choose <strong>Reconnect</strong>.</p>
+  </section>
+
+  <section id="ts-nick">
+    <h2>Troubleshooting — Nick in use</h2>
+    <p>If your nick is taken, UplinkIRC appends <code>_</code> and tries again (e.g. <code>alice_</code>). The new nick is shown next to the input box. Once the original becomes available, type:</p>
+    <pre>/nick alice</pre>
+    <p>If you have NickServ authentication set up, services may ghost the old connection:</p>
+    <pre>/msg NickServ GHOST alice yourpassword</pre>
+  </section>
+
+  <section id="ts-themes">
+    <h2>Troubleshooting — Theme not loading</h2>
+    <p>The <code>themes/</code> folder must be in the same directory as the <code>UplinkIRC</code> binary. If you moved the binary, copy the folder back:</p>
+    <pre>cp -r themes/ /path/to/UplinkIRC/</pre>
+    <p>If you built with CMake from the project root, CMake copies the themes folder automatically. Check that <code>build/themes/</code> exists and contains <code>.toml</code> files.</p>
+    <p>Theme names are case-sensitive and must match the <code>.toml</code> filename exactly (without the extension):</p>
+    <pre>[ui]
+theme = "catppuccin-mocha"   # ✓ matches themes/catppuccin-mocha.toml
+theme = "Catppuccin-Mocha"   # ✗ won't load — wrong case</pre>
+  </section>
+
+  <section id="ts-previews">
+    <h2>Troubleshooting — Link previews</h2>
+
+    <h3>Preview didn't appear</h3>
+    <ul>
+      <li>The site may block bots — UplinkIRC uses a standard Chrome/Linux user-agent, but some sites still block.</li>
+      <li>The page may have no <code>og:title</code> or <code>&lt;title&gt;</code> — nothing to show.</li>
+      <li>SSL certificate errors block the fetch silently (self-signed or expired certs).</li>
+    </ul>
+
+    <h3>Previews disappeared when I switched channels</h3>
+    <p>This is a known limitation — preview cards are not stored in the message history and don't survive a channel switch. It's on the roadmap to fix.</p>
+  </section>
+
+</main>
+
+<footer>
+  UplinkIRC &mdash; <a href="https://github.com/joehonkey/UplinkIRC">GitHub</a> &middot;
+  <a href="index.html">Home</a> &middot;
+  <a href="configuration.md">Config reference</a> &middot;
+  <a href="commands.md">Commands</a> &middot;
+  <a href="faq.md">FAQ</a>
+</footer>
+
+<script>
+  function switchTab(el, id) {
+    const group = el.parentElement;
+    const panel = el.closest('.tabs');
+    group.querySelectorAll('.tab-label').forEach(l => l.classList.remove('active'));
+    panel.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    panel.querySelector('#tab-' + id).classList.add('active');
+  }
+
+  // Highlight active nav link on scroll
+  const links = document.querySelectorAll('#sidenav a[href^="#"]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        links.forEach(l => {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+
+  document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

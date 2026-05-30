@@ -34,6 +34,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Signal ordering fix — config loads after MainWindow connects signals
 - [x] Version baked into binary — `version.h` generated from CMake `PROJECT_VERSION` at build time
 - [x] Full documentation — configuration.md, commands.md, faq.md, ircv3.md, keyboard-shortcuts.md (beginner-friendly, real examples)
+- [x] How-To guide — docs/howto.html: left-side nav tree, step-by-step from install to tweaks, platform tabs, callout boxes, scroll-spy; linked from GitHub Pages and README
 - [x] GitHub repo — public, branch-protected, invite-only contributions
 - [x] GitHub Pages landing page — https://joehonkey.github.io/UplinkIRC/
 - [x] README beautification — badges, icon gallery, feature tables, annotated config, commands table, download buttons
@@ -94,6 +95,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## In Progress
 
 - [ ] Link preview for title-only pages — pages without og:title (plain `<title>` only) may not preview; needs verification and potential fix
+- [ ] Link preview cards don't survive channel switches — cards not stored in message history; clears on switch
 
 ---
 
@@ -138,7 +140,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Close/Close Query in sidebar — right-clicking a channel shows Close (PARTs + removes buffer); right-clicking a PM query shows Close Query (removes buffer)
 - [x] Channel focus on join — joining a channel now always switches focus to it
 - [x] Nick panel redesign — replaced detachable QDockWidget with embedded panel in QSplitter; gear button (⚙) in header animates a full spin before toggling the user list; gear and user count remain visible when collapsed; panel background matches chat buffer color across all themes
-- [x] Sidebar gear toggle — ⚙ button in the info bar (left of hamburger) collapses the server/channel list to 0 px (full-width chat) and restores it; sidebar is a fixed-width embedded panel, not drag-resizable
+- [x] Sidebar gear toggle — ⚙ button in the topic bar collapses the server/channel list; hamburger and gear stay pinned in the topic bar at all times (kBtnZoneMinW=48px floor); only the list collapses beneath them
 - [x] Native Windows style — windows11 Qt style by default; no alien dark theme on fresh installs
 - [ ] FreeBSD port skeleton
 - [ ] AppImage packaging for Linux

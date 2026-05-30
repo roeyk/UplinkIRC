@@ -3,6 +3,38 @@
 ---
 
 <!--
+Session summary — 2026-05-30  post-v0.7.13 (hamburger UI polish + sidebar fix + docs overhaul)
+
+What was built / fixed:
+  - Hamburger (☰) button constrained to 22×22 px (was unconstrained width, expanding
+    horizontally with the font size). Changed setFixedHeight(22) → setFixedSize(22, 22)
+    and added setAutoRaise(true) to match the gear buttons.
+  - Hamburger font changed from fs.toolbar*2 point-size (variable, could reach 20pt+)
+    to a fixed 15px pixel-size font, matching the gear icon's visual size (gear renders
+    at sz-1=15px inside a 16px pixmap). Removed hamburger from applyFontSizes() entirely
+    so it no longer changes with user font preferences — consistent with gear behavior.
+  - Hamburger and gear buttons no longer disappear when the sidebar is collapsed.
+    Previously, the sidebar toggle set m_topicLeft->setFixedWidth(0), collapsing the
+    entire left zone including the buttons. Added kBtnZoneMinW=48 constant (22+22+4px
+    margin) as a floor — collapsed state now sets width to 48px, keeping both buttons
+    pinned. Splitter-drag path also clamped with qMax(kBtnZoneMinW, w).
+  - Full How-To guide created: docs/howto.html — left-side tree navigation, 8 sections
+    (Getting Started, Basic Setup, Authentication, Multiple Servers, Interface, Chatting,
+    Tweaks, Troubleshooting), platform tabs for dependencies, step badges, callout boxes,
+    interactive tab selection, scroll-spy nav highlighting.
+  - README download badges updated from v0.7.11 to v0.7.14.
+  - README Documentation table updated: How-To Guide added as first/highlighted entry.
+  - docs/index.html (GitHub Pages): nav version bump to v0.7.14, How-To added to nav bar
+    and docs grid (highlighted card), footer links updated.
+  - Releases: v0.7.13 (hamburger size fix), v0.7.14 (sidebar button visibility fix).
+
+Known issues remaining:
+  - Link preview cards don't survive channel switching (not stored in history)
+  - DCC Send File not implemented
+  - AppImage packaging not done
+-->
+
+<!--
 Session summary — 2026-05-29  post-v0.7.12 (UI overhaul + signal bars)
 
 What was built / fixed:

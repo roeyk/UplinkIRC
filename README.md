@@ -24,20 +24,26 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.11-linux-x86_64.tar.gz">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.14-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20Linux-x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.11-windows-x64.zip">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.14-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.11-macos-arm64.dmg">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.7.14-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
   <a href="#install-dependencies-first">
     <img src="https://img.shields.io/badge/FreeBSD-build%20from%20src-AB2B28?style=for-the-badge&logo=freebsd&logoColor=white" alt="FreeBSD build from source" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://joehonkey.github.io/UplinkIRC/howto.html">
+    <img src="https://img.shields.io/badge/📖%20How--To%20Guide-install%20→%20tweaks-5c5f77?style=for-the-badge" alt="How-To Guide" />
   </a>
 </p>
 
@@ -364,6 +370,7 @@ Type a colon to trigger inline autocomplete:
 
 | Doc | Contents |
 |---|---|
+| [**How-To Guide**](https://joehonkey.github.io/UplinkIRC/howto.html) | Step-by-step from install to tweaks — start here |
 | [Configuration](docs/configuration.md) | Every config key with examples, bouncer setup, SASL |
 | [Commands](docs/commands.md) | All slash commands + emoji shortcuts |
 | [IRCv3 support](docs/ircv3.md) | Capability status and notes |
