@@ -161,7 +161,13 @@ void MainWindow::setupToolbar()
 
     m_hamburger = new QToolButton;
     m_hamburger->setText("☰");
-    m_hamburger->setFixedHeight(22);
+    m_hamburger->setFixedSize(22, 22);
+    m_hamburger->setAutoRaise(true);
+    {
+        QFont f;
+        f.setPixelSize(15);
+        m_hamburger->setFont(f);
+    }
     m_hamburger->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_hamburger, &QWidget::customContextMenuRequested, this, [](const QPoint&){});
     m_hamburger->setObjectName("hamburger");
@@ -390,11 +396,6 @@ void MainWindow::applyFontSizes()
         return f;
     };
 
-    if (m_hamburger) {
-        QFont f = makeFont(fs.toolbar * 2);
-        f.setBold(false);
-        m_hamburger->setFont(f);
-    }
     if (m_appLabel) {
         QFont f = makeFont(fs.toolbar);
         f.setBold(true);

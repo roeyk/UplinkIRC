@@ -36,7 +36,7 @@ Known issues remaining:
   - DCC Send File not implemented
 -->
 
-## v0.7.13-dev — 2026-05-29
+## v0.7.13 — 2026-05-29
 
 - **Full-width topic bar** — spans above the server list and chat area; hamburger (☰) and gear (⚙) sit in the left zone above the server list; signal bars + channel info in the right zone above the chat
 - **Signal bars indicator** — 4-bar stair-step signal strength widget in the topic bar; solid green when connected (bar count reflects ping latency), blue flashing when connecting/reconnecting, red flashing when disconnected
@@ -45,6 +45,7 @@ Known issues remaining:
 - **Status bar removed** — connection status label at the bottom of the window is gone; replaced entirely by signal bars
 - Fix: tray icon unread (red) and notify (green) dot states now render correctly via unified `updateIcon()` logic
 - Fix: `show_conn_status` config key and Preferences toggle removed; `notifications` key added (default `true`)
+- Fix: hamburger button constrained to 22×22 px matching the gear icon; ☰ rendered at 15 px pixel-size for visual parity
 
 ---
 
