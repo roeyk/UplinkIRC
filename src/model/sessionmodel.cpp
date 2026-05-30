@@ -243,6 +243,8 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::ctcpTimeReply,   this, &SessionModel::onCtcpTimeReply);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
     connect(cl, &IrcClient::typingReceived,  this, &SessionModel::typingReceived);
+    connect(cl, &IrcClient::pingRtt,         this, &SessionModel::pingRtt);
+    connect(cl, &IrcClient::reconnecting,    this, &SessionModel::serverReconnecting);
 
     // Pre-create server buffer and configured channels in the session
     auto *sess = session(cfg.host);

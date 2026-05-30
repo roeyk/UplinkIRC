@@ -13,6 +13,7 @@
 #include "ui/emojipicker.h"
 #include "ui/emojidata.h"
 #include "ui/menuicons.h"
+#include "ui/signalbars.h"
 #include "config/config.h"
 
 #include <QApplication>
@@ -108,14 +109,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     if (QSystemTrayIcon::isSystemTrayAvailable())
         m_tray = new TrayIcon(model, this);
 
-    statusBar()->setSizeGripEnabled(false);
-    m_connStatusLabel = new QLabel("Connecting...");
-    m_connStatusLabel->setContentsMargins(4, 0, 4, 0);
-    QFont sbFont = m_connStatusLabel->font();
-    sbFont.setPointSize(8);
-    m_connStatusLabel->setFont(sbFont);
-    statusBar()->addWidget(m_connStatusLabel);
-    m_connStatusLabel->setVisible(m_config.ui.showConnStatus);
+    statusBar()->hide();
 
     QSettings settings("LinuxDojo", "UplinkIRC");
     restoreGeometry(settings.value("geometry").toByteArray());
@@ -227,7 +221,6 @@ void MainWindow::setupToolbar()
             if (m_topicDisplay)     m_topicDisplay->setVisible(m_showTopic);
             if (m_nickPrefix)       m_nickPrefix->setVisible(m_showNickPrefix);
             if (m_emojiBtn)         m_emojiBtn->setVisible(m_showEmojiBtn);
-            if (m_connStatusLabel)  m_connStatusLabel->setVisible(m_config.ui.showConnStatus);
             if (m_typingLabel)      m_typingLabel->setVisible(m_config.ui.typingIndicator);
         });
 
@@ -304,11 +297,6 @@ void MainWindow::connectPreferences()
         }
     });
 
-    connect(m_prefsDialog, &PreferencesDialog::connStatusToggled, this, [this](bool on){
-        m_config.ui.showConnStatus = on;
-        Config::save(m_config, Config::defaultPath());
-        if (m_connStatusLabel) m_connStatusLabel->setVisible(on);
-    });
 
     connect(m_prefsDialog, &PreferencesDialog::notificationsToggled, this, [this](bool on){
         m_config.ui.notifications = on;
@@ -576,8 +564,11 @@ void MainWindow::setupChatArea()
 
     m_userInfoLabel = new QLabel;
     m_userInfoLabel->setObjectName("userInfoLabel");
+    m_signalBars = new SignalBars(m_topicBar);
+
     tHbox->addWidget(m_sidebarToggleBtn);
     tHbox->addWidget(m_hamburger);
+    tHbox->addWidget(m_signalBars);
     tHbox->addWidget(m_topicLabel);
     tHbox->addWidget(m_userInfoLabel);
     tHbox->addWidget(m_modesLabel, 1);
@@ -706,7 +697,7 @@ void MainWindow::setupInputBar()
 {
     auto *bar  = new QWidget;
     auto *hbox = new QHBoxLayout(bar);
-    hbox->setContentsMargins(4, 3, 4, 3);
+    hbox->setContentsMargins(4, 3, 4, 8);
     hbox->setSpacing(4);
 
     m_nickPrefix = new QLabel;
@@ -821,6 +812,15 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::unreadChanged,     this, &MainWindow::onUnreadChanged);
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
     connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
+
+    connect(m_model, &SessionModel::pingRtt, this, [this](const QString &host, int ms){
+        if (m_signalBars && host == m_model->activeHost())
+            m_signalBars->setLatency(ms);
+    });
+    connect(m_model, &SessionModel::serverReconnecting, this, [this](const QString &host){
+        if (m_signalBars && host == m_model->activeHost())
+            m_signalBars->setState(SignalBars::State::Reconnecting);
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -1145,28 +1145,26 @@ void MainWindow::onServerAdded(const QString &host)
     item->setFont(0, f);
     item->setForeground(0, QColor("#6c7086"));
 
-    if (m_connStatusLabel)
-        m_connStatusLabel->setText("Connecting to " + host + "...");
+    if (m_signalBars && (m_model->activeHost().isEmpty() || host == m_model->activeHost()))
+        m_signalBars->setState(SignalBars::State::Connecting);
 }
 
 void MainWindow::onServerConnected(const QString &host)
 {
     auto *item = findServerItem(host);
-    if (item) {
+    if (item)
         item->setIcon(0, makeConnectedIcon());
-    }
-    if (m_connStatusLabel)
-        m_connStatusLabel->setText("Connected to " + host);
+    if (m_signalBars && host == m_model->activeHost())
+        m_signalBars->setState(SignalBars::State::Connected);
 }
 
 void MainWindow::onServerDisconnected(const QString &host)
 {
     auto *item = findServerItem(host);
-    if (item) {
+    if (item)
         item->setIcon(0, QIcon());
-    }
-    if (m_connStatusLabel)
-        m_connStatusLabel->setText("Disconnected from " + host);
+    if (m_signalBars && host == m_model->activeHost())
+        m_signalBars->setState(SignalBars::State::Disconnected);
 }
 
 void MainWindow::onChannelAdded(const QString &host, const QString &channel)
@@ -1795,6 +1793,16 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
 
     if (auto *sess = m_model->session(host))
         m_nickPrefix->setText(sess->nick);
+
+    if (m_signalBars) {
+        auto *sess = m_model->session(host);
+        if (!sess)
+            m_signalBars->setState(SignalBars::State::None);
+        else if (sess->connected)
+            m_signalBars->setState(SignalBars::State::Connected);
+        else
+            m_signalBars->setState(SignalBars::State::Disconnected);
+    }
 
     setWindowTitle("UplinkIRC — " + channel + " @ " + host);
     updateTypingLabel();

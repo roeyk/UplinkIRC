@@ -52,6 +52,8 @@ qt_add_executable(UplinkIRC WIN32
     src/ui/emojipicker.cpp
     src/ui/linkpreview.cpp
     src/ui/linkpreview.h
+    src/ui/signalbars.cpp
+    src/ui/signalbars.h
     src/ui/themeloader.cpp
     src/ui/themeloader.h
     src/irc/ircclient.cpp

@@ -65,6 +65,10 @@ signals:
     // Self
     void selfNickChanged(const QString &host, const QString &nick);
 
+    // Connection quality
+    void pingRtt          (const QString &host, int ms);
+    void serverReconnecting(const QString &host);
+
     // Typing
     void typingReceived(const QString &host, const QString &channel,
                         const QString &nick, const QString &state);

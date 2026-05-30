@@ -19,6 +19,10 @@ IrcClient::IrcClient(QObject *parent)
     m_reconnectTimer = new QTimer(this);
     m_reconnectTimer->setSingleShot(true);
     connect(m_reconnectTimer, &QTimer::timeout, this, &IrcClient::doReconnect);
+
+    m_pingTimer = new QTimer(this);
+    m_pingTimer->setInterval(30000);
+    connect(m_pingTimer, &QTimer::timeout, this, &IrcClient::sendPing);
 }
 
 IrcClient::~IrcClient() = default;
@@ -120,6 +124,9 @@ void IrcClient::onConnected()
 {
     m_reconnectTimer->stop();
     m_reconnectDelay = 5;
+    m_pingPending = false;
+    m_pingTimer->start();
+    QTimer::singleShot(2000, this, &IrcClient::sendPing);
 
     sendRaw("CAP LS 302");
 
@@ -132,6 +139,8 @@ void IrcClient::onConnected()
 
 void IrcClient::onDisconnected()
 {
+    m_pingTimer->stop();
+    m_pingPending = false;
     m_namesBuffer.clear();
     m_requestedCaps.clear();
     m_ackedCaps.clear();
@@ -176,8 +185,17 @@ void IrcClient::scheduleReconnect()
     m_reconnectDelay = qMin(m_reconnectDelay * 2, 60);
 }
 
+void IrcClient::sendPing()
+{
+    if (m_pingPending) return;
+    m_pingPending = true;
+    m_pingClock.start();
+    sendRaw("PING :uplink_rtt");
+}
+
 void IrcClient::doReconnect()
 {
+    emit reconnecting(m_host);
     emit serverMessage(m_host, "Reconnecting…");
     m_saslPending = false;
     if (m_ssl)
@@ -199,6 +217,14 @@ void IrcClient::processLine(const QString &line)
 
     if (cmd == "PING") {
         sendRaw("PONG :" + (msg.params.isEmpty() ? QString{} : msg.params.last()));
+        return;
+    }
+
+    if (cmd == "PONG") {
+        if (m_pingPending && !msg.params.isEmpty() && msg.params.last() == "uplink_rtt") {
+            m_pingPending = false;
+            emit pingRtt(m_host, static_cast<int>(m_pingClock.elapsed()));
+        }
         return;
     }
 

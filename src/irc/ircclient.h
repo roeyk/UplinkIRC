@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QSet>
 #include <QSslSocket>
+#include <QElapsedTimer>
 #include <QTimer>
 
 struct ServerConfig;
@@ -70,6 +71,8 @@ signals:
 
     void serverMessage  (const QString &server, const QString &text);
     void errorMessage   (const QString &server, const QString &text);
+    void pingRtt        (const QString &host, int ms);
+    void reconnecting   (const QString &host);
     void ctcpPingReply  (const QString &server, const QString &nick, qint64 rttMs);
     void ctcpTimeReply  (const QString &server, const QString &nick, const QString &timeStr);
     void rawReceived  (const QString &line);
@@ -90,6 +93,7 @@ private slots:
     void onSslErrors(const QList<QSslError> &errors);
     void onErrorOccurred(QAbstractSocket::SocketError error);
     void doReconnect();
+    void sendPing();
 
 private:
     void processLine(const QString &line);
@@ -118,6 +122,9 @@ private:
     QString      m_bouncerNetwork;
 
     QTimer      *m_reconnectTimer{nullptr};
+    QTimer      *m_pingTimer{nullptr};
+    QElapsedTimer m_pingClock;
+    bool         m_pingPending{false};
     bool         m_intentionalDisconnect{false};
     int          m_reconnectDelay{5};
 

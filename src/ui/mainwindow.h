@@ -11,6 +11,7 @@
 #include "ui/themeloader.h"
 
 class TrayIcon;
+class SignalBars;
 class DocsDialog;
 class PreferencesDialog;
 class LinkPreview;
@@ -152,6 +153,7 @@ private:
 
     SessionModel *m_model;
     TrayIcon     *m_tray{nullptr};
+    SignalBars   *m_signalBars{nullptr};
     LinkPreview  *m_linkPreview{nullptr};
     QString       m_hoveredUrl;
     QPoint        m_hoverGlobalPos;
@@ -163,5 +165,4 @@ private:
     bool m_showEmojiBtn{false};
     bool m_showTopic{true};
 
-    QLabel *m_connStatusLabel{nullptr};
 };

@@ -20,7 +20,6 @@ signals:
     void nickPrefixToggled(bool on);
     void emojiBtnToggled(bool on);
     void typingIndicatorToggled(bool on);
-    void connStatusToggled(bool on);
     void notificationsToggled(bool on);
     void coloredNicksToggled(bool on);
     void nickBracketsChanged(const QString &brackets);
@@ -35,7 +34,6 @@ private:
     QCheckBox   *m_nickPrefixCheck{nullptr};
     QCheckBox   *m_emojiCheck{nullptr};
     QCheckBox   *m_typingCheck{nullptr};
-    QCheckBox   *m_connStatusCheck{nullptr};
     QCheckBox   *m_notificationsCheck{nullptr};
     QCheckBox   *m_coloredNicksCheck{nullptr};
     QComboBox   *m_bracketsCombo{nullptr};

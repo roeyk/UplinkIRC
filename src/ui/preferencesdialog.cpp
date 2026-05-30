@@ -125,11 +125,6 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     connect(m_typingCheck, &QCheckBox::toggled, this, [this](bool on){ emit typingIndicatorToggled(on); });
     vbox->addWidget(m_typingCheck);
 
-    m_connStatusCheck = new QCheckBox("Connection Status Bar");
-    m_connStatusCheck->setChecked(cfg.ui.showConnStatus);
-    connect(m_connStatusCheck, &QCheckBox::toggled, this, [this](bool on){ emit connStatusToggled(on); });
-    vbox->addWidget(m_connStatusCheck);
-
     m_notificationsCheck = new QCheckBox("Desktop Notifications");
     m_notificationsCheck->setChecked(cfg.ui.notifications);
     connect(m_notificationsCheck, &QCheckBox::toggled, this, [this](bool on){ emit notificationsToggled(on); });
