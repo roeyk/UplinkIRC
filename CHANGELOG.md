@@ -545,6 +545,39 @@ Next priorities:
   - DCC Send File
 -->
 
+## [0.9.0] — 2026-05-30
+
+### Added
+- **DCC Send File** — right-click any nick in the user list and choose **Send File** to open a file picker and initiate a direct transfer. The recipient sees an accept/reject dialog showing the filename and size; accepted transfers save to a user-chosen path. Both sides get a live progress dialog with a cancel button. Outgoing transfers listen on a local TCP port (standard 4-byte big-endian ACK protocol); incoming transfers connect directly to the sender. A 60-second timeout fires if no connection arrives; a 30-second timeout fires on the receiver side if the sender never responds.
+- **SASL EXTERNAL (certificate authentication)** — add `sasl_external = true`, `client_cert`, and `client_key` to a server block to authenticate via a TLS client certificate instead of a password. UplinkIRC loads the PEM certificate and key before the TLS handshake, negotiates `AUTHENTICATE EXTERNAL` during CAP, and sends an empty response — the server derives your identity from the certificate. Both RSA and EC (ECDSA) keys are supported. The Server dialog (☰ → Preferences → Manage Servers → Edit) gains a checkbox and browse buttons for cert/key paths.
+- **AppImage packaging** — `packaging/build-appimage.sh` produces a self-contained `UplinkIRC-VERSION-ARCH.AppImage`. The AppImage embeds zsync metadata so users can update in-place with `appimageupdatetool` without a full re-download.
+- **Automated release builds** — pushing a `v*` tag triggers CI on Linux (AppImage + tar.gz), Windows (zip), and macOS (DMG). All artifacts upload to the GitHub release automatically.
+
+### Fixed
+- **Link preview entity decoding** — page titles containing HTML entities (`&amp;`, `&#39;`, `&lt;`, etc.) are now decoded via `QTextDocument` before being displayed. Both `og:title` and the plain `<title>` fallback path are affected.
+
+---
+
+## [0.8.1] — 2026-05-30
+
+### Fixed
+- **Link preview card persistence** — preview cards now survive channel switches. URL keys are normalised before storage, and `refreshChatView` reinjects stored cards when switching back to a channel.
+
+---
+
+## [0.8.0] — 2026-05-29
+
+### Security
+- **TLS certificate verification enforced** — `ignoreSslErrors()` removed; `onSslErrors` now disconnects. Connections to servers with invalid or self-signed certificates fail immediately with an error in the server buffer. No silent bypass.
+- **Credential redaction in raw log** — `PASS`, `AUTHENTICATE`, and `NickServ IDENTIFY` payloads are stripped from the raw log before `rawReceived` is emitted. Passwords never appear in any visible panel.
+- **Config file hardening** — `config.toml` is written with `QSaveFile` (atomic rename) and `0600` permissions. All string values are escaped with `tomlQuote()` before writing.
+- **Link preview LAN blocking** — `isPrivateUrl()` blocks loopback, RFC 1918 private ranges (`10.x`, `172.16–31.x`, `192.168.x`), link-local (`169.254.x`), and `.local` hostnames. A URL posted in chat cannot probe local services.
+- **CTCP rate limiting** — `VERSION` and `PING` CTCP replies are limited to once per nick per 5 seconds. Reflected `PING` payloads are capped at 32 bytes.
+- **DoS buffer caps** — inbound IRC buffer capped at 64 KB, batch messages at 1 000 per batch / 8 open batches, `QTextBrowser` block count bounded at `kMessageBufferCap + 300`.
+- **Image decode safety** — `QImageReader` now checks reported dimensions before allocating; images larger than 4096 × 4096 are skipped.
+
+---
+
 ## [0.7.10] — 2026-05-29
 
 ### Changed

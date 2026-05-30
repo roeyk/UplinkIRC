@@ -8,7 +8,35 @@ Common questions and fixes for UplinkIRC.
 
 ### Where do I get UplinkIRC?
 
-Build from source — see [Building](building.md) for step-by-step instructions. Packages for Linux, FreeBSD, macOS, and Windows are planned.
+Pre-built binaries are available on the [GitHub Releases page](https://github.com/joehonkey/UplinkIRC/releases/latest):
+
+| Platform | Format | How to run |
+|---|---|---|
+| **Linux x86_64** | AppImage | `chmod +x UplinkIRC-*.AppImage && ./UplinkIRC-*.AppImage` |
+| **Linux x86_64** | tar.gz | Extract, then `./UplinkIRC` |
+| **Windows x64** | zip | Extract and run `UplinkIRC.exe` |
+| **macOS** | DMG | Open and drag to Applications |
+| **FreeBSD** | — | Build from source (see below) |
+
+The AppImage is the recommended Linux download — it is self-contained, runs on any modern x86_64 Linux with glibc 2.35+, and supports in-place updates (see [How do I update the AppImage?](#how-do-i-update-the-appimage) below).
+
+### How do I update the AppImage?
+
+The AppImage embeds zsync metadata pointing to the latest release. Install [`appimageupdatetool`](https://github.com/AppImageCommunity/AppImageUpdate) and run:
+
+```bash
+appimageupdatetool ./UplinkIRC-0.9.0-x86_64.AppImage
+```
+
+This downloads only the changed blocks from the new release — much faster than a full re-download. The tool prints progress and replaces the file in place when done.
+
+To install `appimageupdatetool` on Arch Linux:
+
+```bash
+yay -S appimageupdatetool-bin
+```
+
+Or download the AppImage directly from the project's releases page.
 
 ### A nick dialog appeared on first launch — what do I do?
 
@@ -276,7 +304,66 @@ sasl_user     = "yournick"
 sasl_password = "yourpassword"
 ```
 
-UplinkIRC will negotiate the `sasl` CAP and authenticate during the connection handshake. The server buffer shows `SASL authentication successful` when it works. Use this instead of `nickserv_password` on networks that support it (Libera.Chat, OFTC, etc.).
+UplinkIRC negotiates the `sasl` CAP and authenticates during the connection handshake. The server buffer shows `SASL authentication successful` when it works. Use this instead of `nickserv_password` on networks that support it (Libera.Chat, OFTC, etc.).
+
+### How do I use SASL EXTERNAL (certificate login)?
+
+SASL EXTERNAL authenticates you via a TLS client certificate — no password is ever sent over the network.
+
+**1. Generate a certificate** (one time):
+
+```bash
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-384 \
+    -keyout ~/.irc/client.key -out ~/.irc/client.crt \
+    -days 3650 -nodes -subj "/CN=yournick"
+chmod 600 ~/.irc/client.key ~/.irc/client.crt
+```
+
+**2. Register your fingerprint** (Libera.Chat):
+
+Connect normally first, then run:
+
+```
+/msg NickServ CERT ADD
+```
+
+This tells services to trust connections presenting that certificate. After adding it, you can remove your `sasl_password` entirely.
+
+**3. Update config**:
+
+```toml
+[[server]]
+name          = "Libera"
+host          = "irc.libera.chat"
+port          = 6697
+ssl           = true
+nick          = "yournick"
+user          = "uplink"
+realname      = "UplinkIRC User"
+channels      = "#linux"
+sasl_external = true
+client_cert   = "/home/joe/.irc/client.crt"
+client_key    = "/home/joe/.irc/client.key"
+```
+
+You can also set cert and key paths from the GUI: ☰ → Preferences → Manage Servers → Edit → check **Use SASL EXTERNAL** → Browse for cert and key files.
+
+### How do I send a file to someone (DCC)?
+
+Right-click the recipient's nick in the user list on the right side of the window, then choose **Send File**. Pick a file in the dialog — UplinkIRC opens a local TCP port and sends a DCC SEND offer to the recipient. A progress dialog appears while the transfer runs.
+
+The recipient sees:
+
+```
+alice wants to send you:
+report.pdf  (2.1 MB)
+
+Accept?   [Yes]  [No]
+```
+
+They click **Yes**, choose a save location, and the transfer starts.
+
+> **Important:** DCC connects directly between clients over TCP. It works reliably on a LAN. Over the internet it requires the sender's port to be reachable from outside — a NAT router or firewall on the sender's side will block the connection. This is a DCC protocol limitation.
 
 ### How do I search the Documentation?
 

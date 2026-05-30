@@ -160,6 +160,9 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `password` | string | no | Sent as `PASS` during connection. Required for most bouncers; also used for password-protected servers |
 | `sasl_user` | string | no | SASL username for SASL PLAIN authentication. Set together with `sasl_password` |
 | `sasl_password` | string | no | SASL password for SASL PLAIN authentication. Set together with `sasl_user` |
+| `sasl_external` | bool | no | Use SASL EXTERNAL (certificate-based auth). Set to `true` together with `client_cert` and `client_key`. Cannot be combined with `sasl_user`/`sasl_password`. |
+| `client_cert` | string | no | Path to the PEM client certificate for SASL EXTERNAL. |
+| `client_key` | string | no | Path to the PEM private key for SASL EXTERNAL. RSA and EC (ECDSA) keys are both supported. |
 | `nickserv_password` | string | no | Sends `PRIVMSG NickServ :IDENTIFY <password>` after connecting. Use on servers without SASL support |
 | `bouncer` | string | no | Bouncer type. Set to `"znc"` or `"soju"` to enable bouncer-specific IRCv3 capabilities. Omit or set `"none"` for a direct server connection |
 | `bouncer_network` | string | no | **soju only.** The network name to attach to (e.g. `"libera"`). Sent to soju's `BOUNCER LISTNETWORKS` subsystem. Leave empty if connecting to a single-network soju instance |
@@ -200,6 +203,58 @@ nickserv_password = "yourpassword"
 ```
 
 The server buffer will show `Sent NickServ IDENTIFY` when this fires. For servers that support SASL, prefer `sasl_user`/`sasl_password` — SASL identifies you before you appear on the network.
+
+### SASL EXTERNAL (certificate authentication)
+
+SASL EXTERNAL authenticates you by your TLS client certificate — no password is ever sent. It is the most secure authentication method and is supported by Libera.Chat, OFTC, and most modern IRC servers.
+
+**Step 1 — Generate a client certificate**
+
+```bash
+# ECDSA P-384 (recommended — smaller, equally secure)
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-384 \
+    -keyout ~/.irc/client.key -out ~/.irc/client.crt \
+    -days 3650 -nodes -subj "/CN=yournick"
+
+# RSA 4096 (also supported)
+openssl req -x509 -newkey rsa:4096 \
+    -keyout ~/.irc/client.key -out ~/.irc/client.crt \
+    -days 3650 -nodes -subj "/CN=yournick"
+
+# Lock down permissions
+chmod 600 ~/.irc/client.key ~/.irc/client.crt
+```
+
+**Step 2 — Register your fingerprint with the server** (Libera.Chat example)
+
+```
+/msg NickServ CERT ADD
+```
+
+This adds your certificate's SHA-512 fingerprint to your account. From then on, connecting with the certificate logs you in automatically.
+
+**Step 3 — Add to config**
+
+```toml
+[[server]]
+name          = "Libera"
+host          = "irc.libera.chat"
+port          = 6697
+ssl           = true
+nick          = "yournick"
+user          = "uplink"
+realname      = "UplinkIRC User"
+channels      = "#linux"
+sasl_external = true
+client_cert   = "/home/joe/.irc/client.crt"
+client_key    = "/home/joe/.irc/client.key"
+```
+
+The server buffer shows `SASL authentication successful` when it works. UplinkIRC presents the certificate during the TLS handshake, negotiates `AUTHENTICATE EXTERNAL`, and sends an empty response — the server derives your identity from the cert's fingerprint.
+
+> **Note:** Do not combine `sasl_external` with `sasl_user`/`sasl_password`. They are mutually exclusive.
+
+---
 
 ### SASL PLAIN
 

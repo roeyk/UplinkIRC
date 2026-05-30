@@ -24,15 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.8.1-linux-x86_64.tar.gz">
-    <img src="https://img.shields.io/badge/⬇%20Linux-x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux" />
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-0.9.0-x86_64.AppImage">
+    <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.8.1-windows-x64.zip">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.9.0-linux-x86_64.tar.gz">
+    <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.9.0-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.8.1-macos-arm64.dmg">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.9.0-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -83,6 +87,8 @@
 | **TLS/SSL only** | All connections via `QSslSocket`. Plaintext IRC is not supported. |
 | **TLS certificate verification** | Invalid or self-signed certificates disconnect immediately with an error. No silent bypass. |
 | **SASL PLAIN** | Set `sasl_user` + `sasl_password` in config. Full CAP flow: `AUTHENTICATE`, `903`/`904`/`906`. |
+| **SASL EXTERNAL** | Certificate-based auth. Set `sasl_external = true`, `client_cert`, and `client_key`. RSA and EC (ECDSA) PEM keys supported. The TLS client cert is presented during the handshake; the server derives your identity from it — no password sent. |
+| **DCC Send File** | Right-click any nick → **Send File**. Sender opens a TCP listener; standard 4-byte ACK protocol. Receiver gets an accept/reject dialog with filename and size. Both sides get a live progress dialog with cancel. |
 | **NickServ auto-identify** | Set `nickserv_password` to send `IDENTIFY` on `RPL_WELCOME`. |
 | **Credential redaction** | `PASS`, `AUTHENTICATE`, and `NickServ IDENTIFY` payloads are never echoed in the raw log or any visible panel. |
 | **Config file hardening** | `config.toml` is written with owner-only permissions (mode `0600`). Saves are atomic via `QSaveFile` — a crash mid-save cannot corrupt the file. |
@@ -142,6 +148,7 @@
 |---|---|
 | **Manage Servers dialog** | Add, edit, remove servers at runtime. Changes take effect immediately, no config edit needed. |
 | **Multiple servers** | Connect to as many servers as you want simultaneously. |
+| **AppImage (Linux)** | Self-contained single-file executable. Download, `chmod +x`, run. Embeds zsync metadata — update in-place with `appimageupdatetool`. |
 | **Auto-reconnect** | Exponential backoff: 5 s → 10 s → 20 s → 40 s → 60 s. Deliberate `/quit` disables it. |
 | **Signal bars indicator** | 4-bar stair-step widget in the topic bar. Bar count = ping latency (4 bars < 50 ms … 1 bar > 300 ms). Blue flashing = connecting/reconnecting. Red flashing = disconnected. |
 | **System tray** | Minimizes to tray on close. Left-click shows window. Green dot on tray for mention/PM when unfocused; red dot for general unread. |
@@ -288,6 +295,11 @@ realname = "UplinkIRC User"
 # SASL PLAIN — authenticate before appearing on the network
 # sasl_user     = "yournick"
 # sasl_password = "yourpassword"
+
+# SASL EXTERNAL — certificate-based auth (no password; identity from TLS cert)
+# sasl_external = true
+# client_cert   = "/home/joe/.irc/client.crt"
+# client_key    = "/home/joe/.irc/client.key"
 
 # NickServ IDENTIFY sent automatically on connect (alternative to SASL)
 # nickserv_password = "yourpassword"

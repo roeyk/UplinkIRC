@@ -50,9 +50,20 @@ History messages are visually distinct from live messages:
 
 This works on any server or bouncer that supports `chathistory`, including soju and modern ZNC.
 
-### `sasl` (PLAIN)
+### `sasl` (PLAIN and EXTERNAL)
 
-Authenticates your account during the CAP handshake — before you appear on the network. Add `sasl_user` and `sasl_password` to a server block to enable. UplinkIRC sends `AUTHENTICATE PLAIN` and holds `CAP END` until the server confirms success (`903`) or failure (`904`/`906`). On failure the connection continues without authentication.
+Authenticates your account during the CAP handshake — before you appear on the network. UplinkIRC holds `CAP END` until the server confirms success (`903`) or failure (`904`/`906`). On failure the connection continues without authentication.
+
+**PLAIN** — Add `sasl_user` and `sasl_password` to a server block. UplinkIRC sends `AUTHENTICATE PLAIN` followed by the base64-encoded `\0user\0password` payload.
+
+**EXTERNAL** — Add `sasl_external = true`, `client_cert`, and `client_key` to a server block. UplinkIRC loads the PEM certificate and key, presents the certificate during the TLS handshake, then sends `AUTHENTICATE EXTERNAL` followed by an empty `+` response. The server derives your identity from the certificate's fingerprint — no password is transmitted. RSA and EC (ECDSA) PEM keys are both supported.
+
+```
+Client → AUTHENTICATE EXTERNAL
+Server → AUTHENTICATE +
+Client → AUTHENTICATE +
+Server → 903 :SASL authentication successful
+```
 
 ### `draft/typing`
 
