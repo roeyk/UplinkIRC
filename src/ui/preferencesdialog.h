@@ -28,7 +28,6 @@ signals:
     void docsRequested();
 
 private:
-    QComboBox *m_themeCombo{nullptr};
     QCheckBox *m_topicCheck{nullptr};
     QCheckBox *m_nickPrefixCheck{nullptr};
     QCheckBox *m_emojiCheck{nullptr};

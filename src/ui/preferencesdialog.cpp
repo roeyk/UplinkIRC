@@ -4,6 +4,8 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QButtonGroup>
@@ -61,17 +63,11 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
         manageBtn->setAutoDefault(false);
         connect(manageBtn, &QPushButton::clicked, this, [this]{ emit manageServersRequested(); });
         row->addWidget(manageBtn);
-        row->addStretch(1);
-        auto *docsBtn = new QPushButton("Docs");
+        auto *docsBtn = new QPushButton("Documentation");
         docsBtn->setIcon(MenuIcons::documentation());
         docsBtn->setAutoDefault(false);
         connect(docsBtn, &QPushButton::clicked, this, [this]{ emit docsRequested(); });
-        auto *aboutBtn = new QPushButton("About");
-        aboutBtn->setIcon(MenuIcons::about());
-        aboutBtn->setAutoDefault(false);
-        connect(aboutBtn, &QPushButton::clicked, this, [this]{ emit aboutRequested(); });
         row->addWidget(docsBtn);
-        row->addWidget(aboutBtn);
         vbox->addLayout(row);
     }
 
@@ -80,19 +76,42 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     vbox->addWidget(makeSep());
     vbox->addWidget(sectionLabel("Appearance"));
 
-    vbox->addWidget(new QLabel("Theme:"));
-    m_themeCombo = new QComboBox;
-    for (const QString &name : ThemeLoader::availableThemes())
-        m_themeCombo->addItem(name);
+    // Theme — compact toggle button + collapsible list
+    auto *themeBtn = new QPushButton(cfg.ui.theme);
+    themeBtn->setCheckable(true);
+    themeBtn->setAutoDefault(false);
+    themeBtn->setStyleSheet("text-align:left; padding-left:6px;");
     {
-        const int idx = m_themeCombo->findText(cfg.ui.theme);
-        if (idx >= 0) m_themeCombo->setCurrentIndex(idx);
+        auto *row = new QHBoxLayout;
+        row->addWidget(new QLabel("Theme:"));
+        row->addWidget(themeBtn, 1);
+        vbox->addLayout(row);
     }
-    // activated fires on Enter or click — not on arrow key navigation
-    connect(m_themeCombo, QOverload<int>::of(&QComboBox::activated), this, [this](int idx){
-        emit themeChanged(m_themeCombo->itemText(idx));
-    });
-    vbox->addWidget(m_themeCombo);
+
+    auto *themeList = new QListWidget;
+    themeList->setFrameShape(QFrame::StyledPanel);
+    themeList->setFixedHeight(150);
+    themeList->setVisible(false);
+    for (const QString &name : ThemeLoader::availableThemes())
+        themeList->addItem(name);
+    {
+        const auto matches = themeList->findItems(cfg.ui.theme, Qt::MatchExactly);
+        if (!matches.isEmpty()) {
+            themeList->setCurrentItem(matches.first());
+            themeList->scrollToItem(matches.first());
+        }
+    }
+    vbox->addWidget(themeList);
+
+    connect(themeBtn, &QPushButton::toggled, themeList, &QWidget::setVisible);
+
+    auto applyTheme = [this, themeBtn](QListWidgetItem *item){
+        if (!item) return;
+        themeBtn->setText(item->text());
+        emit themeChanged(item->text());
+    };
+    connect(themeList, &QListWidget::itemClicked,   this, applyTheme);
+    connect(themeList, &QListWidget::itemActivated, this, applyTheme);
 
     vbox->addSpacing(6);
     vbox->addWidget(sectionLabel("App Icon"));
