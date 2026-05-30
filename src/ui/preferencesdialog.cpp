@@ -2,11 +2,11 @@
 #include "ui/themeloader.h"
 #include "ui/menuicons.h"
 
-#include <QListWidget>
-#include <QListWidgetItem>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QPushButton>
+#include <QRadioButton>
+#include <QButtonGroup>
 #include <QLabel>
 #include <QFrame>
 #include <QScrollArea>
@@ -14,10 +14,10 @@
 #include <QHBoxLayout>
 
 const QList<QPair<QString,QString>> PreferencesDialog::s_iconChoices = {
-    { "dark",          "Dark"           },
+    { "dark",          "Dark"            },
     { "light-default", "Light (default)" },
-    { "light",         "Light"          },
-    { "avatar",        "Avatar"         },
+    { "light",         "Light"           },
+    { "avatar",        "Avatar"          },
 };
 
 const QList<QPair<QString,QString>> PreferencesDialog::s_bracketChoices = {
@@ -53,56 +53,72 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     vbox->setContentsMargins(12, 8, 12, 12);
     vbox->setSpacing(4);
 
-    // ── Appearance ──────────────────────────────────────────────────────────
+    // ── Quick access ─────────────────────────────────────────────────────────
+    {
+        auto *row = new QHBoxLayout;
+        auto *manageBtn = new QPushButton("Manage Servers...");
+        manageBtn->setIcon(MenuIcons::servers());
+        manageBtn->setAutoDefault(false);
+        connect(manageBtn, &QPushButton::clicked, this, [this]{ emit manageServersRequested(); });
+        row->addWidget(manageBtn);
+        row->addStretch(1);
+        auto *docsBtn = new QPushButton("Docs");
+        docsBtn->setIcon(MenuIcons::documentation());
+        docsBtn->setAutoDefault(false);
+        connect(docsBtn, &QPushButton::clicked, this, [this]{ emit docsRequested(); });
+        auto *aboutBtn = new QPushButton("About");
+        aboutBtn->setIcon(MenuIcons::about());
+        aboutBtn->setAutoDefault(false);
+        connect(aboutBtn, &QPushButton::clicked, this, [this]{ emit aboutRequested(); });
+        row->addWidget(docsBtn);
+        row->addWidget(aboutBtn);
+        vbox->addLayout(row);
+    }
+
+    // ── Appearance ────────────────────────────────────────────────────────────
+    vbox->addSpacing(4);
+    vbox->addWidget(makeSep());
     vbox->addWidget(sectionLabel("Appearance"));
 
     vbox->addWidget(new QLabel("Theme:"));
-    m_themeList = new QListWidget;
-    m_themeList->setFrameShape(QFrame::StyledPanel);
-    m_themeList->setFixedHeight(200);
+    m_themeCombo = new QComboBox;
     for (const QString &name : ThemeLoader::availableThemes())
-        m_themeList->addItem(name);
+        m_themeCombo->addItem(name);
     {
-        const auto matches = m_themeList->findItems(cfg.ui.theme, Qt::MatchExactly);
-        if (!matches.isEmpty()) {
-            m_themeList->setCurrentItem(matches.first());
-            m_themeList->scrollToItem(matches.first());
-        }
+        const int idx = m_themeCombo->findText(cfg.ui.theme);
+        if (idx >= 0) m_themeCombo->setCurrentIndex(idx);
     }
-    auto applyTheme = [this](QListWidgetItem *item){
-        if (item) emit themeChanged(item->text());
-    };
-    connect(m_themeList, &QListWidget::itemClicked,    this, applyTheme);
-    connect(m_themeList, &QListWidget::itemActivated,  this, applyTheme);
-    vbox->addWidget(m_themeList);
-
-    vbox->addSpacing(4);
-    vbox->addWidget(new QLabel("App Icon:"));
-    m_iconList = new QListWidget;
-    m_iconList->setFrameShape(QFrame::StyledPanel);
-    m_iconList->setFixedHeight(static_cast<int>(s_iconChoices.size()) * 26 + 4);
-    for (const auto &[key, label] : s_iconChoices)
-        m_iconList->addItem(label);
-    for (int i = 0; i < s_iconChoices.size(); ++i) {
-        if (s_iconChoices[i].first == cfg.ui.appIcon) {
-            m_iconList->setCurrentRow(i);
-            break;
-        }
-    }
-    connect(m_iconList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item){
-        const int idx = m_iconList->row(item);
-        if (idx >= 0 && idx < s_iconChoices.size())
-            emit appIconChanged(s_iconChoices[idx].first);
+    // activated fires on Enter or click — not on arrow key navigation
+    connect(m_themeCombo, QOverload<int>::of(&QComboBox::activated), this, [this](int idx){
+        emit themeChanged(m_themeCombo->itemText(idx));
     });
-    vbox->addWidget(m_iconList);
+    vbox->addWidget(m_themeCombo);
+
+    vbox->addSpacing(6);
+    vbox->addWidget(sectionLabel("App Icon"));
+    {
+        auto *iconGroup = new QButtonGroup(this);
+        iconGroup->setExclusive(true);
+        for (int i = 0; i < s_iconChoices.size(); ++i) {
+            auto *rb = new QRadioButton(s_iconChoices[i].second);
+            rb->setChecked(s_iconChoices[i].first == cfg.ui.appIcon);
+            iconGroup->addButton(rb, i);
+            vbox->addWidget(rb);
+        }
+        connect(iconGroup, &QButtonGroup::idClicked, this, [this](int id){
+            if (id >= 0 && id < s_iconChoices.size())
+                emit appIconChanged(s_iconChoices[id].first);
+        });
+    }
 
     vbox->addSpacing(4);
     auto *fontBtn = new QPushButton("Font Config...");
     fontBtn->setIcon(MenuIcons::fontConfig());
+    fontBtn->setAutoDefault(false);
     connect(fontBtn, &QPushButton::clicked, this, [this]{ emit fontConfigRequested(); });
     vbox->addWidget(fontBtn);
 
-    // ── Interface ────────────────────────────────────────────────────────────
+    // ── Interface ─────────────────────────────────────────────────────────────
     vbox->addSpacing(4);
     vbox->addWidget(makeSep());
     vbox->addWidget(sectionLabel("Interface"));
@@ -161,28 +177,6 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
                 emit nickBracketsChanged(s_bracketChoices[idx].first);
         });
         row->addWidget(m_bracketsCombo, 1);
-        vbox->addLayout(row);
-    }
-
-    // ── Bottom actions ───────────────────────────────────────────────────────
-    vbox->addSpacing(4);
-    vbox->addWidget(makeSep());
-    vbox->addSpacing(2);
-    {
-        auto *row = new QHBoxLayout;
-        auto *manageBtn = new QPushButton("Manage Servers...");
-        manageBtn->setIcon(MenuIcons::servers());
-        connect(manageBtn, &QPushButton::clicked, this, [this]{ emit manageServersRequested(); });
-        row->addWidget(manageBtn);
-        row->addStretch(1);
-        auto *docsBtn = new QPushButton("Docs");
-        docsBtn->setIcon(MenuIcons::documentation());
-        connect(docsBtn, &QPushButton::clicked, this, [this]{ emit docsRequested(); });
-        auto *aboutBtn = new QPushButton("About");
-        aboutBtn->setIcon(MenuIcons::about());
-        connect(aboutBtn, &QPushButton::clicked, this, [this]{ emit aboutRequested(); });
-        row->addWidget(docsBtn);
-        row->addWidget(aboutBtn);
         vbox->addLayout(row);
     }
 

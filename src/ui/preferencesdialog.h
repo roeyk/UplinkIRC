@@ -2,7 +2,6 @@
 #include <QDialog>
 #include "config/config.h"
 
-class QListWidget;
 class QCheckBox;
 class QComboBox;
 
@@ -29,16 +28,15 @@ signals:
     void docsRequested();
 
 private:
-    QListWidget *m_themeList{nullptr};
-    QListWidget *m_iconList{nullptr};
-    QCheckBox   *m_topicCheck{nullptr};
-    QCheckBox   *m_nickPrefixCheck{nullptr};
-    QCheckBox   *m_emojiCheck{nullptr};
-    QCheckBox   *m_typingCheck{nullptr};
-    QCheckBox   *m_notificationsCheck{nullptr};
-    QCheckBox   *m_coloredNicksCheck{nullptr};
-    QCheckBox   *m_hangingIndentCheck{nullptr};
-    QComboBox   *m_bracketsCombo{nullptr};
+    QComboBox *m_themeCombo{nullptr};
+    QCheckBox *m_topicCheck{nullptr};
+    QCheckBox *m_nickPrefixCheck{nullptr};
+    QCheckBox *m_emojiCheck{nullptr};
+    QCheckBox *m_typingCheck{nullptr};
+    QCheckBox *m_notificationsCheck{nullptr};
+    QCheckBox *m_coloredNicksCheck{nullptr};
+    QCheckBox *m_hangingIndentCheck{nullptr};
+    QComboBox *m_bracketsCombo{nullptr};
 
     static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;
