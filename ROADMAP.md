@@ -8,7 +8,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## Completed
 
 - [x] Project scaffold — Qt6/C++17, CMake, directory structure
-- [x] Config loader — TOML format via toml++, auto-creates `~/.config/LinuxDojo/UplinkIRC/config.toml` on first run
+- [x] Config loader — TOML format via toml++, auto-creates `~/.config/uplinkirc/config.toml` on first run
 - [x] First-run nick dialog — prompts for nick if config has placeholder `yournick`
 - [x] IRC connection — SSL/TLS via QSslSocket, CAP LS 302 negotiation
 - [x] IRCv3 message tag parser — full prefix + tag parsing
@@ -124,7 +124,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 - [x] Hanging indent — wrapped message lines align past the timestamp+nick column; toggleable from Preferences and `hanging_indent` config key; uses QTextBlockFormat for correct Qt rendering
 - [ ] Message search — search within current channel buffer
-- [ ] Logging — per-channel log files at `~/.config/LinuxDojo/UplinkIRC/logs/`
+- [ ] Logging — per-channel log files at `~/.config/uplinkirc/logs/`
 - [ ] msgid — IRCv3 unique message IDs; prerequisite for reply threading, reactions, and redaction
 - [ ] echo-message — server echoes sent messages back; essential for multi-client accuracy and self-message confirmation
 - [ ] draft/reply — client tag marking a message as a reply to a specific msgid; threaded replies

@@ -67,6 +67,43 @@ Next priorities:
   - In-app update check button
 -->
 
+<!--
+Session summary — 2026-05-30 (v0.9.4 — Config path cleanup)
+
+What was built / fixed:
+  - Config file path changed from ~/.config/LinuxDojo/UplinkIRC/config.toml
+    to ~/.config/uplinkirc/config.toml. Qt's AppConfigLocation was building
+    a path that baked in the org name ("LinuxDojo"), which was confusing and
+    project-unrelated. setOrganizationName() removed from main.cpp; path is
+    now hardcoded in Config::defaultPath() via HomeLocation + /.config/uplinkirc/.
+  - All docs updated project-wide: config.toml.example, README.md, docs/faq.md,
+    docs/configuration.md, docs/howto.html.
+  - Verified SASL config for Libera.Chat: sasl_user = "bebop" (registered account),
+    nick = "sig`" (grouped nick). Correct — SASL authenticates against the account
+    name, not the current nick.
+
+Known issues remaining:
+  - DCC over internet (NAT/firewall blocks direct TCP)
+  - No in-app update check UI
+  - Message search not implemented
+  - Per-channel logging not implemented
+  - Split view not implemented
+  - Plaintext passwords in config.toml
+
+Next priorities:
+  - msgid (prerequisite for reactions, redaction, reply threading)
+  - Message search (Ctrl+F in channel buffer)
+  - Per-channel log files (~/.config/uplinkirc/logs/)
+  - echo-message
+-->
+
+## v0.9.4 — 2026-05-30
+
+### Fixed
+- **Config path cleaned up** — config file now lives at `~/.config/uplinkirc/config.toml` on all platforms instead of the Qt-generated `~/.config/LinuxDojo/UplinkIRC/config.toml` path. The org-name-based nesting was a side effect of `QApplication::setOrganizationName("LinuxDojo")` which has been removed; the path is now hardcoded directly in `Config::defaultPath()`.
+
+---
+
 ## v0.9.3 — 2026-05-30
 
 ### Fixed
