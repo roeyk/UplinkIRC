@@ -23,6 +23,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Topic bar — shows topic text + channel modes, toggleable from hamburger
 - [x] Hamburger menu — About, Documentation (stub), App Icon picker, Theme picker, topic/nick/emoji toggles
 - [x] Persistent Preferences dialog — hamburger now opens a non-modal QDialog; stays open while browsing themes/toggles; replaces dismiss-on-click QMenu
+- [x] Preferences UI rework (v0.9.2) — Manage Servers + Documentation at top; theme as collapsible stay-open list (arrow keys browse, Enter/click applies); App Icon as radio buttons; About removed; Nick Brackets dropdown compact; Enter-triggers-Font-Config bug fixed
 - [x] Hamburger restored as dropdown — ☰ opens About UplinkIRC, Documentation, Preferences, Open Config, Reload Config
 - [x] Open Config / Reload Config — Open Config opens config.toml in system editor; Reload Config re-applies all settings from disk without restarting
 - [x] Input commands — /join, /j, /part, /nick, /me, /msg, /quote, /raw, /quit, /ping, /invite, /mode, /op, /deop, /voice, /devoice, /ban, /unban, /clear

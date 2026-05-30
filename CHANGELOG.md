@@ -3,6 +3,51 @@
 ---
 
 <!--
+Session summary — 2026-05-30 (v0.9.2 — Preferences rework + link preview indent)
+
+What was built / fixed:
+  - Preferences dialog reworked:
+      - Manage Servers and Documentation buttons moved to top (first thing visible)
+      - Theme: collapsible list — button shows current theme, click to expand/collapse,
+        stays open after selection so user can keep browsing with arrow keys + Enter
+      - App Icon: QListWidget replaced with QRadioButton group (consistent with Interface checkboxes)
+      - About button removed from Preferences (already in hamburger menu)
+      - Docs button renamed to Documentation
+      - Enter-applies-Font-Config bug fixed: setAutoDefault(false) on all buttons
+      - Nick Brackets combo: smaller font (11px) and tighter padding
+  - Link preview card indent: card margin-left now computed from font metrics to match
+    hanging indent position instead of hardcoded 20px. Cards align with wrapped text.
+  - How-To guide logo added and repositioned (64px margin-top)
+  - Version bumped 0.9.0 → 0.9.2
+
+Known issues remaining:
+  - DCC over internet (NAT/firewall blocks direct TCP)
+  - No in-app update check UI
+  - Message search not implemented
+  - Per-channel logging not implemented
+  - Split view not implemented
+  - Plaintext passwords in config.toml
+
+Next priorities:
+  - Message search (Ctrl+F in channel buffer)
+  - Per-channel log files
+  - DCC NAT traversal / passive DCC
+  - In-app update check button
+-->
+
+## v0.9.2 — 2026-05-30
+
+### Changed
+- **Preferences dialog reworked** — Manage Servers and Documentation buttons are now at the top of the dialog, visible immediately on open. Theme selection is now a compact collapsible list: click the theme button to expand, use arrow keys to browse, press Enter or click to apply. The list stays open after selection so you can keep trying themes. App icon selection replaced with radio buttons. About button removed (it lives in the hamburger menu). Docs button renamed to Documentation.
+
+### Fixed
+- **Link preview card indent** — preview cards now align with the hanging indent position when hanging indent is on. The card's left margin is computed from font metrics to match where wrapped message text starts, instead of a hardcoded 20 px.
+- **Enter key in theme list no longer triggers Font Config** — all buttons in the dialog have `autoDefault` disabled so Enter is never accidentally captured.
+- **Nick Brackets dropdown** — reduced font size and padding so the combo box reads at the same visual weight as the rest of the dialog.
+
+---
+
+<!--
 Session summary — 2026-05-30 (hanging indent + How-To sync)
 
 What was built / fixed:

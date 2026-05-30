@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-0.9.0-x86_64.AppImage">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-0.9.2-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.9.0-linux-x86_64.tar.gz">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.9.2-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.9.0-windows-x64.zip">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.9.2-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.9.0-macos-arm64.dmg">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.9.2-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -110,7 +110,9 @@
 
 | Feature | Details |
 |---|---|
-| **55 built-in themes** | Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and many more. Switch live from the Preferences dialog. |
+| **55 built-in themes** | Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and many more. Click the theme button in Preferences to expand a scrollable list — arrow keys browse, Enter or click applies. |
+| **Reworked Preferences** | Manage Servers and Documentation at the top. Theme as a collapsible list. App icon as radio buttons. Hanging indent toggle. |
+| **Hanging indent** | Wrapped messages align past the timestamp+nick column. Toggle from **Preferences → Hanging Indent** or `hanging_indent = true` in config. |
 | **Hamburger menu** | Click ☰ for About, Documentation, Preferences, Open Config (opens `config.toml` in your editor), and Reload Config (applies changes without restarting). |
 | **Native Windows style** | On Windows, the `windows11` Qt style is used by default. No alien dark theme on fresh installs. Custom themes still available. |
 | **Per-widget font sizes** | Independent size control for chat, sidebar, nick list, topic bar, input, and typing indicator. **Preferences → Font Config...** |

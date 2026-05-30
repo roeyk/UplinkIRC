@@ -238,7 +238,9 @@ The `☰` button is in the **info bar** at the top of the chat area. Click it to
 
 ### How do I change the theme?
 
-Click ☰ to open Preferences, then pick a theme from the list. The theme applies immediately and stays open so you can try others. To make it the default, set `theme` in `config.toml`:
+Click **☰ → Preferences**. At the top of the Preferences dialog, click the **theme button** (shows the current theme name) to expand the theme list. Use arrow keys to browse, then press **Enter** or click a theme to apply it. The list stays open so you can keep trying themes. Click the button again to collapse it.
+
+To set a theme in config directly:
 
 ```toml
 [ui]
