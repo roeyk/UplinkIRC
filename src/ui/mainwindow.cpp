@@ -60,6 +60,10 @@
 #  include <windows.h>
 #endif
 
+// Minimum width of the topic bar left zone — wide enough to always show the
+// hamburger (22) + gear (22) + right margin (4) even when the sidebar is closed.
+static constexpr int kBtnZoneMinW = 48;
+
 // ---------------------------------------------------------------------------
 // Nick color — consistent hash-based color per nick
 // ---------------------------------------------------------------------------
@@ -130,7 +134,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         const int w = m_mainSplitter->sizes().value(0);
         if (m_sidebarExpanded && w > 0)
             m_sidebarExpandedWidth = w;
-        if (m_topicLeft) m_topicLeft->setFixedWidth(w);
+        if (m_topicLeft) m_topicLeft->setFixedWidth(qMax(kBtnZoneMinW, w));
     });
 
     connect(qApp, &QApplication::aboutToQuit, this, [this]{
@@ -476,7 +480,7 @@ void MainWindow::setupSidebar()
             if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
         } else {
             m_mainSplitter->setSizes({0, total});
-            if (m_topicLeft) m_topicLeft->setFixedWidth(0);
+            if (m_topicLeft) m_topicLeft->setFixedWidth(kBtnZoneMinW);
         }
     });
 
