@@ -43,7 +43,7 @@
 
 <p align="center">
   <a href="https://joehonkey.github.io/UplinkIRC/howto.html">
-    <img src="https://img.shields.io/badge/📖%20How--To%20Guide-install%20→%20tweaks-5c5f77?style=for-the-badge" alt="How-To Guide" />
+    <img src="https://img.shields.io/badge/📖%20How--To%20Guide-install%20→%20tweaks-0368a4?style=for-the-badge&logo=readthedocs&logoColor=white" alt="How-To Guide" />
   </a>
 </p>
 
