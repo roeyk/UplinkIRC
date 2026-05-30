@@ -3,6 +3,38 @@
 ---
 
 <!--
+Session summary — 2026-05-30 (CHANGELOG structure fix)
+
+What was built / fixed:
+  - No code changes. Doc/infra fix session.
+  - Found v0.9.0 CHANGELOG entry was buried after ~600 lines of HTML comment blocks
+    and therefore not visible when GitHub renders CHANGELOG.md — v0.8.1 appeared
+    as the first entry instead.
+  - Root cause: close-session tooling appended new entries after the last comment
+    block rather than before the first ## heading. New entries must be inserted
+    immediately above the first visible ## heading, not appended to the bottom of
+    the comment region.
+  - Fixed by moving the v0.9.0 ## heading to line 224 (first visible position),
+    removing the duplicate buried copy. Committed and pushed.
+  - Also pushed the previous session's catch-up commit (MSVC fix docs) which had
+    been committed locally but never pushed.
+
+Known issues remaining (same as v0.9.0):
+  - DCC over internet: local IP advertised; NAT blocks WAN connections
+  - No in-app update check UI
+  - Message search not implemented
+  - Per-channel logging not implemented
+  - Split view not implemented
+  - Plaintext passwords in config.toml
+
+Next priorities:
+  - Message search (Ctrl+F in channel buffer)
+  - Per-channel log files
+  - DCC NAT traversal / passive DCC
+  - In-app update check button
+-->
+
+<!--
 Session summary — 2026-05-30 (post-v0.9.0 doc catch-up)
 
 What was built / fixed:
