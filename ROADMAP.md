@@ -56,6 +56,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] CTCP auto-replies — incoming VERSION and PING answered automatically
 - [x] Channel info bar — shows #channel (modes) ServerName; modes from 324 RPL_CHANNELMODEIS
 - [x] Sidebar server item clickable — opens server buffer, shows config short name
+- [x] Server buffer unread indicator — server name turns purple in sidebar when unread notices arrive (CTCP replies, NickServ, etc.); clears on focus; CTCP replies routed through noticeReceived so they count as unread
 - [x] Colored nicks hamburger toggle — was config-only, now in UI
 - [x] GitHub Actions CI — builds on every push across Linux, Windows, macOS
 - [x] GitHub Actions release workflow — builds platform binaries on tag push, attaches to GitHub releases

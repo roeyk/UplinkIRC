@@ -267,7 +267,9 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     ch.addMessage(msg);
 
     const bool isActive = (host == m_activeHost && target.toLower() == m_activeChannel.toLower());
-    if (!isActive && !msg.isHistory && msg.type == MessageType::Privmsg) {
+    const bool countsAsUnread = msg.type == MessageType::Privmsg
+        || (msg.type == MessageType::Notice && target == "(server)");
+    if (!isActive && !msg.isHistory && countsAsUnread) {
         ++ch.unread;
         if (!sess->nick.isEmpty()) {
             QRegularExpression re("\\b" + QRegularExpression::escape(sess->nick) + "\\b",
@@ -278,7 +280,7 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     }
 
     emit messageAdded(host, target, msg);
-    if (!isActive && !msg.isHistory && msg.type == MessageType::Privmsg)
+    if (!isActive && !msg.isHistory && countsAsUnread)
         emit unreadChanged(host, target, ch.unread);
 }
 

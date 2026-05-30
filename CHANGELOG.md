@@ -3,6 +3,46 @@
 ---
 
 <!--
+Session summary — 2026-05-30 (v0.9.3 — Server buffer unread indicator)
+
+What was built / fixed:
+  - Server buffer unread indicator: the server name in the sidebar now turns
+    purple (#cba6f7) when unread notices arrive (CTCP replies, NickServ, etc.),
+    and resets to dim gray when you click into the server window. Previously the
+    server item was silently excluded from the unread system entirely.
+  - Server item is now selectable (Qt::ItemIsEnabled | Qt::ItemIsSelectable) so
+    clicking the server name in the sidebar actually navigates to the server
+    window. Before this fix, clicking it did nothing.
+  - CTCP replies (VERSION and other unhandled CTCP NOTICEs) now route through
+    noticeReceived instead of serverMessage, so they arrive as MessageType::Notice
+    and are counted as unread. Previously they were posted as MessageType::Server
+    which was explicitly excluded from unread counting.
+
+Known issues remaining:
+  - DCC over internet (NAT/firewall blocks direct TCP)
+  - No in-app update check UI
+  - Message search not implemented
+  - Per-channel logging not implemented
+  - Split view not implemented
+  - Plaintext passwords in config.toml
+
+Next priorities:
+  - Message search (Ctrl+F in channel buffer)
+  - Per-channel log files
+  - DCC NAT traversal / passive DCC
+  - In-app update check button
+-->
+
+## v0.9.3 — 2026-05-30
+
+### Fixed
+- **Server buffer unread indicator** — the server name in the sidebar now turns purple when unread notices arrive (CTCP replies, NickServ messages, server auth notices, etc.) and resets to dim gray when you switch into the server window. Previously the server item was completely excluded from the unread system, so `VERSION` replies and other server-directed notices landed silently with no visual indicator.
+- **Server item now clickable** — clicking the server name in the sidebar navigates to the server window. Previously the item was non-selectable (`Qt::ItemIsEnabled` only) so clicking it did nothing.
+- **CTCP replies counted as unread** — `VERSION` replies and other unhandled CTCP NOTICEs now route through `noticeReceived` and are counted toward the server buffer's unread total. Previously they were posted as `MessageType::Server` which was explicitly excluded from unread counting.
+
+---
+
+<!--
 Session summary — 2026-05-30 (v0.9.2 — Preferences rework + link preview indent)
 
 What was built / fixed:

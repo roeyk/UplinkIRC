@@ -1248,8 +1248,7 @@ void MainWindow::onServerAdded(const QString &host)
     item->setData(0, Qt::UserRole,     host);
     item->setData(0, Qt::UserRole + 1, QString("(server)"));
     item->setExpanded(true);
-    // Section header style — not selectable
-    item->setFlags(Qt::ItemIsEnabled);
+    item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     QFont f(m_config.ui.fontFamily, m_config.ui.fontSizes.serverHeader);
     f.setBold(true);
     item->setFont(0, f);
@@ -1343,7 +1342,12 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
         for (const auto &sc : std::as_const(m_config.servers))
             if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
     }
-    if (channel != "(server)") {
+    if (channel == "(server)") {
+        if (count > 0)
+            item->setForeground(0, QColor("#cba6f7"));
+        else
+            item->setForeground(0, QColor("#6c7086"));
+    } else {
         if (count > 0 && m_model->hasMention(host, channel)) {
             item->setText(0, "💡 " + label);
             item->setForeground(0, QColor("red"));

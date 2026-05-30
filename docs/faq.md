@@ -367,7 +367,31 @@ They click **Yes**, choose a save location, and the transfer starts.
 
 > **Important:** DCC connects directly between clients over TCP. It works reliably on a LAN. Over the internet it requires the sender's port to be reachable from outside — a NAT router or firewall on the sender's side will block the connection. This is a DCC protocol limitation.
 
-### How do I search the Documentation?
+### The server name in the sidebar turned purple — what does that mean?
+
+The server name (e.g. **LINUXDOJO**) in the sidebar highlights purple when there are unread messages in the server window that you have not seen yet. This includes:
+
+- **CTCP VERSION replies** — when you do `/version <nick>` or right-click a user and choose **Version**, the reply appears in the server window
+- **NickServ and server auth notices** received during connection
+- Other server-directed notices
+
+Click the server name in the sidebar to open the server window and read the messages. The highlight clears as soon as you switch to it.
+
+### How do I check another user's IRC client version?
+
+Right-click the user in the nick list and choose **Version**, or type:
+
+```
+/version <nick>
+```
+
+This sends a `CTCP VERSION` request. The reply appears in the **server window** (click the server name in the sidebar to see it). The server name will turn purple to let you know a reply arrived.
+
+### How do I open the server window?
+
+Click the server name (e.g. **LINUXDOJO**) at the top of the sidebar. It shows connection messages, server notices, CTCP replies, and other server-level output. If the server name is highlighted purple, there are unread messages waiting.
+
+
 
 Click **☰ → Documentation** to open the help viewer. A search field sits at the top right of the tab bar, just to the right of the **Shortcuts** tab. Type any word or phrase — the active tab jumps to the first match immediately. Click **×** to clear. Switching tabs with a query active re-runs the search in the new tab.
 

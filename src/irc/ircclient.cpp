@@ -425,7 +425,8 @@ void IrcClient::processLine(const QString &line)
             } else if (ctcpCmd == "TIME") {
                 emit ctcpTimeReply(m_host, msg.nick, ctcp.section(' ', 1));
             } else {
-                emit serverMessage(m_host, "CTCP reply from " + msg.nick + ": " + ctcp);
+                emit noticeReceived(m_host, msg.params[0], msg.nick,
+                                    "CTCP reply: " + ctcp, serverTime, false);
             }
         } else {
             emit noticeReceived(m_host, msg.params[0], msg.nick, text, serverTime, false);
