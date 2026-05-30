@@ -69,8 +69,10 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
             m_themeList->scrollToItem(matches.first());
         }
     }
-    connect(m_themeList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item){
-        emit themeChanged(item->text());
+    connect(m_themeList, &QListWidget::currentItemChanged, this,
+            [this](QListWidgetItem *current, QListWidgetItem *){
+        if (current)
+            emit themeChanged(current->text());
     });
     vbox->addWidget(m_themeList);
 
