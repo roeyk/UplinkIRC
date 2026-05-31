@@ -598,7 +598,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         QStringList desired = {
             "multi-prefix", "away-notify", "server-time",
             "message-tags", "batch", "labeled-response", "draft/typing",
-            "chathistory",
+            "chathistory", "echo-message",
         };
 
         // ZNC-specific caps

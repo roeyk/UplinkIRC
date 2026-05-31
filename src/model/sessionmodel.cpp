@@ -124,10 +124,11 @@ void SessionModel::sendMessage(const QString &host, const QString &target, const
     const bool isPM = !target.startsWith('#') && !target.startsWith('&')
                       && !target.startsWith('!') && target != "(server)";
     if (isPM) openPM(host, target);
-    // Echo own message into the model
-    auto *sess = session(host);
-    if (sess)
-        postMessage(host, target, Message::make(MessageType::Privmsg, sess->nick, text));
+    if (!cl->hasCap("echo-message")) {
+        auto *sess = session(host);
+        if (sess)
+            postMessage(host, target, Message::make(MessageType::Privmsg, sess->nick, text));
+    }
 }
 
 void SessionModel::sendRaw(const QString &host, const QString &line)
@@ -176,8 +177,10 @@ void SessionModel::sendAction(const QString &host, const QString &target, const 
     auto *cl = clientFor(host);
     if (!cl) return;
     cl->privmsg(target, "\x01""ACTION " + text + "\x01");
-    if (auto *sess = session(host))
-        postMessage(host, target, Message::make(MessageType::Action, sess->nick, text));
+    if (!cl->hasCap("echo-message")) {
+        if (auto *sess = session(host))
+            postMessage(host, target, Message::make(MessageType::Action, sess->nick, text));
+    }
 }
 
 void SessionModel::sendTyping(const QString &host, const QString &channel, const QString &state)
@@ -331,10 +334,13 @@ void SessionModel::onMessage(const QString &host, const QString &target,
                              const QDateTime &serverTime, bool isHistory,
                              const QString &msgid)
 {
+    auto *sess = session(host);
+    const bool isSelf = sess && (nick.toLower() == sess->nick.toLower());
     const bool isPM = !target.startsWith('#') && !target.startsWith('&')
                       && !target.startsWith('!');
-    const QString buf = isPM ? nick : target;
-    if (isPM && !isHistory) openPM(host, nick);
+    const QString pmNick = isSelf ? target : nick;
+    const QString buf = isPM ? pmNick : target;
+    if (isPM && !isHistory) openPM(host, pmNick);
     postMessage(host, buf, Message::make(MessageType::Privmsg, nick, text, serverTime, isHistory, msgid));
 }
 
