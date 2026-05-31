@@ -3,6 +3,27 @@
 ---
 
 <!--
+Session summary — 2026-05-31 (build fix — CMakeLists.txt version bump to 0.16.1)
+
+What was done:
+  - CMakeLists.txt still had VERSION 0.16.0 even though v0.16.1 was tagged and released.
+    The raw command passthrough commit (8e16811) updated docs and CHANGELOG but never bumped
+    the build version string. Binary was reporting 0.16.0 at runtime.
+  - Fixed: project(UplinkIRC VERSION 0.16.1 ...) in CMakeLists.txt.
+  - Rebuilt successfully. Binary now reports v0.16.1.
+
+Regressions: none.
+Known issues: unchanged from v0.16.1.
+Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
+-->
+
+## Build fix — 2026-05-31
+
+- **CMakeLists.txt version bump** — `PROJECT_VERSION` was stuck at `0.16.0` despite the v0.16.1 release; binary now correctly reports `0.16.1` at runtime.
+
+---
+
+<!--
 Session summary — 2026-05-31 (housekeeping — GitHub releases backfill + joehonkey cleanup)
 
 What was done:
