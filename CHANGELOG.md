@@ -3,6 +3,31 @@
 ---
 
 <!--
+Session summary — 2026-05-31 (docs — raw command passthrough coverage)
+
+What was done:
+  - faq.md "How do I send a raw IRC command?" was outdated — only covered /raw and /quote,
+    said nothing about the v0.16.1 passthrough. Rewrote it: leads with direct passthrough
+    (just type /REHASH), then covers /raw /quote as the explicit form with examples for both.
+  - howto.html command table had a single /quote row with a minimal example. Added separate
+    rows for /raw, /quote, and /<ANYTHING>. Added a callout box below the table explaining
+    that oper/server-specific commands (/REHASH, /SAMODE, /GLOBOPS, /OPER) work directly.
+  - commands.md was already fully up to date from the v0.16.1 session — no changes needed.
+  - Also this session: CMakeLists.txt VERSION bumped from 0.16.0 → 0.16.1 (was never bumped
+    when v0.16.1 shipped); joehonkey reference removed from public-facing CHANGELOG bullet.
+
+Regressions: none.
+Known issues: unchanged from v0.16.1.
+Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
+-->
+
+## Docs — 2026-05-31
+
+- **Raw command passthrough documented** — `faq.md` and `howto.html` updated to cover the v0.16.1 passthrough feature; beginner-friendly examples added for `/REHASH`, `/SAMODE`, `/GLOBOPS`, and `/OPER`; howto command table now has rows for `/raw`, `/quote`, and `/<ANYTHING>` with a callout box explaining oper usage.
+
+---
+
+<!--
 Session summary — 2026-05-31 (build fix — CMakeLists.txt version bump to 0.16.1)
 
 What was done:
