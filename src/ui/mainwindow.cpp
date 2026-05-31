@@ -380,6 +380,11 @@ void MainWindow::connectPreferences()
         Config::save(m_config, Config::defaultPath());
     });
 
+    connect(m_prefsDialog, &PreferencesDialog::loggingToggled, this, [this](bool on){
+        m_config.ui.logMessages = on;
+        Config::save(m_config, Config::defaultPath());
+    });
+
     connect(m_prefsDialog, &PreferencesDialog::nickBracketsChanged, this, [this](const QString &br){
         m_config.ui.nickBrackets = br;
         Config::save(m_config, Config::defaultPath());

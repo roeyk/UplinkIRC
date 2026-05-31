@@ -177,6 +177,11 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     connect(m_hangingIndentCheck, &QCheckBox::toggled, this, [this](bool on){ emit hangingIndentToggled(on); });
     vbox->addWidget(m_hangingIndentCheck);
 
+    m_loggingCheck = new QCheckBox("Log Messages to Disk");
+    m_loggingCheck->setChecked(cfg.ui.logMessages);
+    connect(m_loggingCheck, &QCheckBox::toggled, this, [this](bool on){ emit loggingToggled(on); });
+    vbox->addWidget(m_loggingCheck);
+
     vbox->addSpacing(4);
     {
         auto *row = new QHBoxLayout;

@@ -344,7 +344,8 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     auto &ch = sess->getOrCreate(target);
     if (ch.name.isEmpty()) ch.name = target;
     ch.addMessage(msg);
-    logMessage(host, target, msg);
+    if (m_config.ui.logMessages)
+        logMessage(host, target, msg);
 
     const bool isActive = (host == m_activeHost && target.toLower() == m_activeChannel.toLower());
     const bool countsAsUnread = msg.type == MessageType::Privmsg
