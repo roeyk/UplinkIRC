@@ -2,6 +2,7 @@
 #include "irc/ircclient.h"
 
 #include <QRegularExpression>
+#include <QSet>
 
 SessionModel::SessionModel(QObject *parent)
     : QObject(parent)
@@ -28,8 +29,25 @@ void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
 void SessionModel::loadConfig(const Config &cfg)
 {
     m_config = cfg;
+    for (const QString &n : cfg.ignoredNicks)
+        m_ignoredNicks.insert(n.toLower());
     for (const ServerConfig &sc : cfg.servers)
         spawnSession(sc, false);
+}
+
+void SessionModel::ignoreNick(const QString &nick)
+{
+    m_ignoredNicks.insert(nick.toLower());
+}
+
+void SessionModel::unignoreNick(const QString &nick)
+{
+    m_ignoredNicks.remove(nick.toLower());
+}
+
+bool SessionModel::isIgnored(const QString &nick) const
+{
+    return m_ignoredNicks.contains(nick.toLower());
 }
 
 void SessionModel::addServer(const ServerConfig &sc)
@@ -335,6 +353,7 @@ void SessionModel::onMessage(const QString &host, const QString &target,
                              const QDateTime &serverTime, bool isHistory,
                              const QString &msgid, const QString &replyTo)
 {
+    if (isIgnored(nick)) return;
     auto *sess = session(host);
     const bool isSelf = sess && (nick.toLower() == sess->nick.toLower());
     const bool isPM = !target.startsWith('#') && !target.startsWith('&')
@@ -350,6 +369,7 @@ void SessionModel::onNotice(const QString &host, const QString &target,
                             const QDateTime &serverTime, bool isHistory,
                             const QString &msgid, const QString &replyTo)
 {
+    if (isIgnored(nick)) return;
     const QString dest = target.startsWith('#') ? target : "(server)";
     postMessage(host, dest, Message::make(MessageType::Notice, nick, text, serverTime, isHistory, msgid, replyTo));
 }
@@ -359,6 +379,7 @@ void SessionModel::onAction(const QString &host, const QString &target,
                             const QDateTime &serverTime, bool isHistory,
                             const QString &msgid)
 {
+    if (isIgnored(nick)) return;
     postMessage(host, target, Message::make(MessageType::Action, nick, text, serverTime, isHistory, msgid));
 }
 

@@ -228,13 +228,14 @@ void MainWindow::setupToolbar()
     connect(m_hamburger, &QToolButton::clicked, this, [this]{
         auto *menu = new QMenu(m_hamburger);
         menu->setAttribute(Qt::WA_DeleteOnClose);
+        const QColor ic(m_theme.valid ? m_theme.text : "#ffffff");
 
-        menu->addAction(MenuIcons::about(), "About UplinkIRC", this, [this]{
+        menu->addAction(MenuIcons::about(ic), "About UplinkIRC", this, [this]{
             if (!m_aboutDialog) m_aboutDialog = new AboutDialog(this);
             m_aboutDialog->showCentered();
         });
 
-        menu->addAction(MenuIcons::documentation(), "Documentation", this, [this]{
+        menu->addAction(MenuIcons::documentation(ic), "Documentation", this, [this]{
             if (!m_docsDialog)
                 m_docsDialog = new DocsDialog(this);
             m_docsDialog->show();
@@ -242,7 +243,7 @@ void MainWindow::setupToolbar()
             m_docsDialog->activateWindow();
         });
 
-        menu->addAction(MenuIcons::fontConfig(), "Preferences", this, [this]{
+        menu->addAction(MenuIcons::fontConfig(ic), "Preferences", this, [this]{
             if (!m_prefsDialog) {
                 m_prefsDialog = new PreferencesDialog(m_config, this);
                 connectPreferences();
@@ -254,11 +255,11 @@ void MainWindow::setupToolbar()
 
         menu->addSeparator();
 
-        menu->addAction(MenuIcons::servers(), "Open Config", this, [this]{
+        menu->addAction(MenuIcons::servers(ic), "Open Config", this, [this]{
             QDesktopServices::openUrl(QUrl::fromLocalFile(Config::defaultPath()));
         });
 
-        menu->addAction(MenuIcons::connStatus(), "Reload Config", this, [this]{
+        menu->addAction(MenuIcons::connStatus(ic), "Reload Config", this, [this]{
             m_config = Config::load(Config::defaultPath());
             m_model->syncServers(m_config.servers);
 
@@ -478,10 +479,10 @@ void MainWindow::applyFontSizes()
     if (m_nickPanel)      m_nickPanel->setFont(makeFont(fs.nickDock));
     if (m_nickToggleBtn)
         m_nickToggleBtn->setIcon(
-            makeGearIcon(0, m_nickToggleBtn->palette().color(QPalette::WindowText)));
+            makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
     if (m_sidebarToggleBtn)
         m_sidebarToggleBtn->setIcon(
-            makeGearIcon(0, m_sidebarToggleBtn->palette().color(QPalette::WindowText)));
+            makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
     if (m_modesLabel)    m_modesLabel->setFont(makeFont(fs.topicBar));
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
@@ -527,7 +528,7 @@ void MainWindow::setupSidebar()
     m_sidebarToggleBtn->setAutoRaise(true);
     m_sidebarToggleBtn->setObjectName("sidebarToggleBtn");
     m_sidebarToggleBtn->setToolTip(tr("Toggle channel list"));
-    m_sidebarToggleBtn->setIcon(makeGearIcon(0, palette().color(QPalette::WindowText)));
+    m_sidebarToggleBtn->setIcon(makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
     connect(m_sidebarToggleBtn, &QToolButton::clicked, this, [this]{
         m_sidebarExpanded = !m_sidebarExpanded;
         m_sidebar->setVisible(m_sidebarExpanded);
@@ -567,7 +568,7 @@ void MainWindow::setupNickPanel()
     m_nickToggleBtn->setFixedSize(22, 22);
     m_nickToggleBtn->setAutoRaise(true);
     m_nickToggleBtn->setToolTip(tr("Toggle user list"));
-    m_nickToggleBtn->setIcon(makeGearIcon(0, palette().color(QPalette::WindowText)));
+    m_nickToggleBtn->setIcon(makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
 
     m_gearTimer = new QTimer(this);
     m_gearTimer->setInterval(16);
@@ -1092,6 +1093,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     });
                 }
 
+                menu.exec(globalPos);
+            } else if (m_chatView->textCursor().hasSelection()) {
+                QMenu menu(m_chatView->viewport());
+                connect(menu.addAction("Copy"), &QAction::triggered,
+                        this, [this]{ m_chatView->copy(); });
                 menu.exec(globalPos);
             }
             return true;
@@ -1996,6 +2002,30 @@ void MainWindow::onInputSubmit()
             const QString mask = args.trimmed().section(' ', 0, 0);
             if (!mask.isEmpty())
                 m_model->sendRaw(host, "MODE " + channel + " -b " + mask);
+        } else if (cmd == "/ignore") {
+            const QString nick = args.trimmed().toLower();
+            if (!nick.isEmpty()) {
+                m_model->ignoreNick(nick);
+                if (!m_config.ignoredNicks.contains(nick))
+                    m_config.ignoredNicks.append(nick);
+                Config::save(m_config, Config::defaultPath());
+                m_model->localMessage(host, channel, "Now ignoring " + nick);
+            }
+        } else if (cmd == "/unignore") {
+            const QString nick = args.trimmed().toLower();
+            if (!nick.isEmpty()) {
+                m_model->unignoreNick(nick);
+                m_config.ignoredNicks.removeAll(nick);
+                Config::save(m_config, Config::defaultPath());
+                m_model->localMessage(host, channel, "No longer ignoring " + nick);
+            }
+        } else if (cmd == "/ignored") {
+            if (m_config.ignoredNicks.isEmpty()) {
+                m_model->localMessage(host, channel, "Ignore list is empty.");
+            } else {
+                m_model->localMessage(host, channel,
+                    "Ignored nicks: " + m_config.ignoredNicks.join(", "));
+            }
         } else if (cmd == "/clear") {
             if (m_chatView) m_chatView->clear();
         } else if (cmd == "/help") {
@@ -2027,6 +2057,9 @@ void MainWindow::onInputSubmit()
                 "  /version [nick]             — request VERSION (nick optional)",
                 "  /ctcp <target> <cmd> [args] — send a CTCP request",
                 "  /sysinfo                    — post client/system info to channel",
+                "  /ignore <nick>              — suppress messages from nick",
+                "  /unignore <nick>            — stop ignoring nick",
+                "  /ignored                    — list ignored nicks",
                 "  /clear                      — clear the chat buffer",
                 "  /quote <raw>  /raw <raw>    — send a raw IRC line",
                 "  /quit [message]             — disconnect from server",
@@ -2260,6 +2293,27 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     connect(menu.addAction("Copy Nick"), &QAction::triggered, this, [nick]{
         qApp->clipboard()->setText(nick);
     });
+
+    menu.addSeparator();
+
+    if (m_model->isIgnored(nick)) {
+        connect(menu.addAction("Unignore"), &QAction::triggered, this, [this, host, nick]{
+            m_model->unignoreNick(nick);
+            const QString key = nick.toLower();
+            m_config.ignoredNicks.removeAll(key);
+            Config::save(m_config, Config::defaultPath());
+            m_model->localMessage(host, m_model->activeChannel(), "No longer ignoring " + key);
+        });
+    } else {
+        connect(menu.addAction("Ignore"), &QAction::triggered, this, [this, host, nick]{
+            const QString key = nick.toLower();
+            m_model->ignoreNick(key);
+            if (!m_config.ignoredNicks.contains(key))
+                m_config.ignoredNicks.append(key);
+            Config::save(m_config, Config::defaultPath());
+            m_model->localMessage(host, m_model->activeChannel(), "Now ignoring " + key);
+        });
+    }
 
     menu.addSeparator();
 

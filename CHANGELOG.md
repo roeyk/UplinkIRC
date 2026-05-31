@@ -2,6 +2,12 @@
 
 ---
 
+## v0.14.0 — 2026-05-31
+
+- **Ignore list** — `/ignore <nick>` suppresses all PRIVMSG, NOTICE, and ACTION messages from a nick; `/unignore <nick>` removes them from the list; `/ignored` lists current ignored nicks. Right-click any nick → **Ignore** / **Unignore** does the same from the context menu. The list persists in `config.toml` under `[ignore] nicks = [...]`.
+
+---
+
 <!--
 Session summary — 2026-05-30 (v0.13.0 — security hardening)
 

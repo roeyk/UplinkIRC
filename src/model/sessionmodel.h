@@ -48,6 +48,10 @@ public:
     void openPM    (const QString &host, const QString &nick);
     IrcClient *clientFor(const QString &host);
 
+    void ignoreNick  (const QString &nick);
+    void unignoreNick(const QString &nick);
+    bool isIgnored   (const QString &nick) const;
+
 signals:
     // Structural changes — sidebar needs a repaint
     void serverAdded    (const QString &host);
@@ -121,6 +125,7 @@ private:
     QList<ServerSession> m_sessions;
     QList<IrcClient *>   m_clients;
     Config               m_config;
+    QSet<QString>        m_ignoredNicks;
 
     QString m_activeHost;
     QString m_activeChannel;

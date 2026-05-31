@@ -25,6 +25,9 @@ Type any of these commands in the message input box and press Enter.
 | `/devoice <nick>` | Remove voice (`-v`) in the current channel |
 | `/ban <mask>` | Ban a mask (`+b`) in the current channel |
 | `/unban <mask>` | Remove a ban (`-b`) in the current channel |
+| `/ignore <nick>` | Suppress all messages from a nick (client-side) |
+| `/unignore <nick>` | Stop ignoring a nick |
+| `/ignored` | List all currently ignored nicks |
 | `/clear` | Clear the chat buffer |
 
 ### Examples
@@ -45,6 +48,9 @@ Type any of these commands in the message input box and press Enter.
 /voice alice
 /ban *!*@spammer.host
 /unban *!*@spammer.host
+/ignore spammer
+/unignore spammer
+/ignored
 /clear
 ```
 
@@ -177,6 +183,7 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 | **Version** | Sends a CTCP VERSION request. Reply appears in the server window. |
 | **Ping** | Sends a CTCP PING. Reply shows RTT in the active buffer: `Ping reply from nick: Xms`. |
 | **Copy Nick** | Copies the nickname to the clipboard. |
+| **Ignore** | Suppresses all messages from this nick (client-side). Changes to **Unignore** if the nick is already ignored. |
 | **Kick** | Prompts for an optional reason, then kicks. Requires op. |
 | **Ban** | Sets `MODE #channel +b nick!*@*`. Requires op. |
 | **Kick & Ban** | Bans first, then kicks (correct order). Prompts for reason. Requires op. |

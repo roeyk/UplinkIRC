@@ -79,6 +79,7 @@ struct UiConfig {
 struct Config {
     QList<ServerConfig> servers;
     UiConfig            ui;
+    QStringList         ignoredNicks;
 
     bool needsNickSetup() const;
 

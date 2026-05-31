@@ -112,6 +112,19 @@ Config Config::load(const QString &path)
             cfg.ui.fontSizes.typing       = (*ui)["font_typing"].value_or(9);
         }
 
+        // [ignore]
+        if (auto ign = tbl["ignore"].as_table()) {
+            if (auto nicks = (*ign)["nicks"].as_array()) {
+                for (auto &n : *nicks) {
+                    if (auto v = n.value<std::string>()) {
+                        const QString nick = QString::fromStdString(*v).trimmed().toLower();
+                        if (!nick.isEmpty())
+                            cfg.ignoredNicks.append(nick);
+                    }
+                }
+            }
+        }
+
         // [[server]]
         if (auto servers = tbl["server"].as_array()) {
             for (auto &node : *servers) {
@@ -205,6 +218,17 @@ void Config::save(const Config &cfg, const QString &path)
     out << "font_input_nick    = " << cfg.ui.fontSizes.inputNick    << "\n";
     out << "font_input         = " << cfg.ui.fontSizes.input        << "\n";
     out << "font_typing        = " << cfg.ui.fontSizes.typing       << "\n\n";
+
+    if (!cfg.ignoredNicks.isEmpty()) {
+        out << "[ignore]\nnicks = [";
+        bool first = true;
+        for (const QString &n : cfg.ignoredNicks) {
+            if (!first) out << ", ";
+            out << tomlQuote(n);
+            first = false;
+        }
+        out << "]\n\n";
+    }
 
     for (const auto &s : cfg.servers) {
         out << "[[server]]\n";
