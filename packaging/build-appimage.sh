@@ -117,26 +117,42 @@ if [[ ! -x "$APPIMAGETOOL" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Phase 1: extract linuxdeploy and patch its bundled strip with a no-op.
-# The bundled strip binary cannot handle .relr.dyn ELF sections produced by
-# modern Arch/Fedora toolchains (gcc >= 12 / binutils >= 2.39 with
-# -z pack-relative-relocs). Replacing it with a no-op shell script lets
-# linuxdeploy finish deploying all libraries without stripping them.
-# We strip with appimagetool in Phase 2 instead.
+# Phase 1: extract linuxdeploy + its Qt plugin and patch BOTH bundled strips
+# with a no-op. The bundled strip binaries cannot handle .relr.dyn ELF
+# sections produced by modern Arch/Fedora toolchains (gcc >= 12 / binutils
+# >= 2.39 with -z pack-relative-relocs). Replacing them with no-op shell
+# scripts lets linuxdeploy finish deploying all libraries without stripping.
 # ---------------------------------------------------------------------------
 LD_EXTRACT=$(mktemp -d)
-trap 'rm -rf "$LD_EXTRACT"' EXIT
+LD_QT_EXTRACT=$(mktemp -d)
+trap 'rm -rf "$LD_EXTRACT" "$LD_QT_EXTRACT"' EXIT
+
 echo "==> Patching linuxdeploy strip (bundled strip can't handle .relr.dyn)..."
 (cd "$LD_EXTRACT" && "$LD" --appimage-extract >/dev/null 2>&1)
 printf '#!/bin/sh\nexit 0\n' > "$LD_EXTRACT/squashfs-root/usr/bin/strip"
 chmod +x "$LD_EXTRACT/squashfs-root/usr/bin/strip"
 LD_PATCHED="$LD_EXTRACT/squashfs-root/AppRun"
 
+echo "==> Patching linuxdeploy-plugin-qt strip..."
+(cd "$LD_QT_EXTRACT" && "$LD_QT" --appimage-extract >/dev/null 2>&1)
+printf '#!/bin/sh\nexit 0\n' > "$LD_QT_EXTRACT/squashfs-root/usr/bin/strip"
+chmod +x "$LD_QT_EXTRACT/squashfs-root/usr/bin/strip"
+# Create a wrapper with the expected filename so linuxdeploy finds it in PATH
+# before the original AppImage, and it runs from the patched squashfs-root.
+WRAPPER_DIR=$(mktemp -d)
+trap 'rm -rf "$LD_EXTRACT" "$LD_QT_EXTRACT" "$WRAPPER_DIR"' EXIT
+WRAPPER_APPRUN="$LD_QT_EXTRACT/squashfs-root/AppRun"
+cat > "$WRAPPER_DIR/linuxdeploy-plugin-qt-${ARCH}.AppImage" << WRAPPER
+#!/bin/sh
+exec "$WRAPPER_APPRUN" "\$@"
+WRAPPER
+chmod +x "$WRAPPER_DIR/linuxdeploy-plugin-qt-${ARCH}.AppImage"
+
 # ---------------------------------------------------------------------------
 # Phase 2: deploy Qt libs and plugins into AppDir using patched linuxdeploy.
 # ---------------------------------------------------------------------------
 echo "==> Deploying Qt libraries..."
-export PATH="$TOOLS_DIR:$PATH"
+export PATH="$WRAPPER_DIR:$TOOLS_DIR:$PATH"
 "$LD_PATCHED" \
     --appdir "$APPDIR" \
     --plugin qt \
