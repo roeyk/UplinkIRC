@@ -3,6 +3,33 @@
 ---
 
 <!--
+Session summary — 2026-05-31 (housekeeping — GitHub releases backfill + joehonkey cleanup)
+
+What was done:
+  - GitHub releases page was stuck at v0.13.0 even though the repo was at v0.16.1.
+    Root cause: git tags and GitHub Releases were never created for v0.14.0–v0.16.1.
+    Fixed by creating tags (bfdfc1d→v0.14.0, 63082b1→v0.15.0, 8fcbb8d→v0.16.0,
+    8e16811→v0.16.1), pushing them, and creating GitHub Releases for all four with
+    CHANGELOG-sourced release notes. v0.16.1 marked as Latest.
+  - Remaining joehonkey references cleaned up:
+    * settings.local.json: two GIT_COMMITTER_EMAIL / GIT_AUTHOR_EMAIL allowed-command
+      entries updated from joehonkey noreply email to noderelay noreply email.
+    * README.md: nick prefix config comment example ("joehonkey ▸ ...") updated to noderelay.
+    * CHANGELOG.md references are historical (documenting the rename) — left as-is.
+
+Regressions: none.
+Known issues: unchanged from v0.16.1.
+Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
+-->
+
+## Housekeeping — 2026-05-31
+
+- **GitHub releases backfilled** — tags and GitHub Releases created for v0.14.0, v0.15.0, v0.16.0, and v0.16.1; GitHub now correctly shows v0.16.1 as the latest release.
+- **Remaining `joehonkey` references cleaned up** — noreply email in `settings.local.json` and nick prefix example in `README.md` updated to `noderelay`.
+
+---
+
+<!--
 Session summary — 2026-05-31 (v0.16.1 — raw command passthrough)
 
 What was done:
