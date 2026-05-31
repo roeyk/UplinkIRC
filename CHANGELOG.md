@@ -2,6 +2,14 @@
 
 ---
 
+## v0.15.0 — 2026-05-31
+
+- **Per-channel logging** — all messages written to `~/.config/uplinkirc/logs/<server>/<channel>.log`; format: `[yyyy-MM-dd hh:mm:ss] <nick> text` / `* nick action` / `-- system`; history playback is not logged.
+- **`chghost`** — CAP negotiated; `CHGHOST` command parsed; silent host changes show a single status line `nick changed host (user@host)` instead of fake QUIT+JOIN noise.
+- **`draft/react`** — CAP negotiated; incoming reactions stored per-msgid and rendered inline below messages as emoji + count; right-click any timestamp → **React** to send; `/react <emoji>` sends to the currently selected reply target.
+
+---
+
 ## v0.14.0 — 2026-05-31
 
 - **Ignore list** — `/ignore <nick>` suppresses all PRIVMSG, NOTICE, and ACTION messages from a nick; `/unignore <nick>` removes them from the list; `/ignored` lists current ignored nicks. Right-click any nick → **Ignore** / **Unignore** does the same from the context menu. The list persists in `config.toml` under `[ignore] nicks = [...]`.

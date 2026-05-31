@@ -29,6 +29,7 @@ public:
     void notice(const QString &target, const QString &text);
     void setNick(const QString &nick);
     void sendTyping(const QString &channel, const QString &state);
+    void sendReact (const QString &target,  const QString &msgid, const QString &emoji);
     void sendRaw(const QString &line);
 
     // Bouncer helpers
@@ -85,6 +86,11 @@ signals:
                          const QString &filename, quint32 ip, quint16 port, qint64 filesize);
     void typingReceived(const QString &server, const QString &channel,
                         const QString &nick,   const QString &state);
+    void hostChanged   (const QString &server, const QString &nick,
+                        const QString &newUser, const QString &newHost);
+    void reactReceived (const QString &server, const QString &target,
+                        const QString &nick,   const QString &msgid,
+                        const QString &emoji);
 
     // Bouncer-specific
     void bouncerNetworkReceived(const QString &server, const QString &netId,

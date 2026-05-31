@@ -1,8 +1,12 @@
 #include "sessionmodel.h"
 #include "irc/ircclient.h"
 
+#include <QDir>
+#include <QFile>
 #include <QRegularExpression>
 #include <QSet>
+#include <QStandardPaths>
+#include <QTextStream>
 
 SessionModel::SessionModel(QObject *parent)
     : QObject(parent)
@@ -48,6 +52,57 @@ void SessionModel::unignoreNick(const QString &nick)
 bool SessionModel::isIgnored(const QString &nick) const
 {
     return m_ignoredNicks.contains(nick.toLower());
+}
+
+void SessionModel::sendReact(const QString &host, const QString &target,
+                              const QString &msgid, const QString &emoji)
+{
+    if (auto *cl = clientFor(host))
+        cl->sendReact(target, msgid, emoji);
+}
+
+// ---------------------------------------------------------------------------
+// Logging
+// ---------------------------------------------------------------------------
+
+static QString sanitizeFilename(QString s)
+{
+    const QString bad = QStringLiteral("/\\:*?\"<>|");
+    for (QChar c : bad)
+        s.replace(c, '_');
+    return s;
+}
+
+static void logMessage(const QString &host, const QString &target, const Message &msg)
+{
+    if (msg.isHistory) return;
+
+    const QString logsDir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                            + "/.config/uplinkirc/logs/"
+                            + sanitizeFilename(host) + "/";
+    QDir().mkpath(logsDir);
+
+    QFile f(logsDir + sanitizeFilename(target) + ".log");
+    if (!f.open(QIODevice::Append | QIODevice::Text))
+        return;
+
+    QTextStream out(&f);
+    const QString ts = msg.timestamp.toLocalTime().toString("yyyy-MM-dd hh:mm:ss");
+
+    switch (msg.type) {
+    case MessageType::Privmsg:
+        out << "[" << ts << "] <" << msg.nick << "> " << msg.text << "\n";
+        break;
+    case MessageType::Action:
+        out << "[" << ts << "] * " << msg.nick << " " << msg.text << "\n";
+        break;
+    case MessageType::Notice:
+        out << "[" << ts << "] -" << msg.nick << "- " << msg.text << "\n";
+        break;
+    default:
+        out << "[" << ts << "] -- " << msg.text << "\n";
+        break;
+    }
 }
 
 void SessionModel::addServer(const ServerConfig &sc)
@@ -261,6 +316,8 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
     connect(cl, &IrcClient::typingReceived,  this, &SessionModel::typingReceived);
     connect(cl, &IrcClient::dccSendReceived, this, &SessionModel::dccSendReceived);
+    connect(cl, &IrcClient::hostChanged,     this, &SessionModel::onHostChanged);
+    connect(cl, &IrcClient::reactReceived,   this, &SessionModel::onReactReceived);
     connect(cl, &IrcClient::pingRtt,         this, &SessionModel::pingRtt);
     connect(cl, &IrcClient::reconnecting,    this, &SessionModel::serverReconnecting);
 
@@ -287,6 +344,7 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     auto &ch = sess->getOrCreate(target);
     if (ch.name.isEmpty()) ch.name = target;
     ch.addMessage(msg);
+    logMessage(host, target, msg);
 
     const bool isActive = (host == m_activeHost && target.toLower() == m_activeChannel.toLower());
     const bool countsAsUnread = msg.type == MessageType::Privmsg
@@ -643,4 +701,32 @@ void SessionModel::onSelfNickChanged(const QString &host, const QString &nick)
     auto *sess = session(host);
     if (sess) sess->nick = nick;
     emit selfNickChanged(host, nick);
+}
+
+void SessionModel::onHostChanged(const QString &host, const QString &nick,
+                                  const QString &newUser, const QString &newHost)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+    const QString text = nick + " changed host (" + newUser + "@" + newHost + ")";
+    for (auto &ch : sess->channels) {
+        bool present = false;
+        for (const auto &e : std::as_const(ch.nicks))
+            if (QString::compare(e.nick, nick, Qt::CaseInsensitive) == 0) { present = true; break; }
+        if (!present) continue;
+        postMessage(host, ch.name, Message::make(MessageType::Server, "", text));
+    }
+}
+
+void SessionModel::onReactReceived(const QString &host, const QString &target,
+                                    const QString &nick, const QString &msgid,
+                                    const QString &emoji)
+{
+    if (msgid.isEmpty() || emoji.isEmpty()) return;
+    const bool isChannel = target.startsWith('#') || target.startsWith('&');
+    const QString buf = isChannel ? target : nick;
+    auto *ch = channel(host, buf);
+    if (!ch) return;
+    ch->reactions[msgid][emoji].append(nick);
+    emit reactionsChanged(host, buf);
 }

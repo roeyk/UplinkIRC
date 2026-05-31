@@ -3,8 +3,10 @@
 #include "message.h"
 #include <QDateTime>
 #include <QString>
+#include <QHash>
 #include <QList>
 #include <QSet>
+#include <QStringList>
 
 static constexpr int kMessageBufferCap = 2000;
 
@@ -56,6 +58,8 @@ struct Channel {
     QSet<QString>    botNicks;  // lowercased nicks with +B channel user mode
     QHash<QString, QString> previews;  // url → persisted card HTML
     QSet<QString>           hiddenPreviews; // urls the user manually hid
+    // msgid → emoji → list of nicks who reacted
+    QHash<QString, QHash<QString, QStringList>> reactions;
     int              unread{0};
     int              mentions{0};
     bool             joined{false};

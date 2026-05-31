@@ -52,6 +52,9 @@ public:
     void unignoreNick(const QString &nick);
     bool isIgnored   (const QString &nick) const;
 
+    void sendReact(const QString &host, const QString &target,
+                   const QString &msgid, const QString &emoji);
+
 signals:
     // Structural changes — sidebar needs a repaint
     void serverAdded    (const QString &host);
@@ -65,7 +68,8 @@ signals:
     void topicChanged  (const QString &host, const QString &channel, const QString &topic);
     void modesChanged  (const QString &host, const QString &channel);
     void nickListChanged(const QString &host, const QString &channel);
-    void unreadChanged(const QString &host, const QString &channel, int count);
+    void unreadChanged   (const QString &host, const QString &channel, int count);
+    void reactionsChanged(const QString &host, const QString &channel);
 
     // Self
     void selfNickChanged(const QString &host, const QString &nick);
@@ -119,6 +123,11 @@ private:
     void onCtcpPingReply  (const QString &host, const QString &nick, qint64 rttMs);
     void onCtcpTimeReply  (const QString &host, const QString &nick, const QString &timeStr);
     void onSelfNickChanged(const QString &host, const QString &nick);
+    void onHostChanged    (const QString &host, const QString &nick,
+                           const QString &newUser, const QString &newHost);
+    void onReactReceived  (const QString &host, const QString &target,
+                           const QString &nick,  const QString &msgid,
+                           const QString &emoji);
 
     void postMessage(const QString &host, const QString &target, const Message &msg);
 

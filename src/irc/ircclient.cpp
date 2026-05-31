@@ -160,6 +160,14 @@ void IrcClient::sendTyping(const QString &channel, const QString &state)
     sendRaw("@+typing=" + ircv3TagEscape(state) + " TAGMSG " + channel);
 }
 
+void IrcClient::sendReact(const QString &target, const QString &msgid, const QString &emoji)
+{
+    if (msgid.isEmpty() || emoji.isEmpty()) return;
+    sendRaw("@+draft/react=" + ircv3TagEscape(emoji)
+            + ";+draft/reply=" + ircv3TagEscape(msgid)
+            + " TAGMSG " + stripCrlf(target));
+}
+
 void IrcClient::requestHistory(const QString &target, int limit)
 {
     if (!m_ackedCaps.contains("chathistory")) return;
@@ -478,9 +486,20 @@ void IrcClient::processLine(const QString &line)
     }
 
     if (cmd == "TAGMSG" && !msg.params.isEmpty()) {
+        const QString target = msg.params[0];
         const QString typing = msg.tags.value("+typing");
         if (!typing.isEmpty())
-            emit typingReceived(m_host, msg.params[0], msg.nick, typing);
+            emit typingReceived(m_host, target, msg.nick, typing);
+        const QString emoji = msg.tags.value("+draft/react");
+        if (!emoji.isEmpty()) {
+            const QString replyTo = msg.tags.value("+draft/reply");
+            emit reactReceived(m_host, target, msg.nick, replyTo, emoji);
+        }
+        return;
+    }
+
+    if (cmd == "CHGHOST" && msg.params.size() >= 2) {
+        emit hostChanged(m_host, msg.nick, msg.params[0], msg.params[1]);
         return;
     }
 
@@ -637,7 +656,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         QStringList desired = {
             "multi-prefix", "away-notify", "server-time",
             "message-tags", "batch", "labeled-response", "draft/typing",
-            "chathistory", "echo-message",
+            "chathistory", "echo-message", "chghost", "draft/react",
         };
 
         // ZNC-specific caps

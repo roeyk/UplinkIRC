@@ -967,6 +967,7 @@ void MainWindow::connectModel()
     });
     connect(m_model, &SessionModel::nickListChanged,   this, &MainWindow::onNickListChanged);
     connect(m_model, &SessionModel::unreadChanged,     this, &MainWindow::onUnreadChanged);
+    connect(m_model, &SessionModel::reactionsChanged,  this, &MainWindow::onReactionsChanged);
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
     connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
 
@@ -1056,6 +1057,36 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
             if (anchor.startsWith("nick:")) {
                 showNickContextMenu(anchor.mid(5), globalPos);
+                return true;
+            }
+
+            if (anchor.startsWith("msgid:")) {
+                const QString msgid   = anchor.mid(6);
+                const QString host    = m_model->activeHost();
+                const QString channel = m_model->activeChannel();
+                QMenu menu(m_chatView->viewport());
+                connect(menu.addAction("Reply"), &QAction::triggered, this,
+                        [this, msgid, host, channel]{
+                    auto *ch = m_model->channel(host, channel);
+                    QString origNick;
+                    if (ch)
+                        for (const auto &m : std::as_const(ch->messages))
+                            if (m.msgid == msgid) { origNick = m.nick; break; }
+                    m_pendingReplyMsgid = msgid;
+                    if (m_replyLabel)
+                        m_replyLabel->setText("↩ " + (origNick.isEmpty() ? msgid : origNick));
+                    if (m_replyBar) m_replyBar->show();
+                    if (m_input)    m_input->setFocus();
+                });
+                connect(menu.addAction("React"), &QAction::triggered, this,
+                        [this, msgid, host, channel]{
+                    bool ok;
+                    const QString emoji = QInputDialog::getText(
+                        this, "React", "Emoji:", QLineEdit::Normal, {}, &ok);
+                    if (!ok || emoji.trimmed().isEmpty()) return;
+                    m_model->sendReact(host, channel, msgid, emoji.trimmed());
+                });
+                menu.exec(globalPos);
                 return true;
             }
 
@@ -1526,6 +1557,13 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
         else
             item->setText(0, label);
     }
+}
+
+void MainWindow::onReactionsChanged(const QString &host, const QString &channel)
+{
+    if (host == m_model->activeHost() &&
+        channel.toLower() == m_model->activeChannel().toLower())
+        refreshChatView(host, channel);
 }
 
 void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
@@ -2002,6 +2040,16 @@ void MainWindow::onInputSubmit()
             const QString mask = args.trimmed().section(' ', 0, 0);
             if (!mask.isEmpty())
                 m_model->sendRaw(host, "MODE " + channel + " -b " + mask);
+        } else if (cmd == "/react") {
+            const QString emoji = args.trimmed();
+            if (!emoji.isEmpty() && !m_pendingReplyMsgid.isEmpty()) {
+                m_model->sendReact(host, channel, m_pendingReplyMsgid, emoji);
+                clearReplyBar();
+            } else if (emoji.isEmpty()) {
+                m_model->localMessage(host, channel, "Usage: /react <emoji> (set a reply target first)");
+            } else {
+                m_model->localMessage(host, channel, "No message selected — right-click a timestamp to reply first");
+            }
         } else if (cmd == "/ignore") {
             const QString nick = args.trimmed().toLower();
             if (!nick.isEmpty()) {
@@ -2057,6 +2105,7 @@ void MainWindow::onInputSubmit()
                 "  /version [nick]             — request VERSION (nick optional)",
                 "  /ctcp <target> <cmd> [args] — send a CTCP request",
                 "  /sysinfo                    — post client/system info to channel",
+                "  /react <emoji>              — react to the currently selected message",
                 "  /ignore <nick>              — suppress messages from nick",
                 "  /unignore <nick>            — stop ignoring nick",
                 "  /ignored                    — list ignored nicks",
@@ -2364,6 +2413,20 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
                 const auto p = ch->previews.constFind(urlStr);
                 if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr))
                     insertHtmlBlock(m_chatView, p.value());
+            }
+        }
+        if (!msg.msgid.isEmpty()) {
+            auto rxIt = ch->reactions.constFind(msg.msgid);
+            if (rxIt != ch->reactions.constEnd()) {
+                QString rxHtml = QStringLiteral("<span style='font-size:small; color:#888;'>");
+                for (auto it = rxIt->constBegin(); it != rxIt->constEnd(); ++it) {
+                    rxHtml += it.key()
+                              + QStringLiteral("<span style='font-size:x-small'>(")
+                              + QString::number(it.value().size())
+                              + QStringLiteral(")</span> ");
+                }
+                rxHtml += QStringLiteral("</span>");
+                insertHtmlBlock(m_chatView, rxHtml);
             }
         }
     }
