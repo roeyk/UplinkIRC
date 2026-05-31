@@ -37,6 +37,14 @@ Next priorities:
   - Per-channel log files
 -->
 
+## v0.10.0 — 2026-05-30
+
+- Feat: `echo-message` CAP — server echoes sent messages back with `msgid` and `server-time`; duplicate local echo suppressed; self-echoed PMs route to the correct conversation buffer
+- Feat: Message search — press **Ctrl+F** to open a search bar; type to jump to the first match; **Enter** / **Shift+Enter** navigates forward and backward with wrap-around; **Escape** clears and closes
+- Feat: `draft/reply` — right-click any message in the chat to reply; a reply indicator bar appears above the input showing the quoted nick and preview; outgoing messages carry `@+draft/reply=<msgid>`; received replies show **↩ origNick** before the sender nick
+
+---
+
 ## v0.9.6 — 2026-05-30
 
 - Feat: IRCv3 `msgid` stored on every received message — full signal chain updated; foundation for reply threading, reactions, and redaction

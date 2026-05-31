@@ -25,7 +25,7 @@ The AppImage is the recommended Linux download — it is self-contained, runs on
 The AppImage embeds zsync metadata pointing to the latest release. Install [`appimageupdatetool`](https://github.com/AppImageCommunity/AppImageUpdate) and run:
 
 ```bash
-appimageupdatetool ./UplinkIRC-0.9.0-x86_64.AppImage
+appimageupdatetool ./UplinkIRC-0.10.0-x86_64.AppImage
 ```
 
 This downloads only the changed blocks from the new release — much faster than a full re-download. The tool prints progress and replaces the file in place when done.
@@ -421,6 +421,20 @@ show_emoji_button = true
 ```
 
 Once visible, clicking `😊` opens a searchable grid of ~400 emoji. You can also type `:shortcode:` directly in the input box — a completion list appears as you type, and pressing Enter, Tab, or clicking an entry inserts the emoji. Typing the full `:trident:` with the closing colon substitutes it instantly without the completion list.
+
+### How do I search the chat buffer?
+
+Press **Ctrl+F** to open the search bar below the chat area. Start typing to jump to the first match. Press **Enter** to find the next match (wraps around), **Shift+Enter** for the previous match, and **Escape** to close the bar and clear the highlight.
+
+The search is case-insensitive and works on the full visible buffer for the current channel. It does not search across channels or across sessions — switch to the channel you want to search, then press Ctrl+F.
+
+### How do I reply to a specific message?
+
+Right-click any message in the chat area and choose **Reply** from the context menu. A reply bar appears above the input box showing **↩ nick: preview** of the original message. Type your reply and press **Enter** to send it. Press **Escape** or click **✕** to cancel.
+
+Replied messages carry an IRCv3 `draft/reply` tag referencing the original message ID. In UplinkIRC, received replies show a small **↩ origNick** indicator before the sender's name in the chat.
+
+Switching channels automatically cancels any pending reply.
 
 ### How do I minimize to the system tray?
 

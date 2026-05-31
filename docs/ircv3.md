@@ -73,7 +73,26 @@ Incoming typing notifications from other users appear as "nick is typing…" abo
 
 ### `labeled-response`
 
-CAP is negotiated. Label matching (tying server responses to specific outgoing commands) is tracked for future use with `echo-message` and request/response flows.
+CAP is negotiated. Labels tie server responses to outgoing commands; used together with `echo-message` to confirm message delivery.
+
+### `echo-message`
+
+When negotiated, the server echoes every message you send back to you as a first-class incoming message — with accurate `server-time` and `msgid` tags. This means your sent messages are timestamped by the server rather than the local clock, and carry a proper message ID for deduplication and reply threading.
+
+UplinkIRC suppresses the local preview echo when `echo-message` is active so messages appear exactly once. Self-echoed private messages route to the correct PM buffer (the conversation partner's buffer, not a buffer named after your own nick).
+
+### `msgid`
+
+Assigns a globally unique ID to every message. Parsed from the `msgid` tag on all incoming `PRIVMSG`, `NOTICE`, and `ACTION` messages, stored on the `Message` struct, and carried through batch delivery. Used as the anchor for `draft/reply` and as the foundation for future reactions (`draft/react`) and redaction (`draft/message-redaction`).
+
+### `draft/reply`
+
+A client-only tag (`+draft/reply=<msgid>`) that marks a message as a reply to a specific message by its ID. UplinkIRC supports both sending and receiving:
+
+- **Sending:** right-click any message in the chat, choose **Reply**, then type and press Enter. The outgoing `PRIVMSG` carries `@+draft/reply=<original-msgid>`.
+- **Receiving:** incoming messages with a `+draft/reply` tag display a small **↩ origNick** indicator before the sender nick, showing whose message was being replied to.
+
+Requires `message-tags` (already negotiated). Compatible with any modern IRC server or bouncer — clients that do not support the tag see the message as normal.
 
 ---
 
@@ -113,14 +132,6 @@ Tells soju not to send a NAMES list automatically on JOIN. This prevents duplica
 
 ## Planned capabilities
 
-### `echo-message`
-
-The server echoes your sent messages back to you as delivery confirmation with an accurate timestamp. Requires `labeled-response` to correctly match echoes to outgoing messages.
-
-### `msgid`
-
-Assigns a unique ID to every message. Required for deduplication when combining bouncer history with live messages, and as a foundation for reactions and message redaction.
-
 ### `extended-join`
 
 Includes the joining user's account name in JOIN messages, making it possible to display account names in join notifications without a separate WHOIS.
@@ -140,10 +151,6 @@ Notifies the client if the server gains or loses capabilities after the initial 
 ### `sts` (Strict Transport Security)
 
 If a server advertises STS, UplinkIRC would remember to always require TLS for that host and refuse plaintext fallback — similar to HSTS in web browsers.
-
-### `draft/reply`
-
-A client-only tag that marks a message as a reply to a specific `msgid`. Enables threaded reply display. Requires `msgid`.
 
 ### `draft/message-redaction`
 

@@ -353,6 +353,8 @@
     <li><a href="#emoji">Emoji &amp; shortcodes</a></li>
     <li><a href="#tab">Tab completion</a></li>
     <li><a href="#history">Input history</a></li>
+    <li><a href="#search">Message search</a></li>
+    <li><a href="#reply">Reply to messages</a></li>
     <li><a href="#link-previews">Link previews</a></li>
     <li><a href="#dcc">DCC file transfer</a></li>
   </ul>
@@ -850,7 +852,10 @@ channels        = "#linux"</pre>
       <li>Click any URL to open it in your browser.</li>
       <li>When a URL is posted, UplinkIRC fetches a preview card (title + thumbnail) automatically.</li>
       <li>When someone mentions your nick, it is highlighted in red and bold.</li>
-      <li>A transparent "nick is typing…" line appears at the bottom of the chat when someone with IRCv3 typing support is composing a message.</li>
+      <li>A "nick is typing…" line appears above the input bar when someone with IRCv3 typing support is composing a message.</li>
+      <li><strong>Right-click any message</strong> to open a context menu — choose <strong>Reply</strong> to start a threaded reply. See <a href="#reply">Reply to messages</a>.</li>
+      <li><strong>Right-click any nick</strong> in a message to open the nick context menu (Message, Whois, Give Op, Give Voice, Version).</li>
+      <li>Press <kbd>Ctrl+F</kbd> to search the current buffer. See <a href="#search">Message search</a>.</li>
     </ul>
   </section>
 
@@ -1009,6 +1014,52 @@ show_emoji_button = true</pre>
   <section id="history">
     <h2>Input history</h2>
     <p>Press <kbd>↑</kbd> in the input box to scroll back through messages you've sent in this session. Press <kbd>↓</kbd> to go forward again. The history is per-session and is not saved to disk.</p>
+  </section>
+
+  <!-- MESSAGE SEARCH -->
+  <section id="search">
+    <h2>Message search (Ctrl+F)</h2>
+    <p>Press <kbd>Ctrl+F</kbd> anywhere in UplinkIRC to open a search bar below the chat area. Start typing and the first match jumps into view immediately with the text highlighted.</p>
+
+    <table>
+      <tr><th>Key</th><th>Action</th></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Jump to the next match (wraps around to the top)</td></tr>
+      <tr><td><kbd>Shift+Enter</kbd></td><td>Jump to the previous match</td></tr>
+      <tr><td><kbd>Escape</kbd></td><td>Close the search bar and clear the highlight</td></tr>
+      <tr><td><code>✕</code> button</td><td>Close the search bar</td></tr>
+    </table>
+
+    <p><kbd>Ctrl+F</kbd> works whether you are focused on the chat view or the message input box.</p>
+
+    <div class="tip">
+      <strong>Case-insensitive by default.</strong> The search uses Qt's built-in text search, so it is case-insensitive and matches partial words. Type a nick name, a phrase, or any keyword — it finds all occurrences in the current buffer.
+    </div>
+  </section>
+
+  <!-- REPLY -->
+  <section id="reply">
+    <h2>Reply to a message</h2>
+    <p>UplinkIRC supports IRCv3 <code>draft/reply</code> — replies that reference a specific message by its unique ID. The server must have negotiated <code>message-tags</code> (all modern IRC servers do).</p>
+
+    <h3>Sending a reply</h3>
+    <div class="step-row"><span class="step">1</span><div>Right-click any message in the chat area. A context menu appears.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Click <strong>Reply</strong>.</div></div>
+    <div class="step-row"><span class="step">3</span><div>A reply bar appears above the input box showing <em>↩ nick: preview of original message</em>. Press <kbd>Escape</kbd> or click <strong>✕</strong> to cancel without sending.</div></div>
+    <div class="step-row"><span class="step">4</span><div>Type your reply and press <kbd>Enter</kbd>. The message is sent with <code>@+draft/reply=&lt;msgid&gt;</code> referencing the original.</div></div>
+
+    <h3>Viewing replies you receive</h3>
+    <p>When someone replies to a message using a client that supports <code>draft/reply</code>, a small <strong>↩ origNick</strong> indicator appears before their nick in the chat — showing whose message they are replying to.</p>
+
+    <pre>14:30 <span class="n">alice:</span> what's everyone using for backups these days?
+14:31 <span class="n">↩ alice  bob:</span> rsync + rclone to Backblaze, works great</pre>
+
+    <div class="note">
+      <strong>Compatibility:</strong> clients that do not understand <code>draft/reply</code> simply see your message as normal — the reply tag is invisible to them. No special server setup is needed beyond standard IRCv3 <code>message-tags</code>.
+    </div>
+
+    <div class="tip">
+      <strong>Switching channels</strong> automatically cancels any pending reply. The reply bar clears when you navigate to a different buffer.
+    </div>
   </section>
 
   <!-- LINK PREVIEWS -->
