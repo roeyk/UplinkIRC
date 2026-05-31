@@ -728,10 +728,10 @@ void MainWindow::setupChatArea()
                 .arg(dataUri).arg(thumbnail.width()).arg(thumbnail.height());
         }
 
-        const QColor bg     = m_chatView->palette().color(QPalette::AlternateBase);
-        const QColor border = m_chatView->palette().color(QPalette::Mid);
-        const QColor fg     = m_chatView->palette().color(QPalette::Text);
-        const QColor sub    = m_chatView->palette().color(QPalette::PlaceholderText);
+        const QColor bg("#1a1a1a");
+        const QColor border("#444444");
+        const QColor fg("#eeeeee");
+        const QColor sub("#888888");
 
         const QString titleEsc  = title.toHtmlEscaped().left(120);
         const QString domainEsc = pageUrl.host().toHtmlEscaped();
