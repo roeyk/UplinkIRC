@@ -2203,7 +2203,8 @@ void MainWindow::onInputSubmit()
             for (const QString &line : lines)
                 appendMessage(Message::make(MessageType::Server, "", line));
         } else {
-            appendMessage(Message::make(MessageType::Error, "", "Unknown command: " + cmd));
+            // Pass unknown /CMD args directly as raw IRC (e.g. /REHASH, /SAMODE)
+            m_model->sendRaw(host, text.mid(1));
         }
         return;
     }
