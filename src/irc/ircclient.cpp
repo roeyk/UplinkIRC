@@ -180,6 +180,44 @@ void IrcClient::markRead(const QString &target, const QDateTime &ts)
     sendRaw("MARKREAD " + target + " timestamp=" + ts.toUTC().toString(Qt::ISODateWithMs));
 }
 
+void IrcClient::sendRedact(const QString &target, const QString &msgid, const QString &reason)
+{
+    if (!m_ackedCaps.contains("draft/message-redaction")) return;
+    if (target.isEmpty() || msgid.isEmpty()) return;
+    sendRaw("REDACT " + stripCrlf(target) + " " + stripCrlf(msgid)
+            + (reason.isEmpty() ? QString() : " :" + stripCrlf(reason)));
+}
+
+void IrcClient::setMonitorList(const QStringList &nicks)
+{
+    m_monitorList = nicks;
+}
+
+void IrcClient::monitorAdd(const QString &nick)
+{
+    if (nick.isEmpty()) return;
+    if (!m_monitorList.contains(nick, Qt::CaseInsensitive))
+        m_monitorList.append(nick);
+    sendRaw("MONITOR + " + stripCrlf(nick));
+}
+
+void IrcClient::monitorRemove(const QString &nick)
+{
+    m_monitorList.removeIf([&](const QString &n){ return n.compare(nick, Qt::CaseInsensitive) == 0; });
+    sendRaw("MONITOR - " + stripCrlf(nick));
+}
+
+void IrcClient::monitorClear()
+{
+    m_monitorList.clear();
+    sendRaw("MONITOR C");
+}
+
+void IrcClient::monitorStatus()
+{
+    sendRaw("MONITOR S");
+}
+
 static QString redactRawForLog(const QString &line)
 {
     const QString cmd = line.section(' ', 0, 0).toUpper();
@@ -503,11 +541,39 @@ void IrcClient::processLine(const QString &line)
         return;
     }
 
+    if (cmd == "ACCOUNT" && !msg.params.isEmpty()) {
+        emit accountChanged(m_host, msg.nick, msg.params[0]);
+        return;
+    }
+
+    if (cmd == "SETNAME" && !msg.trailing.isEmpty()) {
+        emit setNameReceived(m_host, msg.nick, msg.trailing);
+        return;
+    }
+
+    if (cmd == "REDACT" && msg.params.size() >= 2) {
+        emit messageRedacted(m_host, msg.nick, msg.params[0], msg.params[1], msg.trailing);
+        return;
+    }
+
+    if (cmd == "INVITE" && msg.params.size() >= 1) {
+        const QString targetNick = msg.params[0];
+        const QString channel    = msg.params.size() > 1 ? msg.params[1] : msg.trailing;
+        emit inviteNotify(m_host, msg.nick, channel, targetNick);
+        return;
+    }
+
     if (cmd == "JOIN") {
         const QString channel = msg.params.isEmpty() ? msg.trailing : msg.params[0];
         if (msg.nick == m_nick)
             emit serverMessage(m_host, "Joined " + channel);
         emit userJoined(m_host, channel, msg.nick);
+        // extended-join: params[1] = account, trailing = realname
+        if (msg.params.size() > 1) {
+            const QString account = msg.params[1];
+            if (!account.isEmpty() && account != "*")
+                emit accountChanged(m_host, msg.nick, account);
+        }
         return;
     }
 
@@ -657,6 +723,8 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             "multi-prefix", "away-notify", "server-time",
             "message-tags", "batch", "labeled-response", "draft/typing",
             "chathistory", "echo-message", "chghost", "draft/react",
+            "account-notify", "extended-join", "invite-notify", "setname",
+            "userhost-in-names", "draft/message-redaction",
         };
 
         // ZNC-specific caps
@@ -739,6 +807,8 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             m_ackedCaps.contains("znc.in/playback")) {
             sendRaw("PRIVMSG *playback :PLAY * 0");
         }
+        if (!m_monitorList.isEmpty())
+            sendRaw("MONITOR + " + m_monitorList.join(','));
         break;
 
     case 2:   // RPL_YOURHOST
@@ -791,13 +861,27 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
     }
 
+    case 354: { // RPL_WHOSPCRPL (WHOX reply, token 42)
+        // Format: [me, "42", channel, nick, flags, account]
+        if (params.size() >= 6 && params[1] == "42") {
+            const QString channel = params[2];
+            const QString nick    = params[3];
+            const QString flags   = params[4];
+            const QString account = params[5];
+            emit whoEntryReceived(m_host, channel, nick, flags);
+            if (!account.isEmpty() && account != "0" && account != "*")
+                emit accountChanged(m_host, nick, account);
+        }
+        break;
+    }
+
     case 366: { // RPL_ENDOFNAMES
         if (params.size() >= 2) {
             const QString channel = params[1];
             emit namesReceived(m_host, channel, m_namesBuffer.take(channel));
             emit namesDone(m_host, channel);
             sendRaw("MODE " + channel);
-            sendRaw("WHO " + channel);
+            sendRaw("WHO " + channel + " %cnfa,42");
             // Request chat history on join
             if (m_ackedCaps.contains("chathistory"))
                 requestHistory(channel, 100);
@@ -827,6 +911,35 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
 
     case 431: case 432:
         emit errorMessage(m_host, "Nick error: " + trailing);
+        break;
+
+    case 730: { // RPL_MONONLINE
+        QStringList nicks;
+        for (const QString &part : trailing.split(',', Qt::SkipEmptyParts)) {
+            const QString nick = part.section('!', 0, 0).trimmed();
+            if (!nick.isEmpty()) nicks << nick;
+        }
+        if (!nicks.isEmpty()) emit monitorOnline(m_host, nicks);
+        break;
+    }
+    case 731: { // RPL_MONOFFLINE
+        QStringList nicks;
+        for (const QString &part : trailing.split(',', Qt::SkipEmptyParts)) {
+            const QString nick = part.section('!', 0, 0).trimmed();
+            // offline nicks have no !user@host, but handle both forms
+            if (!nick.isEmpty()) nicks << nick;
+        }
+        if (!nicks.isEmpty()) emit monitorOffline(m_host, nicks);
+        break;
+    }
+    case 732: // RPL_MONLIST
+        emit serverMessage(m_host, "Monitor: " + trailing);
+        break;
+    case 733: // RPL_ENDOFMONLIST
+        emit serverMessage(m_host, "End of monitor list.");
+        break;
+    case 734: // ERR_MONLISTFULL
+        emit errorMessage(m_host, "Monitor list full: " + trailing);
         break;
 
     default:

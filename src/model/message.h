@@ -23,6 +23,7 @@ struct Message {
     QString     text;
     MessageType type{MessageType::Privmsg};
     bool        isHistory{false};
+    bool        redacted{false};
     QString     msgid;
     QString     replyTo;
 
@@ -30,6 +31,6 @@ struct Message {
                         const QDateTime &ts = {}, bool history = false,
                         const QString &msgid = {}, const QString &replyTo = {})
     {
-        return { ts.isValid() ? ts : QDateTime::currentDateTime(), nick, text, t, history, msgid, replyTo };
+        return { ts.isValid() ? ts : QDateTime::currentDateTime(), nick, text, t, history, false, msgid, replyTo };
     }
 };

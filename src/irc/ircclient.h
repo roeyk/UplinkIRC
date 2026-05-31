@@ -31,10 +31,18 @@ public:
     void sendTyping(const QString &channel, const QString &state);
     void sendReact (const QString &target,  const QString &msgid, const QString &emoji);
     void sendRaw(const QString &line);
+    void sendRedact(const QString &target, const QString &msgid, const QString &reason = {});
 
     // Bouncer helpers
     void requestHistory(const QString &target, int limit = 100);
     void markRead(const QString &target, const QDateTime &ts);
+
+    // Monitor
+    void setMonitorList(const QStringList &nicks);
+    void monitorAdd   (const QString &nick);
+    void monitorRemove(const QString &nick);
+    void monitorClear ();
+    void monitorStatus();
 
     QString currentNick() const { return m_nick; }
     QString host()        const { return m_host; }
@@ -91,6 +99,14 @@ signals:
     void reactReceived (const QString &server, const QString &target,
                         const QString &nick,   const QString &msgid,
                         const QString &emoji);
+    void accountChanged(const QString &server, const QString &nick, const QString &account);
+    void messageRedacted(const QString &server, const QString &senderNick,
+                         const QString &target, const QString &msgid, const QString &reason);
+    void inviteNotify  (const QString &server, const QString &inviter,
+                        const QString &channel, const QString &targetNick);
+    void setNameReceived(const QString &server, const QString &nick, const QString &realname);
+    void monitorOnline (const QString &server, const QStringList &nicks);
+    void monitorOffline(const QString &server, const QStringList &nicks);
 
     // Bouncer-specific
     void bouncerNetworkReceived(const QString &server, const QString &netId,
@@ -162,6 +178,8 @@ private:
         QList<Msg> msgs;
     };
     QHash<QString, BatchInfo> m_batches;
+
+    QStringList m_monitorList;
 
     // CTCP reply rate-limit: key = "nick:cmd", value = last-reply ms timestamp
     QHash<QString, qint64> m_ctcpTimestamps;

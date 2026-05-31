@@ -54,6 +54,13 @@ public:
 
     void sendReact(const QString &host, const QString &target,
                    const QString &msgid, const QString &emoji);
+    void sendRedact(const QString &host, const QString &target,
+                    const QString &msgid, const QString &reason = {});
+
+    void monitorAdd   (const QString &host, const QString &nick);
+    void monitorRemove(const QString &host, const QString &nick);
+    void monitorClear (const QString &host);
+    void monitorStatus(const QString &host);
 
 signals:
     // Structural changes — sidebar needs a repaint
@@ -70,6 +77,7 @@ signals:
     void nickListChanged(const QString &host, const QString &channel);
     void unreadChanged   (const QString &host, const QString &channel, int count);
     void reactionsChanged(const QString &host, const QString &channel);
+    void messageRedacted (const QString &host, const QString &channel);
 
     // Self
     void selfNickChanged(const QString &host, const QString &nick);
@@ -128,6 +136,14 @@ private:
     void onReactReceived  (const QString &host, const QString &target,
                            const QString &nick,  const QString &msgid,
                            const QString &emoji);
+    void onAccountChanged (const QString &host, const QString &nick, const QString &account);
+    void onMessageRedacted(const QString &host, const QString &senderNick,
+                           const QString &target, const QString &msgid, const QString &reason);
+    void onInviteNotify   (const QString &host, const QString &inviter,
+                           const QString &channel, const QString &targetNick);
+    void onSetNameReceived(const QString &host, const QString &nick, const QString &realname);
+    void onMonitorOnline  (const QString &host, const QStringList &nicks);
+    void onMonitorOffline (const QString &host, const QStringList &nicks);
 
     void postMessage(const QString &host, const QString &target, const Message &msg);
 

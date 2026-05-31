@@ -126,6 +126,19 @@ Config Config::load(const QString &path)
             }
         }
 
+        // [monitor]
+        if (auto mon = tbl["monitor"].as_table()) {
+            if (auto nicks = (*mon)["nicks"].as_array()) {
+                for (auto &n : *nicks) {
+                    if (auto v = n.value<std::string>()) {
+                        const QString nick = QString::fromStdString(*v).trimmed();
+                        if (!nick.isEmpty())
+                            cfg.monitorList.append(nick);
+                    }
+                }
+            }
+        }
+
         // [[server]]
         if (auto servers = tbl["server"].as_array()) {
             for (auto &node : *servers) {
@@ -225,6 +238,17 @@ void Config::save(const Config &cfg, const QString &path)
         out << "[ignore]\nnicks = [";
         bool first = true;
         for (const QString &n : cfg.ignoredNicks) {
+            if (!first) out << ", ";
+            out << tomlQuote(n);
+            first = false;
+        }
+        out << "]\n\n";
+    }
+
+    if (!cfg.monitorList.isEmpty()) {
+        out << "[monitor]\nnicks = [";
+        bool first = true;
+        for (const QString &n : cfg.monitorList) {
             if (!first) out << ", ";
             out << tomlQuote(n);
             first = false;

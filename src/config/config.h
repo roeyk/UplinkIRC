@@ -81,6 +81,7 @@ struct Config {
     QList<ServerConfig> servers;
     UiConfig            ui;
     QStringList         ignoredNicks;
+    QStringList         monitorList;   // nicks to watch with MONITOR
 
     bool needsNickSetup() const;
 

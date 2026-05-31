@@ -135,15 +135,15 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] msgid — IRCv3 unique message IDs stored on every received message; full signal chain (messageReceived, noticeReceived, actionReceived, batch delivery); prerequisite for reply threading, reactions, and redaction
 - [x] echo-message — server echoes sent messages back; duplicate local echo suppressed; PM routing corrected for self-echoes; also fixes ZNC self-message PM routing
 - [x] draft/reply — right-click any message → Reply; reply bar above input; ↩ origNick shown on received replies; @+draft/reply= tag sent on outgoing messages
-- [ ] draft/message-redaction — delete/hide a sent message; requires msgid
-- [ ] account-notify + account-tag + extended-join — track NickServ account per nick; show account on JOIN
-- [ ] Monitor — standardized online/offline watch list (replaces ISON polling)
+- [x] draft/message-redaction — right-click own message timestamp → Delete; REDACT sent; received redactions render as [message deleted] (v0.16.0)
+- [x] account-notify + extended-join — track NickServ account per nick; populate from JOIN + ACCOUNT commands; account tooltip in nick list (v0.16.0)
+- [x] Monitor — /monitor add|del|list|clear|status; watch list persisted in config.toml; MONITOR + sent on connect; 730/731 online/offline posted to server buffer (v0.16.0)
 - [x] chghost — CAP negotiated; CHGHOST parsed; quiet "nick changed host" status line in shared channels; no fake QUIT+JOIN noise (v0.15.0)
+- [x] invite-notify — CAP negotiated; channel invite broadcasts post to channel buffer; direct invites post to server buffer (v0.16.0)
+- [x] setname — CAP negotiated; SETNAME parsed; "nick changed their realname" posted to shared channels (v0.16.0)
+- [x] WHOX — WHO <channel> %cnfa,42; 354 RPL_WHOSPCRPL parsed; account names populated on join; bot flags preserved (v0.16.0)
+- [x] userhost-in-names — CAP negotiated; !user@host stripped from NAMES entries before display (v0.16.0)
 - [ ] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; prevent downgrade attacks
-- [ ] invite-notify — see when someone is invited to a channel you're in
-- [ ] setname — see and send realname changes after connection (SETNAME command)
-- [ ] WHOX — extended WHO; request account, idle time, and other fields in one query
-- [ ] userhost-in-names — NAMES reply includes user@host; useful for ban/ignore logic
 - [ ] netsplit/netjoin batch types — collapse netsplit noise into a single folded entry
 - [ ] Standard Replies — structured error/warning/note messages from server
 - [ ] UTF8ONLY — detect server UTF-8-only signal and enforce encoding

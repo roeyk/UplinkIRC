@@ -25,6 +25,7 @@ inline int prefixRank(QChar p)
 
 struct NickEntry {
     QString     nick;
+    QString     account;   // NickServ account, empty if unknown or logged out
     QChar       prefix{' '};
     QSet<QChar> prefixes;
 
@@ -85,9 +86,22 @@ struct Channel {
             }
             e.recomputePrefix();
             e.nick = n.mid(i);
+            // userhost-in-names: strip !user@host suffix if present
+            const int bang = e.nick.indexOf('!');
+            if (bang != -1)
+                e.nick = e.nick.left(bang);
             nicks.append(e);
         }
         std::sort(nicks.begin(), nicks.end());
+    }
+
+    void setNickAccount(const QString &nick, const QString &account)
+    {
+        for (auto &e : nicks)
+            if (e.nick.toLower() == nick.toLower()) {
+                e.account = (account == "*") ? QString() : account;
+                return;
+            }
     }
 
     void addNick(const QString &raw)

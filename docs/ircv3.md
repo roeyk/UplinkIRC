@@ -106,6 +106,53 @@ Emoji reactions attached to specific messages via `TAGMSG` with a `+draft/react`
 - **Receiving:** reactions are stored per-message and rendered inline below the original message as `emoji(count)` in the chat view.
 - Requires `message-tags` and server support for `draft/react`. On servers that do not advertise the capability, reactions are not sent.
 
+### `draft/message-redaction`
+
+Removes a sent message from history and signals other clients to hide it. Requires `msgid` to identify the target message.
+
+- **Sending:** right-click a **timestamp** on your own message → **Delete**. Only available when the server has acknowledged the `draft/message-redaction` CAP.
+- **Receiving:** redacted messages are replaced with `[message deleted]` in grey italic. The message ID anchor is preserved so reply threading is not broken.
+
+### `account-notify`
+
+Notifies the client in real time when a user logs in or out of services (NickServ). When a nick's account changes, UplinkIRC updates the account field stored for that nick across all shared channels. The account name is shown as a tooltip when you hover over a nick in the nick list.
+
+### `extended-join`
+
+When this capability is active, `JOIN` messages include the joining user's account name and real name as additional parameters. UplinkIRC uses this to populate the account field for the nick immediately on join, without needing a WHOIS or a subsequent `account-notify`.
+
+### `invite-notify`
+
+When you are a member of a channel, the server notifies you any time someone is invited to that channel (not just when you personally are invited). Invite-from-outside messages post a status line to the server buffer; broadcast invites from inside a shared channel post to the channel buffer.
+
+### `setname`
+
+Allows users to update their real name (GECOS) field after connecting via a `SETNAME` command. When another user in a shared channel changes their real name, UplinkIRC posts a status line in every channel you share with them: `nick changed their realname to "…"`.
+
+### `userhost-in-names`
+
+When active, `NAMES` replies include the full `user@host` for each nick (e.g. `@alice!alice@example.com`). UplinkIRC strips the `!user@host` suffix before displaying nicks, so the nick list looks the same, but the underlying data is richer and ready for future ban/ignore improvements.
+
+### `Monitor`
+
+A standardized server command for watching when specific nicks come online or go offline. UplinkIRC sends `MONITOR + nick1,nick2,…` after the welcome message whenever a monitor list is configured. Status changes post to the server buffer as **Now online: nick** / **Now offline: nick**.
+
+Manage the watch list with `/monitor`:
+
+| Subcommand | Description |
+|---|---|
+| `/monitor add <nick>` | Add nick to the watch list (persisted to config) |
+| `/monitor del <nick>` | Remove nick from the watch list |
+| `/monitor list` | Show the current watch list |
+| `/monitor clear` | Clear the entire watch list |
+| `/monitor status` | Ask the server for current online/offline status of all watched nicks |
+
+The list is stored in `config.toml` under `[monitor] nicks = [...]`.
+
+### `WHOX`
+
+An extended version of the `WHO` command. UplinkIRC requests `WHO <channel> %cnfa,42` after joining each channel — fetching channel, nick, flags, and account in a single query. The server reply (`354 RPL_WHOSPCRPL`) is handled by the same bot-detection logic as the regular `WHO` reply, and any account name returned fires an `accountChanged` update to populate nick list tooltips.
+
 ---
 
 ## Bouncer capabilities
@@ -144,16 +191,6 @@ Tells soju not to send a NAMES list automatically on JOIN. This prevents duplica
 
 ## Planned capabilities
 
-### `extended-join`
-
-Includes the joining user's account name in JOIN messages, making it possible to display account names in join notifications without a separate WHOIS.
-
-### `account-notify`
-
-Notifies the client in real time when a user logs in or out of services. Useful for showing account status in the nick list.
-
-### `chghost` *(implemented — see Active capabilities)*
-
 ### `cap-notify`
 
 Notifies the client if the server gains or loses capabilities after the initial handshake. Lets the client adapt to capability changes dynamically.
@@ -162,39 +199,13 @@ Notifies the client if the server gains or loses capabilities after the initial 
 
 If a server advertises STS, UplinkIRC would remember to always require TLS for that host and refuse plaintext fallback — similar to HSTS in web browsers.
 
-### `draft/message-redaction`
+### `account-tag`
 
-A command that removes a message from history and signals other clients to hide it. Requires `msgid` to identify the target message.
+Attaches the sender's NickServ account name as an `account` tag on every incoming message. Complements `account-notify` by providing per-message account context without a separate WHOIS. (Message tags are already fully parsed; this is a display-layer addition.)
 
 ### `draft/multiline`
 
 Allows composing and sending messages that span multiple lines, delivered to clients as a `batch` of type `draft/multiline`. Useful for pastes and structured content.
-
-### `draft/react` *(implemented — see Active capabilities)*
-
-### `account-tag`
-
-Attaches the sender's NickServ account name as a `account` tag on every incoming message. Complements `account-notify` by providing per-message account context without a separate WHOIS.
-
-### `Monitor`
-
-A standardized command for watching when specific nicks come online or go offline. Replaces polling via ISON. The server notifies you in real time when a monitored nick connects or disconnects.
-
-### `invite-notify`
-
-When you are an operator or have channel privileges, the server sends you a notification when someone is invited to your channel, rather than only the inviter seeing confirmation.
-
-### `setname`
-
-Allows users to update their realname (GECOS) field after connecting via a `SETNAME` command. Other clients in shared channels receive a notification of the change.
-
-### `WHOX`
-
-An extended version of the `WHO` command. Lets clients request specific fields (account name, idle time, real name, etc.) in a single query using a custom field mask. More efficient than repeated WHOIS lookups.
-
-### `userhost-in-names`
-
-Modifies `NAMES` replies to include `user@host` for each nick — e.g. `@alice!alice@example.com` instead of just `@alice`. Useful for ban matching and ignore lists.
 
 ### `netsplit` / `netjoin` batch types
 

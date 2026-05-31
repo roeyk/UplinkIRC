@@ -19,6 +19,18 @@ Known issues: unchanged from v0.15.0.
 Next priorities: unchanged.
 -->
 
+## v0.16.0 — 2026-05-31
+
+- **`draft/message-redaction`** — right-click any of your own message timestamps → **Delete** to send a `REDACT` command; redacted messages display as `[message deleted]` in grey italic. Only shown when the server acknowledges the CAP.
+- **`account-notify` + `extended-join`** — UplinkIRC tracks each nick's NickServ account in real time. On join, the account name comes from the extended `JOIN` message; after login/logout, `ACCOUNT` commands update it instantly. Account name shows as a tooltip in the nick list (hover a nick).
+- **`WHOX`** — `WHO` requests now use `WHO <channel> %cnfa,42` (WHOX field mask) to retrieve account names in the initial join scan, populating nick list tooltips without separate WHOIS queries.
+- **`Monitor`** — IRCv3 watch list for online/offline status. Configure with `/monitor add <nick>`, `/monitor del <nick>`, `/monitor list`, `/monitor clear`, `/monitor status`. The list persists to `config.toml` under `[monitor] nicks = [...]` and is resent on every reconnect.
+- **`invite-notify`** — invitations broadcast to all channel members now post a status line in the relevant channel buffer (or the server buffer when you are the target).
+- **`setname`** — when a user in a shared channel changes their real name via `SETNAME`, a quiet status line appears: `nick changed their realname to "…"`.
+- **`userhost-in-names`** — CAP negotiated; `NAMES` replies with `nick!user@host` are parsed correctly (host suffix stripped before display).
+
+---
+
 ## Maintenance — 2026-05-31
 
 - **GitHub username renamed** — account and all project URLs updated from `joehonkey` to `noderelay`. Git remote, README badges, docs, and theme attribution all reflect the new username.

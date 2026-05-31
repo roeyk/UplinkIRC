@@ -28,6 +28,11 @@ Type any of these commands in the message input box and press Enter.
 | `/ignore <nick>` | Suppress all messages from a nick (client-side) |
 | `/unignore <nick>` | Stop ignoring a nick |
 | `/ignored` | List all currently ignored nicks |
+| `/monitor add <nick>` | Add a nick to the online/offline watch list (IRCv3 MONITOR) |
+| `/monitor del <nick>` | Remove a nick from the watch list |
+| `/monitor list` | Show all watched nicks |
+| `/monitor clear` | Clear the entire watch list |
+| `/monitor status` | Ask the server for current online/offline status |
 | `/clear` | Clear the chat buffer |
 
 ### Examples

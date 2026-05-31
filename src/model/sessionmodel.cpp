@@ -61,6 +61,37 @@ void SessionModel::sendReact(const QString &host, const QString &target,
         cl->sendReact(target, msgid, emoji);
 }
 
+void SessionModel::sendRedact(const QString &host, const QString &target,
+                               const QString &msgid, const QString &reason)
+{
+    if (auto *cl = clientFor(host))
+        cl->sendRedact(target, msgid, reason);
+}
+
+void SessionModel::monitorAdd(const QString &host, const QString &nick)
+{
+    if (auto *cl = clientFor(host))
+        cl->monitorAdd(nick);
+}
+
+void SessionModel::monitorRemove(const QString &host, const QString &nick)
+{
+    if (auto *cl = clientFor(host))
+        cl->monitorRemove(nick);
+}
+
+void SessionModel::monitorClear(const QString &host)
+{
+    if (auto *cl = clientFor(host))
+        cl->monitorClear();
+}
+
+void SessionModel::monitorStatus(const QString &host)
+{
+    if (auto *cl = clientFor(host))
+        cl->monitorStatus();
+}
+
 // ---------------------------------------------------------------------------
 // Logging
 // ---------------------------------------------------------------------------
@@ -320,6 +351,15 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::reactReceived,   this, &SessionModel::onReactReceived);
     connect(cl, &IrcClient::pingRtt,         this, &SessionModel::pingRtt);
     connect(cl, &IrcClient::reconnecting,    this, &SessionModel::serverReconnecting);
+    connect(cl, &IrcClient::accountChanged,  this, &SessionModel::onAccountChanged);
+    connect(cl, &IrcClient::messageRedacted, this, &SessionModel::onMessageRedacted);
+    connect(cl, &IrcClient::inviteNotify,    this, &SessionModel::onInviteNotify);
+    connect(cl, &IrcClient::setNameReceived, this, &SessionModel::onSetNameReceived);
+    connect(cl, &IrcClient::monitorOnline,   this, &SessionModel::onMonitorOnline);
+    connect(cl, &IrcClient::monitorOffline,  this, &SessionModel::onMonitorOffline);
+
+    if (!m_config.monitorList.isEmpty())
+        cl->setMonitorList(m_config.monitorList);
 
     // Pre-create server buffer and configured channels in the session
     auto *sess = session(cfg.host);
@@ -730,4 +770,82 @@ void SessionModel::onReactReceived(const QString &host, const QString &target,
     if (!ch) return;
     ch->reactions[msgid][emoji].append(nick);
     emit reactionsChanged(host, buf);
+}
+
+void SessionModel::onAccountChanged(const QString &host, const QString &nick,
+                                     const QString &account)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+    for (auto &ch : sess->channels) {
+        ch.setNickAccount(nick, account);
+        bool present = false;
+        for (const auto &e : std::as_const(ch.nicks))
+            if (e.nick.toLower() == nick.toLower()) { present = true; break; }
+        if (present)
+            emit nickListChanged(host, ch.name);
+    }
+}
+
+void SessionModel::onMessageRedacted(const QString &host, const QString &senderNick,
+                                      const QString &target, const QString &msgid,
+                                      const QString &reason)
+{
+    Q_UNUSED(reason)
+    auto *sess = session(host);
+    if (!sess) return;
+    const bool isChannel = target.startsWith('#') || target.startsWith('&');
+    const QString bufName = isChannel ? target : senderNick;
+    auto *ch = sess->get(bufName);
+    if (!ch) return;
+    for (auto &msg : ch->messages) {
+        if (msg.msgid == msgid) {
+            msg.redacted = true;
+            break;
+        }
+    }
+    emit messageRedacted(host, bufName);
+}
+
+void SessionModel::onInviteNotify(const QString &host, const QString &inviter,
+                                   const QString &channel, const QString &targetNick)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+    if (targetNick.toLower() == sess->nick.toLower()) {
+        postMessage(host, "(server)", Message::make(MessageType::Server, "",
+            "You were invited to " + channel + " by " + inviter));
+    } else {
+        auto *ch = sess->get(channel);
+        if (ch)
+            postMessage(host, channel, Message::make(MessageType::Server, "",
+                inviter + " invited " + targetNick + " to " + channel));
+    }
+}
+
+void SessionModel::onSetNameReceived(const QString &host, const QString &nick,
+                                      const QString &realname)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+    const QString text = nick + " changed their realname to \"" + realname + "\"";
+    for (auto &ch : sess->channels) {
+        bool present = false;
+        for (const auto &e : std::as_const(ch.nicks))
+            if (e.nick.toLower() == nick.toLower()) { present = true; break; }
+        if (!present) continue;
+        postMessage(host, ch.name, Message::make(MessageType::Server, "", text));
+    }
+}
+
+void SessionModel::onMonitorOnline(const QString &host, const QStringList &nicks)
+{
+    postMessage(host, "(server)", Message::make(MessageType::Server, "",
+        "Now online: " + nicks.join(", ")));
+}
+
+void SessionModel::onMonitorOffline(const QString &host, const QStringList &nicks)
+{
+    postMessage(host, "(server)", Message::make(MessageType::Server, "",
+        "Now offline: " + nicks.join(", ")));
 }

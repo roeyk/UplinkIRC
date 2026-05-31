@@ -975,6 +975,7 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::reactionsChanged,  this, &MainWindow::onReactionsChanged);
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
     connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
+    connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
 
     connect(m_model, &SessionModel::dccSendReceived, this,
             [this](const QString &server, const QString &fromNick,
@@ -1091,6 +1092,21 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     if (!ok || emoji.trimmed().isEmpty()) return;
                     m_model->sendReact(host, channel, msgid, emoji.trimmed());
                 });
+                {
+                    auto *cl = m_model->clientFor(host);
+                    auto *ch = m_model->channel(host, channel);
+                    if (cl && cl->hasCap("draft/message-redaction") && ch) {
+                        QString msgNick;
+                        for (const auto &m : std::as_const(ch->messages))
+                            if (m.msgid == msgid) { msgNick = m.nick; break; }
+                        if (msgNick == m_model->selfNick(host)) {
+                            connect(menu.addAction("Delete"), &QAction::triggered, this,
+                                    [this, msgid, host, channel]{
+                                m_model->sendRedact(host, channel, msgid);
+                            });
+                        }
+                    }
+                }
                 menu.exec(globalPos);
                 return true;
             }
@@ -1575,6 +1591,13 @@ void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
 {
     if (host == m_model->activeHost())
         m_nickPrefix->setText(nick);
+}
+
+void MainWindow::onMessageRedacted(const QString &host, const QString &channel)
+{
+    if (host == m_model->activeHost() &&
+        channel.toLower() == m_model->activeChannel().toLower())
+        refreshChatView(host, channel);
 }
 
 void MainWindow::onTypingReceived(const QString &host, const QString &channel,
@@ -2099,6 +2122,38 @@ void MainWindow::onInputSubmit()
                 m_model->localMessage(host, channel,
                     "Ignored nicks: " + m_config.ignoredNicks.join(", "));
             }
+        } else if (cmd == "/monitor") {
+            const QString sub  = args.section(' ', 0, 0).toLower();
+            const QString nick = args.section(' ', 1, 1).trimmed();
+            if (sub == "add" && !nick.isEmpty()) {
+                if (!m_config.monitorList.contains(nick, Qt::CaseInsensitive))
+                    m_config.monitorList.append(nick);
+                Config::save(m_config, Config::defaultPath());
+                m_model->monitorAdd(host, nick);
+                m_model->localMessage(host, channel, "Added " + nick + " to monitor list");
+            } else if ((sub == "del" || sub == "remove") && !nick.isEmpty()) {
+                m_config.monitorList.removeIf([&](const QString &n){
+                    return n.compare(nick, Qt::CaseInsensitive) == 0;
+                });
+                Config::save(m_config, Config::defaultPath());
+                m_model->monitorRemove(host, nick);
+                m_model->localMessage(host, channel, "Removed " + nick + " from monitor list");
+            } else if (sub == "list") {
+                m_model->localMessage(host, channel,
+                    m_config.monitorList.isEmpty()
+                        ? "Monitor list is empty"
+                        : "Monitor list: " + m_config.monitorList.join(", "));
+            } else if (sub == "clear") {
+                m_config.monitorList.clear();
+                Config::save(m_config, Config::defaultPath());
+                m_model->monitorClear(host);
+                m_model->localMessage(host, channel, "Monitor list cleared");
+            } else if (sub == "status") {
+                m_model->monitorStatus(host);
+            } else {
+                m_model->localMessage(host, channel,
+                    "Usage: /monitor add|del|list|clear|status [nick]");
+            }
         } else if (cmd == "/clear") {
             if (m_chatView) m_chatView->clear();
         } else if (cmd == "/help") {
@@ -2140,6 +2195,7 @@ void MainWindow::onInputSubmit()
                 "  /ignore <nick>              — suppress messages from nick",
                 "  /unignore <nick>            — stop ignoring nick",
                 "  /ignored                    — list ignored nicks",
+                "  /monitor add|del|list|clear|status [nick]  — watch list (MONITOR)",
                 "  /clear                      — clear the chat buffer",
                 "  /quote <raw>  /raw <raw>    — send a raw IRC line",
                 "  /quit [message]             — disconnect from server",
@@ -2481,6 +2537,8 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
             : e.display();
         auto *item = new QListWidgetItem(label);
         item->setData(Qt::UserRole, e.nick);
+        if (!e.account.isEmpty())
+            item->setToolTip("Account: " + e.account);
         if (m_config.ui.coloredNicks)
             item->setForeground(nickColor(e.nick));
         m_nickList->addItem(item);
@@ -2741,6 +2799,13 @@ QString MainWindow::formatMessage(const Message &msg) const
         ? QString("<span style='color:gray'>%1</span>").arg(ts)
         : QString("<a href='msgid:%1' style='color:gray;text-decoration:none'>%2</a>")
             .arg(msg.msgid.toHtmlEscaped(), ts);
+
+    if (msg.redacted) {
+        html = tsSpan + " <span style='color:gray;font-style:italic'>[message deleted]</span>";
+        if (msg.isHistory)
+            html = "<span style='opacity:0.55'>" + html + "</span>";
+        return html;
+    }
 
     switch (msg.type) {
     case MessageType::Privmsg: {

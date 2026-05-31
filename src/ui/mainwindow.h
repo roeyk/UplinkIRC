@@ -60,6 +60,7 @@ private slots:
     void onUnreadChanged    (const QString &host, const QString &channel, int count);
     void onReactionsChanged (const QString &host, const QString &channel);
     void onSelfNickChanged  (const QString &host, const QString &nick);
+    void onMessageRedacted  (const QString &host, const QString &channel);
 
     // UI → Model
     void onSidebarSelectionChanged();
