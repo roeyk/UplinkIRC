@@ -3,6 +3,52 @@
 ---
 
 <!--
+Session summary — 2026-05-30 (v0.11.0 — right-click nick menu expansion)
+
+What was built:
+  - Take Op / Take Voice: MODE -o / -v counterparts to Give Op / Give Voice
+  - Kick: prompts for an optional reason, sends KICK #channel nick :reason
+  - Ban: sends MODE #channel +b nick!*@* (simple nick-based ban mask)
+  - Kick & Ban: bans first then kicks (correct order), shares reason prompt
+  - Ping: CTCP PING with ms timestamp payload; reply shows RTT in active buffer
+    via the existing ctcpPingReply signal + onCtcpPingReply handler
+  - Copy Nick: writes nick to clipboard via qApp->clipboard()->setText(nick)
+  - Invite: QInputDialog pre-filled with the active channel; sends INVITE nick #channel
+  All seven actions added to showNickContextMenu() in mainwindow.cpp.
+  Added QClipboard include (was missing).
+
+Regressions found: none.
+Known issues remaining:
+  - DCC over internet (NAT/firewall blocks direct TCP)
+  - No in-app update check UI
+  - Per-channel logging not implemented
+  - Split view not implemented
+  - Plaintext passwords in config.toml
+  - draft/react not yet implemented
+  - draft/message-redaction not yet implemented
+
+Next priorities:
+  - Ignore list (client-side PRIVMSG/NOTICE filtering)
+  - Per-channel log files
+  - draft/message-redaction
+  - draft/react
+  - account-notify + account-tag + extended-join
+  - Monitor
+-->
+
+## v0.11.0 — 2026-05-30
+
+- Feat: **Take Op** / **Take Voice** — right-click a nick to remove op (`-o`) or voice (`-v`), complementing Give Op / Give Voice
+- Feat: **Kick** — right-click → Kick, prompts for an optional reason; sends `KICK #channel nick :reason`
+- Feat: **Ban** — right-click → Ban, sets `MODE #channel +b nick!*@*`
+- Feat: **Kick & Ban** — combines both in one action (ban applied before kick); shares reason prompt
+- Feat: **Ping** — right-click → Ping sends a CTCP PING; reply appears in the active buffer as `Ping reply from nick: Xms`
+- Feat: **Copy Nick** — right-click → Copy Nick copies the nickname to the clipboard
+- Feat: **Invite** — right-click → Invite opens a dialog pre-filled with the current channel; sends `INVITE nick #channel`
+
+---
+
+<!--
 Session summary — 2026-05-30 (v0.10.1 — hamburger Close Menu button)
 
 What was built:

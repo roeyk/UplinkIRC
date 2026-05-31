@@ -854,7 +854,7 @@ channels        = "#linux"</pre>
       <li>When someone mentions your nick, it is highlighted in red and bold.</li>
       <li>A "nick is typing…" line appears above the input bar when someone with IRCv3 typing support is composing a message.</li>
       <li><strong>Right-click any message</strong> to open a context menu — choose <strong>Reply</strong> to start a threaded reply. See <a href="#reply">Reply to messages</a>.</li>
-      <li><strong>Right-click any nick</strong> in a message to open the nick context menu (Message, Whois, Give Op, Give Voice, Version).</li>
+      <li><strong>Right-click any nick</strong> in a message to open the nick context menu — Message, Send File, Whois, Invite, Give Op, Take Op, Give Voice, Take Voice, Version, Ping, Copy Nick, and (for ops) Kick, Ban, Kick &amp; Ban.</li>
       <li>Press <kbd>Ctrl+F</kbd> to search the current buffer. See <a href="#search">Message search</a>.</li>
     </ul>
   </section>
@@ -869,8 +869,36 @@ channels        = "#linux"</pre>
       <li>Drag the divider between the chat and the nick panel to resize it — width is saved.</li>
       <li>Nicks are sorted by prefix rank: <code>~</code> owner, <code>&amp;</code> admin, <code>@</code> op, <code>%</code> halfop, <code>+</code> voice, then alphabetical.</li>
       <li>Nicks with <code>+B</code> (bot mode) show a bot indicator (🤖 or 👾).</li>
-      <li>Right-click any nick for options: Message, Whois, Give Op, Give Voice, Version.</li>
+      <li>Right-click any nick for a full action menu — see <a href="#nick-context-menu">Nick right-click menu</a> below.</li>
     </ul>
+  </section>
+
+  <!-- NICK CONTEXT MENU -->
+  <section id="nick-context-menu">
+    <h2>Nick right-click menu</h2>
+    <p>Right-clicking any nick — whether in the user list on the right or directly in the chat view — opens the same context menu. The menu title shows the nick in bold.</p>
+
+    <table>
+      <thead><tr><th>Action</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Message</strong></td><td>Opens a private message buffer for that nick in the sidebar. Equivalent to <code>/msg nick</code>.</td></tr>
+        <tr><td><strong>Send File</strong></td><td>Opens a file picker and sends the chosen file via DCC SEND. A progress dialog tracks the transfer.</td></tr>
+        <tr><td><strong>Whois</strong></td><td>Sends a <code>WHOIS</code> request. The server response appears in the server window.</td></tr>
+        <tr><td><strong>Invite</strong></td><td>Opens a dialog pre-filled with the current channel. Edit if needed and click OK to send <code>INVITE nick #channel</code>.</td></tr>
+        <tr><td><strong>Give Op</strong></td><td>Sets <code>+o</code> on the nick in the current channel. Requires op.</td></tr>
+        <tr><td><strong>Take Op</strong></td><td>Removes <code>-o</code> from the nick in the current channel. Requires op.</td></tr>
+        <tr><td><strong>Give Voice</strong></td><td>Sets <code>+v</code> on the nick in the current channel. Requires op or half-op.</td></tr>
+        <tr><td><strong>Take Voice</strong></td><td>Removes <code>-v</code> from the nick in the current channel. Requires op or half-op.</td></tr>
+        <tr><td><strong>Version</strong></td><td>Sends a CTCP VERSION request. The reply appears in the server window (the server name turns purple when it arrives).</td></tr>
+        <tr><td><strong>Ping</strong></td><td>Sends a CTCP PING with a millisecond timestamp. When the reply arrives, the round-trip time appears in the active buffer as <em>Ping reply from nick: Xms</em>.</td></tr>
+        <tr><td><strong>Copy Nick</strong></td><td>Copies the nickname to the system clipboard — paste it into the input bar or anywhere else.</td></tr>
+        <tr><td><strong>Kick</strong></td><td>Prompts for an optional reason, then sends <code>KICK #channel nick :reason</code>. Requires op.</td></tr>
+        <tr><td><strong>Ban</strong></td><td>Sets <code>MODE #channel +b nick!*@*</code> — bans the nick by name. Requires op.</td></tr>
+        <tr><td><strong>Kick &amp; Ban</strong></td><td>Bans first, then kicks. Prompts for an optional reason. Requires op. Both actions are sent in the correct order.</td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:1rem;">The same menu appears whether you right-click in the <strong>nick list panel</strong> on the right or on a <strong>nick link in the chat view</strong> (nicks in messages are clickable anchors).</p>
   </section>
 
   <!-- SIGNAL BARS -->

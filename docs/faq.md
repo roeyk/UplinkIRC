@@ -377,6 +377,25 @@ The server name (e.g. **LINUXDOJO**) in the sidebar highlights purple when there
 
 Click the server name in the sidebar to open the server window and read the messages. The highlight clears as soon as you switch to it.
 
+### What can I do from the nick right-click menu?
+
+Right-click any nick — in the user list or directly on a nick link in the chat view — to open the full action menu:
+
+| Action | Description |
+|---|---|
+| **Message** | Open a PM buffer for that nick |
+| **Send File** | Send a file via DCC |
+| **Whois** | Look up the user's info (result in server window) |
+| **Invite** | Invite the nick to a channel (dialog pre-fills current channel) |
+| **Give Op / Take Op** | Grant or remove `+o` (requires op) |
+| **Give Voice / Take Voice** | Grant or remove `+v` (requires op or half-op) |
+| **Version** | CTCP VERSION request (reply in server window) |
+| **Ping** | CTCP PING — shows round-trip time in the active buffer |
+| **Copy Nick** | Copy the nickname to clipboard |
+| **Kick** | Kick from current channel with optional reason (requires op) |
+| **Ban** | Ban `nick!*@*` in current channel (requires op) |
+| **Kick & Ban** | Ban then kick in the correct order (requires op) |
+
 ### How do I check another user's IRC client version?
 
 Right-click the user in the nick list and choose **Version**, or type:
@@ -386,6 +405,47 @@ Right-click the user in the nick list and choose **Version**, or type:
 ```
 
 This sends a `CTCP VERSION` request. The reply appears in the **server window** (click the server name in the sidebar to see it). The server name will turn purple to let you know a reply arrived.
+
+### How do I ping another user to check their latency?
+
+Right-click their nick and choose **Ping**. UplinkIRC sends a CTCP PING with a millisecond timestamp. When the reply arrives, the round-trip time is printed in the active buffer:
+
+```
+Ping reply from alice: 42ms
+```
+
+You can also use the slash command:
+
+```
+/ping alice
+```
+
+### How do I kick or ban someone?
+
+Right-click their nick and choose **Kick**, **Ban**, or **Kick & Ban**. You need channel op (`@`) for these to work.
+
+- **Kick** — prompts for an optional reason, then sends `KICK #channel nick :reason`
+- **Ban** — sets `MODE #channel +b nick!*@*` (bans the nick from the channel regardless of hostname or ident)
+- **Kick & Ban** — applies the ban first, then kicks (correct order so the user cannot rejoin before the ban lands)
+
+You can also use slash commands:
+
+```
+/kick baduser flooding
+/ban baduser!*@*
+/mode #uplink +b baduser!*@*
+```
+
+### How do I invite someone to a channel?
+
+Right-click their nick and choose **Invite**. A dialog opens pre-filled with the current channel — click OK to send the invite, or type a different channel name first.
+
+You can also use:
+
+```
+/invite alice
+/invite alice #linux
+```
 
 ### How do I open the server window?
 

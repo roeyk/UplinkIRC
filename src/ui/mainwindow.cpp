@@ -19,6 +19,7 @@
 #include "config/config.h"
 
 #include <QApplication>
+#include <QClipboard>
 #include <QCloseEvent>
 #include <QKeyEvent>
 #include <QToolBar>
@@ -2191,9 +2192,23 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
         m_model->sendRaw(host, "WHOIS " + nick);
     });
 
+    connect(menu.addAction("Invite"), &QAction::triggered, this, [this, host, channel, nick]{
+        bool ok;
+        const QString target = QInputDialog::getText(
+            this, "Invite " + nick, "Channel:", QLineEdit::Normal,
+            (channel.isEmpty() || channel == "(server)") ? QString() : channel, &ok);
+        if (!ok || target.isEmpty()) return;
+        m_model->sendRaw(host, "INVITE " + nick + " " + target);
+    });
+
     connect(menu.addAction("Give Op"), &QAction::triggered, this, [this, host, channel, nick]{
         if (!channel.isEmpty() && channel != "(server)")
             m_model->sendRaw(host, "MODE " + channel + " +o " + nick);
+    });
+
+    connect(menu.addAction("Take Op"), &QAction::triggered, this, [this, host, channel, nick]{
+        if (!channel.isEmpty() && channel != "(server)")
+            m_model->sendRaw(host, "MODE " + channel + " -o " + nick);
     });
 
     connect(menu.addAction("Give Voice"), &QAction::triggered, this, [this, host, channel, nick]{
@@ -2201,8 +2216,46 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             m_model->sendRaw(host, "MODE " + channel + " +v " + nick);
     });
 
+    connect(menu.addAction("Take Voice"), &QAction::triggered, this, [this, host, channel, nick]{
+        if (!channel.isEmpty() && channel != "(server)")
+            m_model->sendRaw(host, "MODE " + channel + " -v " + nick);
+    });
+
     connect(menu.addAction("Version"), &QAction::triggered, this, [this, host, nick]{
         m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01VERSION\x01");
+    });
+
+    connect(menu.addAction("Ping"), &QAction::triggered, this, [this, host, nick]{
+        const qint64 ts = QDateTime::currentMSecsSinceEpoch();
+        m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01PING " + QString::number(ts) + "\x01");
+    });
+
+    connect(menu.addAction("Copy Nick"), &QAction::triggered, this, [nick]{
+        qApp->clipboard()->setText(nick);
+    });
+
+    menu.addSeparator();
+
+    connect(menu.addAction("Kick"), &QAction::triggered, this, [this, host, channel, nick]{
+        if (channel.isEmpty() || channel == "(server)") return;
+        bool ok;
+        QString reason = QInputDialog::getText(this, "Kick " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
+        if (!ok) return;
+        m_model->sendRaw(host, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
+    });
+
+    connect(menu.addAction("Ban"), &QAction::triggered, this, [this, host, channel, nick]{
+        if (!channel.isEmpty() && channel != "(server)")
+            m_model->sendRaw(host, "MODE " + channel + " +b " + nick + "!*@*");
+    });
+
+    connect(menu.addAction("Kick && Ban"), &QAction::triggered, this, [this, host, channel, nick]{
+        if (channel.isEmpty() || channel == "(server)") return;
+        bool ok;
+        QString reason = QInputDialog::getText(this, "Kick & Ban " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
+        if (!ok) return;
+        m_model->sendRaw(host, "MODE " + channel + " +b " + nick + "!*@*");
+        m_model->sendRaw(host, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
     });
 
     menu.exec(globalPos);

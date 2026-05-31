@@ -84,6 +84,24 @@ if [[ -z "$QMAKE" ]]; then
     echo "WARNING: qmake not found in PATH — Qt plugin may not bundle libraries correctly"
 fi
 
+# Some Qt imageformat plugins (e.g. kimg_jxr from kimageformats) depend on
+# libraries not present on the build host (e.g. libjxrglue). Provide stub
+# shared libraries for any missing deps so linuxdeploy-plugin-qt can proceed.
+# The stubs are compiled into a temp dir added to LD_LIBRARY_PATH.
+STUB_DIR=$(mktemp -d)
+trap 'rm -rf "$STUB_DIR"' EXIT
+QT_PLUGIN_SRC=$(${QMAKE} -query QT_INSTALL_PLUGINS 2>/dev/null || echo "/usr/lib/qt6/plugins")
+while IFS= read -r missing; do
+    soname="$missing"
+    echo "==> Creating stub for missing dep: $soname"
+    printf 'void _stub(void){}' | \
+        gcc -x c -shared -fPIC -o "$STUB_DIR/$soname" - -Wl,-soname,"$soname"
+done < <(find "$QT_PLUGIN_SRC" -name "*.so" -exec ldd {} 2>/dev/null \; \
+         | awk '/not found/{print $1}' | sort -u)
+if [[ -n "$(ls -A "$STUB_DIR" 2>/dev/null)" ]]; then
+    export LD_LIBRARY_PATH="$STUB_DIR:${LD_LIBRARY_PATH:-}"
+fi
+
 export OUTPUT="UplinkIRC-$VERSION-$ARCH.AppImage"
 
 # If UPDATE_INFORMATION is set (e.g. by CI), embed zsync metadata for auto-update.

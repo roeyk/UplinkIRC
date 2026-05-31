@@ -160,6 +160,45 @@ Click **Yes**, choose a save location, and a progress dialog tracks the download
 
 ---
 
+## Nick list right-click menu
+
+Right-clicking any nick — in the user list or directly on a nick link in the chat view — opens the same context menu. The title shows the nick in bold.
+
+| Action | What it does |
+|---|---|
+| **Message** | Opens a private message buffer in the sidebar. Equivalent to `/msg nick`. |
+| **Send File** | Opens a file picker and sends the file via DCC SEND. |
+| **Whois** | Sends `WHOIS nick`. The response appears in the server window. |
+| **Invite** | Opens a dialog pre-filled with the current channel. Edit if needed and click OK to send `INVITE nick #channel`. |
+| **Give Op** | Sets `+o` on the nick. Requires op. |
+| **Take Op** | Removes `-o` from the nick. Requires op. |
+| **Give Voice** | Sets `+v` on the nick. Requires op or half-op. |
+| **Take Voice** | Removes `-v` from the nick. Requires op or half-op. |
+| **Version** | Sends a CTCP VERSION request. Reply appears in the server window. |
+| **Ping** | Sends a CTCP PING. Reply shows RTT in the active buffer: `Ping reply from nick: Xms`. |
+| **Copy Nick** | Copies the nickname to the clipboard. |
+| **Kick** | Prompts for an optional reason, then kicks. Requires op. |
+| **Ban** | Sets `MODE #channel +b nick!*@*`. Requires op. |
+| **Kick & Ban** | Bans first, then kicks (correct order). Prompts for reason. Requires op. |
+
+### Examples
+
+```
+# Right-click alice → Invite
+# Dialog pre-filled: #uplink   → click OK
+# Sends: INVITE alice #uplink
+
+# Right-click spammer → Kick & Ban
+# Reason dialog: "flooding"
+# Sends: MODE #uplink +b spammer!*@*
+#         KICK #uplink spammer :flooding
+
+# Right-click alice → Ping
+# Buffer: Ping reply from alice: 42ms
+```
+
+---
+
 ## Raw IRC protocol
 
 | Command | Description |
