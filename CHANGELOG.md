@@ -19,6 +19,58 @@ Known issues: unchanged from v0.15.0.
 Next priorities: unchanged.
 -->
 
+<!--
+Session summary — 2026-05-31 (v0.16.0 — IRCv3 sprint: 4 feature areas)
+
+What was built:
+  - draft/message-redaction: REDACT command support. Right-click own message timestamp →
+    Delete (only shown when CAP acked). IrcClient::sendRedact(); sessionmodel::onMessageRedacted()
+    finds msg by msgid, sets redacted=true, emits messageRedacted(host, channel); mainwindow
+    calls refreshChatView when active buffer is affected. formatMessage renders redacted messages
+    as "[message deleted]" in grey italic (early return before switch statement).
+    Message struct gained redacted bool field.
+
+  - account-notify + extended-join: NickEntry gained account QString field (empty = unknown).
+    IrcClient handles ACCOUNT command → accountChanged signal. Extended JOIN params[1] = account
+    also fires accountChanged. SessionModel::onAccountChanged iterates all channels, calls
+    setNickAccount, emits nickListChanged. Channel::setNickAccount helper added. Nick list tooltip
+    shows "Account: <name>" when set.
+
+  - WHOX: Changed "WHO <channel>" → "WHO <channel> %cnfa,42" (token 42). Added 354
+    RPL_WHOSPCRPL handler: params = [me, "42", channel, nick, flags, account]. Emits both
+    whoEntryReceived (bot flag reuse) and accountChanged when account != "0". Backward compat:
+    352 handler still present for servers that don't support WHOX.
+
+  - Monitor: IrcClient stores m_monitorList; setMonitorList() called from attachClient using
+    m_config.monitorList. MONITOR + list sent after RPL_WELCOME (case 1). Numerics 730/731/732/
+    733/734 handled. SessionModel::onMonitorOnline/onMonitorOffline post to (server) buffer.
+    Config::monitorList (QStringList) added with [monitor] nicks = [...] in config.toml.
+    SessionModel::monitorAdd/Remove/Clear/Status forward to IrcClient. Slash commands:
+    /monitor add|del|remove|list|clear|status in mainwindow onInputSubmit.
+
+  - invite-notify: IrcClient handles INVITE command → inviteNotify signal (was previously
+    unhandled). SessionModel::onInviteNotify: self-invite → (server) buffer, broadcast invite
+    → channel buffer.
+
+  - setname: IrcClient handles SETNAME → setNameReceived signal. SessionModel::onSetNameReceived
+    posts "nick changed their realname to ..." to all shared channels.
+
+  - userhost-in-names: CAP added to desired list. Channel::setNicks strips !user@host suffix
+    (bang check after prefix stripping).
+
+  - All 7 new CAPs added to desired list: account-notify, extended-join, invite-notify, setname,
+    userhost-in-names, draft/message-redaction. (MONITOR is a command, not a CAP.)
+
+Regressions: none. Clean build throughout.
+Known issues:
+  - account-tag (per-message account= tag) not yet displayed — data is in message-tags, just
+    not surfaced in the UI.
+  - message-redaction "Delete" only for own messages (server will reject unauthorized redactions;
+    no op-redact UI yet).
+  - Monitor list is global across all servers in config; per-server watch lists not supported.
+Next priorities: STS, account-tag display, password keychain, DCC passive/NAT traversal.
+-->
+
 ## v0.16.0 — 2026-05-31
 
 - **`draft/message-redaction`** — right-click any of your own message timestamps → **Delete** to send a `REDACT` command; redacted messages display as `[message deleted]` in grey italic. Only shown when the server acknowledges the CAP.

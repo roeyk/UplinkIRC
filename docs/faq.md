@@ -688,3 +688,43 @@ UplinkIRC fetches the page title and thumbnail for URLs posted in chat. If a pre
 ### Previews disappear when I switch channels
 
 Preview cards are stored per-channel and reinjected when you switch back, so they survive channel switches. If a card is missing after switching back, the fetch may still be in progress — wait a moment and it will appear.
+
+---
+
+## Account tracking & Monitor
+
+### How do I see someone's NickServ account?
+
+Hover over their nick in the nick list panel on the right — a tooltip appears showing `Account: <name>` if the server has reported their account. This is populated via three mechanisms:
+
+- **On join** — if the server supports `extended-join`, the account name arrives with the JOIN message.
+- **Login/logout** — `account-notify` sends an `ACCOUNT` command when any nick in a shared channel authenticates or logs out.
+- **WHO scan** — UplinkIRC sends a WHOX query (`WHO #channel %cnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field.
+
+If the tooltip is absent, the server may not support any of these capabilities, or the user has not authenticated with services.
+
+### How do I watch for a nick coming online?
+
+Use the `/monitor` command. UplinkIRC uses the IRCv3 MONITOR system — more efficient than the older ISON polling approach.
+
+```
+/monitor add alice       — start watching alice
+/monitor del alice       — stop watching alice
+/monitor list            — show everyone you're watching
+/monitor clear           — remove all watched nicks
+/monitor status          — force the server to report current online/offline status
+```
+
+When a watched nick connects or disconnects, a status line appears in the server buffer: `Now online: alice` / `Now offline: alice`.
+
+The watch list is saved to `config.toml` under `[monitor] nicks = [...]` and is automatically resent on every reconnect.
+
+**Note:** if you have multiple servers configured, the same watch list is sent to all of them.
+
+### I deleted a message but it still shows on another client
+
+Message deletion uses the IRCv3 `draft/message-redaction` capability. If the other client does not support it, deleted messages will still display there. In UplinkIRC, a deleted message shows as `[message deleted]` in grey italic. You can only delete your own messages; operators on the server may be able to delete others' messages directly via `/raw REDACT`.
+
+### The "Delete" option doesn't appear on my messages
+
+Two conditions must both be true: the message must be one you sent, and the server must have acknowledged the `draft/message-redaction` capability during the CAP handshake. If either condition fails, the option is not shown. Check the server buffer on connect — if you don't see the CAP listed, the server doesn't support it.

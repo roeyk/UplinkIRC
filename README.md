@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/UplinkIRC-0.15.0-x86_64.AppImage">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/UplinkIRC-0.16.0-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/UplinkIRC-v0.15.0-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/UplinkIRC-v0.16.0-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/UplinkIRC-v0.15.0-windows-x64.zip">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/UplinkIRC-v0.16.0-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/UplinkIRC-v0.15.0-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/UplinkIRC-v0.16.0-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -100,7 +100,7 @@
 
 | Feature | Details |
 |---|---|
-| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `labeled-response`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl` |
+| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `labeled-response`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl`, `account-notify`, `extended-join`, `invite-notify`, `setname`, `userhost-in-names`, `draft/message-redaction` |
 | **Chat history replay** | Requests the last 100 messages via `CHATHISTORY LATEST` on join. History messages display dimmed with original timestamps. |
 | **Bouncer support** | First-class ZNC and soju: `znc.in/playback`, `soju.im/bouncer-networks`, `soju.im/read`, self-message echo. |
 | **mIRC formatting** | Bold, italic, underline, strikethrough, reverse, 16 IRC colors (fg + bg). |
@@ -130,6 +130,9 @@
 | **Typing indicator** | IRCv3 `draft/typing`. Shows `nick is typing…` as a transparent overlay on the chat background. Sends your own state debounced. |
 | **Ignore list** | `/ignore <nick>` suppresses all messages from a nick (PRIVMSG, NOTICE, ACTION). `/unignore <nick>` removes. `/ignored` lists. Right-click → **Ignore / Unignore**. Persists in config. |
 | **Reactions** | IRCv3 `draft/react`. Right-click a message timestamp → **React**. Incoming reactions shown inline below the message as emoji + count. `/react <emoji>` with a reply target selected. |
+| **Message deletion** | IRCv3 `draft/message-redaction`. Right-click your own message timestamp → **Delete**. Redacted messages show `[message deleted]` in all clients that support it. |
+| **Account tracking** | `account-notify` + `extended-join`. NickServ account shown as a tooltip when you hover a nick in the nick list. Updated in real time as users authenticate or log out. |
+| **Watch list (Monitor)** | IRCv3 MONITOR. Use `/monitor add <nick>` to watch for someone coming online. Status changes post to the server buffer. List persists in config. |
 | **Per-channel logging** | All messages written to `~/.config/uplinkirc/logs/<server>/<channel>.log`. Toggle in **Preferences → Log Messages to Disk**. |
 | **Reply to messages** | Right-click a timestamp → **Reply**. Outgoing message carries `+draft/reply` tag. Received replies show `↩ origNick` inline. |
 | **Message search** | **Ctrl+F** opens a search bar. Enter = next match, Shift+Enter = previous, Escape = close. |
@@ -362,6 +365,7 @@ channels = "#linux, #archlinux"
 | `/ignore <nick>` | Suppress all messages from a nick |
 | `/unignore <nick>` | Stop ignoring a nick |
 | `/ignored` | List ignored nicks |
+| `/monitor add\|del\|list\|clear\|status [nick]` | Manage the online/offline watch list |
 | `/react <emoji>` | React to the selected message |
 | `/ping <nick>` | CTCP PING — shows round-trip time in ms |
 | `/away [message]` | Set away status |

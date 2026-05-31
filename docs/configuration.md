@@ -445,6 +445,29 @@ Use `/ignore <nick>`, `/unignore <nick>`, and `/ignored` to manage the list from
 
 ---
 
+## The `[monitor]` block
+
+Stores your IRCv3 **Monitor** watch list — nicks to watch for coming online or going offline. When any watched nick connects or disconnects, a status line appears in the server buffer: `Now online: nick` / `Now offline: nick`.
+
+The block is written automatically when you use `/monitor add` or `/monitor del`.
+
+```toml
+[monitor]
+nicks = ["friend1", "alice", "bob"]
+```
+
+The list is sent to all connected servers on every connect and reconnect.
+
+| Command | Description |
+|---|---|
+| `/monitor add <nick>` | Start watching a nick |
+| `/monitor del <nick>` | Stop watching a nick |
+| `/monitor list` | Show the current watch list |
+| `/monitor clear` | Remove all watched nicks |
+| `/monitor status` | Ask the server for current online/offline status of all watched nicks |
+
+---
+
 ## Multiple servers
 
 Add as many `[[server]]` blocks as you need. Each server appears in the sidebar independently and connects on launch.
