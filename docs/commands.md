@@ -280,8 +280,9 @@ Right-clicking a message **timestamp** (the `hh:mm` at the left of each line) op
 |---|---|
 | `/raw <line>` | Send a raw IRC protocol line directly to the server |
 | `/quote <line>` | Alias for `/raw` |
+| `/<ANY>` | Any unrecognized slash command is sent as a raw IRC line automatically |
 
-Use these when you need to send a command that UplinkIRC does not have a built-in shortcut for yet.
+Use these when you need to send a command that UplinkIRC does not have a built-in shortcut for yet. You can also just type the command directly — unrecognized `/CMD` inputs are passed through to the server as-is.
 
 ### Examples
 
@@ -289,6 +290,10 @@ Use these when you need to send a command that UplinkIRC does not have a built-i
 /raw MODE #uplink +m
 /raw INVITE alice #uplink
 /quote JOIN #test
+
+/REHASH
+/SAMODE #uplink +o alice
+/GLOBOPS Hello opers
 ```
 
 ---

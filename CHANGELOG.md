@@ -3,6 +3,25 @@
 ---
 
 <!--
+Session summary — 2026-05-31 (v0.16.1 — raw command passthrough)
+
+What was done:
+  - Unrecognized slash commands now pass through directly as raw IRC lines.
+    /REHASH → sends REHASH, /SAMODE #channel +o nick → sends SAMODE #channel +o nick, etc.
+    Previously showed "Unknown command" error. One-line change in onInputSubmit() else branch.
+
+Regressions: none.
+Known issues: unchanged from v0.16.0.
+Next priorities: unchanged.
+-->
+
+## v0.16.1 — 2026-05-31
+
+- **Raw command passthrough** — unrecognized slash commands are now sent directly to the server as raw IRC lines. `/REHASH`, `/SAMODE #channel +o nick`, `/GLOBOPS`, and any other server-specific or oper command work without needing `/quote` or `/raw` as a prefix. `/quote` and `/raw` still work as before.
+
+---
+
+<!--
 Session summary — 2026-05-31 (housekeeping — username rename)
 
 What was done:

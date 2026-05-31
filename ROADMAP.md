@@ -27,6 +27,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Hamburger restored as dropdown — ☰ opens About UplinkIRC, Documentation, Preferences, Open Config, Reload Config
 - [x] Open Config / Reload Config — Open Config opens config.toml in system editor; Reload Config re-applies all settings from disk without restarting
 - [x] Input commands — /join, /j, /part, /nick, /me, /msg, /quote, /raw, /quit, /ping, /invite, /mode, /op, /deop, /voice, /devoice, /ban, /unban, /clear
+- [x] Raw command passthrough — unrecognized /CMD inputs sent directly as raw IRC lines; /REHASH, /SAMODE, /GLOBOPS etc. work without /quote prefix (v0.16.1)
 - [x] System tray — minimize to tray on close, left-click shows window, right-click menu (Show/Quit)
 - [x] Unread badge — tray icon gets red dot on unread messages; green dot for mention/PM when window not focused
 - [x] Theme loader — 55 TOML themes, applies as QSS stylesheet, live switching from hamburger
