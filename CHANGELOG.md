@@ -37,6 +37,64 @@ Next priorities:
   - Per-channel log files
 -->
 
+<!--
+Session summary — 2026-05-30 (v0.10.0 — echo-message, message search, draft/reply)
+
+What was built:
+  - echo-message CAP: "echo-message" added to desired CAPs in handleCap().
+    When the server acks it, sendMessage() and sendAction() skip the local
+    manual echo so messages are not duplicated. IrcClient::privmsg() gains
+    a replyToMsgid param (used by draft/reply). onMessage() in SessionModel
+    now handles isSelf detection for PM routing: if nick == selfNick the PM
+    buffer key is `target` (the conversation partner), not `nick` (ourselves).
+    This also fixes ZNC self-message PM routing which had the same bug.
+
+  - Message search (Ctrl+F): search bar widget added above the input bar in
+    m_rightContent VBox, hidden by default. showSearchBar() shows + focuses it.
+    eventFilter on m_input and m_chatView both intercept Ctrl+F. eventFilter
+    on m_searchInput intercepts Escape (close+clear) and Enter/Shift+Enter
+    (doSearch forward/backward with wrap-around). textChanged -> find from
+    start. Ctrl+F also works when the chat view has focus via m_chatView
+    KeyPress event filter. Escape in input clears pending reply if one is set.
+
+  - draft/reply: replyTo added to Message struct and make(). Signal chain
+    updated: messageReceived and noticeReceived gain replyTo param; BatchInfo::Msg
+    stores replyTo; deliverBatch passes it. IrcClient::privmsg() prepends
+    @+draft/reply=<msgid> when replyToMsgid is set. SessionModel::sendMessage()
+    accepts replyToMsgid (default empty). clearReplyBar() resets state and hides
+    the bar; called on channel switch and after submit. msgidAtViewPos() scans
+    QTextBlock fragments for msgid: anchors — works regardless of where user
+    clicks in the message line. formatMessage() embeds msgid as a timestamp
+    anchor for Privmsg/Action/Notice and shows ↩ origNick when replyTo is set
+    (linear scan of ch->messages for the originator nick). Right-click in chat
+    viewport shows "Reply" context menu when a msgid is found at click position.
+
+  - Version bump: 0.9.6 → 0.10.0 in CMakeLists.txt. Docs updated project-wide:
+    keyboard-shortcuts.md (Ctrl+F live, search table, Escape), ircv3.md
+    (echo-message + msgid + draft/reply graduated from Planned to Active),
+    howto.html (two new sections + chat-area bullets), faq.md (two new Q&As,
+    AppImage version ref), README.md (download button URLs).
+
+Regressions found: none.
+Known issues remaining (unchanged):
+  - DCC over internet (NAT/firewall blocks direct TCP)
+  - No in-app update check UI
+  - Per-channel logging not implemented
+  - Split view not implemented
+  - Plaintext passwords in config.toml
+  - draft/react not yet implemented
+  - draft/message-redaction not yet implemented
+
+Next priorities:
+  - Per-channel log files (~/.config/uplinkirc/logs/)
+  - draft/message-redaction (requires msgid — now done)
+  - draft/react — emoji reactions (requires msgid — now done)
+  - account-notify + account-tag + extended-join
+  - Monitor (online/offline watch list)
+  - chghost
+  - STS (Strict Transport Security)
+-->
+
 ## v0.10.0 — 2026-05-30
 
 - Feat: `echo-message` CAP — server echoes sent messages back with `msgid` and `server-time`; duplicate local echo suppressed; self-echoed PMs route to the correct conversation buffer

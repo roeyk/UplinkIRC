@@ -124,11 +124,11 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## Planned — Medium Term
 
 - [x] Hanging indent — wrapped message lines align past the timestamp+nick column; toggleable from Preferences and `hanging_indent` config key; uses QTextBlockFormat for correct Qt rendering
-- [ ] Message search — search within current channel buffer
+- [x] Message search — Ctrl+F opens search bar; Enter/Shift+Enter next/prev with wrap; Escape closes
 - [ ] Logging — per-channel log files at `~/.config/uplinkirc/logs/`
 - [x] msgid — IRCv3 unique message IDs stored on every received message; full signal chain (messageReceived, noticeReceived, actionReceived, batch delivery); prerequisite for reply threading, reactions, and redaction
-- [ ] echo-message — server echoes sent messages back; essential for multi-client accuracy and self-message confirmation
-- [ ] draft/reply — client tag marking a message as a reply to a specific msgid; threaded replies
+- [x] echo-message — server echoes sent messages back; duplicate local echo suppressed; PM routing corrected for self-echoes; also fixes ZNC self-message PM routing
+- [x] draft/reply — right-click any message → Reply; reply bar above input; ↩ origNick shown on received replies; @+draft/reply= tag sent on outgoing messages
 - [ ] draft/message-redaction — delete/hide a sent message; requires msgid
 - [ ] account-notify + account-tag + extended-join — track NickServ account per nick; show account on JOIN
 - [ ] Monitor — standardized online/offline watch list (replaces ISON polling)
