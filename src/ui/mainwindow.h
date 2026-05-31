@@ -89,6 +89,10 @@ private:
     QString    formatMessage(const Message &msg) const;
     void       showNickContextMenu(const QString &nick, const QPoint &globalPos);
     static QColor nickColor(const QString &nick);
+    QString    msgidAtViewPos(const QPoint &viewPos) const;
+    void       doSearch(bool backward);
+    void       showSearchBar();
+    void       clearReplyBar();
 
     // Tab completion
     void handleTabComplete();
@@ -146,6 +150,11 @@ private:
     QToolButton  *m_hamburger;
     QLabel       *m_appLabel{nullptr};
     QLabel       *m_typingLabel{nullptr};
+    QWidget      *m_searchBar{nullptr};
+    QLineEdit    *m_searchInput{nullptr};
+    QWidget      *m_replyBar{nullptr};
+    QLabel       *m_replyLabel{nullptr};
+    QString       m_pendingReplyMsgid;
     AboutDialog       *m_aboutDialog{nullptr};
     DocsDialog        *m_docsDialog{nullptr};
     PreferencesDialog *m_prefsDialog{nullptr};

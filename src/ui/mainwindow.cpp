@@ -56,6 +56,8 @@
 #include <QMouseEvent>
 #include <QTextDocument>
 #include <QTextCursor>
+#include <QTextBlock>
+#include <QTextFragment>
 #include <QBuffer>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -796,7 +798,62 @@ void MainWindow::setupInputBar()
     m_typingLabel->setContentsMargins(8, 2, 8, 2);
     m_typingLabel->setVisible(m_config.ui.typingIndicator);
 
+    // Search bar (Ctrl+F)
+    m_searchBar = new QWidget;
+    m_searchBar->setObjectName("searchBar");
+    {
+        auto *hbox = new QHBoxLayout(m_searchBar);
+        hbox->setContentsMargins(4, 2, 4, 2);
+        hbox->setSpacing(4);
+        m_searchInput = new QLineEdit;
+        m_searchInput->setPlaceholderText("Search in buffer…");
+        m_searchInput->installEventFilter(this);
+        connect(m_searchInput, &QLineEdit::textChanged, this, [this](const QString &text){
+            if (!text.isEmpty()) {
+                QTextCursor c(m_chatView->document());
+                c.movePosition(QTextCursor::Start);
+                m_chatView->setTextCursor(c);
+                m_chatView->find(text);
+            } else {
+                m_chatView->setTextCursor(QTextCursor(m_chatView->document()));
+            }
+        });
+        auto *closeBtn = new QToolButton;
+        closeBtn->setText("✕");
+        closeBtn->setFixedSize(22, 22);
+        closeBtn->setAutoRaise(true);
+        connect(closeBtn, &QToolButton::clicked, this, [this]{
+            m_searchBar->hide();
+            m_chatView->setTextCursor(QTextCursor(m_chatView->document()));
+            m_input->setFocus();
+        });
+        hbox->addWidget(m_searchInput, 1);
+        hbox->addWidget(closeBtn);
+    }
+    m_searchBar->hide();
+
+    // Reply indicator bar
+    m_replyBar = new QWidget;
+    m_replyBar->setObjectName("replyBar");
+    {
+        auto *hbox = new QHBoxLayout(m_replyBar);
+        hbox->setContentsMargins(8, 2, 4, 2);
+        hbox->setSpacing(4);
+        m_replyLabel = new QLabel;
+        m_replyLabel->setObjectName("replyLabel");
+        auto *closeBtn = new QToolButton;
+        closeBtn->setText("✕");
+        closeBtn->setFixedSize(18, 18);
+        closeBtn->setAutoRaise(true);
+        connect(closeBtn, &QToolButton::clicked, this, &MainWindow::clearReplyBar);
+        hbox->addWidget(m_replyLabel, 1);
+        hbox->addWidget(closeBtn);
+    }
+    m_replyBar->hide();
+
     auto *layout = qobject_cast<QVBoxLayout *>(m_rightContent->layout());
+    layout->addWidget(m_searchBar);
+    layout->addWidget(m_replyBar);
     layout->addWidget(m_typingLabel);
     layout->addWidget(bar);
 
@@ -972,6 +1029,34 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                         m_chatView->viewport()->mapToGlobal(me->position().toPoint()));
                     return true;
                 }
+                const QString msgid = msgidAtViewPos(me->position().toPoint());
+                if (!msgid.isEmpty()) {
+                    QMenu menu(m_chatView->viewport());
+                    connect(menu.addAction("Reply"), &QAction::triggered, this, [this, msgid]{
+                        const QString host    = m_model->activeHost();
+                        const QString channel = m_model->activeChannel();
+                        auto *ch = m_model->channel(host, channel);
+                        QString nick, preview;
+                        if (ch) {
+                            for (const auto &msg : std::as_const(ch->messages)) {
+                                if (msg.msgid == msgid) {
+                                    nick    = msg.nick;
+                                    preview = msg.text.left(60)
+                                            + (msg.text.length() > 60 ? "…" : "");
+                                    break;
+                                }
+                            }
+                        }
+                        m_pendingReplyMsgid = msgid;
+                        m_replyLabel->setText(nick.isEmpty()
+                            ? "↩ Replying"
+                            : QString("↩ %1: %2").arg(nick, preview));
+                        m_replyBar->show();
+                        m_input->setFocus();
+                    });
+                    menu.exec(m_chatView->viewport()->mapToGlobal(me->position().toPoint()));
+                    return true;
+                }
             }
         } else if (event->type() == QEvent::Leave) {
             m_hoveredUrl.clear();
@@ -984,6 +1069,29 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     if (obj == m_chatView && event->type() == QEvent::Resize) {
         repositionTypingLabel();
         return false;
+    }
+
+    if (obj == m_chatView && event->type() == QEvent::KeyPress) {
+        auto *ke = static_cast<QKeyEvent *>(event);
+        if (ke->key() == Qt::Key_F && (ke->modifiers() & Qt::ControlModifier)) {
+            showSearchBar();
+            return true;
+        }
+        return false;
+    }
+
+    if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
+        auto *ke = static_cast<QKeyEvent *>(event);
+        if (ke->key() == Qt::Key_Escape) {
+            m_searchBar->hide();
+            m_chatView->setTextCursor(QTextCursor(m_chatView->document()));
+            m_input->setFocus();
+            return true;
+        }
+        if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {
+            doSearch(ke->modifiers() & Qt::ShiftModifier);
+            return true;
+        }
     }
 
     if (obj != m_input || event->type() != QEvent::KeyPress)
@@ -1016,6 +1124,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 return true;
             }
         }
+    }
+
+    if (ke->key() == Qt::Key_F && (ke->modifiers() & Qt::ControlModifier)) {
+        showSearchBar();
+        return true;
+    }
+
+    if (ke->key() == Qt::Key_Escape && !m_pendingReplyMsgid.isEmpty()) {
+        clearReplyBar();
+        return true;
     }
 
     if (ke->key() == Qt::Key_Tab) {
@@ -1909,7 +2027,9 @@ void MainWindow::onInputSubmit()
         }
     }
 
-    m_model->sendMessage(host, channel, outText);
+    const QString replyMsgid = m_pendingReplyMsgid;
+    clearReplyBar();
+    m_model->sendMessage(host, channel, outText, replyMsgid);
 }
 
 // ---------------------------------------------------------------------------
@@ -1918,6 +2038,7 @@ void MainWindow::onInputSubmit()
 
 void MainWindow::switchToChannel(const QString &host, const QString &channel)
 {
+    clearReplyBar();
     m_model->setActive(host, channel);
     refreshChatView(host, channel);
     refreshNickList(host, channel);
@@ -2186,6 +2307,50 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
     }
 }
 
+QString MainWindow::msgidAtViewPos(const QPoint &viewPos) const
+{
+    QTextCursor cur = m_chatView->cursorForPosition(viewPos);
+    QTextBlock block = cur.block();
+    for (auto it = block.begin(); !it.atEnd(); ++it) {
+        const QTextFragment frag = it.fragment();
+        const QTextCharFormat fmt = frag.charFormat();
+        if (fmt.isAnchor()) {
+            const QString href = fmt.anchorHref();
+            if (href.startsWith("msgid:"))
+                return href.mid(6);
+        }
+    }
+    return {};
+}
+
+void MainWindow::doSearch(bool backward)
+{
+    const QString text = m_searchInput->text();
+    if (text.isEmpty()) return;
+    QTextDocument::FindFlags flags;
+    if (backward) flags |= QTextDocument::FindBackward;
+    if (!m_chatView->find(text, flags)) {
+        QTextCursor c(m_chatView->document());
+        c.movePosition(backward ? QTextCursor::End : QTextCursor::Start);
+        m_chatView->setTextCursor(c);
+        m_chatView->find(text, flags);
+    }
+}
+
+void MainWindow::showSearchBar()
+{
+    m_searchBar->show();
+    m_searchInput->setFocus();
+    m_searchInput->selectAll();
+}
+
+void MainWindow::clearReplyBar()
+{
+    m_pendingReplyMsgid.clear();
+    if (m_replyLabel) m_replyLabel->setText({});
+    if (m_replyBar)   m_replyBar->hide();
+}
+
 void MainWindow::appendMessage(const Message &msg, bool autoPreview)
 {
     const bool isText = (msg.type == MessageType::Privmsg ||
@@ -2340,6 +2505,12 @@ QString MainWindow::formatMessage(const Message &msg) const
     };
 
     QString html;
+    // Timestamp span — double as msgid anchor when present
+    const QString tsSpan = msg.msgid.isEmpty()
+        ? QString("<span style='color:gray'>%1</span>").arg(ts)
+        : QString("<a href='msgid:%1' style='color:gray;text-decoration:none'>%2</a>")
+            .arg(msg.msgid.toHtmlEscaped(), ts);
+
     switch (msg.type) {
     case MessageType::Privmsg: {
         const QString color = m_config.ui.coloredNicks
@@ -2366,23 +2537,35 @@ QString MainWindow::formatMessage(const Message &msg) const
                                     QRegularExpression::CaseInsensitiveOption);
             textHtml.replace(snRe, "<span style='color:red;font-weight:bold'>\\1</span>");
         }
-        html = QString("<span style='color:gray'>%1</span> %2 %3")
-            .arg(ts, nickAnchor, textHtml);
+        // Reply reference
+        QString replySpan;
+        if (!msg.replyTo.isEmpty()) {
+            auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
+            QString origNick;
+            if (ch) {
+                for (const auto &orig : std::as_const(ch->messages))
+                    if (orig.msgid == msg.replyTo) { origNick = orig.nick; break; }
+            }
+            replySpan = origNick.isEmpty()
+                ? "<span style='color:#6c7086;font-size:small'>↩</span> "
+                : QString("<span style='color:#6c7086;font-size:small'>↩ %1</span> ")
+                    .arg(origNick.toHtmlEscaped());
+        }
+        html = QString("%1 %2%3 %4").arg(tsSpan, replySpan, nickAnchor, textHtml);
         break;
     }
     case MessageType::Action: {
         const QString actionNick = QString("<a href='nick:%1' style='color:inherit; text-decoration:none'>%1</a>")
             .arg(msg.nick.toHtmlEscaped());
-        html = QString("<span style='color:gray'>%1</span> <i>* %2 %3</i>")
-            .arg(ts, actionNick, linkifyHtml(ircToHtml(msg.text)));
+        html = QString("%1 <i>* %2 %3</i>")
+            .arg(tsSpan, actionNick, linkifyHtml(ircToHtml(msg.text)));
         break;
     }
     case MessageType::Notice: {
         const QString noticeNick = QString("<a href='nick:%1' style='color:inherit; text-decoration:none'>%1</a>")
             .arg(msg.nick.toHtmlEscaped());
-        html = QString("<span style='color:gray'>%1</span> "
-                       "<span style='color:#cc8800'>-%2- %3</span>")
-            .arg(ts, noticeNick, linkifyHtml(ircToHtml(msg.text)));
+        html = QString("%1 <span style='color:#cc8800'>-%2- %3</span>")
+            .arg(tsSpan, noticeNick, linkifyHtml(ircToHtml(msg.text)));
         break;
     }
 
