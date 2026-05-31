@@ -63,6 +63,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] v0.2.0 released
 - [x] PM tabs — /msg opens sidebar buffer; incoming PMs land in sender's buffer
 - [x] Nick list right-click menu — Message, Send File (stub), Whois, Give Op, Give Voice, Version
+- [x] Right-click nick in chat view — same context menu as nick list; nicks rendered as nick: anchors in HTML
 - [x] Tray icon left-click toggles window visibility
 - [x] Unread dot indicator in sidebar — 🔥 for activity, 💡 red for nick mentions; clears on focus
 - [x] Sidebar flat list — Halloy-style: no arrows, servers as section headers, connected icon, dock titles removed
@@ -125,7 +126,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Hanging indent — wrapped message lines align past the timestamp+nick column; toggleable from Preferences and `hanging_indent` config key; uses QTextBlockFormat for correct Qt rendering
 - [ ] Message search — search within current channel buffer
 - [ ] Logging — per-channel log files at `~/.config/uplinkirc/logs/`
-- [ ] msgid — IRCv3 unique message IDs; prerequisite for reply threading, reactions, and redaction
+- [x] msgid — IRCv3 unique message IDs stored on every received message; full signal chain (messageReceived, noticeReceived, actionReceived, batch delivery); prerequisite for reply threading, reactions, and redaction
 - [ ] echo-message — server echoes sent messages back; essential for multi-client accuracy and self-message confirmation
 - [ ] draft/reply — client tag marking a message as a reply to a specific msgid; threaded replies
 - [ ] draft/message-redaction — delete/hide a sent message; requires msgid

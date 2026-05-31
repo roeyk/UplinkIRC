@@ -177,7 +177,7 @@ Type `/join #channelname` in the input box and press Enter.
 
 Use `/msg <nick> <text>`. A PM buffer for that user opens in the sidebar where you can continue the conversation. Incoming PMs from others open their own buffers automatically.
 
-You can also right-click a nick in the user list and choose **Message** to open the PM buffer without typing a command.
+You can also right-click a nick in the user list **or directly in the chat view** and choose **Message** to open the PM buffer without typing a command.
 
 ### How do I use a bouncer (ZNC or soju)?
 

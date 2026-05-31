@@ -3,6 +3,46 @@
 ---
 
 <!--
+Session summary — 2026-05-30 (v0.9.6 — msgid foundation + chat nick right-click)
+
+What was built / fixed:
+  - msgid (IRCv3): the msgid tag is now parsed and carried through the full
+    signal chain — messageReceived, noticeReceived, actionReceived, and batch
+    delivery all pass msgid. Message struct gains a msgid field. BatchInfo::Msg
+    stores msgid at buffer time. All existing make() call sites are unaffected
+    (default empty string). This is the prerequisite for draft/reply, echo-message
+    dedup, draft/react, and draft/message-redaction.
+  - Right-click nick in chat view: PRIVMSG, ACTION, and NOTICE nicks are now
+    wrapped as <a href="nick:RAWNICKNICK"> anchors in formatMessage(). Right-
+    clicking one in the chat viewport intercepts the MouseButtonPress event,
+    extracts the nick from the anchor href, and calls showNickContextMenu() —
+    the same menu as the nick list (Message, Send File, Whois, Give Op/Voice,
+    Version). Hover and link preview logic explicitly ignores nick: anchors.
+    Menu building extracted into showNickContextMenu(nick, globalPos) shared
+    by both paths.
+
+Regressions found: none.
+Known issues remaining (unchanged):
+  - DCC over internet (NAT/firewall blocks direct TCP)
+  - No in-app update check UI
+  - Message search not implemented
+  - Per-channel logging not implemented
+  - Split view not implemented
+  - Plaintext passwords in config.toml
+
+Next priorities:
+  - echo-message (builds on msgid — dedup echoed messages)
+  - draft/reply (reply threading, builds on msgid)
+  - Message search (Ctrl+F in channel buffer)
+  - Per-channel log files
+-->
+
+## v0.9.6 — 2026-05-30
+
+- Feat: IRCv3 `msgid` stored on every received message — full signal chain updated; foundation for reply threading, reactions, and redaction
+- Feat: Right-click any nick in the chat view for the full context menu (Message, Send File, Whois, Give Op, Give Voice, Version)
+
+<!--
 Session summary — 2026-05-30 (v0.9.5 — SASL + tray notification fixes)
 
 What was built / fixed:
