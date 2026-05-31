@@ -33,6 +33,7 @@ show_emoji_button = true               # shows 😊 button next to input bar
 colored_nicks     = true
 typing_indicator  = true
 hanging_indent    = true               # wrap long messages past the timestamp+nick column
+log_messages      = true               # write all messages to ~/.config/uplinkirc/logs/
 notifications     = true               # green dot on tray icon for mentions/PMs when unfocused
 nick_brackets     = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
 app_icon          = "dark"
@@ -83,6 +84,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `colored_nicks` | bool | `true` | Give each nickname a unique color in chat and the nick list |
 | `typing_indicator` | bool | `true` | Show "nick is typing…" notifications (IRCv3 `draft/typing`) and send your own |
 | `hanging_indent` | bool | `true` | Indent wrapped message lines past the timestamp+nick column so they align with the message text. Toggle live from **Preferences → Hanging Indent**. |
+| `log_messages` | bool | `true` | Write all messages to `~/.config/uplinkirc/logs/<server>/<channel>.log`. History replay is not logged. Toggle from **Preferences → Log Messages to Disk**. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Tray Notifications**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`, `"light-default"`, `"avatar"` |
@@ -427,6 +429,19 @@ key  = "secretkey"
 Both formats load correctly. On the next save (via **Manage Servers** or **Reload Config**), channels are written in the table format with keys preserved.
 
 > **Note:** UplinkIRC will not prompt you for a missing channel key. If a channel requires a key, add it to the config manually using the `[[server.channel]]` format above.
+
+---
+
+## The `[ignore]` block
+
+Stores your client-side ignore list. Nicks in this list have their PRIVMSG, NOTICE, and ACTION messages silently suppressed. The block is written automatically when you use `/ignore` or the right-click → **Ignore** menu — you do not normally edit it by hand.
+
+```toml
+[ignore]
+nicks = ["spammer", "troll123"]
+```
+
+Use `/ignore <nick>`, `/unignore <nick>`, and `/ignored` to manage the list from the input bar, or right-click any nick and choose **Ignore / Unignore**.
 
 ---
 

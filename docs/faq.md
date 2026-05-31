@@ -350,6 +350,107 @@ client_key    = "/home/joe/.irc/client.key"
 
 You can also set cert and key paths from the GUI: ☰ → Preferences → Manage Servers → Edit → check **Use SASL EXTERNAL** → Browse for cert and key files.
 
+### How do I add, edit, or remove a server from the UI?
+
+Click **☰ → Manage Servers...** to open the server manager. You do not need to edit `config.toml` by hand for most server settings.
+
+**Adding a server:**
+
+1. Click **☰ → Manage Servers...**
+2. Click **Add**
+3. Fill in the form:
+
+| Section | Fields |
+|---|---|
+| **Connection** | Name (display name in sidebar), Host, Port, SSL checkbox |
+| **Identity** | Nick, Username, Real Name |
+| **Authentication** | Server Password (for bouncers or password-protected servers), SASL User + Password (for SASL PLAIN), SASL EXTERNAL checkbox + Client Cert + Client Key (Browse buttons available), NickServ password |
+| **Channels** | Auto-join — comma-separated list of channels (e.g. `#uplink, #linux`). For password-protected channels, see the note in the dialog and use `config.toml` directly. |
+| **Bouncer** | Type (None / ZNC / Soju) and Network name (soju only) |
+
+4. Click **OK** — the server is added immediately and begins connecting.
+
+> **Keyed channels:** The auto-join field does not support channel passwords. To join a password-protected channel, add it manually to `config.toml` using the `[[server.channel]]` format with a `key` field. The server dialog shows a note explaining the format.
+
+**Editing a server:**
+
+1. Click **☰ → Manage Servers...**
+2. Select the server in the list
+3. Click **Edit**
+4. Make changes and click **OK** — the server reconnects with the new settings immediately.
+
+**Removing a server:**
+
+1. Click **☰ → Manage Servers...**
+2. Select the server
+3. Click **Remove** — the server disconnects and is removed from the sidebar and config.
+
+### How do I ignore someone?
+
+Right-click their nick in the user list or chat view and choose **Ignore**. All PRIVMSG, NOTICE, and ACTION messages from that nick will be silently suppressed until you unignore them.
+
+To unignore, right-click their nick again — the menu will show **Unignore** instead.
+
+You can also use slash commands:
+
+```
+/ignore spammer        # suppress all messages from that nick
+/unignore spammer      # remove from the ignore list
+/ignored               # list all currently ignored nicks
+```
+
+The ignore list is saved in `config.toml` under `[ignore] nicks = [...]` and persists across sessions.
+
+### How do I react to a message?
+
+Right-click the **timestamp** (the `hh:mm` at the left of the message) and choose **React**. Type an emoji in the dialog and click OK.
+
+Reactions appear inline below the original message as `emoji(count)` for all clients that support `draft/react`.
+
+You can also use `/react <emoji>` after right-clicking a timestamp and choosing **Reply** (which sets the message target).
+
+### How do I turn message logging on or off?
+
+Click **☰ → Preferences** and check or uncheck **Log Messages to Disk**.
+
+When enabled, all messages are appended to log files at:
+```
+~/.config/uplinkirc/logs/<server>/<channel>.log
+```
+
+Format:
+```
+[2026-05-31 15:04:22] <nick> message text
+[2026-05-31 15:04:22] * nick action text
+[2026-05-31 15:04:22] -- system message
+```
+
+History replay messages are never logged — only live messages.
+
+You can also set it in config:
+```toml
+[ui]
+log_messages = true
+```
+
+### How do I message NickServ or ChanServ?
+
+Use the service shortcuts:
+
+```
+/ns identify mypassword        # → PRIVMSG NickServ identify mypassword
+/ns register pass email@x.com  # → PRIVMSG NickServ register …
+/cs op #uplink                 # → PRIVMSG ChanServ op #uplink
+/bs botlist                    # → PRIVMSG BotServ botlist
+/ms list                       # → PRIVMSG MemoServ list
+```
+
+Or use the full form: `/msg NickServ identify mypassword`
+
+### How do I copy text from the chat?
+
+Select the text with your mouse — click and drag to highlight it — then right-click the selection and choose **Copy**. Standard keyboard shortcuts (`Ctrl+C` after selecting) also work.
+
 ### How do I send a file to someone (DCC)?
 
 Right-click the recipient's nick in the user list on the right side of the window, then choose **Send File**. Pick a file in the dialog — UplinkIRC opens a local TCP port and sends a DCC SEND offer to the recipient. A progress dialog appears while the transfer runs.
@@ -392,9 +493,19 @@ Right-click any nick — in the user list or directly on a nick link in the chat
 | **Version** | CTCP VERSION request (reply in server window) |
 | **Ping** | CTCP PING — shows round-trip time in the active buffer |
 | **Copy Nick** | Copy the nickname to clipboard |
+| **Ignore / Unignore** | Suppress (or restore) all messages from this nick. Persists across sessions. |
 | **Kick** | Kick from current channel with optional reason (requires op) |
 | **Ban** | Ban `nick!*@*` in current channel (requires op) |
 | **Kick & Ban** | Ban then kick in the correct order (requires op) |
+
+### What can I do from the message timestamp right-click menu?
+
+Right-clicking the **timestamp** at the left of any chat message opens a message-level context menu:
+
+| Action | Description |
+|---|---|
+| **Reply** | Sets this message as the reply target. A `↩ nick` bar appears above the input. Type your reply and press Enter. Escape cancels. |
+| **React** | Opens an emoji input. Your reaction is sent as an IRCv3 `draft/react` and shown inline below the message for all clients that support it. |
 
 ### How do I check another user's IRC client version?
 

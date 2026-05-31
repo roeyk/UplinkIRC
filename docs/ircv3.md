@@ -83,16 +83,28 @@ UplinkIRC suppresses the local preview echo when `echo-message` is active so mes
 
 ### `msgid`
 
-Assigns a globally unique ID to every message. Parsed from the `msgid` tag on all incoming `PRIVMSG`, `NOTICE`, and `ACTION` messages, stored on the `Message` struct, and carried through batch delivery. Used as the anchor for `draft/reply` and as the foundation for future reactions (`draft/react`) and redaction (`draft/message-redaction`).
+Assigns a globally unique ID to every message. Parsed from the `msgid` tag on all incoming `PRIVMSG`, `NOTICE`, and `ACTION` messages, stored on the `Message` struct, and carried through batch delivery. Used as the anchor for `draft/reply`, `draft/react`, and future redaction (`draft/message-redaction`).
 
 ### `draft/reply`
 
 A client-only tag (`+draft/reply=<msgid>`) that marks a message as a reply to a specific message by its ID. UplinkIRC supports both sending and receiving:
 
-- **Sending:** right-click any message in the chat, choose **Reply**, then type and press Enter. The outgoing `PRIVMSG` carries `@+draft/reply=<original-msgid>`.
+- **Sending:** right-click any message timestamp in the chat, choose **Reply**, then type and press Enter. The outgoing `PRIVMSG` carries `@+draft/reply=<original-msgid>`.
 - **Receiving:** incoming messages with a `+draft/reply` tag display a small **↩ origNick** indicator before the sender nick, showing whose message was being replied to.
 
 Requires `message-tags` (already negotiated). Compatible with any modern IRC server or bouncer — clients that do not support the tag see the message as normal.
+
+### `chghost`
+
+When a user's vhost or ident changes, the server sends a `CHGHOST newuser newhost` command rather than a fake QUIT+JOIN pair. UplinkIRC negotiates this capability and shows a single quiet status line — `nick changed host (newuser@newhost)` — in each channel the user shares, instead of the noisy disconnect/reconnect flood.
+
+### `draft/react`
+
+Emoji reactions attached to specific messages via `TAGMSG` with a `+draft/react` tag and a `+draft/reply` tag identifying the target message ID.
+
+- **Sending:** right-click any message **timestamp** → **React** → type an emoji → OK. Or use `/react <emoji>` after setting a reply target.
+- **Receiving:** reactions are stored per-message and rendered inline below the original message as `emoji(count)` in the chat view.
+- Requires `message-tags` and server support for `draft/react`. On servers that do not advertise the capability, reactions are not sent.
 
 ---
 
@@ -140,9 +152,7 @@ Includes the joining user's account name in JOIN messages, making it possible to
 
 Notifies the client in real time when a user logs in or out of services. Useful for showing account status in the nick list.
 
-### `chghost`
-
-Allows a user's hostname to change without a full disconnect/reconnect cycle. Shown as a status message in shared channels.
+### `chghost` *(implemented — see Active capabilities)*
 
 ### `cap-notify`
 
@@ -160,9 +170,7 @@ A command that removes a message from history and signals other clients to hide 
 
 Allows composing and sending messages that span multiple lines, delivered to clients as a `batch` of type `draft/multiline`. Useful for pastes and structured content.
 
-### `draft/react`
-
-A client tag for sending emoji reactions to a specific message. Reactions are attached to a `msgid`. Requires `msgid`.
+### `draft/react` *(implemented — see Active capabilities)*
 
 ### `account-tag`
 

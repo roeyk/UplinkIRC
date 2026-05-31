@@ -62,6 +62,7 @@ Type any of these commands in the message input box and press Enter.
 |---|---|
 | `/me <text>` | Send an action message. Shown as `* yournick text` in chat |
 | `/msg <nick> <text>` | Send a private message — opens a PM buffer in the sidebar for the conversation |
+| `/query <nick>` | Open a PM buffer without sending a message |
 | `/notice <target> <text>` | Send a NOTICE to a user or channel |
 
 ### Examples
@@ -69,7 +70,31 @@ Type any of these commands in the message input box and press Enter.
 ```
 /me waves hello
 /msg alice hey, are you around?
+/query alice
 /notice alice heads up
+```
+
+---
+
+## Services shortcuts
+
+Shortcuts for sending messages to network services. These are equivalent to `/msg <Service> <text>` but shorter to type.
+
+| Command | Equivalent |
+|---|---|
+| `/ns <text>` | `/msg NickServ <text>` |
+| `/cs <text>` | `/msg ChanServ <text>` |
+| `/bs <text>` | `/msg BotServ <text>` |
+| `/ms <text>` | `/msg MemoServ <text>` |
+
+### Examples
+
+```
+/ns identify mypassword
+/ns register mypassword email@example.com
+/cs op #uplink
+/cs invite #uplink
+/ms list
 ```
 
 ---
@@ -94,12 +119,13 @@ Type any of these commands in the message input box and press Enter.
 
 ---
 
-## Connection
+## Connection & IRC operator
 
 | Command | Description |
 |---|---|
 | `/quit [message]` | Disconnect from the current server with an optional quit message |
 | `/motd [server]` | Request the message of the day |
+| `/oper <user> <pass>` | IRC operator login — sends `OPER user :pass` to the server |
 
 ### Examples
 
@@ -107,6 +133,7 @@ Type any of these commands in the message input box and press Enter.
 /quit
 /quit later everyone
 /motd
+/oper myname mysecretpassword
 ```
 
 ---
@@ -183,7 +210,7 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 | **Version** | Sends a CTCP VERSION request. Reply appears in the server window. |
 | **Ping** | Sends a CTCP PING. Reply shows RTT in the active buffer: `Ping reply from nick: Xms`. |
 | **Copy Nick** | Copies the nickname to the clipboard. |
-| **Ignore** | Suppresses all messages from this nick (client-side). Changes to **Unignore** if the nick is already ignored. |
+| **Ignore / Unignore** | Suppresses all messages (PRIVMSG, NOTICE, ACTION) from this nick. The label toggles to **Unignore** if the nick is already ignored. Persists in config. |
 | **Kick** | Prompts for an optional reason, then kicks. Requires op. |
 | **Ban** | Sets `MODE #channel +b nick!*@*`. Requires op. |
 | **Kick & Ban** | Bans first, then kicks (correct order). Prompts for reason. Requires op. |
@@ -203,6 +230,42 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 # Right-click alice → Ping
 # Buffer: Ping reply from alice: 42ms
 ```
+
+---
+
+## Reactions
+
+UplinkIRC supports IRCv3 `draft/react` — emoji reactions attached to specific messages.
+
+**Sending a reaction:**
+- Right-click any message **timestamp** in the chat view → **React** → type an emoji → OK
+- Or use `/react <emoji>` after right-clicking a timestamp and choosing **Reply** (sets the message target)
+
+**Receiving reactions:**
+- Reactions appear inline below the original message as `emoji(count)` whenever they are received
+
+**Requirements:** the server must support the `draft/react` capability. If the server does not advertise it, reactions are silently skipped.
+
+### Examples
+
+```
+# Right-click a timestamp → React → type 👍 → OK
+
+# Via slash command (requires a reply target set first):
+/react 🔥
+/react 👍
+```
+
+---
+
+## Message timestamp right-click
+
+Right-clicking a message **timestamp** (the `hh:mm` at the left of each line) opens a context menu for that specific message:
+
+| Action | What it does |
+|---|---|
+| **Reply** | Sets this message as the reply target. A `↩ nick` bar appears above the input. Press Enter to send; Escape to cancel. |
+| **React** | Opens an emoji input dialog. The emoji is sent as an IRCv3 `+draft/react` reaction attached to this message's ID. Requires server support for `draft/react`. |
 
 ---
 

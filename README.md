@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-0.13.0-x86_64.AppImage">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-0.15.0-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.13.0-linux-x86_64.tar.gz">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.15.0-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.13.0-windows-x64.zip">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.15.0-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.13.0-macos-arm64.dmg">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.15.0-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -100,7 +100,7 @@
 
 | Feature | Details |
 |---|---|
-| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `labeled-response`, `draft/typing`, `sasl` |
+| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `labeled-response`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl` |
 | **Chat history replay** | Requests the last 100 messages via `CHATHISTORY LATEST` on join. History messages display dimmed with original timestamps. |
 | **Bouncer support** | First-class ZNC and soju: `znc.in/playback`, `soju.im/bouncer-networks`, `soju.im/read`, self-message echo. |
 | **mIRC formatting** | Bold, italic, underline, strikethrough, reverse, 16 IRC colors (fg + bg). |
@@ -126,8 +126,13 @@
 | **Emoji picker** | Click 😊 to open a searchable grid of ~400 emoji. Enable with `show_emoji_button = true`. |
 | **`:shortcode:` autocomplete** | Type `:fire` and a live completion list appears. Navigate with Up/Down, confirm with Enter. |
 | **Emoji auto-substitute** | Typing `:trident:` replaces with 🔱 on the closing colon. Any remaining `:shortcode:` patterns resolve before the message is sent. |
-| **Link preview cards** | URLs in messages auto-fetch `og:title` + `og:image`. A card with title + domain on top and thumbnail below appears inline. Right-click any link for **Copy URL / Open URL / Hide Preview / Show Preview**. Works with YouTube and other heavy sites via a smart user-agent. |
+| **Link preview cards** | URLs in messages auto-fetch `og:title` + `og:image`. Dark card with title + domain + thumbnail appears inline. Right-click any link for **Copy URL / Open URL / Hide Preview / Show Preview**. Works with YouTube and other heavy sites via a smart user-agent. Preview background is theme-independent. |
 | **Typing indicator** | IRCv3 `draft/typing`. Shows `nick is typing…` as a transparent overlay on the chat background. Sends your own state debounced. |
+| **Ignore list** | `/ignore <nick>` suppresses all messages from a nick (PRIVMSG, NOTICE, ACTION). `/unignore <nick>` removes. `/ignored` lists. Right-click → **Ignore / Unignore**. Persists in config. |
+| **Reactions** | IRCv3 `draft/react`. Right-click a message timestamp → **React**. Incoming reactions shown inline below the message as emoji + count. `/react <emoji>` with a reply target selected. |
+| **Per-channel logging** | All messages written to `~/.config/uplinkirc/logs/<server>/<channel>.log`. Toggle in **Preferences → Log Messages to Disk**. |
+| **Reply to messages** | Right-click a timestamp → **Reply**. Outgoing message carries `+draft/reply` tag. Received replies show `↩ origNick` inline. |
+| **Message search** | **Ctrl+F** opens a search bar. Enter = next match, Shift+Enter = previous, Escape = close. |
 | **mIRC colors** | Full IRC color codes rendered in chat. |
 | **Tab completion** | Tab-completes nick names and slash commands. Cycles through candidates. |
 | **Input history** | Up/Down arrows cycle through sent messages. |
@@ -141,7 +146,7 @@
 | **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (randomly assigned per nick each session, stable across refreshes). |
 | **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from **☰ → Preferences**. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
-| **Right-click menu** | Full action menu on any nick: **Message**, **Send File**, **Whois**, **Invite**, **Give Op**, **Take Op**, **Give Voice**, **Take Voice**, **Version**, **Ping** (CTCP, shows RTT), **Copy Nick** — and for ops: **Kick** (with reason prompt), **Ban** (`nick!*@*`), **Kick & Ban**. |
+| **Right-click menu** | Full action menu on any nick: **Message**, **Send File**, **Whois**, **Invite**, **Give Op**, **Take Op**, **Give Voice**, **Take Voice**, **Version**, **Ping** (CTCP, shows RTT), **Copy Nick**, **Ignore / Unignore** — and for ops: **Kick** (with reason prompt), **Ban** (`nick!*@*`), **Kick & Ban**. |
 | **Unread indicators** | `🔥 #channel` for new activity. `💡 #channel` in red when your nick is mentioned. Both clear on focus. Your nick is highlighted **red bold** inline in messages that mention you. |
 
 ### 🔌 Connectivity & Servers
@@ -337,6 +342,12 @@ channels = "#linux, #archlinux"
 | `/nick <newnick>` | Change your nickname |
 | `/me <action>` | Send a CTCP ACTION (`* nick waves`) |
 | `/msg <target> <text>` | Send a private message or open a PM tab |
+| `/query <nick>` | Open a PM buffer without sending a message |
+| `/ns <text>` | Message NickServ |
+| `/cs <text>` | Message ChanServ |
+| `/bs <text>` | Message BotServ |
+| `/ms <text>` | Message MemoServ |
+| `/oper <user> <pass>` | IRC operator login |
 | `/notice <target> <text>` | Send a NOTICE |
 | `/topic [text]` | Show or set the channel topic |
 | `/kick <nick> [reason]` | Kick a user (requires op) |
@@ -348,6 +359,10 @@ channels = "#linux, #archlinux"
 | `/devoice <nick>` | Remove voice (`-v`) |
 | `/ban <mask>` | Ban a mask (`+b`) |
 | `/unban <mask>` | Remove a ban (`-b`) |
+| `/ignore <nick>` | Suppress all messages from a nick |
+| `/unignore <nick>` | Stop ignoring a nick |
+| `/ignored` | List ignored nicks |
+| `/react <emoji>` | React to the selected message |
 | `/ping <nick>` | CTCP PING — shows round-trip time in ms |
 | `/away [message]` | Set away status |
 | `/back` | Clear away status |

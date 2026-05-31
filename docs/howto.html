@@ -320,6 +320,10 @@
     <li><a href="#auto-join">Auto-join channels</a></li>
   </ul>
 
+  <div class="nav-section">Server Management</div>
+  <ul>
+    <li><a href="#manage-servers">Manage Servers dialog</a></li>
+  </ul>
   <div class="nav-section">Authentication</div>
   <ul>
     <li><a href="#nickserv">NickServ auto-identify</a></li>
@@ -355,6 +359,9 @@
     <li><a href="#history">Input history</a></li>
     <li><a href="#search">Message search</a></li>
     <li><a href="#reply">Reply to messages</a></li>
+    <li><a href="#reactions">Reactions</a></li>
+    <li><a href="#ignore">Ignore list</a></li>
+    <li><a href="#logging">Message logging</a></li>
     <li><a href="#link-previews">Link previews</a></li>
     <li><a href="#dcc">DCC file transfer</a></li>
   </ul>
@@ -451,7 +458,7 @@
 
     <h3>Update in-place (zsync)</h3>
     <p>The AppImage embeds zsync metadata pointing to the latest release. Install <a href="https://github.com/AppImageCommunity/AppImageUpdate" target="_blank">appimageupdatetool</a>, then:</p>
-    <pre>appimageupdatetool ./UplinkIRC-0.9.2-x86_64.AppImage</pre>
+    <pre>appimageupdatetool ./UplinkIRC-0.15.0-x86_64.AppImage</pre>
     <p>Only the changed blocks are downloaded — much faster than a full re-download.</p>
 
     <div class="tip">
@@ -626,6 +633,41 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
 
     <p>You can also set channels from the GUI: click <strong>☰ → Preferences → Manage Servers → Edit</strong> and fill in the Auto-join field.</p>
     <p>To join a channel while connected without editing the config, type <code>/join #channelname</code> in the input box.</p>
+  </section>
+
+  <hr />
+
+  <!-- MANAGE SERVERS -->
+  <section id="manage-servers">
+    <h2>Manage Servers dialog</h2>
+    <p>Click <strong>☰ → Manage Servers...</strong> to add, edit, or remove servers from the UI — no need to edit <code>config.toml</code> by hand for most settings. Changes take effect immediately.</p>
+
+    <h3>Adding a server</h3>
+    <div class="step-row"><span class="step">1</span><div>Click <strong>☰ → Manage Servers...</strong></div></div>
+    <div class="step-row"><span class="step">2</span><div>Click <strong>Add</strong> to open the server form.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Fill in the fields (see table below) and click <strong>OK</strong>.</div></div>
+    <div class="step-row"><span class="step">4</span><div>The server is added to the sidebar and begins connecting immediately.</div></div>
+
+    <table>
+      <thead><tr><th>Section</th><th>Fields</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Connection</strong></td><td>Name (display name in sidebar), Host, Port, SSL checkbox</td></tr>
+        <tr><td><strong>Identity</strong></td><td>Nick, Username, Real Name</td></tr>
+        <tr><td><strong>Authentication</strong></td><td>Server Password (bouncers / password-protected servers); SASL User + SASL Password (SASL PLAIN); SASL EXTERNAL checkbox + Client Cert + Client Key — each has a Browse button to pick the file; NickServ password (auto-identifies on connect)</td></tr>
+        <tr><td><strong>Channels</strong></td><td>Auto-join — comma-separated (e.g. <code>#uplink, #linux</code>). See note below for password-protected channels.</td></tr>
+        <tr><td><strong>Bouncer</strong></td><td>Type: None / ZNC / Soju. Network name (soju only).</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <strong>Password-protected channels:</strong> the Auto-join field does not support channel keys. To join a keyed channel, edit <code>config.toml</code> directly using the <code>[[server.channel]]</code> format — the dialog shows a reminder with the exact format to use.
+    </div>
+
+    <h3>Editing a server</h3>
+    <p>Select the server in the list, click <strong>Edit</strong>, make your changes, and click <strong>OK</strong>. The server disconnects and reconnects with the updated settings immediately.</p>
+
+    <h3>Removing a server</h3>
+    <p>Select the server in the list and click <strong>Remove</strong>. The server disconnects, is removed from the sidebar, and is deleted from <code>config.toml</code>.</p>
   </section>
 
   <hr />
@@ -892,6 +934,7 @@ channels        = "#linux"</pre>
         <tr><td><strong>Version</strong></td><td>Sends a CTCP VERSION request. The reply appears in the server window (the server name turns purple when it arrives).</td></tr>
         <tr><td><strong>Ping</strong></td><td>Sends a CTCP PING with a millisecond timestamp. When the reply arrives, the round-trip time appears in the active buffer as <em>Ping reply from nick: Xms</em>.</td></tr>
         <tr><td><strong>Copy Nick</strong></td><td>Copies the nickname to the system clipboard — paste it into the input bar or anywhere else.</td></tr>
+        <tr><td><strong>Ignore / Unignore</strong></td><td>Suppress all messages (PRIVMSG, NOTICE, ACTION) from this nick. The label changes to <strong>Unignore</strong> if they are already on your ignore list. Persists in config.</td></tr>
         <tr><td><strong>Kick</strong></td><td>Prompts for an optional reason, then sends <code>KICK #channel nick :reason</code>. Requires op.</td></tr>
         <tr><td><strong>Ban</strong></td><td>Sets <code>MODE #channel +b nick!*@*</code> — bans the nick by name. Requires op.</td></tr>
         <tr><td><strong>Kick &amp; Ban</strong></td><td>Bans first, then kicks. Prompts for an optional reason. Requires op. Both actions are sent in the correct order.</td></tr>
@@ -1088,6 +1131,71 @@ show_emoji_button = true</pre>
     <div class="tip">
       <strong>Switching channels</strong> automatically cancels any pending reply. The reply bar clears when you navigate to a different buffer.
     </div>
+  </section>
+
+  <!-- REACTIONS -->
+  <section id="reactions">
+    <h2>Reactions</h2>
+    <p>UplinkIRC supports IRCv3 <code>draft/react</code> — emoji reactions attached to specific messages. Both sending and receiving are supported.</p>
+
+    <h3>Sending a reaction</h3>
+    <div class="step-row"><span class="step">1</span><div>Right-click the <strong>timestamp</strong> (the <code>hh:mm</code> at the left of the message).</div></div>
+    <div class="step-row"><span class="step">2</span><div>Choose <strong>React</strong> from the context menu.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Type an emoji (e.g. <code>👍</code>) in the dialog and click OK.</div></div>
+
+    <p>Alternatively, after right-clicking a timestamp and choosing <strong>Reply</strong> (which sets the message target), you can use:</p>
+    <pre>/react 👍</pre>
+
+    <h3>Viewing reactions</h3>
+    <p>Received reactions appear inline below the original message as <code>emoji(count)</code>, for example:</p>
+    <pre>14:22 &lt;alice&gt; anyone tried the new soju release?
+👍(2) ❤️(1)</pre>
+
+    <div class="note">
+      <strong>Server support required:</strong> the server must advertise the <code>draft/react</code> capability. On servers that do not support it, reactions are not sent and will not be received.
+    </div>
+  </section>
+
+  <!-- IGNORE LIST -->
+  <section id="ignore">
+    <h2>Ignore list</h2>
+    <p>The ignore list suppresses all PRIVMSG, NOTICE, and ACTION messages from specific nicks — client-side. The ignored user does not know they are being ignored.</p>
+
+    <h3>Ignoring a nick</h3>
+    <p>Right-click their nick in the user list or chat view and choose <strong>Ignore</strong>. Or type:</p>
+    <pre>/ignore spammer</pre>
+
+    <h3>Unignoring a nick</h3>
+    <p>Right-click their nick — the menu shows <strong>Unignore</strong> when they are already on your list. Or type:</p>
+    <pre>/unignore spammer</pre>
+
+    <h3>Listing ignored nicks</h3>
+    <pre>/ignored</pre>
+
+    <p>The ignore list is saved in <code>config.toml</code> under <code>[ignore] nicks = [...]</code> and is restored automatically on the next launch.</p>
+  </section>
+
+  <!-- LOGGING -->
+  <section id="logging">
+    <h2>Message logging</h2>
+    <p>UplinkIRC writes all messages to plain-text log files on disk — one file per channel and per PM conversation.</p>
+
+    <h3>Log file location</h3>
+    <pre>~/.config/uplinkirc/logs/&lt;server&gt;/&lt;channel&gt;.log</pre>
+    <p>For example: <code>~/.config/uplinkirc/logs/irc.linuxdojo.org/#uplink.log</code></p>
+
+    <h3>Log format</h3>
+    <pre>[2026-05-31 15:04:22] &lt;nick&gt; message text
+[2026-05-31 15:04:22] * nick action text
+[2026-05-31 15:04:22] -- system message (join, part, etc.)</pre>
+
+    <p>History replay messages (from bouncers or <code>chathistory</code>) are <strong>not</strong> logged — only live messages.</p>
+
+    <h3>Turning logging on or off</h3>
+    <p>Click <strong>☰ → Preferences</strong> and check or uncheck <strong>Log Messages to Disk</strong>. Or set it in config:</p>
+    <pre>[ui]
+log_messages = true</pre>
+    <p>Logging is on by default.</p>
   </section>
 
   <!-- LINK PREVIEWS -->
