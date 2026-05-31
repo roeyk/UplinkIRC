@@ -72,6 +72,27 @@
 // hamburger (22) + gear (22) + right margin (4) even when the sidebar is closed.
 static constexpr int kBtnZoneMinW = 48;
 
+class ChatBrowser : public QTextBrowser {
+public:
+    using QTextBrowser::QTextBrowser;
+protected:
+    QVariant loadResource(int type, const QUrl &name) override {
+        if (type == QTextDocument::ImageResource) {
+            const QString s = name.toString();
+            if (s.startsWith("data:image/")) {
+                const int comma = s.indexOf(',');
+                if (comma >= 0) {
+                    QImage img;
+                    img.loadFromData(QByteArray::fromBase64(s.mid(comma + 1).toLatin1()));
+                    if (!img.isNull())
+                        return QPixmap::fromImage(std::move(img));
+                }
+            }
+        }
+        return QTextBrowser::loadResource(type, name);
+    }
+};
+
 static void insertHtmlBlock(QTextBrowser *view, const QString &html, bool hangIndent = false)
 {
     QTextCursor cursor(view->document());
@@ -655,7 +676,7 @@ void MainWindow::setupChatArea()
     vbox->addWidget(m_topicDisplay);
 
     // Chat view
-    m_chatView = new QTextBrowser;
+    m_chatView = new ChatBrowser;
     m_chatView->setReadOnly(true);
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
     m_chatView->setOpenLinks(false);
@@ -699,7 +720,7 @@ void MainWindow::setupChatArea()
             thumbnail.save(&imgBuf, "PNG");
             const QString dataUri = "data:image/png;base64,"
                                   + QString::fromLatin1(imgData.toBase64());
-            imgHtml = QString("<td><img src=\"%1\" width=\"%2\" height=\"%3\"/></td>")
+            imgHtml = QString("<br/><img src=\"%1\" width=\"%2\" height=\"%3\"/>")
                 .arg(dataUri).arg(thumbnail.width()).arg(thumbnail.height());
         }
 
@@ -720,15 +741,15 @@ void MainWindow::setupChatArea()
             "style=\"margin:1px 0 3px %1px;"
             "border-left:3px solid %2;"
             "background-color:%3\">"
-            "<tr>%4"
-            "<td valign=\"top\"%5>"
-            "<span style=\"color:%6;font-weight:bold\">%7</span><br/>"
-            "<span style=\"color:%8;font-size:8pt\">%9</span>"
+            "<tr><td>"
+            "<span style=\"color:%4;font-weight:bold\">%5</span><br/>"
+            "<span style=\"color:%6;font-size:8pt\">%7</span>"
+            "%8"
             "</td></tr></table>")
             .arg(cardLeft)
-            .arg(border.name(), bg.name(), imgHtml,
-                 imgHtml.isEmpty() ? "" : " style=\"padding-left:6px\"",
-                 fg.name(), titleEsc, sub.name(), domainEsc);
+            .arg(border.name(), bg.name(),
+                 fg.name(), titleEsc, sub.name(), domainEsc,
+                 imgHtml);
 
         ch->addPreview(urlStr, cardHtml);
 
@@ -1024,44 +1045,38 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     m_linkPreview->fetch(url);
                 }
             }
-        } else if (event->type() == QEvent::MouseButtonPress) {
-            auto *me = static_cast<QMouseEvent *>(event);
-            if (me->button() == Qt::RightButton) {
-                const QString anchor = m_chatView->anchorAt(me->position().toPoint());
-                if (anchor.startsWith("nick:")) {
-                    showNickContextMenu(anchor.mid(5),
-                        m_chatView->viewport()->mapToGlobal(me->position().toPoint()));
-                    return true;
-                }
-                const QString msgid = msgidAtViewPos(me->position().toPoint());
-                if (!msgid.isEmpty()) {
-                    QMenu menu(m_chatView->viewport());
-                    connect(menu.addAction("Reply"), &QAction::triggered, this, [this, msgid]{
-                        const QString host    = m_model->activeHost();
-                        const QString channel = m_model->activeChannel();
-                        auto *ch = m_model->channel(host, channel);
-                        QString nick, preview;
-                        if (ch) {
-                            for (const auto &msg : std::as_const(ch->messages)) {
-                                if (msg.msgid == msgid) {
-                                    nick    = msg.nick;
-                                    preview = msg.text.left(60)
-                                            + (msg.text.length() > 60 ? "…" : "");
-                                    break;
-                                }
-                            }
-                        }
-                        m_pendingReplyMsgid = msgid;
-                        m_replyLabel->setText(nick.isEmpty()
-                            ? "↩ Replying"
-                            : QString("↩ %1: %2").arg(nick, preview));
-                        m_replyBar->show();
-                        m_input->setFocus();
-                    });
-                    menu.exec(m_chatView->viewport()->mapToGlobal(me->position().toPoint()));
-                    return true;
-                }
+        } else if (event->type() == QEvent::ContextMenu) {
+            auto *ce = static_cast<QContextMenuEvent *>(event);
+            const QString anchor = m_chatView->anchorAt(ce->pos());
+            const QPoint globalPos = ce->globalPos();
+
+            if (anchor.startsWith("nick:")) {
+                showNickContextMenu(anchor.mid(5), globalPos);
+                return true;
             }
+
+            if (!anchor.isEmpty()) {
+                const QString host    = m_model->activeHost();
+                const QString channel = m_model->activeChannel();
+                QMenu menu(m_chatView->viewport());
+
+                connect(menu.addAction("Copy URL"), &QAction::triggered,
+                        this, [anchor]{ QApplication::clipboard()->setText(anchor); });
+                connect(menu.addAction("Open URL"), &QAction::triggered,
+                        this, [anchor]{ QDesktopServices::openUrl(QUrl(anchor)); });
+
+                auto *hideAction = menu.addAction("Hide Preview");
+                auto *ch = m_model->channel(host, channel);
+                hideAction->setEnabled(ch && ch->previews.contains(anchor));
+                connect(hideAction, &QAction::triggered, this, [this, anchor, host, channel]{
+                    auto *ch = m_model->channel(host, channel);
+                    if (ch) ch->previews.remove(anchor);
+                    refreshChatView(host, channel);
+                });
+
+                menu.exec(globalPos);
+            }
+            return true;
         } else if (event->type() == QEvent::Leave) {
             m_hoveredUrl.clear();
             QToolTip::hideText();
@@ -1479,22 +1494,13 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
         for (const auto &sc : std::as_const(m_config.servers))
             if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
     }
-    if (channel == "(server)") {
-        if (count > 0)
-            item->setForeground(0, QColor("#cba6f7"));
-        else
-            item->setForeground(0, QColor("#6c7086"));
-    } else {
-        if (count > 0 && m_model->hasMention(host, channel)) {
+    if (channel != "(server)") {
+        if (count > 0 && m_model->hasMention(host, channel))
             item->setText(0, "💡 " + label);
-            item->setForeground(0, QColor("red"));
-        } else if (count > 0) {
+        else if (count > 0)
             item->setText(0, "🔥 " + label);
-            item->setData(0, Qt::ForegroundRole, QVariant());
-        } else {
+        else
             item->setText(0, label);
-            item->setData(0, Qt::ForegroundRole, QVariant());
-        }
     }
 }
 

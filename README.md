@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-0.11.0-x86_64.AppImage">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-0.12.0-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.11.0-linux-x86_64.tar.gz">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.12.0-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.11.0-windows-x64.zip">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.12.0-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.11.0-macos-arm64.dmg">
+  <a href="https://github.com/joehonkey/UplinkIRC/releases/latest/download/UplinkIRC-v0.12.0-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -126,7 +126,7 @@
 | **Emoji picker** | Click 😊 to open a searchable grid of ~400 emoji. Enable with `show_emoji_button = true`. |
 | **`:shortcode:` autocomplete** | Type `:fire` and a live completion list appears. Navigate with Up/Down, confirm with Enter. |
 | **Emoji auto-substitute** | Typing `:trident:` replaces with 🔱 on the closing colon. Any remaining `:shortcode:` patterns resolve before the message is sent. |
-| **Link preview cards** | URLs in messages auto-fetch `og:title` + `og:image`. A card with title, domain, and thumbnail appears inline. |
+| **Link preview cards** | URLs in messages auto-fetch `og:title` + `og:image`. A card with title + domain on top and thumbnail below appears inline. Right-click any link for **Copy URL / Open URL / Hide Preview**. Works with YouTube and other heavy sites via a smart user-agent. |
 | **Typing indicator** | IRCv3 `draft/typing`. Shows `nick is typing…` as a transparent overlay on the chat background. Sends your own state debounced. |
 | **mIRC colors** | Full IRC color codes rendered in chat. |
 | **Tab completion** | Tab-completes nick names and slash commands. Cycles through candidates. |

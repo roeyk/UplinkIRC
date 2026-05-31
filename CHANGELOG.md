@@ -3,6 +3,51 @@
 ---
 
 <!--
+Session summary — 2026-05-30 (v0.12.0 — link preview overhaul + notification polish)
+
+What was built:
+  - Notification indicators: removed color changes on channel names (spacing shift complaint);
+    kept 💡/🔥 icons only. Server unread color also removed.
+  - Link preview layout redesigned: text (title + domain) on top, image below, vertical stack
+    inside a single <td>. Image scale bumped 120×90 → 360×220.
+  - ChatBrowser subclass: overrides loadResource() to decode data: URIs, making preview
+    images actually render in QTextBrowser (was silently ignored before).
+  - WhatsApp/2 user agent: sites like YouTube serve compact OG-metadata pages to this UA
+    instead of the full JS-heavy bundle. Fixes YouTube and other heavy sites burying og:title
+    past the 32 KB read cap.
+  - Link right-click menu: Copy URL / Open URL / Hide Preview (hides card + refreshes view).
+  - Left-click on link: opens in browser (confirmed working via anchorClicked signal).
+  - Double right-click menu bug fixed: moved handler from MouseButtonPress to
+    QContextMenu event so the QTextBrowser default menu is properly suppressed.
+
+Regressions: none.
+Known issues remaining:
+  - DCC over internet (NAT/firewall blocks direct TCP)
+  - No in-app update check UI
+  - Per-channel logging not implemented
+  - Split view not implemented
+  - Plaintext passwords in config.toml
+
+Next priorities:
+  - Ignore list
+  - Per-channel log files
+  - draft/message-redaction
+  - draft/react
+  - account-notify + account-tag + extended-join
+  - Monitor
+-->
+
+## v0.12.0 — 2026-05-30
+
+- **Notification indicators** — channel name color changes removed; 💡 (mention) and 🔥 (activity) icons are the sole indicators. Eliminates the layout shift that colored text was causing.
+- **Link preview redesign** — card now shows title and domain on top with the preview image below (was side-by-side). Image scale increased from 120×90 to 360×220.
+- **Link preview images now render** — `ChatBrowser` subclass overrides `loadResource()` to decode `data:` URI images, which Qt's default `QTextBrowser` silently drops.
+- **WhatsApp/2 user agent** — preview fetcher now identifies as `WhatsApp/2`, the same trick Halloy uses. Sites like YouTube serve a compact OG-metadata page to this UA instead of the full JS-heavy document, fixing previews for YouTube and similar.
+- **Link right-click menu** — right-clicking a URL shows: **Copy URL** / **Open URL** / **Hide Preview** (grayed if no card exists). Clicking Hide Preview removes the card and refreshes the view.
+- **Left-click opens browser** — left-clicking a link opens it in the default browser (was already working; confirmed and kept as-is).
+- **Fix: double right-click menu** — moved right-click handler from `MouseButtonPress` to `QContextMenu` event so the built-in QTextBrowser menu is properly suppressed. One right-click → one menu.
+
+<!--
 Session summary — 2026-05-30 (v0.11.0 — right-click nick menu expansion)
 
 What was built:

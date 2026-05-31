@@ -87,6 +87,9 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] macOS release CI fixed — MACOSX_BUNDLE property set; .app bundle produced; macdeployqt succeeds; v0.3.0 re-tagged and all three platform builds pass
 - [x] Link preview — hover tooltip shows domain + page title; inline card with og:image thumbnail auto-appears below live URL messages
 - [x] Link preview fixed for regular URLs — redirect following, proper UA, 32 KB buffer, multi-line title regex
+- [x] Link preview redesigned (v0.12.0) — title+domain on top, image below; 360×220 scale; ChatBrowser subclass decodes data: URIs so images actually render; WhatsApp/2 UA fixes YouTube and heavy sites
+- [x] Link right-click menu (v0.12.0) — Copy URL / Open URL / Hide Preview; left-click opens browser; double-menu bug fixed by moving handler to QContextMenu event
+- [x] Notification icon-only indicators (v0.12.0) — removed color changes on channel names; 💡/🔥 icons are the sole unread indicators; eliminates layout shift
 - [x] Dark banner — uplink-top-banner-dark.svg used in README and About dialog
 - [x] `/nick` label update — changing nick now immediately reflects in the input bar nick label
 - [x] Direct image URL preview — `.png/.jpg/.jpeg/.gif/.webp` links show a thumbnail card without HTML parsing

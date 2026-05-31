@@ -111,6 +111,11 @@ if [[ -n "${UPDATE_INFORMATION:-}" ]]; then
     echo "==> Embedding update info: $UPDATE_INFORMATION"
 fi
 
+# linuxdeploy's bundled strip can't handle modern .relr.dyn sections; shadow it with a no-op
+STRIP_WRAP=$(mktemp -d)
+printf '#!/bin/sh\nexit 0\n' > "$STRIP_WRAP/strip"
+chmod +x "$STRIP_WRAP/strip"
+export PATH="$STRIP_WRAP:$PATH"
 "$LD" \
     --appdir "$APPDIR" \
     --plugin qt \

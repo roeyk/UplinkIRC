@@ -457,13 +457,22 @@ Click **☰ → Documentation** to open the help viewer. A search field sits at 
 
 ### How do link previews work?
 
-When a live message arrives containing an `http://` or `https://` URL, UplinkIRC fetches the link in the background and appends a small card below the message.
+When a live message arrives containing an `http://` or `https://` URL, UplinkIRC fetches the link in the background and appends a preview card below the message.
 
-**Web pages** — UplinkIRC fetches up to 32 KB of HTML, extracts `og:title` and `og:image` metadata (or falls back to the `<title>` tag), and builds a card showing the page title, domain, and thumbnail (if an image was found).
+**Card layout** — the card shows the page title and domain name on top, with the thumbnail image below. The card is anchored to the left edge with a colored border.
 
-**Direct image links** — URLs ending in `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp` are detected automatically and shown as a thumbnail card directly, without any HTML parsing. The filename is used as the card label.
+**Web pages** — UplinkIRC fetches up to 32 KB of HTML using a messaging-app user-agent (the same trick used by Halloy and WhatsApp). This causes sites like YouTube to serve a compact metadata page with `og:title` and `og:image` tags early in the response, rather than a full JavaScript-heavy document.
 
-Hovering over any URL in chat shows the domain immediately in the status bar and tooltip, updating to the full page title once the fetch completes.
+**Direct image links** — URLs ending in `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp` are shown as a thumbnail card directly without HTML parsing. The filename is used as the card label.
+
+**Mouse interaction:**
+- **Left-click** a link → opens in your default browser
+- **Right-click** a link → shows a menu:
+  - **Copy URL** — copies the full URL to clipboard
+  - **Open URL** — opens in the default browser
+  - **Hide Preview** — removes the preview card for that link (grayed if no card exists)
+
+Hovering over any URL shows the domain in the status bar and tooltip, updating to the full page title once the fetch completes.
 
 Preview fetches are lightweight and automatic — HTML is capped at 32 KB, images at 200 KB, and results are cached in memory for the session.
 
@@ -558,10 +567,9 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 
 UplinkIRC fetches the page title and thumbnail for URLs posted in chat. If a preview isn't appearing:
 
-- **Direct image link** — `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp` URLs are handled automatically as of v0.7.1 and show a thumbnail card.
-- **The site redirects** (e.g. `http://` → `https://`, or bare domain → `www.`) — redirects are followed automatically since v0.7.0.
-- **The site has a large `<head>` section** — the HTML buffer was raised to 32 KB in v0.7.0; pages with unusually large headers before the `<title>` tag may still miss.
-- **The site blocks bots** — some sites check the User-Agent and return empty or minimal content. UplinkIRC uses a standard Chrome/Linux UA.
+- **Direct image link** — `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp` URLs are handled automatically and show a thumbnail card.
+- **The site redirects** (e.g. `http://` → `https://`, or bare domain → `www.`) — redirects are followed automatically.
+- **YouTube and heavy sites** — as of v0.12.0, UplinkIRC uses the `WhatsApp/2` user-agent, which causes most major sites to serve a compact OG-metadata page. If a site still doesn't preview, it may not publish `og:title` or `<title>` at all.
 - **SSL certificate errors** — self-signed or expired certs block the fetch. There is no per-site cert override.
 - **The page has no `<title>` or `og:title`** — no preview will appear; there is nothing to display.
 

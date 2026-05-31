@@ -1,5 +1,6 @@
 #include "linkpreview.h"
 
+#include <QDebug>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -10,7 +11,7 @@
 #include <QTextDocument>
 #include <memory>
 
-static constexpr int kMaxBytes    = 32768;   // 32 KB — more room for late <title> tags
+static constexpr int kMaxBytes    = 32768;   // 32 KB — enough with WhatsApp/2 UA (sites serve compact OG pages)
 static constexpr int kMaxImgBytes = 204800;  // 200 KB
 static constexpr int kMaxCache    = 50;
 static constexpr int kTimeoutMs   = 6000;
@@ -87,9 +88,7 @@ void LinkPreview::fetch(const QUrl &url)
     m_buf.clear();
 
     QNetworkRequest req(url);
-    req.setRawHeader("User-Agent",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/124.0 Safari/537.36");
+    req.setRawHeader("User-Agent", "WhatsApp/2");
     req.setRawHeader("Accept", "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8");
     req.setRawHeader("Accept-Language", "en-US,en;q=0.5");
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
@@ -159,7 +158,7 @@ void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QU
             QImageReader reader(&buf);
             const QSize srcSize = reader.size();
             if (srcSize.isValid() && srcSize.width() <= 4096 && srcSize.height() <= 4096) {
-                reader.setScaledSize(srcSize.scaled(120, 90, Qt::KeepAspectRatio));
+                reader.setScaledSize(srcSize.scaled(360, 220, Qt::KeepAspectRatio));
                 QImage img = reader.read();
                 if (!img.isNull())
                     pm = QPixmap::fromImage(std::move(img));
