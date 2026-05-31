@@ -2,17 +2,62 @@
 
 ---
 
+<!--
+Session summary — 2026-05-31 (v0.14.0–v0.15.0 + fixes)
+
+What was built:
+  - Ignore list: /ignore /unignore /ignored commands + right-click Ignore/Unignore on nicks.
+    Filters onMessage/onNotice/onAction in SessionModel before postMessage. Persists as
+    [ignore] nicks = [...] in config.toml. Default off per-nick until added.
+  - Right-click copy: selecting text in chat view and right-clicking now shows Copy menu item
+    (was blocked by custom ContextMenu event filter returning true unconditionally).
+  - Menu/gear icon colors: MenuIcons::make() and makeGearIcon() now use m_theme.text instead of
+    QApplication::palette().color(QPalette::WindowText) which always returned OS default (black).
+    All icon functions accept optional QColor param; mainwindow passes theme color on each open.
+  - Link preview card: hardcoded dark card (#1a1a1a / #eeeeee / #888888) so color never changes
+    with theme. Was using palette colors that varied by theme.
+  - Server dialog: keyed channel note added below auto-join field. Browse button widened 70→90px
+    to stop "Browse…" clipping to "rowse".
+  - Per-channel logging (v0.15.0): all messages appended to
+    ~/.config/uplinkirc/logs/<server>/<channel>.log. Format: [yyyy-MM-dd hh:mm:ss] <nick> text.
+    History replay skipped. Toggle: Preferences → Log Messages to Disk; config key log_messages.
+  - chghost (v0.15.0): desired cap + CHGHOST command parsed; emits hostChanged signal; SessionModel
+    posts "nick changed host" in all shared channels. No more fake QUIT+JOIN noise.
+  - draft/react (v0.15.0): desired cap; TAGMSG +draft/react parsed; reactReceived signal;
+    Channel::reactions QHash (msgid→emoji→nicks); refreshChatView renders emoji(count) inline below
+    messages; right-click timestamp → React; /react command; IrcClient::sendReact.
+  - Logging toggle in Preferences: log_messages bool in UiConfig; checkbox in PreferencesDialog;
+    loggingToggled signal; SessionModel::postMessage checks m_config.ui.logMessages.
+  - New commands: /query (open PM, no message); /ns /cs /bs /ms (service shortcuts);
+    /oper (IRC operator login).
+  - AppImage: patched linuxdeploy-plugin-qt's bundled strip (same .relr.dyn workaround already
+    applied to linuxdeploy). Wrapper script in temp dir placed before TOOLS_DIR in PATH.
+  - Full docs pass: README, commands.md, configuration.md, faq.md, ircv3.md, index.html,
+    howto.html — all updated for v0.15.0. Manage Servers section added to howto.html and faq.md.
+
+Regressions: none (clean build, existing behavior preserved).
+Known issues: plaintext passwords in config.toml (keychain pending); DCC over NAT blocked.
+Next priorities: password keychain, draft/message-redaction, account-notify, Monitor, STS.
+-->
+
 ## v0.15.0 — 2026-05-31
 
-- **Per-channel logging** — all messages written to `~/.config/uplinkirc/logs/<server>/<channel>.log`; format: `[yyyy-MM-dd hh:mm:ss] <nick> text` / `* nick action` / `-- system`; history playback is not logged.
+- **Per-channel logging** — all messages written to `~/.config/uplinkirc/logs/<server>/<channel>.log`; format: `[yyyy-MM-dd hh:mm:ss] <nick> text` / `* nick action` / `-- system`; history playback is not logged. Toggle: **Preferences → Log Messages to Disk** or `log_messages = true/false` in config.
 - **`chghost`** — CAP negotiated; `CHGHOST` command parsed; silent host changes show a single status line `nick changed host (user@host)` instead of fake QUIT+JOIN noise.
 - **`draft/react`** — CAP negotiated; incoming reactions stored per-msgid and rendered inline below messages as emoji + count; right-click any timestamp → **React** to send; `/react <emoji>` sends to the currently selected reply target.
+- **New commands** — `/query <nick>` opens a PM buffer without sending; `/ns`, `/cs`, `/bs`, `/ms` are shortcuts for NickServ/ChanServ/BotServ/MemoServ; `/oper <user> <pass>` sends IRC OPER.
+- Fix: AppImage build script now patches `linuxdeploy-plugin-qt`'s bundled `strip` (same `.relr.dyn` workaround previously applied to linuxdeploy only).
 
 ---
 
 ## v0.14.0 — 2026-05-31
 
 - **Ignore list** — `/ignore <nick>` suppresses all PRIVMSG, NOTICE, and ACTION messages from a nick; `/unignore <nick>` removes them from the list; `/ignored` lists current ignored nicks. Right-click any nick → **Ignore** / **Unignore** does the same from the context menu. The list persists in `config.toml` under `[ignore] nicks = [...]`.
+- **Right-click Copy** — selecting text in the chat view and right-clicking now shows a **Copy** menu item (the custom context menu event filter was consuming all right-click events unconditionally).
+- **Icon colors** — hamburger menu icons and gear buttons now use the active theme's foreground color (`m_theme.text`) instead of the OS palette default, which was always black regardless of theme.
+- **Link preview card** — card background, text, and border colors are now hardcoded (`#1a1a1a` / `#eeeeee` / `#888888`) so the card looks consistent across all themes.
+- Fix: server dialog **Browse** buttons widened from 70 px to 90 px so `Browse…` no longer clips to `rowse`.
+- Fix: server dialog shows a note below **Auto-join** explaining the `config.toml` format for password-protected channels.
 
 ---
 

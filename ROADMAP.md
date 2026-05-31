@@ -130,15 +130,15 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Hanging indent — wrapped message lines align past the timestamp+nick column; toggleable from Preferences and `hanging_indent` config key; uses QTextBlockFormat for correct Qt rendering
 - [x] Message search — Ctrl+F opens search bar; Enter/Shift+Enter next/prev with wrap; Escape closes
 - [x] Hamburger Close Menu button — explicit dismiss action at bottom of ☰ menu
-- [ ] Logging — per-channel log files at `~/.config/uplinkirc/logs/`
-- [ ] Ignore list — client-side suppress of incoming PRIVMSGs/NOTICEs from specific nicks; right-click → Ignore; /ignore and /unignore commands
+- [x] Logging — per-channel log files at `~/.config/uplinkirc/logs/<server>/<channel>.log`; `log_messages` config key; Preferences toggle (v0.15.0)
+- [x] Ignore list — client-side suppress of incoming PRIVMSGs/NOTICEs/ACTIONs from specific nicks; right-click → Ignore/Unignore; /ignore /unignore /ignored commands; persists as [ignore] nicks in config.toml (v0.14.0)
 - [x] msgid — IRCv3 unique message IDs stored on every received message; full signal chain (messageReceived, noticeReceived, actionReceived, batch delivery); prerequisite for reply threading, reactions, and redaction
 - [x] echo-message — server echoes sent messages back; duplicate local echo suppressed; PM routing corrected for self-echoes; also fixes ZNC self-message PM routing
 - [x] draft/reply — right-click any message → Reply; reply bar above input; ↩ origNick shown on received replies; @+draft/reply= tag sent on outgoing messages
 - [ ] draft/message-redaction — delete/hide a sent message; requires msgid
 - [ ] account-notify + account-tag + extended-join — track NickServ account per nick; show account on JOIN
 - [ ] Monitor — standardized online/offline watch list (replaces ISON polling)
-- [ ] chghost — see username/hostname changes without fake QUIT+JOIN noise
+- [x] chghost — CAP negotiated; CHGHOST parsed; quiet "nick changed host" status line in shared channels; no fake QUIT+JOIN noise (v0.15.0)
 - [ ] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; prevent downgrade attacks
 - [ ] invite-notify — see when someone is invited to a channel you're in
 - [ ] setname — see and send realname changes after connection (SETNAME command)
@@ -153,7 +153,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] DCC Send File — right-click nick → Send File; DccSend TCP listener + ACK protocol; DccReceive connect + ACK send; progress dialogs; 60s/30s timeouts. NAT limitation: local IP advertised; works on LAN, blocked by NAT on WAN.
 - [ ] DCC passive / NAT traversal — sender behind NAT cannot receive inbound connection; passive DCC or relay needed
 - [ ] Split view — view two channels side by side
-- [ ] Message reactions — IRCv3 react support; display and send emoji reactions on messages
+- [x] Message reactions — IRCv3 draft/react; receive + store per-msgid; render inline below messages; right-click timestamp → React; /react command; IrcClient::sendReact (v0.15.0)
 - [ ] Multiline messages — IRCv3 draft/multiline; compose and render multi-line message blocks
 - [ ] IRCv3 WebSocket transport — connect to servers over wss:// in addition to plain TCP+TLS
 - [ ] User metadata — IRCv3 metadata keys: display-name, avatar, pronouns; show in nick list and tooltips
@@ -179,7 +179,10 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Sidebar gear toggle — ⚙ button in the topic bar collapses the server/channel list; hamburger and gear stay pinned in the topic bar at all times (kBtnZoneMinW=48px floor); only the list collapses beneath them
 - [x] Native Windows style — windows11 Qt style by default; no alien dark theme on fresh installs
 - [ ] FreeBSD port skeleton
-- [x] AppImage packaging for Linux — build-appimage.sh; linuxdeploy + Qt plugin; zsync metadata embedded; release.yml uploads .AppImage + .AppImage.zsync
+- [x] AppImage packaging for Linux — build-appimage.sh; linuxdeploy + Qt plugin; zsync metadata embedded; release.yml uploads .AppImage + .AppImage.zsync; plugin strip patched for .relr.dyn (v0.15.0)
+- [x] Service shortcuts — /ns /cs /bs /ms aliases for NickServ/ChanServ/BotServ/MemoServ; /query opens PM without sending; /oper for IRC operator login (v0.15.0)
+- [x] Right-click copy in chat view — selecting text and right-clicking shows Copy (v0.14.0)
+- [x] Theme-aware icons — hamburger menu and gear buttons use m_theme.text; link preview card hardcoded dark (v0.14.0)
 - [ ] In-app update check UI — zsync metadata is embedded; appimageupdatetool works externally; no "Check for Updates" button inside the app yet
 
 ---
