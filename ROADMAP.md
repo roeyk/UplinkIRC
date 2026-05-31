@@ -37,7 +37,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Full documentation — configuration.md, commands.md, faq.md, ircv3.md, keyboard-shortcuts.md (beginner-friendly, real examples)
 - [x] How-To guide — docs/howto.html: left-side nav tree, step-by-step from install to tweaks, platform tabs, callout boxes, scroll-spy; linked from GitHub Pages and README
 - [x] GitHub repo — public, branch-protected, invite-only contributions
-- [x] GitHub Pages landing page — https://joehonkey.github.io/UplinkIRC/
+- [x] GitHub Pages landing page — https://noderelay.github.io/UplinkIRC/
 - [x] README beautification — badges, icon gallery, feature tables, annotated config, commands table, download buttons
 - [x] Nick completion — Tab key completes nicks in input bar
 - [x] Slash command tab completion — Tab also completes /commands (e.g. /pi → /ping)

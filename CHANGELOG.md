@@ -2141,10 +2141,10 @@ What was built:
   - Global git commit-msg hook at ~/.config/git/hooks/commit-msg strips
     all AI co-author/attribution lines from every commit on this machine.
     git config --global core.hooksPath set to ~/.config/git/hooks.
-  - GitHub repo created: https://github.com/joehonkey/UplinkIRC (public).
+  - GitHub repo created: https://github.com/noderelay/UplinkIRC (public).
   - Branch protection on main — force push and deletion blocked.
   - GitHub Pages enabled from docs/ folder.
-    Live at: https://joehonkey.github.io/UplinkIRC/
+    Live at: https://noderelay.github.io/UplinkIRC/
   - Landing page (docs/index.html) — dark Catppuccin design, hero with
     About.png logo, cross-platform section (Linux/FreeBSD/macOS/Windows/ARM64),
     feature cards, IRCv3 capability status grid, docs links, footer.

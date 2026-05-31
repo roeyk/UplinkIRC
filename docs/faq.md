@@ -8,7 +8,7 @@ Common questions and fixes for UplinkIRC.
 
 ### Where do I get UplinkIRC?
 
-Pre-built binaries are available on the [GitHub Releases page](https://github.com/joehonkey/UplinkIRC/releases/latest):
+Pre-built binaries are available on the [GitHub Releases page](https://github.com/noderelay/UplinkIRC/releases/latest):
 
 | Platform | Format | How to run |
 |---|---|---|

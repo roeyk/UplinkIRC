@@ -10,7 +10,7 @@ Please do **not** open a public GitHub issue for security vulnerabilities.
 
 Report security issues privately to the maintainer:
 
-- GitHub: [@joehonkey](https://github.com/joehonkey)
+- GitHub: [@noderelay](https://github.com/noderelay)
 - Email: joseph.d.harris78@gmail.com
 
 Include:
