@@ -136,6 +136,7 @@ LD_PATCHED="$LD_EXTRACT/squashfs-root/AppRun"
 # Phase 2: deploy Qt libs and plugins into AppDir using patched linuxdeploy.
 # ---------------------------------------------------------------------------
 echo "==> Deploying Qt libraries..."
+export PATH="$TOOLS_DIR:$PATH"
 "$LD_PATCHED" \
     --appdir "$APPDIR" \
     --plugin qt \
