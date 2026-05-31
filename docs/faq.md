@@ -470,7 +470,8 @@ When a live message arrives containing an `http://` or `https://` URL, UplinkIRC
 - **Right-click** a link → shows a menu:
   - **Copy URL** — copies the full URL to clipboard
   - **Open URL** — opens in the default browser
-  - **Hide Preview** — removes the preview card for that link (grayed if no card exists)
+  - **Hide Preview** — hides the preview card for that link (grayed if no card exists)
+  - **Show Preview** — restores a previously hidden card (appears in place of Hide Preview when the preview is hidden)
 
 Hovering over any URL shows the domain in the status bar and tooltip, updating to the full page title once the fetch completes.
 

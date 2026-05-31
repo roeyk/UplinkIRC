@@ -126,7 +126,7 @@
 | **Emoji picker** | Click 😊 to open a searchable grid of ~400 emoji. Enable with `show_emoji_button = true`. |
 | **`:shortcode:` autocomplete** | Type `:fire` and a live completion list appears. Navigate with Up/Down, confirm with Enter. |
 | **Emoji auto-substitute** | Typing `:trident:` replaces with 🔱 on the closing colon. Any remaining `:shortcode:` patterns resolve before the message is sent. |
-| **Link preview cards** | URLs in messages auto-fetch `og:title` + `og:image`. A card with title + domain on top and thumbnail below appears inline. Right-click any link for **Copy URL / Open URL / Hide Preview**. Works with YouTube and other heavy sites via a smart user-agent. |
+| **Link preview cards** | URLs in messages auto-fetch `og:title` + `og:image`. A card with title + domain on top and thumbnail below appears inline. Right-click any link for **Copy URL / Open URL / Hide Preview / Show Preview**. Works with YouTube and other heavy sites via a smart user-agent. |
 | **Typing indicator** | IRCv3 `draft/typing`. Shows `nick is typing…` as a transparent overlay on the chat background. Sends your own state debounced. |
 | **mIRC colors** | Full IRC color codes rendered in chat. |
 | **Tab completion** | Tab-completes nick names and slash commands. Cycles through candidates. |

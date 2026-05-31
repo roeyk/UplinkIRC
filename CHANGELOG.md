@@ -3,6 +3,28 @@
 ---
 
 <!--
+Session summary — 2026-05-30 (v0.12.1 — link preview show/hide toggle)
+
+What was built:
+  - Show Preview toggle: right-clicking a URL whose preview was hidden now shows "Show Preview"
+    instead of "Hide Preview". Clicking it removes the URL from hiddenPreviews and refreshes the
+    view — no re-fetch needed, the card HTML is still cached in Channel::previews.
+  - Channel::hiddenPreviews (QSet<QString>) added to channel.h alongside previews hash.
+  - Render loop (refreshChatView) skips URLs in hiddenPreviews.
+  - Context menu logic now branches: isHidden → "Show Preview"; hasPreview && !hidden → "Hide Preview" (enabled); no preview → "Hide Preview" (disabled).
+
+Regressions: none.
+Known issues: same as v0.12.0.
+Next priorities: ignore list, per-channel logging, draft/message-redaction, draft/react.
+-->
+
+## v0.12.1 — 2026-05-30
+
+- **Link preview show/hide toggle** — right-clicking a URL that was previously hidden now shows **Show Preview** instead of Hide Preview. Clicking it restores the card without a re-fetch (the HTML remains cached). The hide/show state is tracked per-URL in a new `hiddenPreviews` set on the channel.
+
+---
+
+<!--
 Session summary — 2026-05-30 (v0.12.0 — link preview overhaul + notification polish)
 
 What was built:
