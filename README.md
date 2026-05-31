@@ -253,7 +253,7 @@ channels = "#uplink"
 # Leave as "default" for the native OS look (recommended on Windows).
 theme             = "catppuccin-mocha"
 
-# Show your nick label in the input bar (e.g. "joehonkey ▸ ...")
+# Show your nick label in the input bar (e.g. "noderelay ▸ ...")
 show_nick_prefix  = true
 
 # Drop the topic text below the info bar
