@@ -3,6 +3,29 @@
 ---
 
 <!--
+Session summary — 2026-05-31 (housekeeping — username rename)
+
+What was done:
+  - GitHub account renamed from joehonkey → noderelay.
+  - Git remote URL updated to https://github.com/noderelay/UplinkIRC.git.
+  - All joehonkey references replaced in README.md, CHANGELOG.md, ROADMAP.md,
+    SECURITY.md, docs/faq.md, themes/BreezeDarkPlus.toml, CLAUDE.md.
+  - Global git user.name updated to noderelay.
+  - Verified GitHub repo and GitHub Pages both live at new URLs.
+  - ~/.claude/CLAUDE.md updated.
+
+Regressions: none.
+Known issues: unchanged from v0.15.0.
+Next priorities: unchanged.
+-->
+
+## Maintenance — 2026-05-31
+
+- **GitHub username renamed** — account and all project URLs updated from `joehonkey` to `noderelay`. Git remote, README badges, docs, and theme attribution all reflect the new username.
+
+---
+
+<!--
 Session summary — 2026-05-31 (v0.14.0–v0.15.0 + fixes)
 
 What was built:
