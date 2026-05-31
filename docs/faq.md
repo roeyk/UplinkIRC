@@ -155,15 +155,26 @@ You can also right-click a server in the sidebar and choose **Reconnect** to con
 
 ### How do I send a raw IRC command?
 
-Use `/raw` followed by the full IRC line:
+You have two options:
+
+**Option 1 — just type the command directly.** Any slash command that UplinkIRC does not recognize is sent straight to the server as a raw IRC line. No prefix needed:
 
 ```
-/raw PRIVMSG #uplink :hello
+/REHASH
+/SAMODE #uplink +o alice
+/GLOBOPS Heads up, opers
+/OPER myname mypassword
+```
+
+**Option 2 — use `/raw` or `/quote`.** Both do the same thing and accept a full IRC protocol line:
+
+```
 /raw MODE #uplink +m
-/raw WHOIS alice
+/raw INVITE alice #uplink
+/quote PRIVMSG #test :hello from raw
 ```
 
-`/quote` works as an alias for `/raw`.
+`/raw` and `/quote` are identical aliases. Use whichever you prefer. The direct passthrough (option 1) is usually simpler for oper and server-specific commands.
 
 ### My nick was already in use — what happened?
 

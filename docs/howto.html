@@ -1011,11 +1011,20 @@ channels        = "#linux"</pre>
       <tr><td><code>/away message</code></td><td>Set yourself away</td><td><code>/away at lunch</code></td></tr>
       <tr><td><code>/back</code></td><td>Clear your away status</td><td><code>/back</code></td></tr>
       <tr><td><code>/clear</code></td><td>Clear the chat buffer</td><td><code>/clear</code></td></tr>
-      <tr><td><code>/quote raw line</code></td><td>Send a raw IRC line</td><td><code>/quote PRIVMSG #test :hi</code></td></tr>
+      <tr><td><code>/raw line</code></td><td>Send a raw IRC protocol line to the server</td><td><code>/raw MODE #uplink +m</code></td></tr>
+      <tr><td><code>/quote line</code></td><td>Alias for <code>/raw</code></td><td><code>/quote INVITE alice #uplink</code></td></tr>
+      <tr><td><code>/ANYTHING</code></td><td>Any unrecognized command is sent as-is — no prefix needed</td><td><code>/REHASH</code>, <code>/SAMODE #uplink +o alice</code></td></tr>
       <tr><td><code>/quit [message]</code></td><td>Disconnect</td><td><code>/quit see ya</code></td></tr>
       <tr><td><code>/sysinfo</code></td><td>Post OS/CPU/RAM info to channel</td><td><code>/sysinfo</code></td></tr>
       <tr><td><code>/help</code></td><td>List all commands</td><td><code>/help</code></td></tr>
     </table>
+
+    <div class="callout">
+      <strong>Tip: oper and server-specific commands work directly.</strong>
+      If a command is not in the list above, just type it — UplinkIRC passes it straight to the server.
+      This means IRC operator commands like <code>/REHASH</code>, <code>/SAMODE</code>, <code>/GLOBOPS</code>, <code>/OPER</code>, and any other server-specific command work without needing a <code>/raw</code> prefix.
+      UplinkIRC does not need to know about every command your server supports.
+    </div>
   </section>
 
   <!-- PM -->
