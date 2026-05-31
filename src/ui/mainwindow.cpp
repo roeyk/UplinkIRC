@@ -1942,6 +1942,26 @@ void MainWindow::onInputSubmit()
             m_model->sendMessage(host, target, text);
             if (!target.startsWith('#') && !target.startsWith('&'))
                 switchToChannel(host, target);
+        } else if (cmd == "/query") {
+            const QString target = args.trimmed().section(' ', 0, 0);
+            if (!target.isEmpty()) {
+                m_model->openPM(host, target);
+                switchToChannel(host, target);
+                if (m_input) m_input->setFocus();
+            }
+        } else if (cmd == "/ns") {
+            if (!args.isEmpty()) m_model->sendMessage(host, "NickServ", args);
+        } else if (cmd == "/cs") {
+            if (!args.isEmpty()) m_model->sendMessage(host, "ChanServ", args);
+        } else if (cmd == "/bs") {
+            if (!args.isEmpty()) m_model->sendMessage(host, "BotServ", args);
+        } else if (cmd == "/ms") {
+            if (!args.isEmpty()) m_model->sendMessage(host, "MemoServ", args);
+        } else if (cmd == "/oper") {
+            const QString user = args.section(' ', 0, 0);
+            const QString pass = args.section(' ', 1);
+            if (!user.isEmpty() && !pass.isEmpty())
+                m_model->sendRaw(host, "OPER " + user + " :" + pass);
         } else if (cmd == "/notice") {
             const QString target = args.section(' ', 0, 0);
             const QString msg    = args.section(' ', 1);
@@ -2090,6 +2110,12 @@ void MainWindow::onInputSubmit()
                 "  /nick <newnick>             — change your nick",
                 "  /me <action>                — send an action (/me waves)",
                 "  /msg <target> <message>     — send a private message",
+                "  /query <nick>               — open a PM buffer without sending",
+                "  /ns <text>                  — message NickServ",
+                "  /cs <text>                  — message ChanServ",
+                "  /bs <text>                  — message BotServ",
+                "  /ms <text>                  — message MemoServ",
+                "  /oper <user> <pass>         — IRC operator login",
                 "  /notice <target> <message>  — send a NOTICE",
                 "  /topic [text]               — show or set the channel topic",
                 "  /kick <nick> [reason]       — kick a user",
