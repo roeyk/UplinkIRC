@@ -70,7 +70,7 @@ ServerDialog::ServerDialog(QWidget *parent)
         hbox->setContentsMargins(0, 0, 0, 0);
         hbox->addWidget(edit);
         auto *btn = new QPushButton("Browse…", row);
-        btn->setFixedWidth(70);
+        btn->setFixedWidth(90);
         hbox->addWidget(btn);
         QObject::connect(btn, &QPushButton::clicked, edit, [edit, filter, parent]{
             const QString p = QFileDialog::getOpenFileName(parent, "Select File", {}, filter);
@@ -98,8 +98,18 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_bouncerNetwork = new QLineEdit;
     m_bouncerNetwork->setPlaceholderText("network name (soju only)");
 
+    auto *channelNote = new QLabel(
+        "⚠ To join a password-protected channel, edit <b>config.toml</b> directly:<br/>"
+        "<code>&nbsp;&nbsp;[[server.channel]]<br/>"
+        "&nbsp;&nbsp;name = \"#private\"<br/>"
+        "&nbsp;&nbsp;key &nbsp;= \"secretkey\"</code>");
+    channelNote->setWordWrap(true);
+    channelNote->setStyleSheet("font-size: 8pt; color: #aaaaaa; margin-top: 2px;");
+    channelNote->setTextFormat(Qt::RichText);
+
     form->addRow(makeHeader("Channels"));
     form->addRow("Auto-join:", m_autoJoin);
+    form->addRow("", channelNote);
 
     form->addRow(makeHeader("Bouncer"));
     form->addRow("Type:",    m_bouncerType);
