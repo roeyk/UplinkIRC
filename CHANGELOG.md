@@ -46,7 +46,6 @@ Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
 ## Housekeeping — 2026-05-31
 
 - **GitHub releases backfilled** — tags and GitHub Releases created for v0.14.0, v0.15.0, v0.16.0, and v0.16.1; GitHub now correctly shows v0.16.1 as the latest release.
-- **Remaining `joehonkey` references cleaned up** — noreply email in `settings.local.json` and nick prefix example in `README.md` updated to `noderelay`.
 
 ---
 
