@@ -458,18 +458,24 @@ log_messages = true
 Use the service shortcuts:
 
 ```
-/ns identify mypassword        # → PRIVMSG NickServ identify mypassword
-/ns register pass email@x.com  # → PRIVMSG NickServ register …
-/cs op #uplink                 # → PRIVMSG ChanServ op #uplink
-/bs botlist                    # → PRIVMSG BotServ botlist
-/ms list                       # → PRIVMSG MemoServ list
+/ns identify mypassword        # → PRIVMSG NickServ :identify mypassword
+/ns register pass email@x.com  # → PRIVMSG NickServ :register …
+/cs op #uplink                 # → PRIVMSG ChanServ :op #uplink
+/bs botlist                    # → PRIVMSG BotServ :botlist
+/ms list                       # → PRIVMSG MemoServ :list
 ```
 
 Or use the full form: `/msg NickServ identify mypassword`
 
+When you send a message to a service, NodeRelay opens a PM tab for that service (e.g. **NickServ** or **ChanServ**) in the sidebar. Replies from the service — including help output, confirmations, and error messages — arrive in that same PM tab. If no PM tab is open yet, their replies land in the server buffer.
+
+**Passwords are never shown in the chat.** When you type `/ns identify mypassword`, the NickServ tab shows `IDENTIFY <redacted>` — your actual password is replaced before it is displayed. The command still goes to the server correctly. This applies to `IDENTIFY`, `REGISTER`, `GHOST`, `RECOVER`, `RELEASE`, `REGAIN`, and `SETPASS`.
+
 ### How do I copy text from the chat?
 
 Select the text with your mouse — click and drag to highlight it — then right-click the selection and choose **Copy**. Standard keyboard shortcuts (`Ctrl+C` after selecting) also work.
+
+The right-click menu for selected text also shows a **Reply** option for the message you clicked on, so you can select a quote and reply to the same message without two separate clicks.
 
 ### How do I send a file to someone (DCC)?
 
@@ -526,6 +532,9 @@ Right-clicking the **timestamp** at the left of any chat message opens a message
 |---|---|
 | **Reply** | Sets this message as the reply target. A `↩ nick` bar appears above the input. Type your reply and press Enter. Escape cancels. |
 | **React** | Opens an emoji input. Your reaction is sent as an IRCv3 `draft/react` and shown inline below the message for all clients that support it. |
+| **Copy** | Appears when you have text selected — copies the selection to the clipboard. |
+
+You do not have to click the timestamp exactly to get Reply. If you right-click anywhere in the message body while text is selected, the menu shows both **Copy** and **Reply** for the message you are in.
 
 ### How do I check another user's IRC client version?
 

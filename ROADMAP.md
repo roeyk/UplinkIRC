@@ -207,6 +207,11 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Reconnect socket abort — socket abort()ed before reconnect if not already unconnected (v0.13.0)
 - [x] Password field encryption — don't store plaintext passwords (OS keychain integration) (v0.16.6)
 - [x] Qt6Keychain CI integration — FetchContent fallback in CMakeLists.txt; all three platform CI + release builds passing (v0.16.6 follow-up)
+- [x] Theme-aware link preview cards — bg/border/text/timestamp colours from active theme (v0.16.7)
+- [x] Right-click Copy + Reply together — both available from message body right-click; no need to aim at the timestamp (v0.16.7)
+- [x] NickServ credential redaction extended — IDENTIFY/REGISTER/GHOST/RECOVER/RELEASE/REGAIN/SETPASS all redacted in local echo (v0.16.7)
+- [x] Service NOTICE routing — ChanServ/NickServ/BotServ/MemoServ replies route to their PM tab when open (v0.16.7)
+- [x] howto.html full-text search — live search box in nav sidebar, match count, keyboard navigation (v0.16.7)
 - [ ] Self-signed cert option — per-server accept/reject + fingerprint-pin UI
 - [ ] SOCKS5 proxy support
 

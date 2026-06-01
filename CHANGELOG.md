@@ -123,6 +123,39 @@ Next priorities:
 -->
 
 <!--
+Session summary — 2026-06-01 (v0.16.7 — UX fixes, security, docs search)
+
+What was done:
+  - Link preview card background now reads bufferBg/border/text/timestamp from
+    the active theme instead of hardcoded dark hex colors. Cards match the chat
+    area on any theme, light or dark.
+  - Right-click context menu improvements:
+      - Timestamp (msgid) menu now includes Copy when text is selected.
+      - Message body right-click (no anchor) now includes Reply: scans the
+        block's QTextFragment char formats to find the msgid anchor, so
+        Reply is available without needing to click the timestamp exactly.
+  - Security — NickServ credential redaction extended: IDENTIFY, REGISTER,
+    GHOST, RECOVER, RELEASE, REGAIN, SETPASS all show "<redacted>" in the
+    local PM buffer echo instead of the actual password. The real text still
+    goes to the server.
+  - Service NOTICE routing fixed: NOTICEs from NickServ, ChanServ, BotServ,
+    MemoServ etc. now land in the PM tab for that service if one is open,
+    instead of always going to the server buffer. Replies to /msg ChanServ HELP
+    now appear in the ChanServ window.
+  - howto.html: full-text search box added to the left nav sidebar. Live
+    highlights all matches as you type, shows N/total count, ▲▼ buttons and
+    Enter/Shift+Enter to cycle, Escape to clear.
+  - howto.html: header icon replaced from tower-dark.png (PNG with background
+    artifact / thick frame on some renderers) to tower.svg (clean transparent).
+  - docs/icons/tower.svg added (copied from resources/icons/icon-tower.svg).
+
+Regressions: none.
+Known issues: same as previous session.
+Next priorities: self-signed cert fingerprint-pin, SOCKS5 proxy, DCC passive/NAT,
+  split view, in-app update check.
+-->
+
+<!--
 Session summary — 2026-06-01 (CI fix — Qt6Keychain on all runners)
 
 What was done:
@@ -155,6 +188,17 @@ Known issues: same as previous session.
 Next priorities: self-signed cert fingerprint-pin, SOCKS5 proxy, DCC passive/NAT,
   split view, in-app update check.
 -->
+
+## v0.16.7 — 2026-06-01
+
+- **Theme-aware link preview cards** — the background, border, title, and domain colours of link preview cards now follow the active theme instead of being hardcoded dark. Cards look correct on any theme, light or dark.
+- **Right-click: Copy and Reply together** — right-clicking on selected message text now shows both **Copy** and **Reply** in the same menu. Previously you had to right-click the timestamp exactly to get Reply. The context menu now finds the message ID from whichever part of the message you click.
+- **Security: NickServ credential redaction extended** — the local PM buffer echo for sensitive NickServ commands now shows `COMMAND <redacted>` instead of your actual password. Covered: `IDENTIFY`, `REGISTER`, `GHOST`, `RECOVER`, `RELEASE`, `REGAIN`, `SETPASS`.
+- **Fix: service NOTICE routing** — replies from NickServ, ChanServ, BotServ, MemoServ, and other services now appear in the PM tab for that service (if one is open), not in the server buffer. Typing `/msg ChanServ HELP` opens a ChanServ tab and the help output arrives there.
+- **howto.html: full-text search** — search box added to the left sidebar of the online How-To guide. Live highlights, match count, keyboard navigation (Enter / Shift+Enter), Escape to clear.
+- **howto.html: SVG icon** — header icon switched from PNG (which had a visible background frame on some browsers) to SVG.
+
+---
 
 ## v0.16.6 — 2026-06-01
 
