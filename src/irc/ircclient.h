@@ -21,7 +21,7 @@ public:
     ~IrcClient() override;
 
     void connectToServer(const ServerConfig &cfg);
-    void quit(const QString &reason = "UplinkIRC");
+    void quit(const QString &reason = "NodeRelay");
 
     void join(const QString &channel, const QString &key = {});
     void part(const QString &channel, const QString &reason = {});

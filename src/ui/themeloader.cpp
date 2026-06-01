@@ -17,7 +17,7 @@ QString ThemeLoader::themesDir()
     const QStringList candidates = {
         QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/themes",
         QCoreApplication::applicationDirPath() + "/themes",
-        QCoreApplication::applicationDirPath() + "/../share/uplinkirc/themes",
+        QCoreApplication::applicationDirPath() + "/../share/noderelay/themes",
         "themes"
     };
     for (const QString &p : candidates)

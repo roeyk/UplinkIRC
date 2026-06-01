@@ -9,7 +9,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("UplinkIRC");
+    app.setApplicationName("NodeRelay");
     app.setApplicationVersion(UPLINKIRC_VERSION);
 
 #if defined(Q_OS_WIN)
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     if (cfg.needsNickSetup()) {
         bool ok = false;
         const QString nick = QInputDialog::getText(
-            nullptr, "UplinkIRC — Set Your Nick",
+            nullptr, "NodeRelay — Set Your Nick",
             "Choose a nickname:", QLineEdit::Normal, "", &ok);
         if (ok && !nick.trimmed().isEmpty()) {
             for (auto &s : cfg.servers)

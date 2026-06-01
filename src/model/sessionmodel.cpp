@@ -109,7 +109,7 @@ static void logMessage(const QString &host, const QString &target, const Message
     if (msg.isHistory) return;
 
     const QString logsDir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-                            + "/.config/uplinkirc/logs/"
+                            + "/.config/noderelay/logs/"
                             + sanitizeFilename(host) + "/";
     QDir().mkpath(logsDir);
 

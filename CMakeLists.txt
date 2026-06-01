@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(UplinkIRC VERSION 0.16.1 LANGUAGES CXX)
+project(NodeRelay VERSION 0.16.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -20,7 +20,7 @@ if(NOT tomlplusplus_FOUND)
 endif()
 qt_standard_project_setup()
 
-qt_add_executable(UplinkIRC WIN32
+qt_add_executable(NodeRelay WIN32
     resources/resources.qrc
     src/main.cpp
     src/config/config.cpp
@@ -67,9 +67,9 @@ qt_add_executable(UplinkIRC WIN32
 )
 
 configure_file(src/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
-target_include_directories(UplinkIRC PRIVATE src ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(NodeRelay PRIVATE src ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(UplinkIRC PRIVATE
+target_link_libraries(NodeRelay PRIVATE
     Qt6::Core
     Qt6::Widgets
     Qt6::Network
@@ -79,22 +79,22 @@ target_link_libraries(UplinkIRC PRIVATE
 
 # Prevent .relr.dyn sections that linuxdeploy's bundled strip cannot handle
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_link_options(UplinkIRC PRIVATE -Wl,-z,nopack-relative-relocs)
+    target_link_options(NodeRelay PRIVATE -Wl,-z,nopack-relative-relocs)
 endif()
 
 # Copy themes next to binary for development
-add_custom_command(TARGET UplinkIRC POST_BUILD
+add_custom_command(TARGET NodeRelay POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/themes $<TARGET_FILE_DIR:UplinkIRC>/themes
+        ${CMAKE_SOURCE_DIR}/themes $<TARGET_FILE_DIR:NodeRelay>/themes
 )
 
 if(APPLE)
-    set_target_properties(UplinkIRC PROPERTIES MACOSX_BUNDLE TRUE)
+    set_target_properties(NodeRelay PROPERTIES MACOSX_BUNDLE TRUE)
 endif()
 
-install(TARGETS UplinkIRC DESTINATION bin)
-install(DIRECTORY themes/ DESTINATION share/uplinkirc/themes)
-install(FILES packaging/UplinkIRC.desktop DESTINATION share/applications)
-install(FILES resources/icons/app-icon-dark.svg
+install(TARGETS NodeRelay DESTINATION bin)
+install(DIRECTORY themes/ DESTINATION share/noderelay/themes)
+install(FILES packaging/NodeRelay.desktop DESTINATION share/applications)
+install(FILES resources/icons/icon-tower.svg
         DESTINATION share/icons/hicolor/scalable/apps
-        RENAME uplinkirc.svg)
+        RENAME noderelay.svg)

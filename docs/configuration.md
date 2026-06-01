@@ -1,6 +1,6 @@
 # Configuration
 
-UplinkIRC is configured with a single TOML file. On first launch it is created automatically with default settings — you just need to fill in your nickname.
+NodeRelay is configured with a single TOML file. On first launch it is created automatically with default settings — you just need to fill in your nickname.
 
 ---
 
@@ -8,9 +8,9 @@ UplinkIRC is configured with a single TOML file. On first launch it is created a
 
 | Platform | Path |
 |---|---|
-| Linux / FreeBSD | `~/.config/uplinkirc/config.toml` |
-| macOS | `~/.config/uplinkirc/config.toml` |
-| Windows | `%USERPROFILE%\.config\uplinkirc\config.toml` |
+| Linux / FreeBSD | `~/.config/noderelay/config.toml` |
+| macOS | `~/.config/noderelay/config.toml` |
+| Windows | `%USERPROFILE%\.config\noderelay\config.toml` |
 
 You can edit the file directly, or use the in-app tools under ☰:
 
@@ -33,7 +33,7 @@ show_emoji_button = true               # shows 😊 button next to input bar
 colored_nicks     = true
 typing_indicator  = true
 hanging_indent    = true               # wrap long messages past the timestamp+nick column
-log_messages      = true               # write all messages to ~/.config/uplinkirc/logs/
+log_messages      = true               # write all messages to ~/.config/noderelay/logs/
 notifications     = true               # green dot on tray icon for mentions/PMs when unfocused
 nick_brackets     = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
 app_icon          = "dark"
@@ -55,7 +55,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 # sasl_user         = "yournick"       # uncomment to enable SASL PLAIN
 # sasl_password     = "yourpassword"
 # nickserv_password = "yourpassword"   # alternative: NickServ IDENTIFY on connect
@@ -84,7 +84,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `colored_nicks` | bool | `true` | Give each nickname a unique color in chat and the nick list |
 | `typing_indicator` | bool | `true` | Show "nick is typing…" notifications (IRCv3 `draft/typing`) and send your own |
 | `hanging_indent` | bool | `true` | Indent wrapped message lines past the timestamp+nick column so they align with the message text. Toggle live from **Preferences → Hanging Indent**. |
-| `log_messages` | bool | `true` | Write all messages to `~/.config/uplinkirc/logs/<server>/<channel>.log`. History replay is not logged. Toggle from **Preferences → Log Messages to Disk**. |
+| `log_messages` | bool | `true` | Write all messages to `~/.config/noderelay/logs/<server>/<channel>.log`. History replay is not logged. Toggle from **Preferences → Log Messages to Disk**. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Tray Notifications**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`, `"light-default"`, `"avatar"` |
@@ -165,7 +165,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `ssl` | bool | yes | Use TLS encryption. Always set `true` — plaintext IRC is not supported |
 | `nick` | string | yes | Your preferred nickname |
 | `user` | string | no | Username in your hostmask (defaults to `"uplink"`) |
-| `realname` | string | no | Shown in WHOIS (defaults to `"UplinkIRC User"`) |
+| `realname` | string | no | Shown in WHOIS (defaults to `"NodeRelay User"`) |
 | `password` | string | no | Sent as `PASS` during connection. Required for most bouncers; also used for password-protected servers |
 | `sasl_user` | string | no | SASL username for SASL PLAIN authentication. Set together with `sasl_password` |
 | `sasl_password` | string | no | SASL password for SASL PLAIN authentication. Set together with `sasl_user` |
@@ -186,7 +186,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 
 [[server.channel]]
 name = "#uplink"
@@ -198,7 +198,7 @@ name = "#uplink"
 
 ### NickServ auto-identify
 
-If the server uses NickServ and does not support SASL, add `nickserv_password`. UplinkIRC sends `PRIVMSG NickServ :IDENTIFY <password>` immediately after receiving the welcome numeric.
+If the server uses NickServ and does not support SASL, add `nickserv_password`. NodeRelay sends `PRIVMSG NickServ :IDENTIFY <password>` immediately after receiving the welcome numeric.
 
 ```toml
 [[server]]
@@ -208,7 +208,7 @@ port              = 6697
 ssl               = true
 nick              = "yournick"
 user              = "uplink"
-realname          = "UplinkIRC User"
+realname          = "NodeRelay User"
 channels          = "#uplink"
 nickserv_password = "yourpassword"
 ```
@@ -254,14 +254,14 @@ port          = 6697
 ssl           = true
 nick          = "yournick"
 user          = "uplink"
-realname      = "UplinkIRC User"
+realname      = "NodeRelay User"
 channels      = "#linux"
 sasl_external = true
 client_cert   = "/home/joe/.irc/client.crt"
 client_key    = "/home/joe/.irc/client.key"
 ```
 
-The server buffer shows `SASL authentication successful` when it works. UplinkIRC presents the certificate during the TLS handshake, negotiates `AUTHENTICATE EXTERNAL`, and sends an empty response — the server derives your identity from the cert's fingerprint.
+The server buffer shows `SASL authentication successful` when it works. NodeRelay presents the certificate during the TLS handshake, negotiates `AUTHENTICATE EXTERNAL`, and sends an empty response — the server derives your identity from the cert's fingerprint.
 
 > **Note:** Do not combine `sasl_external` with `sasl_user`/`sasl_password`. They are mutually exclusive.
 
@@ -269,7 +269,7 @@ The server buffer shows `SASL authentication successful` when it works. UplinkIR
 
 ### SASL PLAIN
 
-If the server supports SASL (Libera.Chat, OFTC, and others), use `sasl_user` and `sasl_password`. UplinkIRC negotiates the `sasl` CAP and authenticates during the handshake, before registration completes.
+If the server supports SASL (Libera.Chat, OFTC, and others), use `sasl_user` and `sasl_password`. NodeRelay negotiates the `sasl` CAP and authenticates during the handshake, before registration completes.
 
 ```toml
 [[server]]
@@ -279,7 +279,7 @@ port          = 6697
 ssl           = true
 nick          = "yournick"
 user          = "uplink"
-realname      = "UplinkIRC User"
+realname      = "NodeRelay User"
 channels      = "#linux"
 sasl_user     = "yournick"
 sasl_password = "yourpassword"
@@ -291,7 +291,7 @@ The server buffer shows `SASL authentication successful` on connect. Authenticat
 
 ## Bouncer support (ZNC and soju)
 
-UplinkIRC has first-class bouncer support. Setting `bouncer = "znc"` or `bouncer = "soju"` in the server block activates bouncer-specific IRCv3 capabilities, enabling features like chat history replay, read markers, and network enumeration.
+NodeRelay has first-class bouncer support. Setting `bouncer = "znc"` or `bouncer = "soju"` in the server block activates bouncer-specific IRCv3 capabilities, enabling features like chat history replay, read markers, and network enumeration.
 
 The `password` field is used for bouncer authentication and is sent as `PASS` before `NICK`/`USER`, which is what bouncers require.
 
@@ -299,7 +299,7 @@ The `password` field is used for bouncer authentication and is sent as `PASS` be
 
 ZNC expects the password in the format `username/network:password`. Set `bouncer = "znc"` to activate ZNC-specific caps.
 
-When `znc.in/playback` is available, UplinkIRC sends `PRIVMSG *playback :PLAY * 0` after the welcome message to replay all missed messages. Self-messages sent from other clients are echoed correctly via `znc.in/self-message`.
+When `znc.in/playback` is available, NodeRelay sends `PRIVMSG *playback :PLAY * 0` after the welcome message to replay all missed messages. Self-messages sent from other clients are echoed correctly via `znc.in/self-message`.
 
 ```toml
 [[server]]
@@ -309,7 +309,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 password = "joe/libera:mysecretpassword"
 bouncer  = "znc"
 channels = "#linux, #archlinux"
@@ -325,7 +325,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 password = "joe/libera:mysecretpassword"
 bouncer  = "znc"
 channels = "#linux"
@@ -337,7 +337,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 password = "joe/oftc:mysecretpassword"
 bouncer  = "znc"
 channels = "#debian"
@@ -347,7 +347,7 @@ channels = "#debian"
 
 soju expects the password in the format `username:password`. Set `bouncer = "soju"` to activate soju-specific caps.
 
-When `soju.im/bouncer-networks` is available, UplinkIRC sends `BOUNCER LISTNETWORKS` after CAP negotiation and lists all attached networks in the server buffer. Use `bouncer_network` to specify which network to attach to when your soju instance carries more than one.
+When `soju.im/bouncer-networks` is available, NodeRelay sends `BOUNCER LISTNETWORKS` after CAP negotiation and lists all attached networks in the server buffer. Use `bouncer_network` to specify which network to attach to when your soju instance carries more than one.
 
 `soju.im/read` is negotiated automatically, keeping your read position in sync across all clients connected to the same soju instance.
 
@@ -359,7 +359,7 @@ port            = 6697
 ssl             = true
 nick            = "yournick"
 user            = "uplink"
-realname        = "UplinkIRC User"
+realname        = "NodeRelay User"
 password        = "joe:mysecretpassword"
 bouncer         = "soju"
 bouncer_network = "libera"
@@ -376,7 +376,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 password = "joe:mysecretpassword"
 bouncer  = "soju"
 channels = "#uplink"
@@ -384,7 +384,7 @@ channels = "#uplink"
 
 ### Chat history replay
 
-When `chathistory` is negotiated (supported by soju, modern ZNC, and some IRC servers), UplinkIRC automatically requests the last 100 messages for each channel after joining. History messages are:
+When `chathistory` is negotiated (supported by soju, modern ZNC, and some IRC servers), NodeRelay automatically requests the last 100 messages for each channel after joining. History messages are:
 
 - Displayed at reduced opacity so they are visually distinct from live messages
 - Shown with their original timestamp — the date is prepended (`MM/dd hh:mm`) when the message is from a previous day
@@ -408,7 +408,7 @@ channels = "#uplink, #linux, #dojoirc"
 
 ### Table format (with keys)
 
-For password-protected channels, use `[[server.channel]]` sub-tables with a `key` field. This format is also how UplinkIRC saves channels internally after the first config write.
+For password-protected channels, use `[[server.channel]]` sub-tables with a `key` field. This format is also how NodeRelay saves channels internally after the first config write.
 
 ```toml
 [[server]]
@@ -428,7 +428,7 @@ key  = "secretkey"
 
 Both formats load correctly. On the next save (via **Manage Servers** or **Reload Config**), channels are written in the table format with keys preserved.
 
-> **Note:** UplinkIRC will not prompt you for a missing channel key. If a channel requires a key, add it to the config manually using the `[[server.channel]]` format above.
+> **Note:** NodeRelay will not prompt you for a missing channel key. If a channel requires a key, add it to the config manually using the `[[server.channel]]` format above.
 
 ---
 
@@ -483,7 +483,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 
 [[server.channel]]
 name = "#uplink"
@@ -495,7 +495,7 @@ port          = 6697
 ssl           = true
 nick          = "yournick"
 user          = "uplink"
-realname      = "UplinkIRC User"
+realname      = "NodeRelay User"
 sasl_user     = "yournick"
 sasl_password = "yourpassword"
 
@@ -512,7 +512,7 @@ name = "#archlinux"
 
 Set `theme` in `[ui]` to any theme name from the list below. The name must match the `.toml` filename in the `themes/` folder without the extension.
 
-UplinkIRC ships with 55 built-in themes:
+NodeRelay ships with 55 built-in themes:
 
 | Theme name | Description |
 |---|---|
@@ -531,11 +531,11 @@ Themes can be switched live from the **Preferences** dialog (click ☰) without 
 
 ### Theme search path
 
-1. `~/.config/uplinkirc/themes/<name>.toml` — personal themes
+1. `~/.config/noderelay/themes/<name>.toml` — personal themes
 2. `<exe directory>/themes/<name>.toml` — shipped themes next to the binary
 3. `themes/<name>.toml` — relative to the current working directory
 
-To add a custom theme, drop a `.toml` file into `~/.config/uplinkirc/themes/`. It appears in the Preferences theme list on the next launch.
+To add a custom theme, drop a `.toml` file into `~/.config/noderelay/themes/`. It appears in the Preferences theme list on the next launch.
 
 ---
 
@@ -555,7 +555,7 @@ name = "LinuxDojo"
 
 ### Using single brackets for servers
 
-`[server]` defines a single table. `[[server]]` defines an array entry and is what UplinkIRC expects. Always use double brackets.
+`[server]` defines a single table. `[[server]]` defines an array entry and is what NodeRelay expects. Always use double brackets.
 
 ```toml
 # Wrong

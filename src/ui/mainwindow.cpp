@@ -140,7 +140,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_showTopic      = cfg.ui.showTopic;
     m_showEmojiBtn   = cfg.ui.showEmojiButton;
 
-    setWindowTitle("UplinkIRC");
+    setWindowTitle("NodeRelay");
     setWindowIcon(AppIcons::appIcon(m_config.ui.appIcon));
     resize(1100, 700);
 
@@ -158,6 +158,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
         m_tray = new TrayIcon(model, this);
+        m_tray->setBaseIcon(AppIcons::trayIcon());
         m_tray->setNotificationsEnabled(m_config.ui.notifications);
     }
 
@@ -301,6 +302,7 @@ void MainWindow::connectPreferences()
         if (m_chatView && m_theme.valid)
             m_chatView->document()->setDefaultStyleSheet(
                 QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
+        applyAppIcon(m_config.ui.appIcon);
         Config::save(m_config, Config::defaultPath());
     });
 
@@ -430,9 +432,8 @@ void MainWindow::connectPreferences()
 
 void MainWindow::applyAppIcon(const QString &choice)
 {
-    const QIcon icon = AppIcons::appIcon(choice);
-    setWindowIcon(icon);
-    if (m_tray) m_tray->setBaseIcon(icon);
+    setWindowIcon(AppIcons::appIcon(choice));
+    if (m_tray) m_tray->setBaseIcon(AppIcons::trayIcon());
 }
 
 static QIcon makeGearIcon(int angleDeg, const QColor &color)

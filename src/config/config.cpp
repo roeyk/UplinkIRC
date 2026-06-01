@@ -45,7 +45,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "yournick"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 channels = "#uplink"
 )";
 
@@ -54,7 +54,7 @@ channels = "#uplink"
 QString Config::defaultPath()
 {
     return QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-           + "/.config/uplinkirc/config.toml";
+           + "/.config/noderelay/config.toml";
 }
 
 void Config::ensureExists(const QString &path)
@@ -68,7 +68,7 @@ void Config::ensureExists(const QString &path)
         f.write(kDefaultConfig);
         f.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
     } else {
-        qWarning() << "UplinkIRC: could not create config at" << path;
+        qWarning() << "NodeRelay: could not create config at" << path;
     }
 }
 
@@ -81,7 +81,7 @@ Config Config::load(const QString &path)
     try {
         QFile f(path);
         if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qWarning() << "UplinkIRC: could not open config at" << path;
+            qWarning() << "NodeRelay: could not open config at" << path;
             return cfg;
         }
         const std::string content = f.readAll().toStdString();
@@ -152,7 +152,7 @@ Config Config::load(const QString &path)
                 sc.ssl      = (*s)["ssl"].value_or(true);
                 sc.nick     = QString::fromStdString((*s)["nick"].value_or<std::string>(""));
                 sc.user     = QString::fromStdString((*s)["user"].value_or<std::string>("uplink"));
-                sc.realname = QString::fromStdString((*s)["realname"].value_or<std::string>("UplinkIRC User"));
+                sc.realname = QString::fromStdString((*s)["realname"].value_or<std::string>("NodeRelay User"));
                 sc.password     = QString::fromStdString((*s)["password"].value_or<std::string>(""));
                 sc.saslUser         = QString::fromStdString((*s)["sasl_user"].value_or<std::string>(""));
                 sc.saslPassword     = QString::fromStdString((*s)["sasl_password"].value_or<std::string>(""));
@@ -192,7 +192,7 @@ Config Config::load(const QString &path)
         }
 
     } catch (const toml::parse_error &e) {
-        qWarning() << "UplinkIRC: config parse error:" << e.what();
+        qWarning() << "NodeRelay: config parse error:" << e.what();
     }
 
     return cfg;
@@ -204,7 +204,7 @@ void Config::save(const Config &cfg, const QString &path)
 
     QSaveFile f(path);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qWarning() << "UplinkIRC: could not open config for writing at" << path;
+        qWarning() << "NodeRelay: could not open config for writing at" << path;
         return;
     }
 
@@ -295,7 +295,7 @@ void Config::save(const Config &cfg, const QString &path)
     }
 
     if (!f.commit())
-        qWarning() << "UplinkIRC: failed to commit config to" << path;
+        qWarning() << "NodeRelay: failed to commit config to" << path;
     else
         QFile::setPermissions(path, QFileDevice::ReadOwner | QFileDevice::WriteOwner);
 }

@@ -16,10 +16,9 @@
 #include <QHBoxLayout>
 
 const QList<QPair<QString,QString>> PreferencesDialog::s_iconChoices = {
-    { "dark",          "Dark"            },
-    { "light-default", "Light (default)" },
-    { "light",         "Light"           },
-    { "avatar",        "Avatar"          },
+    { "node-n",    "Node N"    },
+    { "tower",     "Tower"     },
+    { "hub-spoke", "Hub Spoke" },
 };
 
 const QList<QPair<QString,QString>> PreferencesDialog::s_bracketChoices = {

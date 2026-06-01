@@ -1,20 +1,20 @@
 # FAQ & Troubleshooting
 
-Common questions and fixes for UplinkIRC.
+Common questions and fixes for NodeRelay.
 
 ---
 
 ## Installation & startup
 
-### Where do I get UplinkIRC?
+### Where do I get NodeRelay?
 
-Pre-built binaries are available on the [GitHub Releases page](https://github.com/noderelay/UplinkIRC/releases/latest):
+Pre-built binaries are available on the [GitHub Releases page](https://github.com/noderelay/NodeRelay/releases/latest):
 
 | Platform | Format | How to run |
 |---|---|---|
-| **Linux x86_64** | AppImage | `chmod +x UplinkIRC-*.AppImage && ./UplinkIRC-*.AppImage` |
-| **Linux x86_64** | tar.gz | Extract, then `./UplinkIRC` |
-| **Windows x64** | zip | Extract and run `UplinkIRC.exe` |
+| **Linux x86_64** | AppImage | `chmod +x NodeRelay-*.AppImage && ./NodeRelay-*.AppImage` |
+| **Linux x86_64** | tar.gz | Extract, then `./NodeRelay` |
+| **Windows x64** | zip | Extract and run `NodeRelay.exe` |
 | **macOS** | DMG | Open and drag to Applications |
 | **FreeBSD** | — | Build from source (see below) |
 
@@ -25,7 +25,7 @@ The AppImage is the recommended Linux download — it is self-contained, runs on
 The AppImage embeds zsync metadata pointing to the latest release. Install [`appimageupdatetool`](https://github.com/AppImageCommunity/AppImageUpdate) and run:
 
 ```bash
-appimageupdatetool ./UplinkIRC-0.10.0-x86_64.AppImage
+appimageupdatetool ./NodeRelay-0.10.0-x86_64.AppImage
 ```
 
 This downloads only the changed blocks from the new release — much faster than a full re-download. The tool prints progress and replaces the file in place when done.
@@ -40,11 +40,11 @@ Or download the AppImage directly from the project's releases page.
 
 ### A nick dialog appeared on first launch — what do I do?
 
-UplinkIRC detected that your config still has the placeholder nick `yournick`. Type your desired nickname in the dialog and click OK. It will be saved to your config and used for all servers on the next connect.
+NodeRelay detected that your config still has the placeholder nick `yournick`. Type your desired nickname in the dialog and click OK. It will be saved to your config and used for all servers on the next connect.
 
 ### themes/ folder missing — no themes load
 
-The `themes/` folder must be in the same directory as the `UplinkIRC` binary (or at `~/.config/uplinkirc/themes/`). If you moved the binary, copy the folder back:
+The `themes/` folder must be in the same directory as the `NodeRelay` binary (or at `~/.config/noderelay/themes/`). If you moved the binary, copy the folder back:
 
 ```bash
 cp -r themes/ /path/to/your/binary/
@@ -60,22 +60,22 @@ If you built with CMake, themes are copied to the build directory automatically 
 
 | Platform | Path |
 |---|---|
-| Linux / FreeBSD | `~/.config/uplinkirc/config.toml` |
-| macOS | `~/.config/uplinkirc/config.toml` |
-| Windows | `%USERPROFILE%\.config\uplinkirc\config.toml` |
+| Linux / FreeBSD | `~/.config/noderelay/config.toml` |
+| macOS | `~/.config/noderelay/config.toml` |
+| Windows | `%USERPROFILE%\.config\noderelay\config.toml` |
 
-Open it in any text editor and restart UplinkIRC to apply changes.
+Open it in any text editor and restart NodeRelay to apply changes.
 
 ### Is my config file secure?
 
-On Linux and macOS, UplinkIRC writes `config.toml` with **owner-only permissions** (mode `0600`) so other users on the same machine cannot read your passwords. On Windows, the file inherits standard per-user `%APPDATA%` permissions.
+On Linux and macOS, NodeRelay writes `config.toml` with **owner-only permissions** (mode `0600`) so other users on the same machine cannot read your passwords. On Windows, the file inherits standard per-user `%APPDATA%` permissions.
 
-Saves are **atomic** — UplinkIRC writes to a temporary file and renames it into place. A crash mid-save cannot leave the config corrupt or empty.
+Saves are **atomic** — NodeRelay writes to a temporary file and renames it into place. A crash mid-save cannot leave the config corrupt or empty.
 
 If you ever need to verify permissions on Linux:
 
 ```bash
-ls -l ~/.config/uplinkirc/config.toml
+ls -l ~/.config/noderelay/config.toml
 # should show: -rw------- (600)
 ```
 
@@ -109,7 +109,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 channels = "#uplink, #linux"
 ```
 
@@ -131,7 +131,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 channels = "#uplink"
 
 [[server]]
@@ -141,13 +141,13 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 channels = "#linux"
 ```
 
-### UplinkIRC disconnected — will it reconnect?
+### NodeRelay disconnected — will it reconnect?
 
-Yes. UplinkIRC reconnects automatically after an unexpected disconnect using exponential backoff: it waits 5 seconds, then 10, 20, 40, and caps at 60 seconds per attempt. A countdown message appears in the server buffer each time. Once reconnected, it re-joins all configured channels automatically.
+Yes. NodeRelay reconnects automatically after an unexpected disconnect using exponential backoff: it waits 5 seconds, then 10, 20, 40, and caps at 60 seconds per attempt. A countdown message appears in the server buffer each time. Once reconnected, it re-joins all configured channels automatically.
 
 If you disconnect deliberately with `/quit` or the **Disconnect** option in the sidebar right-click menu, no reconnect is attempted.
 
@@ -157,7 +157,7 @@ You can also right-click a server in the sidebar and choose **Reconnect** to con
 
 You have two options:
 
-**Option 1 — just type the command directly.** Any slash command that UplinkIRC does not recognize is sent straight to the server as a raw IRC line. No prefix needed:
+**Option 1 — just type the command directly.** Any slash command that NodeRelay does not recognize is sent straight to the server as a raw IRC line. No prefix needed:
 
 ```
 /REHASH
@@ -178,7 +178,7 @@ You have two options:
 
 ### My nick was already in use — what happened?
 
-If your preferred nick is taken, UplinkIRC appends `_` and tries again (e.g. `yournick_`). You will see the new nick reflected next to the input box. Use `/nick yournick` once the original nick becomes available.
+If your preferred nick is taken, NodeRelay appends `_` and tries again (e.g. `yournick_`). You will see the new nick reflected next to the input box. Use `/nick yournick` once the original nick becomes available.
 
 ### How do I join a channel while connected?
 
@@ -204,13 +204,13 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "UplinkIRC User"
+realname = "NodeRelay User"
 password = "joe/libera:mysecretpassword"
 bouncer  = "znc"
 channels = "#linux"
 ```
 
-With `bouncer = "znc"`, UplinkIRC negotiates `znc.in/playback` and replays missed messages on connect, and echoes messages you sent from other clients via `znc.in/self-message`.
+With `bouncer = "znc"`, NodeRelay negotiates `znc.in/playback` and replays missed messages on connect, and echoes messages you sent from other clients via `znc.in/self-message`.
 
 **soju** — password format is `username:password`. Use `bouncer_network` if your soju instance manages more than one IRC network:
 
@@ -222,14 +222,14 @@ port            = 6697
 ssl             = true
 nick            = "yournick"
 user            = "uplink"
-realname        = "UplinkIRC User"
+realname        = "NodeRelay User"
 password        = "joe:mysecretpassword"
 bouncer         = "soju"
 bouncer_network = "libera"
 channels        = "#linux"
 ```
 
-With `bouncer = "soju"`, UplinkIRC negotiates `soju.im/bouncer-networks` (lists your networks in the server buffer), `soju.im/read` (syncs your read position across clients), and `soju.im/no-implicit-names`.
+With `bouncer = "soju"`, NodeRelay negotiates `soju.im/bouncer-networks` (lists your networks in the server buffer), `soju.im/read` (syncs your read position across clients), and `soju.im/no-implicit-names`.
 
 Both bouncer types also negotiate the standard `chathistory` capability, which automatically requests the last 100 messages for each channel on join. See [IRCv3 support](ircv3.md) for full details.
 
@@ -288,7 +288,7 @@ show_nick_prefix = false
 
 ### How do I authenticate with NickServ automatically?
 
-Add `nickserv_password` to your server block in `config.toml`. UplinkIRC will send `PRIVMSG NickServ :IDENTIFY <password>` immediately after connecting:
+Add `nickserv_password` to your server block in `config.toml`. NodeRelay will send `PRIVMSG NickServ :IDENTIFY <password>` immediately after connecting:
 
 ```toml
 [[server]]
@@ -317,7 +317,7 @@ sasl_user     = "yournick"
 sasl_password = "yourpassword"
 ```
 
-UplinkIRC negotiates the `sasl` CAP and authenticates during the connection handshake. The server buffer shows `SASL authentication successful` when it works. Use this instead of `nickserv_password` on networks that support it (Libera.Chat, OFTC, etc.).
+NodeRelay negotiates the `sasl` CAP and authenticates during the connection handshake. The server buffer shows `SASL authentication successful` when it works. Use this instead of `nickserv_password` on networks that support it (Libera.Chat, OFTC, etc.).
 
 ### How do I use SASL EXTERNAL (certificate login)?
 
@@ -352,7 +352,7 @@ port          = 6697
 ssl           = true
 nick          = "yournick"
 user          = "uplink"
-realname      = "UplinkIRC User"
+realname      = "NodeRelay User"
 channels      = "#linux"
 sasl_external = true
 client_cert   = "/home/joe/.irc/client.crt"
@@ -426,7 +426,7 @@ Click **☰ → Preferences** and check or uncheck **Log Messages to Disk**.
 
 When enabled, all messages are appended to log files at:
 ```
-~/.config/uplinkirc/logs/<server>/<channel>.log
+~/.config/noderelay/logs/<server>/<channel>.log
 ```
 
 Format:
@@ -464,7 +464,7 @@ Select the text with your mouse — click and drag to highlight it — then righ
 
 ### How do I send a file to someone (DCC)?
 
-Right-click the recipient's nick in the user list on the right side of the window, then choose **Send File**. Pick a file in the dialog — UplinkIRC opens a local TCP port and sends a DCC SEND offer to the recipient. A progress dialog appears while the transfer runs.
+Right-click the recipient's nick in the user list on the right side of the window, then choose **Send File**. Pick a file in the dialog — NodeRelay opens a local TCP port and sends a DCC SEND offer to the recipient. A progress dialog appears while the transfer runs.
 
 The recipient sees:
 
@@ -530,7 +530,7 @@ This sends a `CTCP VERSION` request. The reply appears in the **server window** 
 
 ### How do I ping another user to check their latency?
 
-Right-click their nick and choose **Ping**. UplinkIRC sends a CTCP PING with a millisecond timestamp. When the reply arrives, the round-trip time is printed in the active buffer:
+Right-click their nick and choose **Ping**. NodeRelay sends a CTCP PING with a millisecond timestamp. When the reply arrives, the round-trip time is printed in the active buffer:
 
 ```
 Ping reply from alice: 42ms
@@ -579,11 +579,11 @@ Click **☰ → Documentation** to open the help viewer. A search field sits at 
 
 ### How do link previews work?
 
-When a live message arrives containing an `http://` or `https://` URL, UplinkIRC fetches the link in the background and appends a preview card below the message.
+When a live message arrives containing an `http://` or `https://` URL, NodeRelay fetches the link in the background and appends a preview card below the message.
 
 **Card layout** — the card shows the page title and domain name on top, with the thumbnail image below. The card is anchored to the left edge with a colored border.
 
-**Web pages** — UplinkIRC fetches up to 32 KB of HTML using a messaging-app user-agent (the same trick used by Halloy and WhatsApp). This causes sites like YouTube to serve a compact metadata page with `og:title` and `og:image` tags early in the response, rather than a full JavaScript-heavy document.
+**Web pages** — NodeRelay fetches up to 32 KB of HTML using a messaging-app user-agent (the same trick used by Halloy and WhatsApp). This causes sites like YouTube to serve a compact metadata page with `og:title` and `og:image` tags early in the response, rather than a full JavaScript-heavy document.
 
 **Direct image links** — URLs ending in `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp` are shown as a thumbnail card directly without HTML parsing. The filename is used as the card label.
 
@@ -624,7 +624,7 @@ The search is case-insensitive and works on the full visible buffer for the curr
 
 Right-click any message in the chat area and choose **Reply** from the context menu. A reply bar appears above the input box showing **↩ nick: preview** of the original message. Type your reply and press **Enter** to send it. Press **Escape** or click **✕** to cancel.
 
-Replied messages carry an IRCv3 `draft/reply` tag referencing the original message ID. In UplinkIRC, received replies show a small **↩ origNick** indicator before the sender's name in the chat.
+Replied messages carry an IRCv3 `draft/reply` tag referencing the original message ID. In NodeRelay, received replies show a small **↩ origNick** indicator before the sender's name in the chat.
 
 Switching channels automatically cancels any pending reply.
 
@@ -636,7 +636,7 @@ Close the window normally — it minimizes to the system tray instead of quittin
 
 ## Building from source
 
-### What do I need to build UplinkIRC?
+### What do I need to build NodeRelay?
 
 - CMake 3.16 or newer
 - Qt 6.2 or newer (Widgets + Network + Ssl modules)
@@ -678,7 +678,7 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 
 ## Getting help
 
-- Join **#uplink** on `irc.linuxdojo.org` — the UplinkIRC development channel
+- Join **#uplink** on `irc.linuxdojo.org` — the NodeRelay development channel
 - File bugs and feature requests on the GitHub Issues page
 - Browse the full documentation index at [docs/index.md](index.md)
 
@@ -688,11 +688,11 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 
 ### Link previews don't appear for some URLs
 
-UplinkIRC fetches the page title and thumbnail for URLs posted in chat. If a preview isn't appearing:
+NodeRelay fetches the page title and thumbnail for URLs posted in chat. If a preview isn't appearing:
 
 - **Direct image link** — `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp` URLs are handled automatically and show a thumbnail card.
 - **The site redirects** (e.g. `http://` → `https://`, or bare domain → `www.`) — redirects are followed automatically.
-- **YouTube and heavy sites** — as of v0.12.0, UplinkIRC uses the `WhatsApp/2` user-agent, which causes most major sites to serve a compact OG-metadata page. If a site still doesn't preview, it may not publish `og:title` or `<title>` at all.
+- **YouTube and heavy sites** — as of v0.12.0, NodeRelay uses the `WhatsApp/2` user-agent, which causes most major sites to serve a compact OG-metadata page. If a site still doesn't preview, it may not publish `og:title` or `<title>` at all.
 - **SSL certificate errors** — self-signed or expired certs block the fetch. There is no per-site cert override.
 - **The page has no `<title>` or `og:title`** — no preview will appear; there is nothing to display.
 
@@ -710,13 +710,13 @@ Hover over their nick in the nick list panel on the right — a tooltip appears 
 
 - **On join** — if the server supports `extended-join`, the account name arrives with the JOIN message.
 - **Login/logout** — `account-notify` sends an `ACCOUNT` command when any nick in a shared channel authenticates or logs out.
-- **WHO scan** — UplinkIRC sends a WHOX query (`WHO #channel %cnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field.
+- **WHO scan** — NodeRelay sends a WHOX query (`WHO #channel %cnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field.
 
 If the tooltip is absent, the server may not support any of these capabilities, or the user has not authenticated with services.
 
 ### How do I watch for a nick coming online?
 
-Use the `/monitor` command. UplinkIRC uses the IRCv3 MONITOR system — more efficient than the older ISON polling approach.
+Use the `/monitor` command. NodeRelay uses the IRCv3 MONITOR system — more efficient than the older ISON polling approach.
 
 ```
 /monitor add alice       — start watching alice
@@ -734,7 +734,7 @@ The watch list is saved to `config.toml` under `[monitor] nicks = [...]` and is 
 
 ### I deleted a message but it still shows on another client
 
-Message deletion uses the IRCv3 `draft/message-redaction` capability. If the other client does not support it, deleted messages will still display there. In UplinkIRC, a deleted message shows as `[message deleted]` in grey italic. You can only delete your own messages; operators on the server may be able to delete others' messages directly via `/raw REDACT`.
+Message deletion uses the IRCv3 `draft/message-redaction` capability. If the other client does not support it, deleted messages will still display there. In NodeRelay, a deleted message shows as `[message deleted]` in grey italic. You can only delete your own messages; operators on the server may be able to delete others' messages directly via `/raw REDACT`.
 
 ### The "Delete" option doesn't appear on my messages
 

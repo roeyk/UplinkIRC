@@ -15,7 +15,7 @@
 DocsDialog::DocsDialog(QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle("UplinkIRC Documentation");
+    setWindowTitle("NodeRelay Documentation");
     setWindowIcon(AppIcons::appIcon());
     resize(800, 580);
 

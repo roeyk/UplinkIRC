@@ -29,11 +29,11 @@ AboutDialog::AboutDialog(QWidget *parent)
     layout->setContentsMargins(24, 20, 24, 16);
 
     auto *logo = new QLabel;
-    logo->setPixmap(AppIcons::appIcon("dark").pixmap(96, 96));
+    logo->setPixmap(AppIcons::aboutLogo().scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     logo->setAlignment(Qt::AlignCenter);
     layout->addWidget(logo);
 
-    auto *version = new QLabel("UplinkIRC  v" UPLINKIRC_VERSION);
+    auto *version = new QLabel("NodeRelay  v" UPLINKIRC_VERSION);
     QFont f = version->font();
     f.setBold(true);
     f.setPointSize(f.pointSize() + 2);
@@ -43,8 +43,7 @@ AboutDialog::AboutDialog(QWidget *parent)
 
     auto *desc = new QLabel(
         "A fast, secure, IRCv3-featured IRC client\n"
-        "built with Qt6 and C++\n\n"
-        "irc.linuxdojo.org  •  #uplink"
+        "built with Qt6 and C++"
     );
     desc->setAlignment(Qt::AlignCenter);
     desc->setStyleSheet("color: palette(text);");

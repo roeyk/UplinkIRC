@@ -179,7 +179,7 @@ DCC Send is initiated from the **nick list right-click menu**, not a slash comma
 1. Right-click any nick in the user list on the right side of the window.
 2. Choose **Send File**.
 3. Pick a file in the file dialog.
-4. A progress dialog appears while UplinkIRC waits for the recipient to accept.
+4. A progress dialog appears while NodeRelay waits for the recipient to accept.
 
 **Receiving a file:**
 
@@ -194,7 +194,7 @@ Accept?   [Yes]  [No]
 
 Click **Yes**, choose a save location, and a progress dialog tracks the download. Click **Cancel** at any time to abort.
 
-> **NAT note:** DCC works directly between clients over TCP. It works reliably on the same LAN. Over the internet, it requires the sender's port to be reachable — NAT or a firewall on the sender's side will block the connection. This is a fundamental DCC limitation, not an UplinkIRC bug.
+> **NAT note:** DCC works directly between clients over TCP. It works reliably on the same LAN. Over the internet, it requires the sender's port to be reachable — NAT or a firewall on the sender's side will block the connection. This is a fundamental DCC limitation, not an NodeRelay bug.
 
 ---
 
@@ -240,7 +240,7 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 
 ## Reactions
 
-UplinkIRC supports IRCv3 `draft/react` — emoji reactions attached to specific messages.
+NodeRelay supports IRCv3 `draft/react` — emoji reactions attached to specific messages.
 
 **Sending a reaction:**
 - Right-click any message **timestamp** in the chat view → **React** → type an emoji → OK
@@ -282,7 +282,7 @@ Right-clicking a message **timestamp** (the `hh:mm` at the left of each line) op
 | `/quote <line>` | Alias for `/raw` |
 | `/<ANY>` | Any unrecognized slash command is sent as a raw IRC line automatically |
 
-Use these when you need to send a command that UplinkIRC does not have a built-in shortcut for yet. You can also just type the command directly — unrecognized `/CMD` inputs are passed through to the server as-is.
+Use these when you need to send a command that NodeRelay does not have a built-in shortcut for yet. You can also just type the command directly — unrecognized `/CMD` inputs are passed through to the server as-is.
 
 ### Examples
 
@@ -310,7 +310,7 @@ Use these when you need to send a command that UplinkIRC does not have a built-i
 
 ## Emoji
 
-UplinkIRC has two ways to insert emoji:
+NodeRelay has two ways to insert emoji:
 
 ### Emoji picker button
 Click ☰ to open **Preferences** and check **Show Emoji Button** (or set `show_emoji_button = true` in config). Click the 😊 button next to the input box to open a searchable grid of ~400 emoji.

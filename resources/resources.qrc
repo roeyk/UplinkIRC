@@ -1,10 +1,14 @@
 <RCC>
     <qresource prefix="/icons">
-        <file alias="app-icon-dark.svg">icons/app-icon-dark.svg</file>
-        <file alias="app-icon-light-default.svg">icons/app-icon-light-default.svg</file>
-        <file alias="app-icon-light.svg">icons/app-icon-light.svg</file>
-        <file alias="app-icon-avatar.svg">icons/app-icon-avatar.svg</file>
-        <file alias="banner.svg">icons/banner.svg</file>
+        <file alias="icon-node-n.svg">icons/icon-node-n.svg</file>
+        <file alias="icon-node-n-light.png">icons/icon-node-n-light.png</file>
+        <file alias="icon-tower.svg">icons/icon-tower.svg</file>
+        <file alias="icon-tower-light.png">icons/icon-tower-light.png</file>
+        <file alias="icon-hub-spoke.svg">icons/icon-hub-spoke.svg</file>
+        <file alias="icon-hub-spoke-light.png">icons/icon-hub-spoke-light.png</file>
+        <file alias="tray-icon.svg">icons/tray-icon.svg</file>
+        <file alias="about-logo.png">icons/about-logo.png</file>
+        <file alias="banner.png">icons/banner.png</file>
     </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>

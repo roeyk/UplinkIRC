@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=UplinkIRC
+Name=NodeRelay
 Comment=Fast, secure IRC client
-Exec=UplinkIRC
-Icon=uplinkirc
+Exec=NodeRelay
+Icon=noderelay
 Categories=Network;IRCClient;
 Terminal=false
