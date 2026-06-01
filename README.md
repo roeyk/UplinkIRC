@@ -60,20 +60,16 @@
 ## App Icons
 
 <p align="center">
-  <img src="assets/icon-node-n.svg" width="80" title="Dark" alt="Dark icon" />
+  <img src="assets/icon-node-n.svg" width="80" title="Node N" alt="Node N icon" />
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="assets/icon-tower.svg" width="80" title="Light Default" alt="Light Default icon" />
+  <img src="assets/icon-tower.svg" width="80" title="Tower" alt="Tower icon" />
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="assets/icon-hub-spoke.svg" width="80" title="Light" alt="Light icon" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="assets/icon-hub-spoke.svg" width="80" title="Avatar" alt="Avatar icon" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="assets/icon-mark.svg" width="80" title="Mark" alt="Mark icon" />
+  <img src="assets/icon-hub-spoke.svg" width="80" title="Hub Spoke" alt="Hub Spoke icon" />
 </p>
 
 <p align="center">
-  <sub>Dark &nbsp;·&nbsp; Light Default &nbsp;·&nbsp; Light &nbsp;·&nbsp; Avatar &nbsp;·&nbsp; Mark</sub><br/>
-  <sub>Switch at runtime: <strong>Hamburger → App Icon</strong></sub>
+  <sub>Node N &nbsp;·&nbsp; Tower &nbsp;·&nbsp; Hub Spoke</sub><br/>
+  <sub>Each style auto-selects dark or light variant based on your active theme.<br/>Switch at runtime: <strong>Hamburger → Preferences → App Icon</strong></sub>
 </p>
 
 ---
@@ -426,17 +422,20 @@ Type a colon to trigger inline autocomplete:
 
 The `assets/` directory contains all brand files for free use:
 
-| File | Size | Description |
-|---|---|---|
-| `banner.svg` | 2200×900 | Wide banner — README header and About dialog |
-| `logo.svg` | 1200×500 | Full logo with wordmark |
-| `wordmark.svg` | 650×220 | Wordmark only |
-| `icon-dark.svg` | 512×512 | App icon — dark variant |
-| `icon-light-default.svg` | 512×512 | App icon — light default variant |
-| `icon-light.svg` | 512×512 | App icon — light variant |
-| `icon-avatar.svg` | 512×512 | GitHub avatar / circular icon |
-| `icon-mark.svg` | 512×512 | Minimal mark |
-| `icon-tray.svg` | 512×512 | System tray icon |
+| File | Description |
+|---|---|
+| `assets/banner.png` | Wide banner — README header |
+| `assets/icon-node-n.svg` | App icon — Node N style (dark) |
+| `assets/icon-tower.svg` | App icon — Tower style (dark) |
+| `assets/icon-hub-spoke.svg` | App icon — Hub Spoke style (dark) |
+| `docs/icons/node-n-dark.png` | Node N — dark PNG |
+| `docs/icons/node-n-light.png` | Node N — light PNG |
+| `docs/icons/tower-dark.png` | Tower — dark PNG |
+| `docs/icons/tower-light.png` | Tower — light PNG |
+| `docs/icons/hub-spoke-dark.png` | Hub Spoke — dark PNG |
+| `docs/icons/hub-spoke-light.png` | Hub Spoke — light PNG |
+| `docs/icons/avatar.png` | GitHub avatar (1024px) |
+| `docs/icons/banner.png` | Wide banner PNG |
 
 ---
 
