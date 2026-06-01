@@ -42,6 +42,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] README beautification — badges, icon gallery, feature tables, annotated config, commands table, download buttons
 - [x] Full rebrand to NodeRelay — name, binary, config path, icons, docs, CI, GitHub repo (v0.16.2)
 - [x] Downloadable icon set on docs site — 8 PNGs (3 styles × dark/light + avatar + banner) with inline preview (v0.16.2)
+- [x] Local directory renamed to NodeRelay; all paths, hooks, and memory updated (v0.16.2 housekeeping)
+- [x] Release CI fixed — all three platform builds produce NodeRelay-v0.16.2-* artifacts (v0.16.2 housekeeping)
 - [x] Nick completion — Tab key completes nicks in input bar
 - [x] Slash command tab completion — Tab also completes /commands (e.g. /pi → /ping)
 - [x] Input history — Up/Down arrow cycles through sent messages
