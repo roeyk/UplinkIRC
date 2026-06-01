@@ -157,6 +157,9 @@ private:
     QWidget      *m_replyBar{nullptr};
     QLabel       *m_replyLabel{nullptr};
     QString       m_pendingReplyMsgid;
+    QString       m_pendingReactMsgid;
+    QString       m_pendingReactHost;
+    QString       m_pendingReactChannel;
     AboutDialog       *m_aboutDialog{nullptr};
     DocsDialog        *m_docsDialog{nullptr};
     PreferencesDialog *m_prefsDialog{nullptr};

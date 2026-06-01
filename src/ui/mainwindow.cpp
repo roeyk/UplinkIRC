@@ -895,6 +895,14 @@ void MainWindow::setupInputBar()
     // Emoji picker popup
     m_emojiPicker = new EmojiPicker(this);
     connect(m_emojiPicker, &EmojiPicker::emojiSelected, this, [this](const QString &emoji){
+        if (!m_pendingReactMsgid.isEmpty()) {
+            m_model->sendReact(m_pendingReactHost, m_pendingReactChannel,
+                               m_pendingReactMsgid, emoji);
+            m_pendingReactMsgid.clear();
+            m_pendingReactHost.clear();
+            m_pendingReactChannel.clear();
+            return;
+        }
         const int pos = m_input->cursorPosition();
         const QString text = m_input->text();
         m_input->setText(text.left(pos) + emoji + text.mid(pos));
@@ -1086,12 +1094,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     if (m_input)    m_input->setFocus();
                 });
                 connect(menu.addAction("React"), &QAction::triggered, this,
-                        [this, msgid, host, channel]{
-                    bool ok;
-                    const QString emoji = QInputDialog::getText(
-                        this, "React", "Emoji:", QLineEdit::Normal, {}, &ok);
-                    if (!ok || emoji.trimmed().isEmpty()) return;
-                    m_model->sendReact(host, channel, msgid, emoji.trimmed());
+                        [this, msgid, host, channel, globalPos]{
+                    m_pendingReactMsgid    = msgid;
+                    m_pendingReactHost     = host;
+                    m_pendingReactChannel  = channel;
+                    m_emojiPicker->showAt(globalPos);
                 });
                 {
                     auto *cl = m_model->clientFor(host);
