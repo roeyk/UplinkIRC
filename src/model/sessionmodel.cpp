@@ -334,6 +334,8 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::userJoined,      this, &SessionModel::onUserJoined);
     connect(cl, &IrcClient::userParted,      this, &SessionModel::onUserParted);
     connect(cl, &IrcClient::userQuit,        this, &SessionModel::onUserQuit);
+    connect(cl, &IrcClient::netsplitDetected, this, &SessionModel::onNetsplitDetected);
+    connect(cl, &IrcClient::netjoinDetected,  this, &SessionModel::onNetjoinDetected);
     connect(cl, &IrcClient::nickChanged,     this, &SessionModel::onNickChanged);
     connect(cl, &IrcClient::kicked,          this, &SessionModel::onKicked);
     connect(cl, &IrcClient::topicReceived,   this, &SessionModel::onTopicReceived);
@@ -550,6 +552,51 @@ void SessionModel::onUserQuit(const QString &host, const QString &nick, const QS
         emit nickListChanged(host, ch.name);
         postMessage(host, ch.name, Message::make(MessageType::Quit, nick,
             reason.isEmpty() ? nick + " quit" : nick + " quit (" + reason + ")"));
+    }
+}
+
+void SessionModel::onNetsplitDetected(const QString &host, const QString &servers, const QStringList &nicks)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+    for (auto &ch : sess->channels) {
+        int lost = 0;
+        for (const QString &nick : nicks) {
+            bool found = false;
+            for (const auto &e : std::as_const(ch.nicks))
+                if (QString::compare(e.nick, nick, Qt::CaseInsensitive) == 0) { found = true; break; }
+            if (!found) continue;
+            ch.removeNick(nick);
+            ++lost;
+        }
+        if (lost == 0) continue;
+        emit nickListChanged(host, ch.name);
+        const QString text = QString("Netsplit: %1 user%2 lost (%3)")
+            .arg(lost).arg(lost == 1 ? "" : "s").arg(servers);
+        postMessage(host, ch.name, Message::make(MessageType::Quit, QString(), text));
+    }
+}
+
+void SessionModel::onNetjoinDetected(const QString &host, const QString &servers,
+                                     const QStringList &channels, const QStringList &nicks)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+    QHash<QString, int> counts;
+    for (int i = 0; i < channels.size(); ++i) {
+        const QString &channel = channels[i];
+        const QString &nick    = i < nicks.size() ? nicks[i] : QString();
+        auto *ch = sess->get(channel);
+        if (!ch || nick.isEmpty()) continue;
+        ch->addNick(nick);
+        counts[channel]++;
+    }
+    for (auto it = counts.cbegin(); it != counts.cend(); ++it) {
+        emit nickListChanged(host, it.key());
+        const int n = it.value();
+        const QString text = QString("Netjoin: %1 user%2 returned (%3)")
+            .arg(n).arg(n == 1 ? "" : "s").arg(servers);
+        postMessage(host, it.key(), Message::make(MessageType::Join, QString(), text));
     }
 }
 

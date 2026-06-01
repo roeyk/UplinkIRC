@@ -79,6 +79,12 @@ Known issues: light icon variants are PNGs (no SVG light versions yet).
 Next priorities: password keychain, DCC passive/NAT, split view, SOCKS5 proxy.
 -->
 
+## v0.16.4 — 2026-06-01
+
+- **Netsplit/netjoin batch collapse** — IRCv3 `netsplit` and `netjoin` batch types handled; instead of a wall of individual quit/join lines, a single summary is posted per affected channel: `Netsplit: N users lost (srv1 srv2)` / `Netjoin: N users returned (srv1 srv2)`. Nick lists stay accurate.
+
+---
+
 ## Docs — 2026-05-31
 
 - **howto.html: STS section** — full dedicated section under Authentication with behavior table (plain/TLS/duration=0/expired), server buffer example (`STS: upgrading to TLS on port 6697`), policy file location, and zero-config callout.

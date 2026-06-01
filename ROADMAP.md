@@ -150,7 +150,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] WHOX — WHO <channel> %cnfa,42; 354 RPL_WHOSPCRPL parsed; account names populated on join; bot flags preserved (v0.16.0)
 - [x] userhost-in-names — CAP negotiated; !user@host stripped from NAMES entries before display (v0.16.0)
 - [x] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; policy cached to ~/.config/noderelay/sts.ini; stsstore.h/cpp; m_stsUpgrade flag; downgrade prevention (v0.16.3)
-- [ ] netsplit/netjoin batch types — collapse netsplit noise into a single folded entry
+- [x] netsplit/netjoin batch types — collapse netsplit noise into a single folded entry (v0.16.4)
 - [ ] Standard Replies — structured error/warning/note messages from server
 - [ ] UTF8ONLY — detect server UTF-8-only signal and enforce encoding
 - [x] URL detection + click to open — http/https links in chat open in browser (v0.3.0)

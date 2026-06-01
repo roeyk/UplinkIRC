@@ -118,6 +118,9 @@ private:
     void onUserParted     (const QString &host, const QString &channel,
                            const QString &nick, const QString &reason);
     void onUserQuit       (const QString &host, const QString &nick, const QString &reason);
+    void onNetsplitDetected(const QString &host, const QString &servers, const QStringList &nicks);
+    void onNetjoinDetected (const QString &host, const QString &servers,
+                            const QStringList &channels, const QStringList &nicks);
     void onNickChanged    (const QString &host, const QString &oldNick, const QString &newNick);
     void onKicked         (const QString &host, const QString &channel, const QString &nick,
                            const QString &by,   const QString &reason);

@@ -649,7 +649,7 @@ void IrcClient::handleBatch(const QStringList &params)
         }
         const QString ref   = refArg.mid(1);
         const QString type  = params.size() > 1 ? params[1] : QString();
-        const QString param = params.size() > 2 ? params[2] : QString();
+        const QString param = params.size() > 2 ? params.mid(2).join(' ') : QString();
         BatchInfo bi;
         bi.type  = type;
         bi.param = param;
@@ -663,6 +663,26 @@ void IrcClient::deliverBatch(const QString &ref)
 {
     if (!m_batches.contains(ref)) return;
     const BatchInfo batch = m_batches.take(ref);
+
+    if (batch.type == "netsplit") {
+        QStringList nicks;
+        for (const auto &bm : batch.msgs)
+            if (!bm.nick.isEmpty()) nicks.append(bm.nick);
+        emit netsplitDetected(m_host, batch.param, nicks);
+        return;
+    }
+    if (batch.type == "netjoin") {
+        QStringList channels, nicks;
+        for (const auto &bm : batch.msgs) {
+            if (bm.command == "JOIN" && !bm.params.isEmpty()) {
+                channels.append(bm.params[0]);
+                nicks.append(bm.nick);
+            }
+        }
+        if (!channels.isEmpty())
+            emit netjoinDetected(m_host, batch.param, channels, nicks);
+        return;
+    }
 
     const bool isHistory = (batch.type == "chathistory" ||
                             batch.type == "znc.in/batch/playback");

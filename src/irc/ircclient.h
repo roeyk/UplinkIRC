@@ -108,6 +108,9 @@ signals:
     void setNameReceived(const QString &server, const QString &nick, const QString &realname);
     void monitorOnline (const QString &server, const QStringList &nicks);
     void monitorOffline(const QString &server, const QStringList &nicks);
+    void netsplitDetected(const QString &server, const QString &splitServers, const QStringList &nicks);
+    void netjoinDetected (const QString &server, const QString &splitServers,
+                          const QStringList &channels, const QStringList &nicks);
 
     // Bouncer-specific
     void bouncerNetworkReceived(const QString &server, const QString &netId,
