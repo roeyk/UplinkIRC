@@ -1,5 +1,6 @@
 #include "ircclient.h"
 #include "ircparser.h"
+#include "stsstore.h"
 #include "config/config.h"
 #include "version.h"
 
@@ -76,6 +77,15 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_nickservPassword = cfg.nickservPassword;
     m_bouncerType     = cfg.bouncerType;
     m_bouncerNetwork  = cfg.bouncerNetwork;
+
+    // Apply cached STS policy — upgrade plain to TLS if one exists
+    if (!m_ssl) {
+        StsStore::Policy sts;
+        if (StsStore::lookup(m_host, sts)) {
+            m_ssl  = true;
+            m_port = sts.port;
+        }
+    }
 
     if (m_saslExternal && !cfg.clientCertFile.isEmpty() && !cfg.clientKeyFile.isEmpty()) {
         QFile certFile(cfg.clientCertFile);
@@ -270,7 +280,9 @@ void IrcClient::onDisconnected()
     m_batches.clear();
     m_saslPending = false;
     emit disconnected(m_host);
-    scheduleReconnect();
+    if (!m_stsUpgrade)
+        scheduleReconnect();
+    m_stsUpgrade = false;
     m_intentionalDisconnect = false;
 }
 
@@ -718,6 +730,41 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
                     return true;
             return false;
         };
+
+        // STS (Strict Transport Security)
+        for (const QString &a : available) {
+            if (a != "sts" && !a.startsWith("sts=")) continue;
+            const QString val = a.startsWith("sts=") ? a.mid(4) : QString();
+            quint16 stsPort     = 0;
+            qint64  stsDuration = -1;
+            for (const QString &kv : val.split(',', Qt::SkipEmptyParts)) {
+                if (kv.startsWith("port="))
+                    stsPort = kv.mid(5).toUShort();
+                else if (kv.startsWith("duration="))
+                    stsDuration = kv.mid(9).toLongLong();
+            }
+            if (stsDuration == 0) {
+                StsStore::remove(m_host);
+            } else if (stsDuration > 0) {
+                if (m_ssl) {
+                    // Already on TLS — refresh the stored policy
+                    StsStore::store(m_host, m_port, stsDuration);
+                } else if (stsPort > 0) {
+                    // Plain connection — store policy and reconnect over TLS
+                    StsStore::store(m_host, stsPort, stsDuration);
+                    m_ssl  = true;
+                    m_port = stsPort;
+                    m_stsUpgrade = true;
+                    emit serverMessage(m_host, QString("STS: upgrading to TLS on port %1").arg(stsPort));
+                    QTimer::singleShot(0, this, [this]() {
+                        if (m_socket->state() != QAbstractSocket::UnconnectedState)
+                            m_socket->abort();
+                        m_socket->connectToHostEncrypted(m_host, m_port);
+                    });
+                }
+            }
+            break;
+        }
 
         QStringList desired = {
             "multi-prefix", "away-notify", "server-time",

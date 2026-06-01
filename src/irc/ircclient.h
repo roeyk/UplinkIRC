@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config/config.h"
+#include "irc/stsstore.h"
 #include <QDateTime>
 #include <QHash>
 #include <QList>
@@ -155,6 +156,7 @@ private:
     QElapsedTimer m_pingClock;
     bool         m_pingPending{false};
     bool         m_intentionalDisconnect{false};
+    bool         m_stsUpgrade{false};
     int          m_reconnectDelay{5};
 
     QSet<QString>               m_requestedCaps;

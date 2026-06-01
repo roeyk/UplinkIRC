@@ -60,6 +60,8 @@ qt_add_executable(NodeRelay WIN32
     src/irc/ircclient.h
     src/irc/ircparser.cpp
     src/irc/ircparser.h
+    src/irc/stsstore.cpp
+    src/irc/stsstore.h
     src/irc/dccsend.cpp
     src/irc/dccsend.h
     src/irc/dccreceive.cpp
