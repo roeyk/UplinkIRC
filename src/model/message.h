@@ -26,11 +26,13 @@ struct Message {
     bool        redacted{false};
     QString     msgid;
     QString     replyTo;
+    QString     account;  // sender's NickServ account (from account-tag), empty if unknown
 
     static Message make(MessageType t, const QString &nick, const QString &text,
                         const QDateTime &ts = {}, bool history = false,
-                        const QString &msgid = {}, const QString &replyTo = {})
+                        const QString &msgid = {}, const QString &replyTo = {},
+                        const QString &account = {})
     {
-        return { ts.isValid() ? ts : QDateTime::currentDateTime(), nick, text, t, history, false, msgid, replyTo };
+        return { ts.isValid() ? ts : QDateTime::currentDateTime(), nick, text, t, history, false, msgid, replyTo, account };
     }
 };

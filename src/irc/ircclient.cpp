@@ -466,6 +466,9 @@ void IrcClient::processLine(const QString &line)
 
         const QString msgid   = msg.tags.value("msgid");
         const QString replyTo = msg.tags.value("+draft/reply");
+        const QString account = msg.tags.value("account");
+        if (!account.isEmpty())
+            emit accountChanged(m_host, msg.nick, account);
         if (text.startsWith('\x01') && text.endsWith('\x01')) {
             const QString ctcp    = text.mid(1, text.size() - 2);
             const QString ctcpCmd = ctcp.section(' ', 0, 0).toUpper();
@@ -514,6 +517,9 @@ void IrcClient::processLine(const QString &line)
 
     if (cmd == "NOTICE" && msg.params.size() >= 1) {
         const QString text = msg.trailing;
+        const QString noticeAccount = msg.tags.value("account");
+        if (!noticeAccount.isEmpty())
+            emit accountChanged(m_host, msg.nick, noticeAccount);
         if (text.startsWith('\x01') && text.endsWith('\x01')) {
             const QString ctcp    = text.mid(1, text.size() - 2);
             const QString ctcpCmd = ctcp.section(' ', 0, 0).toUpper();
@@ -770,7 +776,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             "multi-prefix", "away-notify", "server-time",
             "message-tags", "batch", "labeled-response", "draft/typing",
             "chathistory", "echo-message", "chghost", "draft/react",
-            "account-notify", "extended-join", "invite-notify", "setname",
+            "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction",
         };
 

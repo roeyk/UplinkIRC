@@ -2826,8 +2826,11 @@ QString MainWindow::formatMessage(const Message &msg) const
             }
         }
         const QString nickDisplay = nickOpen + msg.nick.toHtmlEscaped() + nickClose;
-        const QString nickAnchor  = QString("<a href='nick:%1' style='color:%2; text-decoration:none; font-weight:bold'>%3</a>")
-            .arg(msg.nick.toHtmlEscaped(), color, nickDisplay);
+        const QString titleAttr = msg.account.isEmpty()
+            ? QString()
+            : " title='account: " + msg.account.toHtmlEscaped() + "'";
+        const QString nickAnchor  = QString("<a href='nick:%1'%2 style='color:%3; text-decoration:none; font-weight:bold'>%4</a>")
+            .arg(msg.nick.toHtmlEscaped(), titleAttr, color, nickDisplay);
         QString textHtml = linkifyHtml(ircToHtml(msg.text));
         const QString sn = m_model->selfNick(m_model->activeHost());
         if (!sn.isEmpty()) {
@@ -2853,8 +2856,11 @@ QString MainWindow::formatMessage(const Message &msg) const
         break;
     }
     case MessageType::Action: {
-        const QString actionNick = QString("<a href='nick:%1' style='color:inherit; text-decoration:none'>%1</a>")
-            .arg(msg.nick.toHtmlEscaped());
+        const QString aTitleAttr = msg.account.isEmpty()
+            ? QString()
+            : " title='account: " + msg.account.toHtmlEscaped() + "'";
+        const QString actionNick = QString("<a href='nick:%1'%2 style='color:inherit; text-decoration:none'>%1</a>")
+            .arg(msg.nick.toHtmlEscaped(), aTitleAttr);
         html = QString("%1 <i>* %2 %3</i>")
             .arg(tsSpan, actionNick, linkifyHtml(ircToHtml(msg.text)));
         break;

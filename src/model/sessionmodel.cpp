@@ -460,7 +460,12 @@ void SessionModel::onMessage(const QString &host, const QString &target,
     const QString pmNick = isSelf ? target : nick;
     const QString buf = isPM ? pmNick : target;
     if (isPM && !isHistory) openPM(host, pmNick);
-    postMessage(host, buf, Message::make(MessageType::Privmsg, nick, text, serverTime, isHistory, msgid, replyTo));
+    QString account;
+    if (auto *ch = sess ? sess->get(buf) : nullptr) {
+        for (const auto &e : std::as_const(ch->nicks))
+            if (e.nick.toLower() == nick.toLower()) { account = e.account; break; }
+    }
+    postMessage(host, buf, Message::make(MessageType::Privmsg, nick, text, serverTime, isHistory, msgid, replyTo, account));
 }
 
 void SessionModel::onNotice(const QString &host, const QString &target,
@@ -470,7 +475,13 @@ void SessionModel::onNotice(const QString &host, const QString &target,
 {
     if (isIgnored(nick)) return;
     const QString dest = target.startsWith('#') ? target : "(server)";
-    postMessage(host, dest, Message::make(MessageType::Notice, nick, text, serverTime, isHistory, msgid, replyTo));
+    auto *sess2 = session(host);
+    QString noticeAccount;
+    if (auto *ch = sess2 ? sess2->get(dest) : nullptr) {
+        for (const auto &e : std::as_const(ch->nicks))
+            if (e.nick.toLower() == nick.toLower()) { noticeAccount = e.account; break; }
+    }
+    postMessage(host, dest, Message::make(MessageType::Notice, nick, text, serverTime, isHistory, msgid, replyTo, noticeAccount));
 }
 
 void SessionModel::onAction(const QString &host, const QString &target,
@@ -479,7 +490,13 @@ void SessionModel::onAction(const QString &host, const QString &target,
                             const QString &msgid)
 {
     if (isIgnored(nick)) return;
-    postMessage(host, target, Message::make(MessageType::Action, nick, text, serverTime, isHistory, msgid));
+    auto *sessA = session(host);
+    QString actionAccount;
+    if (auto *ch = sessA ? sessA->get(target) : nullptr) {
+        for (const auto &e : std::as_const(ch->nicks))
+            if (e.nick.toLower() == nick.toLower()) { actionAccount = e.account; break; }
+    }
+    postMessage(host, target, Message::make(MessageType::Action, nick, text, serverTime, isHistory, msgid, {}, actionAccount));
 }
 
 void SessionModel::onUserJoined(const QString &host, const QString &channel, const QString &nick)
