@@ -232,11 +232,15 @@ void SessionModel::sendMessage(const QString &host, const QString &target, const
     if (!cl->hasCap("echo-message")) {
         auto *sess = session(host);
         if (sess) {
-            // Redact credentials before storing in the local echo buffer
             QString display = text;
-            if (target.compare("NickServ", Qt::CaseInsensitive) == 0
-                    && text.startsWith("IDENTIFY", Qt::CaseInsensitive))
-                display = "IDENTIFY <redacted>";
+            if (target.compare("NickServ", Qt::CaseInsensitive) == 0) {
+                const QString svcCmd = text.section(' ', 0, 0).toUpper();
+                static const QStringList pwdCmds = {
+                    "IDENTIFY", "REGISTER", "GHOST", "RECOVER", "RELEASE", "REGAIN", "SETPASS"
+                };
+                if (pwdCmds.contains(svcCmd))
+                    display = svcCmd + " <redacted>";
+            }
             postMessage(host, target, Message::make(MessageType::Privmsg, sess->nick, display));
         }
     }
@@ -483,8 +487,15 @@ void SessionModel::onNotice(const QString &host, const QString &target,
                             const QString &msgid, const QString &replyTo)
 {
     if (isIgnored(nick)) return;
-    const QString dest = target.startsWith('#') ? target : "(server)";
     auto *sess2 = session(host);
+    QString dest;
+    if (target.startsWith('#') || target.startsWith('&')) {
+        dest = target;
+    } else if (sess2 && sess2->get(nick)) {
+        dest = nick;   // route reply into the open PM tab for this sender
+    } else {
+        dest = "(server)";
+    }
     QString noticeAccount;
     if (auto *ch = sess2 ? sess2->get(dest) : nullptr) {
         for (const auto &e : std::as_const(ch->nicks))
