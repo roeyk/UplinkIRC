@@ -142,13 +142,14 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] draft/reply — right-click any message → Reply; reply bar above input; ↩ origNick shown on received replies; @+draft/reply= tag sent on outgoing messages
 - [x] draft/message-redaction — right-click own message timestamp → Delete; REDACT sent; received redactions render as [message deleted] (v0.16.0)
 - [x] account-notify + extended-join — track NickServ account per nick; populate from JOIN + ACCOUNT commands; account tooltip in nick list (v0.16.0)
+- [x] account-tag — per-message account= tag; account field on Message struct; hover tooltip on nick in chat view; four sources: account-tag, account-notify, extended-join, WHOX (v0.16.3)
 - [x] Monitor — /monitor add|del|list|clear|status; watch list persisted in config.toml; MONITOR + sent on connect; 730/731 online/offline posted to server buffer (v0.16.0)
 - [x] chghost — CAP negotiated; CHGHOST parsed; quiet "nick changed host" status line in shared channels; no fake QUIT+JOIN noise (v0.15.0)
 - [x] invite-notify — CAP negotiated; channel invite broadcasts post to channel buffer; direct invites post to server buffer (v0.16.0)
 - [x] setname — CAP negotiated; SETNAME parsed; "nick changed their realname" posted to shared channels (v0.16.0)
 - [x] WHOX — WHO <channel> %cnfa,42; 354 RPL_WHOSPCRPL parsed; account names populated on join; bot flags preserved (v0.16.0)
 - [x] userhost-in-names — CAP negotiated; !user@host stripped from NAMES entries before display (v0.16.0)
-- [ ] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; prevent downgrade attacks
+- [x] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; policy cached to ~/.config/noderelay/sts.ini; stsstore.h/cpp; m_stsUpgrade flag; downgrade prevention (v0.16.3)
 - [ ] netsplit/netjoin batch types — collapse netsplit noise into a single folded entry
 - [ ] Standard Replies — structured error/warning/note messages from server
 - [ ] UTF8ONLY — detect server UTF-8-only signal and enforce encoding

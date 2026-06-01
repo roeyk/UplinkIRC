@@ -24,6 +24,35 @@ Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
 -->
 
 <!--
+Session summary — 2026-05-31 (close session — docs polish, logo, howto completeness)
+
+What was done:
+  - Config migrated from ~/.config/uplinkirc/config.toml to NodeRelay: UI settings,
+    LinuxDojo server, and Libera SASL config all transferred.
+  - assets/logo.svg replaced: stale Uplink "U" mark and wordmark replaced with
+    NodeRelay tower icon + "NodeRelay" wordmark on dark navy background, same tagline.
+  - howto.html coverage gaps filled: message deletion section, Monitor section +
+    command table, /monitor added to slash commands table, /ignore /ns /cs rows added,
+    account tooltip bullets in chat-area and nick-panel sections, timestamp right-click
+    updated to list Reply/React/Delete, nick-context-menu added to nav.
+  - howto.html full STS section added under Authentication: behavior table, server
+    buffer example, policy file location, note on zero-config nature.
+  - howto.html full Account tracking section added under The Interface: two tooltip
+    locations with example tooltip text, four-source table (account-tag, account-notify,
+    extended-join, WHOX), nick-change-survives tip.
+  - ircv3.md: STS + account-tag moved from Planned → Active with full descriptions.
+  - faq.md: account tooltip updated for 4 mechanisms + chat view; STS FAQ entry added.
+  - configuration.md: ssl field description updated to mention STS auto-upgrade.
+  - v0.16.3 tagged, AppImage built (68MB), GitHub release created with artifact.
+  - ROADMAP, README, memory updated for STS and account-tag.
+
+Regressions: none.
+Known issues: light icon variants are PNGs (no SVG light versions yet).
+Next priorities: password keychain (OS Secret Service), DCC passive/NAT, split view,
+  SOCKS5 proxy, SVG light icon variants.
+-->
+
+<!--
 Session summary — 2026-05-31 (v0.16.3 — STS, account-tag, howto icon fix)
 
 What was done:
@@ -49,6 +78,17 @@ Regressions: none.
 Known issues: light icon variants are PNGs (no SVG light versions yet).
 Next priorities: password keychain, DCC passive/NAT, split view, SOCKS5 proxy.
 -->
+
+## Docs — 2026-05-31
+
+- **howto.html: STS section** — full dedicated section under Authentication with behavior table (plain/TLS/duration=0/expired), server buffer example (`STS: upgrading to TLS on port 6697`), policy file location, and zero-config callout.
+- **howto.html: Account tracking section** — full dedicated section under The Interface; covers both tooltip locations (chat view and nick list) with example output, four-source table (account-tag, account-notify, extended-join, WHOX), and nick-rename survival tip.
+- **howto.html: coverage gaps** — message deletion section, Monitor section, timestamp right-click lists Reply/React/Delete, nick-context-menu nav link, account tooltip bullets, `/monitor` `/ignore` `/ns` `/cs` added to commands table.
+- **logo.svg** — replaced stale Uplink mark with NodeRelay tower icon + wordmark on dark navy background.
+- **ircv3.md** — STS and `account-tag` graduated from Planned → Active.
+- **faq.md** — STS auto-TLS FAQ entry added; account tooltip updated to list all four sources including `account-tag` and the chat view location.
+
+---
 
 ## v0.16.3 — 2026-05-31
 

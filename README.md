@@ -96,7 +96,8 @@
 
 | Feature | Details |
 |---|---|
-| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `labeled-response`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl`, `account-notify`, `extended-join`, `invite-notify`, `setname`, `userhost-in-names`, `draft/message-redaction` |
+| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `labeled-response`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl`, `account-notify`, `account-tag`, `extended-join`, `invite-notify`, `setname`, `userhost-in-names`, `draft/message-redaction`, `sts` |
+| **STS (Strict Transport Security)** | When a server advertises STS, NodeRelay upgrades plain connections to TLS automatically and caches the policy to `~/.config/noderelay/sts.ini`. Future connections enforce TLS regardless of `ssl` in config. Equivalent to HSTS for IRC. |
 | **Chat history replay** | Requests the last 100 messages via `CHATHISTORY LATEST` on join. History messages display dimmed with original timestamps. |
 | **Bouncer support** | First-class ZNC and soju: `znc.in/playback`, `soju.im/bouncer-networks`, `soju.im/read`, self-message echo. |
 | **mIRC formatting** | Bold, italic, underline, strikethrough, reverse, 16 IRC colors (fg + bg). |
@@ -127,7 +128,7 @@
 | **Ignore list** | `/ignore <nick>` suppresses all messages from a nick (PRIVMSG, NOTICE, ACTION). `/unignore <nick>` removes. `/ignored` lists. Right-click → **Ignore / Unignore**. Persists in config. |
 | **Reactions** | IRCv3 `draft/react`. Right-click a message timestamp → **React**. Incoming reactions shown inline below the message as emoji + count. `/react <emoji>` with a reply target selected. |
 | **Message deletion** | IRCv3 `draft/message-redaction`. Right-click your own message timestamp → **Delete**. Redacted messages show `[message deleted]` in all clients that support it. |
-| **Account tracking** | `account-notify` + `extended-join`. NickServ account shown as a tooltip when you hover a nick in the nick list. Updated in real time as users authenticate or log out. |
+| **Account tracking** | `account-notify` + `extended-join` + `account-tag` + WHOX. NickServ account shown as a tooltip when you hover a nick in the **nick list** or directly on a **nick in the chat view**. Updated in real time on every message (account-tag), on login/logout (account-notify), on join (extended-join), and on channel join via bulk WHO scan. |
 | **Watch list (Monitor)** | IRCv3 MONITOR. Use `/monitor add <nick>` to watch for someone coming online. Status changes post to the server buffer. List persists in config. |
 | **Per-channel logging** | All messages written to `~/.config/noderelay/logs/<server>/<channel>.log`. Toggle in **Preferences → Log Messages to Disk**. |
 | **Reply to messages** | Right-click a timestamp → **Reply**. Outgoing message carries `+draft/reply` tag. Received replies show `↩ origNick` inline. |
