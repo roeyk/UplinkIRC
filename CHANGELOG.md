@@ -123,6 +123,37 @@ Next priorities:
 -->
 
 <!--
+Session summary — 2026-06-01 (v0.16.8 — SOCKS5, UTF8ONLY, security fixes, /leave /close)
+
+What was done:
+  - NickServ echo-message redaction: the server echo path (when echo-message CAP
+    is active) was not redacted. Fixed in onMessage — isSelf + isPM + NickServ
+    target now applies the same pwdCmds redaction as the local echo path.
+  - /leave and /close commands added. In a channel they send PART; in a query
+    (PM window) they close the buffer without sending anything to the server.
+    Both added to tab-completion list.
+  - SOCKS5 proxy support fully implemented:
+      - ServerConfig: proxyHost, proxyPort (default 1080), proxyUser, proxyPass
+      - config.cpp: load/save proxy_host/port/user/pass TOML keys
+      - ircclient: applyProxy() helper called before every connectToHost* call
+        (initial connect, doReconnect, STS upgrade). QNetworkProxy::Socks5Proxy
+        set on the socket; NoProxy when proxyHost is empty.
+      - Server dialog: new SOCKS5 Proxy section with host, port spinbox,
+        optional user/pass fields.
+  - UTF8ONLY ISUPPORT: 005 params now parsed token by token. UTF8ONLY token
+    sets m_utf8Only flag and logs to server buffer. onReadyRead warns on
+    0xFF bytes (cannot appear in valid UTF-8). privmsg warns on U+FFFD
+    replacement characters in outgoing text. Flag resets on each new connect.
+  - Docs: signal bars section updated with lag/latency/RTT keywords so search
+    finds it. Same section added to faq.md for in-app discoverability.
+
+Regressions: none.
+Known issues: same as v0.16.7.
+Next priorities: self-signed cert fingerprint-pin, DCC passive/NAT, split view,
+  in-app update check UI, SVG light icon variants.
+-->
+
+<!--
 Session summary — 2026-06-01 (v0.16.7 — UX fixes, security, docs search)
 
 What was done:
@@ -188,6 +219,15 @@ Known issues: same as previous session.
 Next priorities: self-signed cert fingerprint-pin, SOCKS5 proxy, DCC passive/NAT,
   split view, in-app update check.
 -->
+
+## v0.16.8 — 2026-06-01
+
+- **SOCKS5 proxy support** — each server can route its connection through a SOCKS5 proxy. Configure with `proxy_host`, `proxy_port` (default `1080`), and optional `proxy_user` / `proxy_pass` in the `[[server]]` block, or set it from the server dialog. The proxy is applied to every connect attempt including reconnects and STS upgrades.
+- **UTF8ONLY** — NodeRelay now detects the `UTF8ONLY` ISUPPORT token from the server and enforces UTF-8 encoding. A notice appears in the server buffer when the token is seen. Incoming non-UTF-8 bytes and outgoing messages containing replacement characters both trigger warnings.
+- **`/leave` and `/close` commands** — in a channel, both send PART. In a query (PM window), both close the buffer without sending anything to the server. Both complete via Tab.
+- **Fix: NickServ password still shown when server has `echo-message`** — the server-echo path in `onMessage` was missing the credential redaction that the local-echo path had. Both paths now redact `IDENTIFY`, `REGISTER`, `GHOST`, `RECOVER`, `RELEASE`, `REGAIN`, and `SETPASS`.
+
+---
 
 ## v0.16.7 — 2026-06-01
 

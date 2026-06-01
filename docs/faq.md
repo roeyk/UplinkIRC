@@ -162,6 +162,31 @@ Yes, when a server supports the IRCv3 **STS (Strict Transport Security)** capabi
 
 This prevents downgrade attacks where someone on the network could intercept a plaintext connection before TLS is negotiated.
 
+### How do I route IRC through a SOCKS5 proxy (or Tor)?
+
+Add `proxy_host` and `proxy_port` to the server block in `config.toml`:
+
+```toml
+[[server]]
+name       = "LinuxDojo via Tor"
+host       = "irc.linuxdojo.org"
+port       = 6697
+ssl        = true
+nick       = "yournick"
+proxy_host = "127.0.0.1"
+proxy_port = 9050          # Tor's default SOCKS5 port
+```
+
+For an authenticated proxy, also add `proxy_user` and `proxy_pass`. You can also configure this from the GUI: **☰ → Manage Servers → Edit → SOCKS5 Proxy** section at the bottom of the dialog.
+
+The proxy applies to all connection attempts including reconnects. TLS still works — the TLS handshake happens inside the SOCKS5 tunnel. Leave `proxy_host` empty to connect directly.
+
+### How do I close a private message window?
+
+Type `/close` or `/leave` in the PM window, or right-click the entry in the sidebar and choose **Close Query**.
+
+In a **channel**, `/leave` and `/close` send a PART message (leaving the channel). In a **query** (PM window), they just close the local buffer — no message is sent to the server.
+
 ### How do I send a raw IRC command?
 
 You have two options:

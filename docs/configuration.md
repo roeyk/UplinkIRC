@@ -61,6 +61,10 @@ realname = "NodeRelay User"
 # nickserv_password = "yourpassword"   # alternative: NickServ IDENTIFY on connect
 # bouncer           = "soju"           # "znc" or "soju" — enables bouncer-specific caps
 # bouncer_network   = "libera"         # soju only: which network to attach to
+# proxy_host        = "127.0.0.1"      # SOCKS5 proxy hostname (omit for direct connection)
+# proxy_port        = 1080             # SOCKS5 proxy port (default 1080)
+# proxy_user        = ""               # optional: proxy username
+# proxy_pass        = ""               # optional: proxy password
 
 [[server.channel]]
 name = "#uplink"
@@ -175,6 +179,10 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `nickserv_password` | string | no | Sends `PRIVMSG NickServ :IDENTIFY <password>` after connecting. Use on servers without SASL support. **Stored in OS keychain — see note below.** |
 | `bouncer` | string | no | Bouncer type. Set to `"znc"` or `"soju"` to enable bouncer-specific IRCv3 capabilities. Omit or set `"none"` for a direct server connection |
 | `bouncer_network` | string | no | **soju only.** The network name to attach to (e.g. `"libera"`). Sent to soju's `BOUNCER LISTNETWORKS` subsystem. Leave empty if connecting to a single-network soju instance |
+| `proxy_host` | string | no | SOCKS5 proxy hostname or IP (e.g. `"127.0.0.1"`). Leave empty (the default) to connect directly with no proxy. |
+| `proxy_port` | integer | no | SOCKS5 proxy port. Defaults to `1080`. |
+| `proxy_user` | string | no | SOCKS5 proxy username. Only needed if your proxy requires authentication. |
+| `proxy_pass` | string | no | SOCKS5 proxy password. Only needed if your proxy requires authentication. |
 
 ### Minimal server block
 
@@ -416,6 +424,60 @@ When `chathistory` is negotiated (supported by soju, modern ZNC, and some IRC se
 - Not counted as unread, so they do not badge the channel in the sidebar
 
 No configuration is required — history replay happens automatically whenever the server supports it.
+
+---
+
+## SOCKS5 proxy
+
+Each server can connect through a SOCKS5 proxy independently. This is useful for Tor, corporate proxies, or any scenario where you need to route IRC traffic through an intermediary.
+
+### Basic proxy (no authentication)
+
+```toml
+[[server]]
+name       = "LinuxDojo via Tor"
+host       = "irc.linuxdojo.org"
+port       = 6697
+ssl        = true
+nick       = "yournick"
+user       = "uplink"
+realname   = "NodeRelay User"
+channels   = "#uplink"
+proxy_host = "127.0.0.1"
+proxy_port = 9050
+```
+
+Set `proxy_host` to the hostname or IP of your SOCKS5 proxy. `proxy_port` defaults to `1080` if omitted.
+
+### Authenticated proxy
+
+If your proxy requires a username and password:
+
+```toml
+[[server]]
+name       = "Work IRC"
+host       = "irc.example.com"
+port       = 6697
+ssl        = true
+nick       = "yournick"
+user       = "uplink"
+realname   = "NodeRelay User"
+proxy_host = "proxy.corp.example.com"
+proxy_port = 1080
+proxy_user = "myuser"
+proxy_pass = "mypassword"
+```
+
+### GUI setup
+
+Go to **☰ → Manage Servers → Add** (or **Edit**) and fill in the **SOCKS5 Proxy** section at the bottom of the dialog. Leave the host field blank to connect directly without a proxy.
+
+### Notes
+
+- The proxy is applied to every connection attempt including automatic reconnects and STS TLS upgrades.
+- SSL/TLS still works through the proxy — the TLS handshake happens inside the SOCKS5 tunnel.
+- To use **Tor**, set `proxy_host = "127.0.0.1"` and `proxy_port = 9050` (the default Tor SOCKS5 port). Make sure the Tor daemon is running.
+- Leaving `proxy_host` empty (the default) connects directly — no proxy is used.
 
 ---
 

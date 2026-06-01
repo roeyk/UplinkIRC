@@ -152,7 +152,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; policy cached to ~/.config/noderelay/sts.ini; stsstore.h/cpp; m_stsUpgrade flag; downgrade prevention (v0.16.3)
 - [x] netsplit/netjoin batch types — collapse netsplit noise into a single folded entry (v0.16.4)
 - [x] Standard Replies — structured error/warning/note messages from server (v0.16.5)
-- [ ] UTF8ONLY — detect server UTF-8-only signal and enforce encoding
+- [x] UTF8ONLY — detect server UTF-8-only signal, enforce encoding, warn on violations (v0.16.8)
 - [x] URL detection + click to open — http/https links in chat open in browser (v0.3.0)
 - [x] Link preview persistence — cards survive channel switches (stored in Channel struct)
 - [x] Link preview entity decoding — QTextDocument decodes &amp; &#39; &lt; etc. in og:title and &lt;title&gt; fallback paths
@@ -212,8 +212,10 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] NickServ credential redaction extended — IDENTIFY/REGISTER/GHOST/RECOVER/RELEASE/REGAIN/SETPASS all redacted in local echo (v0.16.7)
 - [x] Service NOTICE routing — ChanServ/NickServ/BotServ/MemoServ replies route to their PM tab when open (v0.16.7)
 - [x] howto.html full-text search — live search box in nav sidebar, match count, keyboard navigation (v0.16.7)
+- [x] /leave and /close commands — close query buffer or part channel (v0.16.8)
+- [x] NickServ credential redaction complete — echo-message server echo path also redacted (v0.16.8)
 - [ ] Self-signed cert option — per-server accept/reject + fingerprint-pin UI
-- [ ] SOCKS5 proxy support
+- [x] SOCKS5 proxy support — per-server proxy_host/port/user/pass; GUI in server dialog (v0.16.8)
 
 ---
 
