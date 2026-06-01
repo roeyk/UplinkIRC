@@ -75,16 +75,16 @@ jobs:
       - name: Package (Linux)
         if: runner.os == 'Linux'
         run: |
-          mkdir -p artifact/UplinkIRC
-          cp build/UplinkIRC artifact/UplinkIRC/
-          cp -r build/themes artifact/UplinkIRC/
-          tar -czf UplinkIRC-${{ github.ref_name }}-linux-x86_64.tar.gz \
-              -C artifact UplinkIRC
+          mkdir -p artifact/NodeRelay
+          cp build/NodeRelay artifact/NodeRelay/
+          cp -r build/themes artifact/NodeRelay/
+          tar -czf NodeRelay-${{ github.ref_name }}-linux-x86_64.tar.gz \
+              -C artifact NodeRelay
 
       - name: Build AppImage (Linux)
         if: runner.os == 'Linux'
         env:
-          UPDATE_INFORMATION: "gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|UplinkIRC-*-x86_64.AppImage.zsync"
+          UPDATE_INFORMATION: "gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|NodeRelay-*-x86_64.AppImage.zsync"
         run: bash packaging/build-appimage.sh
 
       # ── Windows ──────────────────────────────────────────────────────────
@@ -92,20 +92,20 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Path artifact\UplinkIRC | Out-Null
-          Copy-Item build\Release\UplinkIRC.exe artifact\UplinkIRC\
-          Copy-Item -Recurse build\Release\themes artifact\UplinkIRC\themes
-          windeployqt --release artifact\UplinkIRC\UplinkIRC.exe
-          Compress-Archive -Path artifact\UplinkIRC\* `
-              -DestinationPath UplinkIRC-${{ github.ref_name }}-windows-x64.zip
+          New-Item -ItemType Directory -Path artifact\NodeRelay | Out-Null
+          Copy-Item build\Release\NodeRelay.exe artifact\NodeRelay\
+          Copy-Item -Recurse build\Release\themes artifact\NodeRelay\themes
+          windeployqt --release artifact\NodeRelay\NodeRelay.exe
+          Compress-Archive -Path artifact\NodeRelay\* `
+              -DestinationPath NodeRelay-${{ github.ref_name }}-windows-x64.zip
 
       # ── macOS ────────────────────────────────────────────────────────────
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          $(brew --prefix qt)/bin/macdeployqt build/UplinkIRC.app -dmg
-          mv build/UplinkIRC.dmg \
-              UplinkIRC-${{ github.ref_name }}-macos-${{ runner.arch == 'ARM64' && 'arm64' || 'x86_64' }}.dmg
+          $(brew --prefix qt)/bin/macdeployqt build/NodeRelay.app -dmg
+          mv build/NodeRelay.dmg \
+              NodeRelay-${{ github.ref_name }}-macos-${{ runner.arch == 'ARM64' && 'arm64' || 'x86_64' }}.dmg
 
       # ── Upload ───────────────────────────────────────────────────────────
       - name: Upload to release
@@ -113,8 +113,8 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           files: |
-            UplinkIRC-${{ github.ref_name }}-*
-            UplinkIRC-*.AppImage
-            UplinkIRC-*.AppImage.zsync
+            NodeRelay-${{ github.ref_name }}-*
+            NodeRelay-*.AppImage
+            NodeRelay-*.AppImage.zsync
           generate_release_notes: true
 

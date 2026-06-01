@@ -164,7 +164,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     statusBar()->hide();
 
-    QSettings settings("LinuxDojo", "UplinkIRC");
+    QSettings settings("LinuxDojo", "NodeRelay");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
     if (settings.contains("nickSplitter"))
@@ -187,7 +187,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     connect(qApp, &QApplication::aboutToQuit, this, [this]{
-        QSettings s("LinuxDojo", "UplinkIRC");
+        QSettings s("LinuxDojo", "NodeRelay");
         s.setValue("geometry", saveGeometry());
         s.setValue("windowState", saveState());
         s.setValue("nickSplitter", m_chatSplitter->saveState());
@@ -231,7 +231,7 @@ void MainWindow::setupToolbar()
         menu->setAttribute(Qt::WA_DeleteOnClose);
         const QColor ic(m_theme.valid ? m_theme.text : "#ffffff");
 
-        menu->addAction(MenuIcons::about(ic), "About UplinkIRC", this, [this]{
+        menu->addAction(MenuIcons::about(ic), "About NodeRelay", this, [this]{
             if (!m_aboutDialog) m_aboutDialog = new AboutDialog(this);
             m_aboutDialog->showCentered();
         });
@@ -1994,7 +1994,7 @@ void MainWindow::onInputSubmit()
         } else if (cmd == "/quote" || cmd == "/raw") {
             m_model->sendRaw(host, args);
         } else if (cmd == "/quit") {
-            if (auto *cl = m_model->clientFor(host)) cl->quit(args.isEmpty() ? "UplinkIRC" : args);
+            if (auto *cl = m_model->clientFor(host)) cl->quit(args.isEmpty() ? "NodeRelay" : args);
         } else if (cmd == "/away") {
             m_model->sendRaw(host, args.isEmpty() ? "AWAY" : "AWAY :" + args);
         } else if (cmd == "/back") {
@@ -2256,7 +2256,7 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
             m_signalBars->setState(SignalBars::State::Disconnected);
     }
 
-    setWindowTitle("UplinkIRC — " + channel + " @ " + host);
+    setWindowTitle("NodeRelay — " + channel + " @ " + host);
     updateTypingLabel();
 }
 

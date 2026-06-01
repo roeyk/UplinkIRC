@@ -25,7 +25,7 @@ The AppImage is the recommended Linux download — it is self-contained, runs on
 The AppImage embeds zsync metadata pointing to the latest release. Install [`appimageupdatetool`](https://github.com/AppImageCommunity/AppImageUpdate) and run:
 
 ```bash
-appimageupdatetool ./NodeRelay-0.10.0-x86_64.AppImage
+appimageupdatetool ./NodeRelay-0.16.2-x86_64.AppImage
 ```
 
 This downloads only the changed blocks from the new release — much faster than a full re-download. The tool prints progress and replaces the file in place when done.
