@@ -734,10 +734,10 @@ void MainWindow::setupChatArea()
                 .arg(dataUri).arg(thumbnail.width()).arg(thumbnail.height());
         }
 
-        const QColor bg("#1a1a1a");
-        const QColor border("#444444");
-        const QColor fg("#eeeeee");
-        const QColor sub("#888888");
+        const QColor bg(m_theme.bufferBg);
+        const QColor border(m_theme.border);
+        const QColor fg(m_theme.text);
+        const QColor sub(m_theme.timestamp);
 
         const QString titleEsc  = title.toHtmlEscaped().left(120);
         const QString domainEsc = pageUrl.host().toHtmlEscaped();
@@ -1108,6 +1108,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                         }
                     }
                 }
+                if (m_chatView->textCursor().hasSelection())
+                    connect(menu.addAction("Copy"), &QAction::triggered,
+                            this, [this]{ m_chatView->copy(); });
                 menu.exec(globalPos);
                 return true;
             }
@@ -1151,6 +1154,33 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 QMenu menu(m_chatView->viewport());
                 connect(menu.addAction("Copy"), &QAction::triggered,
                         this, [this]{ m_chatView->copy(); });
+
+                // Find the msgid anchor in the clicked paragraph so Reply
+                // is available even when right-clicking on message body text.
+                QString foundMsgid;
+                const QTextBlock block = m_chatView->cursorForPosition(ce->pos()).block();
+                for (auto it = block.begin(); !it.atEnd(); ++it) {
+                    const QString href = it.fragment().charFormat().anchorHref();
+                    if (href.startsWith("msgid:")) { foundMsgid = href.mid(6); break; }
+                }
+                if (!foundMsgid.isEmpty()) {
+                    const QString host    = m_model->activeHost();
+                    const QString channel = m_model->activeChannel();
+                    connect(menu.addAction("Reply"), &QAction::triggered, this,
+                            [this, foundMsgid, host, channel]{
+                        auto *ch = m_model->channel(host, channel);
+                        QString origNick;
+                        if (ch)
+                            for (const auto &m : std::as_const(ch->messages))
+                                if (m.msgid == foundMsgid) { origNick = m.nick; break; }
+                        m_pendingReplyMsgid = foundMsgid;
+                        if (m_replyLabel)
+                            m_replyLabel->setText("↩ " + (origNick.isEmpty() ? foundMsgid : origNick));
+                        if (m_replyBar) m_replyBar->show();
+                        if (m_input)    m_input->setFocus();
+                    });
+                }
+
                 menu.exec(globalPos);
             }
             return true;
