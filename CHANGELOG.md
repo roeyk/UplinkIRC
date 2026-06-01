@@ -79,6 +79,49 @@ Known issues: light icon variants are PNGs (no SVG light versions yet).
 Next priorities: password keychain, DCC passive/NAT, split view, SOCKS5 proxy.
 -->
 
+<!--
+Session summary — 2026-06-01
+
+What was built:
+  - v0.16.4: Netsplit/netjoin batch collapse — IRCv3 netsplit/netjoin batch types now
+    collapse into one summary line per channel instead of flooding the buffer with
+    individual QUIT/JOIN messages. Nick lists remain accurate. New signals:
+    netsplitDetected / netjoinDetected on IrcClient; onNetsplitDetected /
+    onNetjoinDetected on SessionModel.
+  - v0.16.5: Standard Replies — FAIL/WARN/NOTE commands parsed and displayed with
+    [FAIL]/[WARN]/[NOTE] prefixes. Routes to named channel buffer if context includes
+    a channel name, otherwise active channel / server buffer fallback.
+  - v0.16.6: OS keychain password storage — qtkeychain-qt6 integrated. password,
+    sasl_password, nickserv_password stored in OS keychain (Secret Service / macOS
+    Keychain / Windows Credential Manager). Config file holds "<keychain>" sentinel.
+    Existing plaintext passwords migrate automatically on next save.
+
+Bugs fixed:
+  - docs/index.html download links were still pointing to v0.16.2 instead of v0.16.3
+    (reported by nexu on IRC). All three platform links and four version labels updated.
+
+Documentation:
+  - Full doc pass covering all three new features across: config.toml.example, ircv3.md,
+    configuration.md (new Password Storage subsection), faq.md, README.md, howto.html
+    (new keychain section + nav entry). Also fixed lingering "UplinkIRC" references in
+    config.toml.example.
+
+Regressions found: none.
+
+Known issues left open:
+  - DCC over internet: local IP advertised in DCC SEND offer; NAT/firewall on sender
+    side blocks inbound connection. Works on LAN only.
+  - About dialog slight centering drift on Wayland (Qt limitation, deferred).
+  - Light icon variants are PNGs — no SVG light versions yet.
+
+Next priorities:
+  - Self-signed cert fingerprint-pin UI
+  - SOCKS5 proxy support
+  - DCC passive / NAT traversal
+  - Split view (two channels side by side)
+  - In-app update check UI
+-->
+
 ## v0.16.6 — 2026-06-01
 
 - **Password encryption via OS keychain** — server passwords, SASL passwords, and NickServ passwords are now stored in the OS keychain (Secret Service on Linux, Keychain on macOS, Credential Manager on Windows) instead of plaintext in `config.toml`. Existing plaintext passwords migrate automatically on next save. The config file stores `"<keychain>"` as a sentinel.
