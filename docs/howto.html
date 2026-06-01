@@ -344,6 +344,7 @@
     <li><a href="#sidebar">Sidebar</a></li>
     <li><a href="#chat-area">Chat area</a></li>
     <li><a href="#nick-panel">Nick list panel</a></li>
+    <li><a href="#nick-context-menu">Nick right-click menu</a></li>
     <li><a href="#signal-bars">Signal bars</a></li>
     <li><a href="#tray">System tray</a></li>
   </ul>
@@ -360,7 +361,9 @@
     <li><a href="#search">Message search</a></li>
     <li><a href="#reply">Reply to messages</a></li>
     <li><a href="#reactions">Reactions</a></li>
+    <li><a href="#deletion">Message deletion</a></li>
     <li><a href="#ignore">Ignore list</a></li>
+    <li><a href="#monitor">Monitor (online/offline)</a></li>
     <li><a href="#logging">Message logging</a></li>
     <li><a href="#link-previews">Link previews</a></li>
     <li><a href="#dcc">DCC file transfer</a></li>
@@ -601,8 +604,8 @@ user     = "uplink"
 realname = "NodeRelay User"
 channels = "#linux, #archlinux"</pre>
 
-    <div class="warn">
-      <strong>Always use port 6697 with <code>ssl = true</code>.</strong> NodeRelay does not support plain-text IRC connections — TLS is required.
+    <div class="note">
+      <strong>Always use <code>ssl = true</code> when possible.</strong> If the server advertises the IRCv3 <strong>STS (Strict Transport Security)</strong> capability, NodeRelay upgrades a plain connection to TLS automatically and caches the policy so future connections are always encrypted — even if <code>ssl = false</code> is set. Most modern networks (Libera.Chat, OFTC, LinuxDojo) support STS.
     </div>
 
     <p>Common IRC networks and their TLS hostnames:</p>
@@ -895,8 +898,9 @@ channels        = "#linux"</pre>
       <li>When a URL is posted, NodeRelay fetches a preview card (title + thumbnail) automatically.</li>
       <li>When someone mentions your nick, it is highlighted in red and bold.</li>
       <li>A "nick is typing…" line appears above the input bar when someone with IRCv3 typing support is composing a message.</li>
-      <li><strong>Right-click any message</strong> to open a context menu — choose <strong>Reply</strong> to start a threaded reply. See <a href="#reply">Reply to messages</a>.</li>
-      <li><strong>Right-click any nick</strong> in a message to open the nick context menu — Message, Send File, Whois, Invite, Give Op, Take Op, Give Voice, Take Voice, Version, Ping, Copy Nick, and (for ops) Kick, Ban, Kick &amp; Ban.</li>
+      <li><strong>Right-click the timestamp</strong> (hh:mm) on any message for a context menu: <strong>Reply</strong>, <strong>React</strong>, and <strong>Delete</strong> (own messages only, when the server supports it). See <a href="#reply">Reply</a>, <a href="#reactions">Reactions</a>, and <a href="#deletion">Message deletion</a>.</li>
+      <li><strong>Right-click any nick</strong> in a message to open the nick context menu — Message, Send File, Whois, Invite, Give Op, Take Op, Give Voice, Take Voice, Version, Ping, Copy Nick, and (for ops) Kick, Ban, Kick &amp; Ban. See <a href="#nick-context-menu">Nick right-click menu</a>.</li>
+      <li><strong>Hover over a nick</strong> in a message to see their NickServ account name as a tooltip (when the server reports it via <code>account-tag</code> or <code>account-notify</code>).</li>
       <li>Press <kbd>Ctrl+F</kbd> to search the current buffer. See <a href="#search">Message search</a>.</li>
     </ul>
   </section>
@@ -911,6 +915,7 @@ channels        = "#linux"</pre>
       <li>Drag the divider between the chat and the nick panel to resize it — width is saved.</li>
       <li>Nicks are sorted by prefix rank: <code>~</code> owner, <code>&amp;</code> admin, <code>@</code> op, <code>%</code> halfop, <code>+</code> voice, then alphabetical.</li>
       <li>Nicks with <code>+B</code> (bot mode) show a bot indicator (🤖 or 👾).</li>
+      <li><strong>Hover</strong> over any nick to see their NickServ account name as a tooltip (shown as <code>account: name</code> when the server has reported it).</li>
       <li>Right-click any nick for a full action menu — see <a href="#nick-context-menu">Nick right-click menu</a> below.</li>
     </ul>
   </section>
@@ -1008,6 +1013,16 @@ channels        = "#linux"</pre>
       <tr><td><code>/ban mask</code></td><td>Ban a hostmask</td><td><code>/ban *!*@badhost.net</code></td></tr>
       <tr><td><code>/ping nick</code></td><td>Measure round-trip time to a nick</td><td><code>/ping bob</code></td></tr>
       <tr><td><code>/whois nick</code></td><td>Look up a nick's info</td><td><code>/whois bob</code></td></tr>
+      <tr><td><code>/monitor add &lt;nick&gt;</code></td><td>Watch for a nick coming online</td><td><code>/monitor add alice</code></td></tr>
+      <tr><td><code>/monitor del &lt;nick&gt;</code></td><td>Stop watching a nick</td><td><code>/monitor del alice</code></td></tr>
+      <tr><td><code>/monitor list</code></td><td>Show your current watch list</td><td></td></tr>
+      <tr><td><code>/monitor clear</code></td><td>Clear all watched nicks</td><td></td></tr>
+      <tr><td><code>/monitor status</code></td><td>Request current online/offline status</td><td></td></tr>
+      <tr><td><code>/ignore nick</code></td><td>Suppress all messages from a nick</td><td><code>/ignore spammer</code></td></tr>
+      <tr><td><code>/unignore nick</code></td><td>Remove a nick from the ignore list</td><td><code>/unignore spammer</code></td></tr>
+      <tr><td><code>/ignored</code></td><td>List all ignored nicks</td><td></td></tr>
+      <tr><td><code>/ns text</code></td><td>Shortcut for <code>PRIVMSG NickServ</code></td><td><code>/ns identify pass</code></td></tr>
+      <tr><td><code>/cs text</code></td><td>Shortcut for <code>PRIVMSG ChanServ</code></td><td><code>/cs op #uplink</code></td></tr>
       <tr><td><code>/away message</code></td><td>Set yourself away</td><td><code>/away at lunch</code></td></tr>
       <tr><td><code>/back</code></td><td>Clear your away status</td><td><code>/back</code></td></tr>
       <tr><td><code>/clear</code></td><td>Clear the chat buffer</td><td><code>/clear</code></td></tr>
@@ -1165,6 +1180,21 @@ show_emoji_button = true</pre>
     </div>
   </section>
 
+  <!-- MESSAGE DELETION -->
+  <section id="deletion">
+    <h2>Message deletion</h2>
+    <p>NodeRelay supports IRCv3 <code>draft/message-redaction</code> — you can delete your own sent messages from the chat history.</p>
+
+    <div class="step-row"><span class="step">1</span><div>Right-click the <strong>timestamp</strong> on one of your own messages.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Choose <strong>Delete</strong> from the context menu.</div></div>
+
+    <p>The message is replaced with <span style="color:gray;font-style:italic">[message deleted]</span> in grey italic. Other clients that support <code>draft/message-redaction</code> will also hide the message.</p>
+
+    <div class="note">
+      <strong>Server support required:</strong> the <strong>Delete</strong> option only appears when the server has acknowledged the <code>draft/message-redaction</code> capability during the CAP handshake. You can only delete your own messages.
+    </div>
+  </section>
+
   <!-- IGNORE LIST -->
   <section id="ignore">
     <h2>Ignore list</h2>
@@ -1182,6 +1212,28 @@ show_emoji_button = true</pre>
     <pre>/ignored</pre>
 
     <p>The ignore list is saved in <code>config.toml</code> under <code>[ignore] nicks = [...]</code> and is restored automatically on the next launch.</p>
+  </section>
+
+  <!-- MONITOR -->
+  <section id="monitor">
+    <h2>Monitor — online/offline watching</h2>
+    <p>The IRCv3 MONITOR system lets you watch for specific nicks coming online or going offline. When a watched nick connects or disconnects, a status line appears in the server buffer: <em>Now online: alice</em> / <em>Now offline: alice</em>.</p>
+
+    <table>
+      <tr><th>Command</th><th>What it does</th></tr>
+      <tr><td><code>/monitor add &lt;nick&gt;</code></td><td>Start watching this nick</td></tr>
+      <tr><td><code>/monitor del &lt;nick&gt;</code></td><td>Stop watching this nick</td></tr>
+      <tr><td><code>/monitor list</code></td><td>Show your current watch list</td></tr>
+      <tr><td><code>/monitor clear</code></td><td>Remove all watched nicks</td></tr>
+      <tr><td><code>/monitor status</code></td><td>Ask the server for current online/offline status of all watched nicks</td></tr>
+    </table>
+
+    <p>Example — watch for a friend:</p>
+    <pre>/monitor add alice</pre>
+
+    <p>The watch list is saved to <code>config.toml</code> under <code>[monitor] nicks = [...]</code> and is re-sent on every reconnect. You can also edit it directly:</p>
+    <pre>[monitor]
+nicks = ["alice", "bob"]</pre>
   </section>
 
   <!-- LOGGING -->
