@@ -329,6 +329,7 @@
     <li><a href="#nickserv">NickServ auto-identify</a></li>
     <li><a href="#sasl">SASL PLAIN</a></li>
     <li><a href="#sasl-external">SASL EXTERNAL (cert)</a></li>
+    <li><a href="#sts">STS (auto-TLS enforcement)</a></li>
   </ul>
 
   <div class="nav-section">Multiple Servers</div>
@@ -345,6 +346,7 @@
     <li><a href="#chat-area">Chat area</a></li>
     <li><a href="#nick-panel">Nick list panel</a></li>
     <li><a href="#nick-context-menu">Nick right-click menu</a></li>
+    <li><a href="#account-tracking">Account tracking</a></li>
     <li><a href="#signal-bars">Signal bars</a></li>
     <li><a href="#tray">System tray</a></li>
   </ul>
@@ -605,7 +607,7 @@ realname = "NodeRelay User"
 channels = "#linux, #archlinux"</pre>
 
     <div class="note">
-      <strong>Always use <code>ssl = true</code> when possible.</strong> If the server advertises the IRCv3 <strong>STS (Strict Transport Security)</strong> capability, NodeRelay upgrades a plain connection to TLS automatically and caches the policy so future connections are always encrypted — even if <code>ssl = false</code> is set. Most modern networks (Libera.Chat, OFTC, LinuxDojo) support STS.
+      <strong>Always set <code>ssl = true</code>.</strong> NodeRelay also supports <a href="#sts">STS (Strict Transport Security)</a> — if the server advertises it, TLS is enforced automatically and the policy is cached for future connections, even if <code>ssl</code> is missing from your config.
     </div>
 
     <p>Common IRC networks and their TLS hostnames:</p>
@@ -758,6 +760,36 @@ client_key    = "/home/alice/.irc/client.key"</pre>
 
     <div class="warn">
       <strong>Do not set <code>sasl_user</code> / <code>sasl_password</code> alongside <code>sasl_external</code></strong> — only one SASL mechanism is used per connection.
+    </div>
+  </section>
+
+  <!-- STS -->
+  <section id="sts">
+    <h2>STS — Strict Transport Security</h2>
+    <p>STS is an IRCv3 security feature that prevents your IRC client from ever being silently downgraded to a plain-text connection. It works exactly like HSTS in web browsers — once a server tells NodeRelay "always connect over TLS," that instruction is remembered and enforced automatically on every future connection.</p>
+
+    <h3>How it works</h3>
+    <p>During the initial CAP handshake, a server that supports STS sends a policy containing a TLS port and a duration (how long to enforce it). NodeRelay handles everything automatically from there:</p>
+
+    <table>
+      <tr><th>Scenario</th><th>What NodeRelay does</th></tr>
+      <tr><td>Plain connection — server advertises STS</td><td>Immediately disconnects and reconnects over TLS on the server-specified port. Stores the policy.</td></tr>
+      <tr><td>TLS connection — server advertises STS</td><td>Refreshes the stored policy expiry. No reconnect needed — already encrypted.</td></tr>
+      <tr><td>Server sends <code>duration=0</code></td><td>Deletes the cached policy. Plain connections permitted again.</td></tr>
+      <tr><td>Cached policy is expired</td><td>Removed automatically on the next connection attempt.</td></tr>
+    </table>
+
+    <h3>What you'll see</h3>
+    <p>The first time STS triggers an upgrade from plain to TLS, a line appears in the server buffer:</p>
+    <pre>STS: upgrading to TLS on port 6697</pre>
+    <p>After that the connection continues normally — you're now on TLS. On all future connections the stored policy is applied silently before the socket is even opened, so you won't see the message again.</p>
+
+    <h3>Where the policy is stored</h3>
+    <pre>~/.config/noderelay/sts.ini</pre>
+    <p>Each entry records the host, TLS port, and an expiry timestamp. NodeRelay checks this file before dialing any server. If a valid policy exists for the host, TLS is used regardless of what <code>ssl</code> is set to in <code>config.toml</code>.</p>
+
+    <div class="note">
+      <strong>Nothing to configure.</strong> STS is fully automatic. Set <code>ssl = true</code> in your config as usual — STS provides an additional layer that protects you even if that setting is ever wrong or missing. Most modern networks already support it: Libera.Chat, OFTC, and LinuxDojo all advertise STS policies.
     </div>
   </section>
 
@@ -947,6 +979,57 @@ channels        = "#linux"</pre>
     </table>
 
     <p style="margin-top:1rem;">The same menu appears whether you right-click in the <strong>nick list panel</strong> on the right or on a <strong>nick link in the chat view</strong> (nicks in messages are clickable anchors).</p>
+  </section>
+
+  <!-- ACCOUNT TRACKING -->
+  <section id="account-tracking">
+    <h2>Account tracking</h2>
+    <p>NodeRelay tracks each user's NickServ account name in real time. This lets you see who is actually behind a nickname — even if someone changes their nick — as long as they're authenticated with services.</p>
+
+    <h3>Where to see it</h3>
+    <p>Account names appear as tooltips in two places. Simply hover over any nick:</p>
+
+    <ul>
+      <li><strong>Chat view</strong> — hover over a nick link in any message. The tooltip appears after a brief pause showing:
+        <pre>account: alice_libera</pre>
+      </li>
+      <li><strong>Nick list panel</strong> — hover over any nick in the right-side user list. Same tooltip format.</li>
+    </ul>
+
+    <p>If the tooltip is absent, the user is either not authenticated with services or the server does not report account names for that nick.</p>
+
+    <h3>How it stays current</h3>
+    <p>NodeRelay pulls account data from four sources so the information is always up to date without any manual queries:</p>
+
+    <table>
+      <tr><th>Source</th><th>When it fires</th><th>What it provides</th></tr>
+      <tr>
+        <td><code>account-tag</code></td>
+        <td>On every message the user sends</td>
+        <td>Account name attached directly to the message — no separate event needed. Updates on every single message in real time.</td>
+      </tr>
+      <tr>
+        <td><code>account-notify</code></td>
+        <td>When a nick logs in or out of services</td>
+        <td>An <code>ACCOUNT</code> command is sent to all clients in shared channels the moment authentication status changes.</td>
+      </tr>
+      <tr>
+        <td><code>extended-join</code></td>
+        <td>When a user joins a channel</td>
+        <td>The account name is included directly in the <code>JOIN</code> message — no extra query needed on join.</td>
+      </tr>
+      <tr>
+        <td>WHOX scan</td>
+        <td>After you join a channel</td>
+        <td>NodeRelay sends <code>WHO #channel %cnfa,42</code> to bulk-populate all accounts for everyone already in the channel.</td>
+      </tr>
+    </table>
+
+    <p>All four are negotiated and handled automatically — no configuration needed.</p>
+
+    <div class="note">
+      <strong>Tip:</strong> account names survive nick changes. If <strong>alice</strong> changes her nick to <strong>alice_away</strong> and you hover over the new nick, the tooltip still shows <code>account: alice_libera</code> — because it's tied to the account, not the display name.
+    </div>
   </section>
 
   <!-- SIGNAL BARS -->
