@@ -465,7 +465,7 @@ void IrcClient::processLine(const QString &line)
                 const qint64  now  = QDateTime::currentMSecsSinceEpoch();
                 if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {
                     m_ctcpTimestamps.insert(rkey, now);
-                    sendRaw("NOTICE " + msg.nick + " :\x01VERSION NodeRelay " UPLINKIRC_VERSION "\x01");
+                    sendRaw("NOTICE " + msg.nick + " :\x01VERSION NodeRelay " NODERELAY_VERSION "\x01");
                     emit serverMessage(m_host, "CTCP VERSION from " + msg.nick);
                 }
             } else if (ctcpCmd == "PING") {

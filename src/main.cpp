@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     app.setApplicationName("NodeRelay");
-    app.setApplicationVersion(UPLINKIRC_VERSION);
+    app.setApplicationVersion(NODERELAY_VERSION);
 
 #if defined(Q_OS_WIN)
     // Use native Windows rendering as the base style.
