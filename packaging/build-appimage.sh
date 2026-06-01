@@ -8,10 +8,10 @@ BUILD_DIR="$PROJECT_DIR/build-appimage"
 APPDIR="$BUILD_DIR/AppDir"
 
 # Read version from CMakeLists.txt
-VERSION=$(grep -oP '(?<=project\(UplinkIRC VERSION )\S+' "$PROJECT_DIR/CMakeLists.txt")
+VERSION=$(grep -oP '(?<=project\(NodeRelay VERSION )\S+' "$PROJECT_DIR/CMakeLists.txt")
 ARCH=$(uname -m)
 
-echo "==> UplinkIRC $VERSION  ($ARCH)"
+echo "==> NodeRelay $VERSION  ($ARCH)"
 
 # ---------------------------------------------------------------------------
 # Tools: linuxdeploy + Qt plugin
@@ -36,8 +36,8 @@ fi
 # ---------------------------------------------------------------------------
 # Icon: convert SVG → PNG (requires rsvg-convert, inkscape, or ImageMagick)
 # ---------------------------------------------------------------------------
-ICON_SVG="$PROJECT_DIR/resources/icons/app-icon-dark.svg"
-ICON_PNG="$SCRIPT_DIR/uplinkirc.png"
+ICON_SVG="$PROJECT_DIR/resources/icons/icon-tower.svg"
+ICON_PNG="$SCRIPT_DIR/noderelay.png"
 
 if [[ ! -f "$ICON_PNG" ]]; then
     echo "==> Converting icon..."
@@ -102,7 +102,7 @@ if [[ -n "$(ls -A "$STUB_DIR" 2>/dev/null)" ]]; then
     export LD_LIBRARY_PATH="$STUB_DIR:${LD_LIBRARY_PATH:-}"
 fi
 
-OUTPUT_FILE="UplinkIRC-$VERSION-$ARCH.AppImage"
+OUTPUT_FILE="NodeRelay-$VERSION-$ARCH.AppImage"
 
 # ---------------------------------------------------------------------------
 # Download appimagetool (used for the final packaging step — separate from
@@ -156,14 +156,14 @@ export PATH="$WRAPPER_DIR:$TOOLS_DIR:$PATH"
 "$LD_PATCHED" \
     --appdir "$APPDIR" \
     --plugin qt \
-    --desktop-file "$SCRIPT_DIR/UplinkIRC.desktop" \
+    --desktop-file "$SCRIPT_DIR/NodeRelay.desktop" \
     --icon-file "$ICON_PNG"
 
 # Phase 2b: ensure AppDir root has the required files for appimagetool
-cp -n "$APPDIR/usr/share/applications/UplinkIRC.desktop" "$APPDIR/" 2>/dev/null || true
-cp -n "$APPDIR/usr/share/icons/hicolor/scalable/apps/uplinkirc.svg" "$APPDIR/" 2>/dev/null || true
-if [[ -f "$SCRIPT_DIR/uplinkirc.png" ]] && [[ ! -f "$APPDIR/uplinkirc.png" ]]; then
-    cp "$SCRIPT_DIR/uplinkirc.png" "$APPDIR/"
+cp -n "$APPDIR/usr/share/applications/NodeRelay.desktop" "$APPDIR/" 2>/dev/null || true
+cp -n "$APPDIR/usr/share/icons/hicolor/scalable/apps/noderelay.svg" "$APPDIR/" 2>/dev/null || true
+if [[ -f "$SCRIPT_DIR/noderelay.png" ]] && [[ ! -f "$APPDIR/noderelay.png" ]]; then
+    cp "$SCRIPT_DIR/noderelay.png" "$APPDIR/"
 fi
 if [[ ! -f "$APPDIR/AppRun" ]]; then
     cat > "$APPDIR/AppRun" << 'APPRUN'
@@ -173,7 +173,7 @@ export LD_LIBRARY_PATH="$HERE/usr/lib:${LD_LIBRARY_PATH:-}"
 export QT_PLUGIN_PATH="$HERE/usr/plugins:${QT_PLUGIN_PATH:-}"
 export QT_QPA_PLATFORM_PLUGIN_PATH="$HERE/usr/plugins/platforms"
 export XDG_DATA_DIRS="$HERE/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-exec "$HERE/usr/bin/UplinkIRC" "$@"
+exec "$HERE/usr/bin/NodeRelay" "$@"
 APPRUN
     chmod +x "$APPDIR/AppRun"
 fi
