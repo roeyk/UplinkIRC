@@ -478,7 +478,16 @@ void SessionModel::onMessage(const QString &host, const QString &target,
         for (const auto &e : std::as_const(ch->nicks))
             if (e.nick.toLower() == nick.toLower()) { account = e.account; break; }
     }
-    postMessage(host, buf, Message::make(MessageType::Privmsg, nick, text, serverTime, isHistory, msgid, replyTo, account));
+    QString display = text;
+    if (isSelf && isPM) {
+        const QString svcCmd = text.section(' ', 0, 0).toUpper();
+        static const QStringList pwdCmds = {
+            "IDENTIFY", "REGISTER", "GHOST", "RECOVER", "RELEASE", "REGAIN", "SETPASS"
+        };
+        if (target.compare("NickServ", Qt::CaseInsensitive) == 0 && pwdCmds.contains(svcCmd))
+            display = svcCmd + " <redacted>";
+    }
+    postMessage(host, buf, Message::make(MessageType::Privmsg, nick, display, serverTime, isHistory, msgid, replyTo, account));
 }
 
 void SessionModel::onNotice(const QString &host, const QString &target,

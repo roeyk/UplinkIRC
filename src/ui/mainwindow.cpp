@@ -1305,7 +1305,7 @@ void MainWindow::handleTabComplete()
             static const QStringList commands = {
                 "/away", "/back", "/ban", "/clear", "/ctcp",
                 "/deop", "/devoice", "/invite", "/j", "/join",
-                "/kick", "/me", "/mode", "/motd", "/msg",
+                "/close", "/kick", "/leave", "/me", "/mode", "/motd", "/msg",
                 "/nick", "/notice", "/op", "/part", "/ping", "/time",
                 "/quit", "/quote", "/raw", "/sysinfo", "/topic",
                 "/unban", "/version", "/voice", "/whois",
@@ -1984,8 +1984,12 @@ void MainWindow::onInputSubmit()
 
         if (cmd == "/join") {
             m_model->sendJoin(host, args.section(' ', 0, 0), args.section(' ', 1, 1));
-        } else if (cmd == "/part") {
-            m_model->sendPart(host, channel, args);
+        } else if (cmd == "/part" || cmd == "/leave" || cmd == "/close") {
+            const bool isChannel = channel.startsWith('#') || channel.startsWith('&');
+            if (isChannel)
+                m_model->sendPart(host, channel, args);
+            else
+                m_model->closeBuffer(host, channel);
         } else if (cmd == "/nick") {
             m_model->sendNick(host, args.trimmed());
         } else if (cmd == "/me") {
