@@ -220,6 +220,35 @@ Next priorities: self-signed cert fingerprint-pin, SOCKS5 proxy, DCC passive/NAT
   split view, in-app update check.
 -->
 
+<!--
+Session summary — 2026-06-01 (emoji picker improvements)
+
+What was built:
+  - React context menu now opens the emoji picker GUI instead of a bare text
+    input dialog. The same searchable grid used by the 😊 toolbar button appears
+    anchored near the right-click position. Selecting an emoji sends the reaction.
+    Implemented via m_pendingReactMsgid/Host/Channel state; emojiSelected handler
+    checks these before the normal input-insertion path.
+  - Emoji picker search now strips leading/trailing colons before filtering, so
+    searching ":po", "po", or ":poop:" all find poop 💩 and friends. Previously
+    ":po" matched nothing because shortcodes are stored without colons.
+
+Bugs fixed:
+  - Emoji picker search went blank when user typed a colon-prefixed search term
+    (e.g. ":poop") — the colon was included in the filter which matched no shortcode.
+
+Regressions: none.
+Known issues: same as v0.16.8.
+Next priorities: self-signed cert fingerprint-pin UI, DCC passive/NAT, split view.
+-->
+
+## v0.16.9 — 2026-06-01
+
+- **React uses emoji picker** — right-click a message timestamp → **React** now opens the same searchable emoji picker used by the 😊 toolbar button, instead of a bare text input dialog. Search by name or shortcode, click to send.
+- **Fix: emoji picker search with colon prefix** — typing `:poop` or `:fire` in the picker's search box previously showed a blank grid because the leading colon was included in the filter. Colons are now stripped before matching, so `:po`, `po`, and `:poop:` all find the right emoji.
+
+---
+
 ## v0.16.8 — 2026-06-01
 
 - **SOCKS5 proxy support** — each server can route its connection through a SOCKS5 proxy. Configure with `proxy_host`, `proxy_port` (default `1080`), and optional `proxy_user` / `proxy_pass` in the `[[server]]` block, or set it from the server dialog. The proxy is applied to every connect attempt including reconnects and STS upgrades.

@@ -104,7 +104,7 @@ When a user's vhost or ident changes, the server sends a `CHGHOST newuser newhos
 
 Emoji reactions attached to specific messages via `TAGMSG` with a `+draft/react` tag and a `+draft/reply` tag identifying the target message ID.
 
-- **Sending:** right-click any message **timestamp** → **React** → type an emoji → OK. Or use `/react <emoji>` after setting a reply target.
+- **Sending:** right-click any message **timestamp** → **React** → emoji picker opens; search by name (`:thumbs`, `fire`, etc.) and click to send. Or use `/react <emoji>` after setting a reply target.
 - **Receiving:** reactions are stored per-message and rendered inline below the original message as `emoji(count)` in the chat view.
 - Requires `message-tags` and server support for `draft/react`. On servers that do not advertise the capability, reactions are not sent.
 

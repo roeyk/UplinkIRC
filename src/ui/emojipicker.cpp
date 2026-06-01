@@ -108,7 +108,10 @@ void EmojiPicker::filterGrid(const QString &filter)
 
 void EmojiPicker::onSearch(const QString &text)
 {
-    filterGrid(text.trimmed());
+    QString f = text.trimmed();
+    if (f.startsWith(':')) f = f.mid(1);
+    if (f.endsWith(':'))   f.chop(1);
+    filterGrid(f);
     m_scroll->verticalScrollBar()->setValue(0);
 }
 
