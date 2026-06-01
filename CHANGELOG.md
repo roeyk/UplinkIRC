@@ -79,6 +79,12 @@ Known issues: light icon variants are PNGs (no SVG light versions yet).
 Next priorities: password keychain, DCC passive/NAT, split view, SOCKS5 proxy.
 -->
 
+## v0.16.5 — 2026-06-01
+
+- **Standard Replies** — IRCv3 `FAIL`, `WARN`, and `NOTE` commands handled; displayed in the relevant channel buffer (or active channel / server buffer as fallback). `FAIL` renders as an error line, `WARN`/`NOTE` as server info. Format: `[FAIL] JOIN CHANNEL_BANNED: You are banned from that channel`.
+
+---
+
 ## v0.16.4 — 2026-06-01
 
 - **Netsplit/netjoin batch collapse** — IRCv3 `netsplit` and `netjoin` batch types handled; instead of a wall of individual quit/join lines, a single summary is posted per affected channel: `Netsplit: N users lost (srv1 srv2)` / `Netjoin: N users returned (srv1 srv2)`. Nick lists stay accurate.

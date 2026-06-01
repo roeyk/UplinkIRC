@@ -631,6 +631,31 @@ void IrcClient::processLine(const QString &line)
         emit topicReceived(m_host, msg.params[0], msg.trailing);
         return;
     }
+
+    if (cmd == "FAIL" || cmd == "WARN" || cmd == "NOTE") {
+        // params: [0]=command [1]=code [2..n-1]=context  trailing=description
+        const QString triggeredBy = msg.params.value(0);
+        const QString code        = msg.params.value(1);
+        const QString desc        = msg.trailing.isEmpty() ? msg.params.value(msg.params.size() - 1)
+                                                           : msg.trailing;
+        // Look for a channel name in the context parameters
+        QString channel;
+        for (int i = 2; i < msg.params.size(); ++i) {
+            const QString &p = msg.params[i];
+            if (!p.isEmpty() && QString("&#!+").contains(p[0])) { channel = p; break; }
+        }
+        const QString prefix = "[" + cmd + "] ";
+        const QString text   = triggeredBy.isEmpty() || triggeredBy == "*"
+            ? prefix + code + ": " + desc
+            : prefix + triggeredBy + " " + code + ": " + desc;
+        if (!channel.isEmpty())
+            emit standardReply(m_host, channel, cmd, text);
+        else if (cmd == "FAIL")
+            emit errorMessage(m_host, text);
+        else
+            emit serverMessage(m_host, text);
+        return;
+    }
 }
 
 // ---------------------------------------------------------------------------

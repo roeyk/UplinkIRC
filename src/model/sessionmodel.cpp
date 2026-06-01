@@ -336,6 +336,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::userQuit,        this, &SessionModel::onUserQuit);
     connect(cl, &IrcClient::netsplitDetected, this, &SessionModel::onNetsplitDetected);
     connect(cl, &IrcClient::netjoinDetected,  this, &SessionModel::onNetjoinDetected);
+    connect(cl, &IrcClient::standardReply,    this, &SessionModel::onStandardReply);
     connect(cl, &IrcClient::nickChanged,     this, &SessionModel::onNickChanged);
     connect(cl, &IrcClient::kicked,          this, &SessionModel::onKicked);
     connect(cl, &IrcClient::topicReceived,   this, &SessionModel::onTopicReceived);
@@ -781,6 +782,22 @@ void SessionModel::onErrorMessage(const QString &host, const QString &text)
     const QString target = (host == m_activeHost && !m_activeChannel.isEmpty())
         ? m_activeChannel : "(server)";
     postMessage(host, target, Message::make(MessageType::Error, "", text));
+}
+
+void SessionModel::onStandardReply(const QString &host, const QString &channel,
+                                   const QString &severity, const QString &text)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+    // Post to the named channel if we're in it, else active channel / server buffer
+    QString target;
+    if (!channel.isEmpty() && sess->get(channel))
+        target = channel;
+    else
+        target = (host == m_activeHost && !m_activeChannel.isEmpty())
+                 ? m_activeChannel : "(server)";
+    const MessageType type = (severity == "FAIL") ? MessageType::Error : MessageType::Server;
+    postMessage(host, target, Message::make(type, "", text));
 }
 
 void SessionModel::onCtcpPingReply(const QString &host, const QString &nick, qint64 rttMs)

@@ -111,6 +111,8 @@ signals:
     void netsplitDetected(const QString &server, const QString &splitServers, const QStringList &nicks);
     void netjoinDetected (const QString &server, const QString &splitServers,
                           const QStringList &channels, const QStringList &nicks);
+    void standardReply   (const QString &server, const QString &channel,
+                          const QString &severity, const QString &text);
 
     // Bouncer-specific
     void bouncerNetworkReceived(const QString &server, const QString &netId,

@@ -121,6 +121,8 @@ private:
     void onNetsplitDetected(const QString &host, const QString &servers, const QStringList &nicks);
     void onNetjoinDetected (const QString &host, const QString &servers,
                             const QStringList &channels, const QStringList &nicks);
+    void onStandardReply   (const QString &host, const QString &channel,
+                            const QString &severity, const QString &text);
     void onNickChanged    (const QString &host, const QString &oldNick, const QString &newNick);
     void onKicked         (const QString &host, const QString &channel, const QString &nick,
                            const QString &by,   const QString &reason);
