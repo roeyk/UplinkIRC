@@ -30,6 +30,15 @@ if(NOT Qt6Keychain_FOUND)
             endif()
         endforeach()
     endif()
+    # The source tree puts keychain.h at its root; installed packages put it
+    # under qt6keychain/. Generate a forwarding header to match the installed
+    # layout so #include <qt6keychain/keychain.h> resolves from either path.
+    FetchContent_GetProperties(qtkeychain SOURCE_DIR _qtkc_src)
+    set(_qtkc_compat "${CMAKE_BINARY_DIR}/qt6keychain-compat")
+    file(MAKE_DIRECTORY "${_qtkc_compat}/qt6keychain")
+    file(WRITE "${_qtkc_compat}/qt6keychain/keychain.h"
+        "#pragma once\n#include \"${_qtkc_src}/keychain.h\"\n")
+    set(QTKEYCHAIN_COMPAT_INCLUDE "${_qtkc_compat}")
 endif()
 find_package(tomlplusplus QUIET)
 if(NOT tomlplusplus_FOUND)
@@ -94,7 +103,7 @@ qt_add_executable(NodeRelay WIN32
 )
 
 configure_file(src/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
-target_include_directories(NodeRelay PRIVATE src ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(NodeRelay PRIVATE src ${CMAKE_CURRENT_BINARY_DIR} ${QTKEYCHAIN_COMPAT_INCLUDE})
 
 target_link_libraries(NodeRelay PRIVATE
     Qt6::Core
