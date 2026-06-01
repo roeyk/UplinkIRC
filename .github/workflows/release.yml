@@ -33,7 +33,8 @@ jobs:
           sudo apt-get install -y \
             qt6-base-dev qt6-tools-dev libqt6svg6-dev \
             cmake ninja-build \
-            libfuse2 librsvg2-bin
+            libfuse2 librsvg2-bin \
+            libsecret-1-dev
 
       - name: Setup Python (Windows)
         if: runner.os == 'Windows'
@@ -51,7 +52,7 @@ jobs:
 
       - name: Install Qt (macOS)
         if: runner.os == 'macOS'
-        run: brew install qt cmake ninja
+        run: brew install qt cmake ninja qtkeychain
 
       - name: Configure (Linux)
         if: runner.os == 'Linux'

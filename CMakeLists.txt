@@ -8,7 +8,18 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Svg)
-find_package(Qt6Keychain REQUIRED)
+find_package(Qt6Keychain QUIET)
+if(NOT Qt6Keychain_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(qtkeychain
+        GIT_REPOSITORY https://github.com/frankosterfeld/qtkeychain.git
+        GIT_TAG        0.14.3
+        GIT_SHALLOW    TRUE
+    )
+    set(BUILD_WITH_QT6 ON CACHE BOOL "" FORCE)
+    set(BUILD_TRANSLATIONS OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(qtkeychain)
+endif()
 find_package(tomlplusplus QUIET)
 if(NOT tomlplusplus_FOUND)
     include(FetchContent)
