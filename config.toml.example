@@ -1,6 +1,10 @@
-# UplinkIRC configuration example
-# Copy to ~/.config/uplinkirc/config.toml and set your nick.
+# NodeRelay configuration example
+# Copy to ~/.config/noderelay/config.toml and set your nick.
 # This file is created automatically on first launch if it does not exist.
+#
+# Passwords (password, sasl_password, nickserv_password) are stored in your
+# OS keychain automatically — you will never see them as plaintext in this file.
+# The value "<keychain>" is a sentinel meaning "fetch from keychain".
 
 [ui]
 theme             = "catppuccin-mocha"  # theme name from themes/ folder
@@ -16,7 +20,7 @@ port     = 6697                   # 6697 = standard TLS port
 ssl      = true                   # always use TLS
 nick     = "yournick"             # change this to your nickname
 user     = "uplink"               # username in your hostmask
-realname = "UplinkIRC User"       # shown in WHOIS
+realname = "NodeRelay User"       # shown in WHOIS
 channels = "#uplink, #linux"      # channels to join on connect (comma-separated)
 
 # Optional: server password (used for bouncers like ZNC or soju)
@@ -32,5 +36,5 @@ channels = "#uplink, #linux"      # channels to join on connect (comma-separated
 # ssl      = true
 # nick     = "yournick"
 # user     = "uplink"
-# realname = "UplinkIRC User"
+# realname = "NodeRelay User"
 # channels = "#linux, #archlinux"

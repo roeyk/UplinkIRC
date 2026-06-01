@@ -87,6 +87,7 @@
 | **DCC Send File** | Right-click any nick → **Send File**. Sender opens a TCP listener; standard 4-byte ACK protocol. Receiver gets an accept/reject dialog with filename and size. Both sides get a live progress dialog with cancel. |
 | **NickServ auto-identify** | Set `nickserv_password` to send `IDENTIFY` on `RPL_WELCOME`. |
 | **Credential redaction** | `PASS`, `AUTHENTICATE`, and `NickServ IDENTIFY` payloads are never echoed in the raw log or any visible panel. |
+| **OS keychain password storage** | Passwords (`password`, `sasl_password`, `nickserv_password`) are stored in the OS keychain (Secret Service / macOS Keychain / Windows Credential Manager). The config file holds `"<keychain>"` as a sentinel — no plaintext secrets on disk. Existing plaintext passwords migrate automatically on next save. |
 | **Config file hardening** | `config.toml` is written with owner-only permissions (mode `0600`). Saves are atomic via `QSaveFile` — a crash mid-save cannot corrupt the file. |
 | **Link preview privacy** | Auto-previews skip loopback, RFC 1918 private ranges, link-local, and `.local` addresses. A malicious user cannot cause the client to probe your LAN. |
 | **DoS resistance** | Inbound IRC data is capped at 64 KB (oversized streams disconnect). Batch messages cap at 1 000 per batch, 8 open batches maximum. `QTextBrowser` block count is bounded so busy channels cannot grow RAM indefinitely. |
@@ -96,7 +97,9 @@
 
 | Feature | Details |
 |---|---|
-| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `labeled-response`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl`, `account-notify`, `account-tag`, `extended-join`, `invite-notify`, `setname`, `userhost-in-names`, `draft/message-redaction`, `sts` |
+| **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `labeled-response`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl`, `account-notify`, `account-tag`, `extended-join`, `invite-notify`, `setname`, `userhost-in-names`, `draft/message-redaction`, `sts`, `standard-replies` |
+| **Netsplit / netjoin collapse** | Server-sent `netsplit` and `netjoin` batch types collapse into a single summary line per channel instead of flooding the buffer with individual quit/join lines. |
+| **Standard Replies** | `FAIL`, `WARN`, and `NOTE` server commands displayed in the relevant channel or server buffer with clear `[FAIL]`/`[WARN]`/`[NOTE]` prefixes. |
 | **STS (Strict Transport Security)** | When a server advertises STS, NodeRelay upgrades plain connections to TLS automatically and caches the policy to `~/.config/noderelay/sts.ini`. Future connections enforce TLS regardless of `ssl` in config. Equivalent to HSTS for IRC. |
 | **Chat history replay** | Requests the last 100 messages via `CHATHISTORY LATEST` on join. History messages display dimmed with original timestamps. |
 | **Bouncer support** | First-class ZNC and soju: `znc.in/playback`, `soju.im/bouncer-networks`, `soju.im/read`, self-message echo. |

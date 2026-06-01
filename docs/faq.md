@@ -68,9 +68,12 @@ Open it in any text editor and restart NodeRelay to apply changes.
 
 ### Is my config file secure?
 
-On Linux and macOS, NodeRelay writes `config.toml` with **owner-only permissions** (mode `0600`) so other users on the same machine cannot read your passwords. On Windows, the file inherits standard per-user `%APPDATA%` permissions.
+**Passwords are stored in your OS keychain, not in the file.** NodeRelay uses the OS keychain (Secret Service on Linux, macOS Keychain, Windows Credential Manager) for `password`, `sasl_password`, and `nickserv_password`. The config file stores the sentinel value `"<keychain>"` in place of the actual secret. Even if someone reads your `config.toml`, they cannot recover your passwords from it.
 
-Saves are **atomic** — NodeRelay writes to a temporary file and renames it into place. A crash mid-save cannot leave the config corrupt or empty.
+Beyond that:
+
+- `config.toml` is written with **owner-only permissions** (mode `0600` on Linux/macOS) so other users on the machine cannot read it at all.
+- Saves are **atomic** — NodeRelay writes to a temporary file and renames it into place. A crash mid-save cannot leave the config corrupt or empty.
 
 If you ever need to verify permissions on Linux:
 

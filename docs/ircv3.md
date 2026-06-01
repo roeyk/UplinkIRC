@@ -36,6 +36,8 @@ The full IRCv3 message tag extension is negotiated. Tags are parsed as a key-val
 
 - `chathistory` — messages are delivered as history (dimmed, original timestamps, no unread count)
 - `znc.in/batch/playback` — same treatment as chathistory
+- `netsplit` — all QUITs in the batch are collapsed into one summary line per affected channel (see [netsplit/netjoin](#netsplit--netjoin-batch-types))
+- `netjoin` — all JOINs in the batch are collapsed into one summary line per affected channel (see [netsplit/netjoin](#netsplit--netjoin-batch-types))
 
 Safety limits apply: at most **8 batches** may be open simultaneously, and each batch may contain at most **1 000 messages**. A misbehaving or malicious server that opens a batch and never closes it cannot grow client RAM without bound.
 
@@ -219,11 +221,44 @@ Allows composing and sending messages that span multiple lines, delivered to cli
 
 ### `netsplit` / `netjoin` batch types
 
-When a netsplit occurs, the server wraps the resulting flood of QUITs in a `BATCH` of type `netsplit`, and the subsequent reconnect JOINs in a `netjoin` batch. Clients can collapse these into a single folded entry instead of showing hundreds of individual lines.
+When a netsplit occurs, the server wraps the resulting flood of QUITs in a `BATCH` of type `netsplit`. When the servers reconnect, the resulting flood of JOINs arrives in a `BATCH` of type `netjoin`.
+
+NodeRelay collapses both into a single status line per affected channel instead of flooding the buffer. Nick lists remain accurate — nicks are removed and re-added correctly.
+
+**Example output:**
+
+```
+-- Netsplit: 47 users lost (irc1.example.com irc2.example.com)
+-- Netjoin: 47 users returned (irc1.example.com irc2.example.com)
+```
+
+Without this, a busy network split would print one quit line per user — often hundreds — making the channel unreadable.
 
 ### `standard-replies`
 
-A structured format for servers to send notes, warnings, and errors to clients using `NOTE`, `WARN`, and `FAIL` commands with machine-readable codes. More informative than plain NOTICE messages.
+A structured format for servers to send machine-readable diagnostics using three commands:
+
+| Command | Meaning | NodeRelay display |
+|---|---|---|
+| `FAIL` | A command the client sent failed | Red error line in the relevant buffer |
+| `WARN` | A non-fatal warning | Server info line |
+| `NOTE` | Informational server message | Server info line |
+
+Format: `FAIL <triggered-by-command> <code> [context...] :<description>`
+
+NodeRelay routes each reply to the most relevant buffer:
+- If a channel name appears in the context parameters, the message goes to that channel's buffer.
+- Otherwise it goes to the active channel, or the server buffer if no channel is active.
+
+**Example output:**
+
+```
+[FAIL] JOIN CHANNEL_BANNED: You are banned from that channel
+[WARN] PRIVMSG RATE_LIMITED: You are sending messages too quickly
+[NOTE] * SESSION_EXPIRY: Your session will expire in 5 minutes
+```
+
+The `[FAIL]` / `[WARN]` / `[NOTE]` prefix lets you tell them apart at a glance.
 
 ### `UTF8ONLY`
 

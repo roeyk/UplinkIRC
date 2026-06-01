@@ -166,13 +166,13 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `nick` | string | yes | Your preferred nickname |
 | `user` | string | no | Username in your hostmask (defaults to `"uplink"`) |
 | `realname` | string | no | Shown in WHOIS (defaults to `"NodeRelay User"`) |
-| `password` | string | no | Sent as `PASS` during connection. Required for most bouncers; also used for password-protected servers |
+| `password` | string | no | Sent as `PASS` during connection. Required for most bouncers; also used for password-protected servers. **Stored in OS keychain — see note below.** |
 | `sasl_user` | string | no | SASL username for SASL PLAIN authentication. Set together with `sasl_password` |
-| `sasl_password` | string | no | SASL password for SASL PLAIN authentication. Set together with `sasl_user` |
+| `sasl_password` | string | no | SASL password for SASL PLAIN authentication. Set together with `sasl_user`. **Stored in OS keychain — see note below.** |
 | `sasl_external` | bool | no | Use SASL EXTERNAL (certificate-based auth). Set to `true` together with `client_cert` and `client_key`. Cannot be combined with `sasl_user`/`sasl_password`. |
 | `client_cert` | string | no | Path to the PEM client certificate for SASL EXTERNAL. |
 | `client_key` | string | no | Path to the PEM private key for SASL EXTERNAL. RSA and EC (ECDSA) keys are both supported. |
-| `nickserv_password` | string | no | Sends `PRIVMSG NickServ :IDENTIFY <password>` after connecting. Use on servers without SASL support |
+| `nickserv_password` | string | no | Sends `PRIVMSG NickServ :IDENTIFY <password>` after connecting. Use on servers without SASL support. **Stored in OS keychain — see note below.** |
 | `bouncer` | string | no | Bouncer type. Set to `"znc"` or `"soju"` to enable bouncer-specific IRCv3 capabilities. Omit or set `"none"` for a direct server connection |
 | `bouncer_network` | string | no | **soju only.** The network name to attach to (e.g. `"libera"`). Sent to soju's `BOUNCER LISTNETWORKS` subsystem. Leave empty if connecting to a single-network soju instance |
 
@@ -195,6 +195,31 @@ name = "#uplink"
 ---
 
 ## Authentication
+
+### Password storage — OS keychain
+
+NodeRelay stores all passwords (`password`, `sasl_password`, `nickserv_password`) in your **OS keychain**, not as plaintext in `config.toml`. The file stores the sentinel value `"<keychain>"` instead of the actual secret.
+
+| Platform | Storage backend |
+|---|---|
+| Linux | Secret Service (GNOME Keyring, KWallet, or any compatible daemon) |
+| macOS | macOS Keychain |
+| Windows | Windows Credential Manager |
+
+**How migration works:** If you already have a plaintext password in your config from an older version, NodeRelay migrates it automatically the next time you save your settings. You do not need to do anything manually.
+
+**What you'll see after saving:**
+
+```toml
+[[server]]
+name     = "LinuxDojo"
+...
+nickserv_password = "<keychain>"   # the actual value is in the OS keychain
+```
+
+**If the keychain is unavailable** (e.g. no secret service daemon running on a headless Linux server), NodeRelay falls back gracefully — the password field simply reads as empty. In that case, enter your password in the server dialog and it will be stored once a keychain becomes available.
+
+---
 
 ### NickServ auto-identify
 

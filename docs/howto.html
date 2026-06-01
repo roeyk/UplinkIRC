@@ -326,6 +326,7 @@
   </ul>
   <div class="nav-section">Authentication</div>
   <ul>
+    <li><a href="#keychain">Password storage (keychain)</a></li>
     <li><a href="#nickserv">NickServ auto-identify</a></li>
     <li><a href="#sasl">SASL PLAIN</a></li>
     <li><a href="#sasl-external">SASL EXTERNAL (cert)</a></li>
@@ -673,6 +674,28 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
 
     <h3>Removing a server</h3>
     <p>Select the server in the list and click <strong>Remove</strong>. The server disconnects, is removed from the sidebar, and is deleted from <code>config.toml</code>.</p>
+  </section>
+
+  <hr />
+
+  <!-- KEYCHAIN -->
+  <section id="keychain">
+    <h2>Password storage — OS keychain</h2>
+    <p>NodeRelay stores all passwords in your <strong>OS keychain</strong>, not as plaintext in <code>config.toml</code>.</p>
+    <table>
+      <tr><th>Platform</th><th>Backend</th></tr>
+      <tr><td>Linux</td><td>Secret Service (GNOME Keyring, KWallet, or any compatible daemon)</td></tr>
+      <tr><td>macOS</td><td>macOS Keychain</td></tr>
+      <tr><td>Windows</td><td>Windows Credential Manager</td></tr>
+    </table>
+    <p>After saving, your config file will show <code>"&lt;keychain&gt;"</code> as a sentinel in place of the actual secret:</p>
+    <pre>nickserv_password = "&lt;keychain&gt;"   # actual value is in the OS keychain</pre>
+    <div class="callout callout-tip">
+      <strong>Upgrading from an older version?</strong> Any plaintext password already in your config is migrated to the keychain automatically the next time you save your server settings. No manual steps needed.
+    </div>
+    <div class="callout callout-note">
+      <strong>Headless / no keychain daemon?</strong> If the OS keychain is unavailable (e.g. a server without a running secret service), the password field will read back as empty. Enter your password in the server dialog when a keychain becomes available and it will be stored then.
+    </div>
   </section>
 
   <hr />
