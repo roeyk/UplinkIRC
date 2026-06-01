@@ -31,15 +31,17 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] System tray — minimize to tray on close, left-click shows window, right-click menu (Show/Quit)
 - [x] Unread badge — tray icon gets red dot on unread messages; green dot for mention/PM when window not focused
 - [x] Theme loader — 55 TOML themes, applies as QSS stylesheet, live switching from hamburger
-- [x] App icon — single uplink.svg via Qt6::Svg; icon picker removed (one icon)
-- [x] About dialog — shows dark app icon (96×96), version, and server info
+- [x] App icon — 3 switchable styles (Node N, Tower, Hub Spoke); SVG dark / PNG light variants; auto-selects based on active theme palette brightness; tray icon locked to hub-spoke SVG (v0.16.2)
+- [x] About dialog — static Node-Relay-Tower.png logo (128×128), version, description (v0.16.2)
 - [x] Signal ordering fix — config loads after MainWindow connects signals
 - [x] Version baked into binary — `version.h` generated from CMake `PROJECT_VERSION` at build time
 - [x] Full documentation — configuration.md, commands.md, faq.md, ircv3.md, keyboard-shortcuts.md (beginner-friendly, real examples)
 - [x] How-To guide — docs/howto.html: left-side nav tree, step-by-step from install to tweaks, platform tabs, callout boxes, scroll-spy; linked from GitHub Pages and README
-- [x] GitHub repo — public, branch-protected, invite-only contributions
+- [x] GitHub repo — public, branch-protected, invite-only contributions; renamed to noderelay/NodeRelay (v0.16.2)
 - [x] GitHub Pages landing page — https://noderelay.github.io/NodeRelay/
 - [x] README beautification — badges, icon gallery, feature tables, annotated config, commands table, download buttons
+- [x] Full rebrand to NodeRelay — name, binary, config path, icons, docs, CI, GitHub repo (v0.16.2)
+- [x] Downloadable icon set on docs site — 8 PNGs (3 styles × dark/light + avatar + banner) with inline preview (v0.16.2)
 - [x] Nick completion — Tab key completes nicks in input bar
 - [x] Slash command tab completion — Tab also completes /commands (e.g. /pi → /ping)
 - [x] Input history — Up/Down arrow cycles through sent messages

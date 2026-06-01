@@ -3,6 +3,45 @@
 ---
 
 <!--
+Session summary — 2026-06-01 (v0.16.2 — full NodeRelay rebrand + icon rework)
+
+What was done:
+  - Full project rebrand from UplinkIRC to NodeRelay: app name, binary name, window title,
+    tray tooltip, CTCP VERSION reply, About dialog, QSettings key, config path
+    (~/.config/uplinkirc/ → ~/.config/noderelay/), version macro (UPLINKIRC_VERSION →
+    NODERELAY_VERSION), CMakeLists project/target, desktop file, packaging scripts,
+    release.yml CI artifacts, all docs (README, howto.html, faq.md, configuration.md,
+    commands.md, ircv3.md, index.html), CLAUDE.md.
+  - New icon set: 3 switchable styles — Node N, Tower, Hub Spoke. Dark variants are SVGs;
+    light variants are PNGs. Auto dark/light selection based on Qt palette brightness
+    (qApp->palette().window().color().lightness() < 128). Theme change triggers icon refresh.
+    Tray icon locked to hub-spoke SVG. About dialog uses static Node-Relay-Tower.png at 128px.
+  - Preferences icon picker collapsed from 6 options to 3 (removed separate light entries).
+  - docs/index.html: new noderelay-banner.png header, Icons section with 8 downloadable PNGs,
+    Icons nav link added, all version strings updated to 0.16.2.
+  - GitHub repo renamed from noderelay/UplinkIRC to noderelay/NodeRelay.
+  - v0.16.2 release created with AppImage attached.
+  - Version bump: 0.16.1 → 0.16.2.
+
+Regressions: none.
+Known issues: light icon variants are PNGs (no SVG light versions yet).
+Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
+-->
+
+## v0.16.2 — 2026-06-01
+
+- **Full rebrand to NodeRelay** — app name, binary, window title, tray tooltip, CTCP VERSION reply, About dialog, QSettings key, config path (`~/.config/noderelay/`), version macro (`NODERELAY_VERSION`), CMakeLists target, desktop file, CI artifacts, and all docs updated project-wide.
+- **New icon set** — three switchable styles: Node N, Tower, Hub Spoke. Dark variants are SVGs; light variants are PNGs. Selection auto-switches based on active theme brightness — no separate light/dark picker needed.
+- **Preferences icon picker simplified** — 3 choices (Node N, Tower, Hub Spoke) instead of 6; light variant selected automatically.
+- **Theme change refreshes icon** — switching themes now also re-applies the window/taskbar icon to match the new palette.
+- **About dialog logo** — static Node-Relay-Tower.png at 128 × 128 px; no longer tied to the switchable icon choice.
+- **Tray icon** — locked to hub-spoke SVG regardless of icon choice setting.
+- **Docs site updated** — new banner, downloadable icon set section (8 PNGs), all GitHub URLs updated to `noderelay/NodeRelay`.
+- **GitHub repo renamed** — `noderelay/UplinkIRC` → `noderelay/NodeRelay`; old URL auto-redirects.
+
+---
+
+<!--
 Session summary — 2026-05-31 (docs — raw command passthrough coverage)
 
 What was done:
