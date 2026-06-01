@@ -33,12 +33,13 @@ if(NOT Qt6Keychain_FOUND)
     # The source tree puts keychain.h at its root; installed packages put it
     # under qt6keychain/. Generate a forwarding header to match the installed
     # layout so #include <qt6keychain/keychain.h> resolves from either path.
-    FetchContent_GetProperties(qtkeychain SOURCE_DIR _qtkc_src)
+    FetchContent_GetProperties(qtkeychain SOURCE_DIR _qtkc_src BINARY_DIR _qtkc_bin)
     set(_qtkc_compat "${CMAKE_BINARY_DIR}/qt6keychain-compat")
     file(MAKE_DIRECTORY "${_qtkc_compat}/qt6keychain")
     file(WRITE "${_qtkc_compat}/qt6keychain/keychain.h"
         "#pragma once\n#include \"${_qtkc_src}/keychain.h\"\n")
-    set(QTKEYCHAIN_COMPAT_INCLUDE "${_qtkc_compat}")
+    # _qtkc_bin holds qkeychain_export.h (generated at configure time by CMake)
+    set(QTKEYCHAIN_COMPAT_INCLUDE "${_qtkc_compat}" "${_qtkc_bin}")
 endif()
 find_package(tomlplusplus QUIET)
 if(NOT tomlplusplus_FOUND)
