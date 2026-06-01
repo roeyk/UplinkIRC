@@ -1131,20 +1131,20 @@ channels        = "#linux"</pre>
 
   <!-- SIGNAL BARS -->
   <section id="signal-bars">
-    <h2>Signal bars</h2>
-    <p>Four stair-step bars appear in the topic bar, showing your connection quality to the current server.</p>
+    <h2>Signal bars (lag / latency indicator)</h2>
+    <p>Four stair-step bars appear in the topic bar showing your connection quality — latency, lag, and connection state — to the current server.</p>
 
     <table>
       <tr><th>Appearance</th><th>Meaning</th></tr>
-      <tr><td>4 solid green bars</td><td>Connected, ping &lt; 50 ms (excellent)</td></tr>
-      <tr><td>3 solid green bars</td><td>Connected, ping 50–150 ms (good)</td></tr>
-      <tr><td>2 solid green bars</td><td>Connected, ping 150–300 ms (fair)</td></tr>
-      <tr><td>1 solid green bar</td><td>Connected, ping &gt; 300 ms (slow)</td></tr>
+      <tr><td>4 solid green bars</td><td>Connected, latency &lt; 50 ms (excellent)</td></tr>
+      <tr><td>3 solid green bars</td><td>Connected, latency 50–149 ms (good)</td></tr>
+      <tr><td>2 solid green bars</td><td>Connected, latency 150–299 ms (fair)</td></tr>
+      <tr><td>1 solid green bar</td><td>Connected, latency ≥ 300 ms (high lag)</td></tr>
       <tr><td>Blue flashing</td><td>Connecting or reconnecting</td></tr>
       <tr><td>Red flashing</td><td>Disconnected</td></tr>
     </table>
 
-    <p>NodeRelay sends a <code>PING</code> every 30 seconds and measures the round-trip time. The bar count updates automatically.</p>
+    <p>NodeRelay sends a <code>PING</code> every 30 seconds and measures the round-trip time (RTT). The bar count updates automatically after each ping reply.</p>
   </section>
 
   <!-- TRAY -->
