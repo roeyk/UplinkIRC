@@ -79,6 +79,12 @@ Known issues: light icon variants are PNGs (no SVG light versions yet).
 Next priorities: password keychain, DCC passive/NAT, split view, SOCKS5 proxy.
 -->
 
+## v0.16.6 — 2026-06-01
+
+- **Password encryption via OS keychain** — server passwords, SASL passwords, and NickServ passwords are now stored in the OS keychain (Secret Service on Linux, Keychain on macOS, Credential Manager on Windows) instead of plaintext in `config.toml`. Existing plaintext passwords migrate automatically on next save. The config file stores `"<keychain>"` as a sentinel.
+
+---
+
 ## v0.16.5 — 2026-06-01
 
 - **Standard Replies** — IRCv3 `FAIL`, `WARN`, and `NOTE` commands handled; displayed in the relevant channel buffer (or active channel / server buffer as fallback). `FAIL` renders as an error line, `WARN`/`NOTE` as server info. Format: `[FAIL] JOIN CHANNEL_BANNED: You are banned from that channel`.

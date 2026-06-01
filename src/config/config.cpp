@@ -1,4 +1,5 @@
 #include "config.h"
+#include "keychainhelper.h"
 
 #include <QDir>
 #include <QFile>
@@ -7,6 +8,33 @@
 #include <QDebug>
 
 #include <toml++/toml.hpp>
+
+static const QString kKeychainSentinel = QStringLiteral("<keychain>");
+
+static QString kcKey(const QString &serverName, const char *field)
+{
+    return serverName + QLatin1Char(':') + QLatin1String(field);
+}
+
+// Resolve a password field: if it's the sentinel, fetch from keychain.
+// If it's plaintext (legacy), return as-is — it will be migrated on next save.
+static QString resolvePassword(const QString &value, const QString &serverName, const char *field)
+{
+    if (value == kKeychainSentinel)
+        return KeychainHelper::read(kcKey(serverName, field));
+    return value;
+}
+
+// Write a password to keychain and return the sentinel, or return empty.
+static QString storePassword(const QString &value, const QString &serverName, const char *field)
+{
+    if (value.isEmpty()) {
+        KeychainHelper::remove(kcKey(serverName, field));
+        return {};
+    }
+    KeychainHelper::write(kcKey(serverName, field), value);
+    return kKeychainSentinel;
+}
 
 static QString tomlQuote(QString s)
 {
@@ -153,13 +181,19 @@ Config Config::load(const QString &path)
                 sc.nick     = QString::fromStdString((*s)["nick"].value_or<std::string>(""));
                 sc.user     = QString::fromStdString((*s)["user"].value_or<std::string>("uplink"));
                 sc.realname = QString::fromStdString((*s)["realname"].value_or<std::string>("NodeRelay User"));
-                sc.password     = QString::fromStdString((*s)["password"].value_or<std::string>(""));
+                sc.password     = resolvePassword(
+                    QString::fromStdString((*s)["password"].value_or<std::string>("")),
+                    sc.name, "password");
                 sc.saslUser         = QString::fromStdString((*s)["sasl_user"].value_or<std::string>(""));
-                sc.saslPassword     = QString::fromStdString((*s)["sasl_password"].value_or<std::string>(""));
+                sc.saslPassword     = resolvePassword(
+                    QString::fromStdString((*s)["sasl_password"].value_or<std::string>("")),
+                    sc.name, "sasl_password");
                 sc.saslExternal     = (*s)["sasl_external"].value_or(false);
                 sc.clientCertFile   = QString::fromStdString((*s)["client_cert"].value_or<std::string>(""));
                 sc.clientKeyFile    = QString::fromStdString((*s)["client_key"].value_or<std::string>(""));
-                sc.nickservPassword = QString::fromStdString((*s)["nickserv_password"].value_or<std::string>(""));
+                sc.nickservPassword = resolvePassword(
+                    QString::fromStdString((*s)["nickserv_password"].value_or<std::string>("")),
+                    sc.name, "nickserv_password");
                 const std::string bt = (*s)["bouncer"].value_or<std::string>("none");
                 if      (bt == "znc")  sc.bouncerType = BouncerType::ZNC;
                 else if (bt == "soju") sc.bouncerType = BouncerType::Soju;
@@ -265,20 +299,23 @@ void Config::save(const Config &cfg, const QString &path)
         out << "nick     = " << tomlQuote(s.nick)     << "\n";
         out << "user     = " << tomlQuote(s.user)     << "\n";
         out << "realname = " << tomlQuote(s.realname) << "\n";
-        if (!s.password.isEmpty())
-            out << "password          = " << tomlQuote(s.password) << "\n";
+        const QString savedPw = storePassword(s.password, s.name, "password");
+        if (!savedPw.isEmpty())
+            out << "password          = " << tomlQuote(savedPw) << "\n";
         if (!s.saslUser.isEmpty())
             out << "sasl_user         = " << tomlQuote(s.saslUser) << "\n";
-        if (!s.saslPassword.isEmpty())
-            out << "sasl_password     = " << tomlQuote(s.saslPassword) << "\n";
+        const QString savedSasl = storePassword(s.saslPassword, s.name, "sasl_password");
+        if (!savedSasl.isEmpty())
+            out << "sasl_password     = " << tomlQuote(savedSasl) << "\n";
         if (s.saslExternal)
             out << "sasl_external     = true\n";
         if (!s.clientCertFile.isEmpty())
             out << "client_cert       = " << tomlQuote(s.clientCertFile) << "\n";
         if (!s.clientKeyFile.isEmpty())
             out << "client_key        = " << tomlQuote(s.clientKeyFile) << "\n";
-        if (!s.nickservPassword.isEmpty())
-            out << "nickserv_password = " << tomlQuote(s.nickservPassword) << "\n";
+        const QString savedNs = storePassword(s.nickservPassword, s.name, "nickserv_password");
+        if (!savedNs.isEmpty())
+            out << "nickserv_password = " << tomlQuote(savedNs) << "\n";
         if (s.bouncerType == BouncerType::ZNC)
             out << "bouncer           = \"znc\"\n";
         else if (s.bouncerType == BouncerType::Soju)

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(NodeRelay VERSION 0.16.5 LANGUAGES CXX)
+project(NodeRelay VERSION 0.16.6 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,6 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Svg)
+find_package(Qt6Keychain REQUIRED)
 find_package(tomlplusplus QUIET)
 if(NOT tomlplusplus_FOUND)
     include(FetchContent)
@@ -25,6 +26,8 @@ qt_add_executable(NodeRelay WIN32
     src/main.cpp
     src/config/config.cpp
     src/config/config.h
+    src/config/keychainhelper.cpp
+    src/config/keychainhelper.h
     src/model/sessionmodel.cpp
     src/model/sessionmodel.h
     src/model/serversession.h
@@ -76,6 +79,7 @@ target_link_libraries(NodeRelay PRIVATE
     Qt6::Widgets
     Qt6::Network
     Qt6::Svg
+    Qt6Keychain::Qt6Keychain
     tomlplusplus::tomlplusplus
 )
 
