@@ -286,7 +286,7 @@ void MainWindow::setupToolbar()
         });
 
         menu->addSeparator();
-        menu->addAction("Close Menu", menu, &QMenu::close);
+        menu->addAction("Exit", menu, &QMenu::close);
 
         QPoint pos = m_hamburger->mapToGlobal(QPoint(0, m_hamburger->height()));
         menu->exec(pos);
