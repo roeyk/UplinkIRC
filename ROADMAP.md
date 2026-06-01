@@ -206,6 +206,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] DCC offer validation — zero port / non-positive filesize rejected before accept dialog (v0.13.0)
 - [x] Reconnect socket abort — socket abort()ed before reconnect if not already unconnected (v0.13.0)
 - [x] Password field encryption — don't store plaintext passwords (OS keychain integration) (v0.16.6)
+- [x] Qt6Keychain CI integration — FetchContent fallback in CMakeLists.txt; all three platform CI + release builds passing (v0.16.6 follow-up)
 - [ ] Self-signed cert option — per-server accept/reject + fingerprint-pin UI
 - [ ] SOCKS5 proxy support
 

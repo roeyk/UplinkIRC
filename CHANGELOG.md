@@ -122,9 +122,44 @@ Next priorities:
   - In-app update check UI
 -->
 
+<!--
+Session summary — 2026-06-01 (CI fix — Qt6Keychain on all runners)
+
+What was done:
+  - v0.16.6 CI was failing on all three platforms immediately after the keychain
+    feature landed. Qt6Keychain was added as a required dependency but the CI
+    runners were never updated to provide it.
+  - ci.yml + release.yml (Linux): added libsecret-1-dev to apt install.
+    libsecret is the Secret Service backend qtkeychain uses on Linux even when
+    built from source.
+  - ci.yml + release.yml (macOS): added qtkeychain to brew install line.
+  - CMakeLists.txt: changed find_package(Qt6Keychain REQUIRED) to a QUIET find
+    with FetchContent fallback (frankosterfeld/qtkeychain @ 0.14.3), mirroring
+    how tomlplusplus is handled. Required three iterations to get right:
+      1. Qt6Keychain::Qt6Keychain alias not created in build tree — added explicit
+         alias creation after FetchContent_MakeAvailable.
+      2. #include <qt6keychain/keychain.h> failed — installed layout has qt6keychain/
+         subdirectory but source tree puts keychain.h at root. Generated a forwarding
+         header in the build dir to bridge both layouts.
+      3. qkeychain_export.h not found — generated into qtkeychain binary dir which
+         wasn't on the include path. Added _qtkc_bin to QTKEYCHAIN_COMPAT_INCLUDE.
+  - release.yml (Windows package step): qt6keychain.dll is built in the FetchContent
+    build tree, not the Qt bin dir where windeployqt looks. Added a PowerShell step
+    to find and copy it into QT_ROOT_DIR/bin before windeployqt runs.
+  - v0.16.6 tag deleted, re-pointed at fixed HEAD, and re-pushed twice (once for
+    the cmake fixes, once for the windeployqt fix). Final release has all three
+    platform binaries: Linux tar.gz + AppImage, macOS .dmg, Windows .zip.
+
+Regressions: none.
+Known issues: same as previous session.
+Next priorities: self-signed cert fingerprint-pin, SOCKS5 proxy, DCC passive/NAT,
+  split view, in-app update check.
+-->
+
 ## v0.16.6 — 2026-06-01
 
 - **Password encryption via OS keychain** — server passwords, SASL passwords, and NickServ passwords are now stored in the OS keychain (Secret Service on Linux, Keychain on macOS, Credential Manager on Windows) instead of plaintext in `config.toml`. Existing plaintext passwords migrate automatically on next save. The config file stores `"<keychain>"` as a sentinel.
+- **CI fix** — all three platform CI and release builds now pass. Qt6Keychain is fetched from source via CMake FetchContent when not installed system-wide, with a generated forwarding header to normalise the include path. The Windows release packages `qt6keychain.dll` alongside the Qt libraries via `windeployqt`.
 
 ---
 
