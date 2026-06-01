@@ -96,6 +96,8 @@ jobs:
           New-Item -ItemType Directory -Path artifact\NodeRelay | Out-Null
           Copy-Item build\Release\NodeRelay.exe artifact\NodeRelay\
           Copy-Item -Recurse build\Release\themes artifact\NodeRelay\themes
+          $qkcDll = Get-ChildItem -Path build -Recurse -Filter qt6keychain.dll | Select-Object -First 1
+          if ($qkcDll) { Copy-Item $qkcDll.FullName "$env:QT_ROOT_DIR\bin\" }
           windeployqt --release artifact\NodeRelay\NodeRelay.exe
           Compress-Archive -Path artifact\NodeRelay\* `
               -DestinationPath NodeRelay-${{ github.ref_name }}-windows-x64.zip
