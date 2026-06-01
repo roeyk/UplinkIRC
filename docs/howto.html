@@ -290,6 +290,68 @@
       font-size: 0.82rem;
       color: var(--muted);
     }
+
+    /* ── NAV SEARCH ──────────────────────────────────── */
+    .nav-search {
+      padding: 0 1.25rem 1rem;
+      border-bottom: 1px solid var(--subtle);
+      margin-bottom: 1rem;
+    }
+    .nav-search input {
+      width: 100%;
+      background: var(--overlay);
+      border: 1px solid var(--subtle);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 0.38rem 0.6rem 0.38rem 1.8rem;
+      font-size: 0.82rem;
+      outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%236c7086' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 0.5rem center;
+    }
+    .nav-search input:focus { border-color: var(--blue); }
+    .nav-search input::placeholder { color: var(--muted); }
+    .nav-search-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.35rem;
+      min-height: 1.2em;
+    }
+    #search-count {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .search-nav-btns {
+      display: flex;
+      gap: 2px;
+    }
+    .search-nav-btns button {
+      background: var(--overlay);
+      border: 1px solid var(--subtle);
+      border-radius: 4px;
+      color: var(--subtext);
+      cursor: pointer;
+      font-size: 0.75rem;
+      line-height: 1;
+      padding: 2px 6px;
+    }
+    .search-nav-btns button:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* match highlights */
+    mark {
+      background: rgba(249,226,175,0.35);
+      color: inherit;
+      border-radius: 2px;
+      padding: 0 1px;
+      outline: 1px solid rgba(249,226,175,0.5);
+    }
+    mark.current {
+      background: var(--yellow);
+      color: var(--bg);
+      outline-color: var(--yellow);
+    }
   </style>
 </head>
 <body>
@@ -299,6 +361,17 @@
   <div class="nav-logo">
     <a href="index.html">⬡ NodeRelay</a>
     <span>How-To Guide</span>
+  </div>
+
+  <div class="nav-search">
+    <input type="search" id="page-search" placeholder="Search guide…" autocomplete="off" spellcheck="false">
+    <div class="nav-search-meta">
+      <span id="search-count"></span>
+      <div class="search-nav-btns" id="search-nav-btns" style="display:none">
+        <button id="search-prev" title="Previous (Shift+Enter)">▲</button>
+        <button id="search-next" title="Next (Enter)">▼</button>
+      </div>
+    </div>
   </div>
 
   <div class="nav-section">Getting Started</div>
@@ -1651,7 +1724,94 @@ theme = "Catppuccin-Mocha"   # ✗ won't load — wrong case</pre>
     panel.querySelector('#tab-' + id).classList.add('active');
   }
 
-  // Highlight active nav link on scroll
+  // ── Page search ────────────────────────────────────────
+  const searchInput  = document.getElementById('page-search');
+  const searchCount  = document.getElementById('search-count');
+  const searchNavBtns = document.getElementById('search-nav-btns');
+  const mainEl       = document.querySelector('main');
+
+  let marks = [];
+  let current = -1;
+
+  function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function clearMarks() {
+    // restore text nodes from mark elements
+    document.querySelectorAll('mark[data-search]').forEach(m => {
+      m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+    });
+    // normalize merges adjacent text nodes back together
+    mainEl.normalize();
+    marks = [];
+    current = -1;
+    searchCount.textContent = '';
+    searchNavBtns.style.display = 'none';
+  }
+
+  function doSearch(q) {
+    clearMarks();
+    if (!q) return;
+
+    const re = new RegExp(escapeRe(q), 'gi');
+    const walker = document.createTreeWalker(mainEl, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const tag = node.parentNode && node.parentNode.nodeName;
+        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'MARK') return NodeFilter.FILTER_REJECT;
+        return node.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      }
+    });
+
+    const textNodes = [];
+    let n;
+    while ((n = walker.nextNode())) textNodes.push(n);
+
+    textNodes.forEach(tn => {
+      if (!re.test(tn.textContent)) { re.lastIndex = 0; return; }
+      re.lastIndex = 0;
+
+      const frag = document.createDocumentFragment();
+      let last = 0, m;
+      while ((m = re.exec(tn.textContent)) !== null) {
+        if (m.index > last)
+          frag.appendChild(document.createTextNode(tn.textContent.slice(last, m.index)));
+        const mark = document.createElement('mark');
+        mark.setAttribute('data-search', '');
+        mark.textContent = m[0];
+        frag.appendChild(mark);
+        marks.push(mark);
+        last = m.index + m[0].length;
+      }
+      if (last < tn.textContent.length)
+        frag.appendChild(document.createTextNode(tn.textContent.slice(last)));
+      tn.parentNode.replaceChild(frag, tn);
+    });
+
+    if (marks.length) {
+      searchNavBtns.style.display = 'flex';
+      goTo(0);
+    } else {
+      searchCount.textContent = 'No matches';
+    }
+  }
+
+  function goTo(idx) {
+    if (!marks.length) return;
+    if (current >= 0) marks[current].classList.remove('current');
+    current = ((idx % marks.length) + marks.length) % marks.length;
+    marks[current].classList.add('current');
+    marks[current].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    searchCount.textContent = (current + 1) + ' / ' + marks.length;
+  }
+
+  searchInput.addEventListener('input', () => doSearch(searchInput.value.trim()));
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); goTo(e.shiftKey ? current - 1 : current + 1); }
+    if (e.key === 'Escape') { searchInput.value = ''; clearMarks(); }
+  });
+  document.getElementById('search-prev').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('search-next').addEventListener('click', () => goTo(current + 1));
+
+  // ── Highlight active nav link on scroll
   const links = document.querySelectorAll('#sidenav a[href^="#"]');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => {
