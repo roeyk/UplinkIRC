@@ -494,6 +494,21 @@ They click **Yes**, choose a save location, and the transfer starts.
 
 > **Important:** DCC connects directly between clients over TCP. It works reliably on a LAN. Over the internet it requires the sender's port to be reachable from outside — a NAT router or firewall on the sender's side will block the connection. This is a DCC protocol limitation.
 
+### What do the signal bars mean? (lag / latency indicator)
+
+The four stair-step bars in the topic bar show your connection latency to the current server:
+
+| Bars | Latency | Quality |
+|---|---|---|
+| ████ (4 green) | < 50 ms | Excellent |
+| ███ (3 green) | 50–149 ms | Good |
+| ██ (2 green) | 150–299 ms | Fair |
+| █ (1 green) | ≥ 300 ms | High lag |
+| Blue flashing | — | Connecting / reconnecting |
+| Red flashing | — | Disconnected |
+
+NodeRelay sends a `PING` every 30 seconds and updates the bars automatically from the round-trip time (RTT) of the reply.
+
 ### The server name in the sidebar turned purple — what does that mean?
 
 The server name (e.g. **LINUXDOJO**) in the sidebar highlights purple when there are unread messages in the server window that you have not seen yet. This includes:
