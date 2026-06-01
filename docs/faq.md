@@ -153,6 +153,12 @@ If you disconnect deliberately with `/quit` or the **Disconnect** option in the 
 
 You can also right-click a server in the sidebar and choose **Reconnect** to connect immediately without waiting.
 
+### Does NodeRelay enforce TLS automatically?
+
+Yes, when a server supports the IRCv3 **STS (Strict Transport Security)** capability. If NodeRelay connects to a server over plaintext and the server advertises an STS policy, NodeRelay immediately disconnects and reconnects over TLS on the port the server specified. The policy is cached to `~/.config/noderelay/sts.ini` and re-applied on every future connection to that host — enforcing TLS even if `ssl = false` in your config — until the policy expires.
+
+This prevents downgrade attacks where someone on the network could intercept a plaintext connection before TLS is negotiated.
+
 ### How do I send a raw IRC command?
 
 You have two options:
@@ -706,10 +712,16 @@ Preview cards are stored per-channel and reinjected when you switch back, so the
 
 ### How do I see someone's NickServ account?
 
-Hover over their nick in the nick list panel on the right — a tooltip appears showing `Account: <name>` if the server has reported their account. This is populated via three mechanisms:
+Account names appear as tooltips in two places — hover over a nick in either location:
+
+- **Nick list** — hover any nick in the right-side user list panel
+- **Chat view** — hover the sender's nick link directly in a message
+
+The tooltip shows `account: <name>` when the server has reported their account. This is populated via four mechanisms:
 
 - **On join** — if the server supports `extended-join`, the account name arrives with the JOIN message.
 - **Login/logout** — `account-notify` sends an `ACCOUNT` command when any nick in a shared channel authenticates or logs out.
+- **Per-message** — `account-tag` attaches the account name to every message from an authenticated user, keeping the data current even without a separate notification.
 - **WHO scan** — NodeRelay sends a WHOX query (`WHO #channel %cnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field.
 
 If the tooltip is absent, the server may not support any of these capabilities, or the user has not authenticated with services.

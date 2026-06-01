@@ -23,6 +23,41 @@ Known issues: light icon variants are PNGs (no SVG light versions yet).
 Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
 -->
 
+<!--
+Session summary — 2026-05-31 (v0.16.3 — STS, account-tag, howto icon fix)
+
+What was done:
+  - STS (Strict Transport Security) implemented. stsstore.h/cpp: QSettings-based
+    persistent policy store at ~/.config/noderelay/sts.ini. connectToServer applies
+    any cached policy before dialing (upgrades plain→TLS). handleCap LS parses
+    sts=port=X,duration=Y: on plain connection stores policy and reconnects over TLS
+    via QTimer::singleShot+socket abort; on TLS refreshes expiry. duration=0 clears
+    the policy. m_stsUpgrade flag prevents scheduleReconnect from firing during the
+    upgrade disconnect.
+
+  - account-tag (IRCv3) implemented. account-tag added to desired CAPs. PRIVMSG and
+    NOTICE handlers extract the account tag and emit accountChanged before emitting
+    messageReceived/noticeReceived, keeping nick list accounts current per-message.
+    account field added to Message struct. sessionmodel onMessage/onNotice/onAction
+    look up account from channel nick list and store it on the message. Chat rendering
+    adds title='account: X' to the nick anchor — hover the nick in chat to see it.
+
+  - docs/howto.html: replaced stale uplink-minimal-mark.svg header icon with
+    icons/tower-dark.png; uplink-minimal-mark.svg deleted from docs/.
+
+Regressions: none.
+Known issues: light icon variants are PNGs (no SVG light versions yet).
+Next priorities: password keychain, DCC passive/NAT, split view, SOCKS5 proxy.
+-->
+
+## v0.16.3 — 2026-05-31
+
+- **STS (Strict Transport Security)** — IRCv3 `sts` capability implemented. When a server advertises an STS policy over a plain connection, NodeRelay immediately reconnects over TLS on the advertised port and caches the policy to `~/.config/noderelay/sts.ini`. Future connections to that host enforce TLS even if `ssl = false` in config. Policies expire after the server-specified duration; `duration=0` clears them immediately.
+- **`account-tag`** — IRCv3 `account-tag` capability negotiated. The sender's NickServ account name is stored on each message and shown as a hover tooltip on the nick in the chat view — the same account tooltip as in the nick list.
+- **Docs: howto.html icon** — replaced stale `uplink-minimal-mark.svg` header graphic with the NodeRelay tower icon; stale file removed.
+
+---
+
 ## Housekeeping — 2026-06-01
 
 - **Local directory renamed** — `~/Projects/UplinkIRC` → `~/Projects/NodeRelay`; stale leftover directory and old `UplinkIRC-*.AppImage` binaries removed.

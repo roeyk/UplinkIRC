@@ -153,6 +153,24 @@ The list is stored in `config.toml` under `[monitor] nicks = [...]`.
 
 An extended version of the `WHO` command. NodeRelay requests `WHO <channel> %cnfa,42` after joining each channel — fetching channel, nick, flags, and account in a single query. The server reply (`354 RPL_WHOSPCRPL`) is handled by the same bot-detection logic as the regular `WHO` reply, and any account name returned fires an `accountChanged` update to populate nick list tooltips.
 
+### `sts` (Strict Transport Security)
+
+When a server advertises an STS policy in its `CAP LS` response, NodeRelay upgrades the connection automatically and caches the policy to disk (`~/.config/noderelay/sts.ini`). On future connections to that host, TLS is enforced even if `ssl = false` is set in the config — the stored policy takes precedence and the TLS port from the policy is used.
+
+- **Plain connection:** NodeRelay receives `sts=port=6697,duration=2678400`, immediately disconnects, and reconnects over TLS on the specified port. The policy is saved with an expiry timestamp based on the `duration` value (in seconds).
+- **TLS connection:** NodeRelay receives `sts=duration=2678400` (no port — already on TLS), refreshes the stored policy expiry.
+- **Policy removal:** If the server sends `sts=duration=0` on a TLS connection, the cached policy is deleted.
+
+Policies survive restarts and are applied before each connection attempt. This prevents downgrade attacks where an attacker could intercept a plaintext connection before TLS is established — equivalent to HSTS in web browsers.
+
+### `account-tag`
+
+When negotiated, the server attaches an `account` tag to every message sent by an authenticated user. NodeRelay uses this to keep per-nick account information current on a per-message basis — complementing `account-notify` (login/logout notifications) and `extended-join` (account on join).
+
+- The account name is stored with each message and shown as a **tooltip when you hover over the sender's nick in the chat view** — the same tooltip as in the nick list.
+- The nick list account data is also kept current, so both tooltips always show the same value.
+- If a user is not authenticated with services, no `account` tag is sent and no tooltip appears.
+
 ---
 
 ## Bouncer capabilities
@@ -194,14 +212,6 @@ Tells soju not to send a NAMES list automatically on JOIN. This prevents duplica
 ### `cap-notify`
 
 Notifies the client if the server gains or loses capabilities after the initial handshake. Lets the client adapt to capability changes dynamically.
-
-### `sts` (Strict Transport Security)
-
-If a server advertises STS, NodeRelay would remember to always require TLS for that host and refuse plaintext fallback — similar to HSTS in web browsers.
-
-### `account-tag`
-
-Attaches the sender's NickServ account name as an `account` tag on every incoming message. Complements `account-notify` by providing per-message account context without a separate WHOIS. (Message tags are already fully parsed; this is a display-layer addition.)
 
 ### `draft/multiline`
 

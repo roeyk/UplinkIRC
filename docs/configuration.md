@@ -162,7 +162,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `name` | string | yes | Display name shown in the sidebar |
 | `host` | string | yes | IRC server hostname or IP address |
 | `port` | integer | yes | Server port. The standard TLS port is `6697` |
-| `ssl` | bool | yes | Use TLS encryption. Always set `true` — plaintext IRC is not supported |
+| `ssl` | bool | yes | Use TLS encryption. Strongly recommended: `true`. If the server advertises an STS policy, NodeRelay enforces TLS automatically regardless of this setting. |
 | `nick` | string | yes | Your preferred nickname |
 | `user` | string | no | Username in your hostmask (defaults to `"uplink"`) |
 | `realname` | string | no | Shown in WHOIS (defaults to `"NodeRelay User"`) |
