@@ -231,8 +231,14 @@ void SessionModel::sendMessage(const QString &host, const QString &target, const
     if (isPM) openPM(host, target);
     if (!cl->hasCap("echo-message")) {
         auto *sess = session(host);
-        if (sess)
-            postMessage(host, target, Message::make(MessageType::Privmsg, sess->nick, text));
+        if (sess) {
+            // Redact credentials before storing in the local echo buffer
+            QString display = text;
+            if (target.compare("NickServ", Qt::CaseInsensitive) == 0
+                    && text.startsWith("IDENTIFY", Qt::CaseInsensitive))
+                display = "IDENTIFY <redacted>";
+            postMessage(host, target, Message::make(MessageType::Privmsg, sess->nick, display));
+        }
     }
 }
 
