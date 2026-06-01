@@ -5,6 +5,7 @@
 #include "version.h"
 
 #include <QFile>
+#include <QNetworkProxy>
 #include <QSslCertificate>
 #include <QSslKey>
 #include <QSslSocket>
@@ -74,9 +75,14 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_saslPassword    = cfg.saslPassword;
     m_saslExternal    = cfg.saslExternal;
     m_saslPending     = false;
+    m_utf8Only        = false;
     m_nickservPassword = cfg.nickservPassword;
     m_bouncerType     = cfg.bouncerType;
     m_bouncerNetwork  = cfg.bouncerNetwork;
+    m_proxyHost       = cfg.proxyHost;
+    m_proxyPort       = cfg.proxyPort;
+    m_proxyUser       = cfg.proxyUser;
+    m_proxyPass       = cfg.proxyPass;
 
     // Apply cached STS policy — upgrade plain to TLS if one exists
     if (!m_ssl) {
@@ -104,10 +110,22 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
         }
     }
 
+    applyProxy();
     if (m_ssl)
         m_socket->connectToHostEncrypted(m_host, m_port);
     else
         m_socket->connectToHost(m_host, m_port);
+}
+
+void IrcClient::applyProxy()
+{
+    if (!m_proxyHost.isEmpty()) {
+        QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, m_proxyHost, m_proxyPort,
+                            m_proxyUser, m_proxyPass);
+        m_socket->setProxy(proxy);
+    } else {
+        m_socket->setProxy(QNetworkProxy(QNetworkProxy::NoProxy));
+    }
 }
 
 bool IrcClient::isConnected() const
@@ -145,6 +163,9 @@ void IrcClient::part(const QString &channel, const QString &reason)
 void IrcClient::privmsg(const QString &target, const QString &text, const QString &replyToMsgid)
 {
     if (!validIrcToken(target)) return;
+    if (m_utf8Only && text.contains(QChar::ReplacementCharacter))
+        emit serverMessage(m_host,
+            "Warning: message contains invalid UTF-8 characters — server requires UTF-8 (UTF8ONLY)");
     if (replyToMsgid.isEmpty())
         sendRaw("PRIVMSG " + target + " :" + stripCrlf(text));
     else
@@ -293,7 +314,12 @@ static constexpr int       kMaxBatchMessages = 1000;
 
 void IrcClient::onReadyRead()
 {
-    m_buffer += QString::fromUtf8(m_socket->readAll());
+    const QByteArray raw = m_socket->readAll();
+    if (m_utf8Only && raw.contains('\xff')) {
+        // Cheap non-UTF-8 sniff: 0xFF never appears in valid UTF-8
+        emit serverMessage(m_host, "Warning: server sent non-UTF-8 data (UTF8ONLY is set)");
+    }
+    m_buffer += QString::fromUtf8(raw);
 
     if (m_buffer.size() > kMaxPendingBuffer) {
         emit socketError(m_host, "Server sent oversized unterminated data; disconnecting");
@@ -357,6 +383,7 @@ void IrcClient::doReconnect()
     m_saslPending = false;
     if (m_socket->state() != QAbstractSocket::UnconnectedState)
         m_socket->abort();
+    applyProxy();
     if (m_ssl)
         m_socket->connectToHostEncrypted(m_host, m_port);
     else
@@ -810,6 +837,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
                     QTimer::singleShot(0, this, [this]() {
                         if (m_socket->state() != QAbstractSocket::UnconnectedState)
                             m_socket->abort();
+                        applyProxy();
                         m_socket->connectToHostEncrypted(m_host, m_port);
                     });
                 }
@@ -912,7 +940,17 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 2:   // RPL_YOURHOST
     case 3:   // RPL_CREATED
     case 4:   // RPL_MYINFO
-    case 5:   // RPL_ISUPPORT
+    case 5: { // RPL_ISUPPORT
+        // params[0] = our nick, params[1..n-1] = tokens, trailing = "are supported..."
+        for (int i = 1; i < params.size(); ++i) {
+            if (params[i].compare("UTF8ONLY", Qt::CaseInsensitive) == 0) {
+                m_utf8Only = true;
+                emit serverMessage(m_host, "UTF8ONLY: server enforces UTF-8 encoding");
+            }
+        }
+        emit serverMessage(m_host, trailing);
+        break;
+    }
     case 251: case 252: case 253: case 254: case 255:
     case 265: case 266:
     case 372: // RPL_MOTD

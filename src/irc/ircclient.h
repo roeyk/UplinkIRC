@@ -131,6 +131,7 @@ private slots:
 
 private:
     void processLine(const QString &line);
+    void applyProxy();
     void handleCap     (const QStringList &params, const QString &trailing);
     void handleNumeric (const QString &cmd, const QStringList &params, const QString &trailing);
     void handleBatch   (const QStringList &params);
@@ -155,6 +156,10 @@ private:
 
     BouncerType  m_bouncerType{BouncerType::None};
     QString      m_bouncerNetwork;
+    QString      m_proxyHost;
+    quint16      m_proxyPort{1080};
+    QString      m_proxyUser;
+    QString      m_proxyPass;
 
     QTimer      *m_reconnectTimer{nullptr};
     QTimer      *m_pingTimer{nullptr};
@@ -162,6 +167,7 @@ private:
     bool         m_pingPending{false};
     bool         m_intentionalDisconnect{false};
     bool         m_stsUpgrade{false};
+    bool         m_utf8Only{false};
     int          m_reconnectDelay{5};
 
     QSet<QString>               m_requestedCaps;

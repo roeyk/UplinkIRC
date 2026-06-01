@@ -34,6 +34,10 @@ struct ServerConfig {
     QString            nickservPassword;
     BouncerType        bouncerType{BouncerType::None};
     QString            bouncerNetwork;   // soju network name, or empty
+    QString            proxyHost;        // SOCKS5 proxy hostname (empty = no proxy)
+    quint16            proxyPort{1080};  // SOCKS5 proxy port
+    QString            proxyUser;        // optional proxy username
+    QString            proxyPass;        // optional proxy password
     QList<ChannelConfig> channels;
 
     bool operator==(const ServerConfig &o) const {

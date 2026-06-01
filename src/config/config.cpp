@@ -199,6 +199,10 @@ Config Config::load(const QString &path)
                 else if (bt == "soju") sc.bouncerType = BouncerType::Soju;
                 else                   sc.bouncerType = BouncerType::None;
                 sc.bouncerNetwork = QString::fromStdString((*s)["bouncer_network"].value_or<std::string>(""));
+                sc.proxyHost = QString::fromStdString((*s)["proxy_host"].value_or<std::string>(""));
+                sc.proxyPort = static_cast<quint16>((*s)["proxy_port"].value_or(1080));
+                sc.proxyUser = QString::fromStdString((*s)["proxy_user"].value_or<std::string>(""));
+                sc.proxyPass = QString::fromStdString((*s)["proxy_pass"].value_or<std::string>(""));
 
                 if (auto chans = (*s)["channel"].as_array()) {
                     for (auto &cnode : *chans) {
@@ -322,6 +326,14 @@ void Config::save(const Config &cfg, const QString &path)
             out << "bouncer           = \"soju\"\n";
         if (!s.bouncerNetwork.isEmpty())
             out << "bouncer_network   = " << tomlQuote(s.bouncerNetwork) << "\n";
+        if (!s.proxyHost.isEmpty()) {
+            out << "proxy_host        = " << tomlQuote(s.proxyHost) << "\n";
+            out << "proxy_port        = " << s.proxyPort << "\n";
+            if (!s.proxyUser.isEmpty())
+                out << "proxy_user        = " << tomlQuote(s.proxyUser) << "\n";
+            if (!s.proxyPass.isEmpty())
+                out << "proxy_pass        = " << tomlQuote(s.proxyPass) << "\n";
+        }
         for (const auto &ch : s.channels) {
             out << "\n[[server.channel]]\n";
             out << "name = " << tomlQuote(ch.name) << "\n";

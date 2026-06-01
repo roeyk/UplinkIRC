@@ -115,6 +115,23 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow("Type:",    m_bouncerType);
     form->addRow("Network:", m_bouncerNetwork);
 
+    m_proxyHost = new QLineEdit;
+    m_proxyHost->setPlaceholderText("e.g. 127.0.0.1 (leave blank for no proxy)");
+    m_proxyPort = new QSpinBox;
+    m_proxyPort->setRange(1, 65535);
+    m_proxyPort->setValue(1080);
+    m_proxyUser = new QLineEdit;
+    m_proxyUser->setPlaceholderText("optional");
+    m_proxyPass = new QLineEdit;
+    m_proxyPass->setPlaceholderText("optional");
+    m_proxyPass->setEchoMode(QLineEdit::Password);
+
+    form->addRow(makeHeader("SOCKS5 Proxy"));
+    form->addRow("Proxy Host:", m_proxyHost);
+    form->addRow("Proxy Port:", m_proxyPort);
+    form->addRow("Proxy User:", m_proxyUser);
+    form->addRow("Proxy Pass:", m_proxyPass);
+
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -144,6 +161,10 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     m_nickservPassword->setText(existing.nickservPassword);
     m_bouncerType->setCurrentIndex(static_cast<int>(existing.bouncerType));
     m_bouncerNetwork->setText(existing.bouncerNetwork);
+    m_proxyHost->setText(existing.proxyHost);
+    m_proxyPort->setValue(existing.proxyPort ? existing.proxyPort : 1080);
+    m_proxyUser->setText(existing.proxyUser);
+    m_proxyPass->setText(existing.proxyPass);
 
     QStringList names;
     for (const auto &ch : existing.channels)
@@ -170,6 +191,10 @@ ServerConfig ServerDialog::serverConfig() const
     sc.nickservPassword = m_nickservPassword->text();
     sc.bouncerType      = static_cast<BouncerType>(m_bouncerType->currentData().toInt());
     sc.bouncerNetwork   = m_bouncerNetwork->text().trimmed();
+    sc.proxyHost        = m_proxyHost->text().trimmed();
+    sc.proxyPort        = static_cast<quint16>(m_proxyPort->value());
+    sc.proxyUser        = m_proxyUser->text().trimmed();
+    sc.proxyPass        = m_proxyPass->text();
     for (const QString &ch : m_autoJoin->text().split(',', Qt::SkipEmptyParts)) {
         const QString name = ch.trimmed();
         if (!name.isEmpty())

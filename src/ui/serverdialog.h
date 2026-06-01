@@ -34,4 +34,8 @@ private:
     QComboBox *m_bouncerType;
     QLineEdit *m_bouncerNetwork;
     QLineEdit *m_autoJoin;
+    QLineEdit *m_proxyHost;
+    QSpinBox  *m_proxyPort;
+    QLineEdit *m_proxyUser;
+    QLineEdit *m_proxyPass;
 };
