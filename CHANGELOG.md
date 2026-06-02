@@ -42,6 +42,54 @@ Next priorities:
   - In-app update check UI
 -->
 
+<!--
+Session summary — 2026-06-02 (v0.18.0 — pane drag-to-rearrange, themes seeding, slash-in-pane fixes)
+
+What was built:
+  - Themes seeded on first run: ThemeLoader::ensureUserThemesDir() creates
+    ~/.config/noderelay/themes/ and copies all bundled .toml files there.
+    Deleted themes stay deleted across restarts. themesDir() now always
+    returns the user config location.
+  - Pane drag-to-rearrange: drag any pane's header bar to swap it with
+    another pane or with the primary panel. Uses grabMouse() after threshold
+    rather than QDrag (QDrag was unreliable on Wayland and got eaten by
+    QTextBrowser's built-in drop handling). MainWindow tracks m_primarySlot
+    so primary can occupy any layout position. rebuildPaneLayout() uses the
+    slot to insert primary at the right index. paneAt() + isOverPrimary()
+    hit-test via QApplication::widgetAt(). setDragHighlight() highlights the
+    target pane header during drag.
+  - All slash commands work from pane input bars: dispatchInput() extracted
+    from onInputSubmit(); ChannelPane now calls dispatchInput() instead of
+    only handling /me + plain text.
+  - Leading space prevents command dispatch: onInputSubmit passes raw
+    (untrimmed) text to dispatchInput(); only text whose first character is
+    '/' triggers command mode.
+
+Bugs fixed:
+  - Pane input bar: all slash commands now work (was /me + plain text only).
+  - Top pane not draggable: event filter was only on m_header, not its
+    children (nameLabel, topicToggle etc.); child widgets consumed mouse press
+    events. Fixed by installing filter on all header children.
+  - QDrag approach replaced with grabMouse(): QDrag was swallowed by
+    QTextBrowser's acceptDrops and unreliable on Wayland/nested splitters.
+  - Primary panel not swappable: introduced m_primarySlot to track where
+    primary sits in the layout; any ChannelPane can now be dragged onto
+    primary's area to swap positions.
+
+Known issues remaining:
+  - Pane layout not persisted across restarts.
+  - About dialog slight centering drift on Wayland (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+  - Self-signed cert fingerprint-pin UI not yet built.
+  - In-app update check UI not yet built.
+
+Next priorities:
+  - Pane layout persistence — save/restore pane arrangement across sessions
+  - Self-signed cert fingerprint-pin UI
+  - DCC passive / NAT traversal
+  - In-app update check UI
+-->
+
 ## v0.18.0 — 2026-06-02
 
 ### Pane drag-to-rearrange
