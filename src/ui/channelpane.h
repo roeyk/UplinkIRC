@@ -8,9 +8,6 @@ class QListWidget;
 class QLineEdit;
 class QLabel;
 class QToolButton;
-class QDragEnterEvent;
-class QDragLeaveEvent;
-class QDropEvent;
 
 class ChannelPane : public QWidget {
     Q_OBJECT
@@ -23,20 +20,21 @@ public:
     QListWidget  *nickList() const { return m_nickList; }
     void setNick(const QString &nick);
     void setTopic(const QString &html);
+    void setDragHighlight(bool on);
 signals:
     void closeRequested();
     void inputSubmitted(const QString &text);
-    void dropReceived(const QString &sourceKey);
+    void dragActive (const QString &sourceKey, const QPoint &globalPos);
+    void dragDropped(const QString &sourceKey, const QPoint &globalPos);
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
-    void dragEnterEvent(QDragEnterEvent *event) override;
-    void dragLeaveEvent(QDragLeaveEvent *event) override;
-    void dropEvent(QDropEvent *event) override;
 private:
     QString       m_host;
     QString       m_channel;
     QWidget      *m_header{nullptr};
-    QPoint        m_dragStartPos;
+    QPoint        m_dragStartPos;   // global coords
+    bool          m_dragPending{false};
+    bool          m_dragging{false};
     QTextBrowser *m_chatView{nullptr};
     QListWidget  *m_nickList{nullptr};
     QLineEdit    *m_input{nullptr};

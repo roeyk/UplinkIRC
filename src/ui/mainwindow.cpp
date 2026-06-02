@@ -2501,11 +2501,28 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     connect(pane, &ChannelPane::inputSubmitted, this, [this, host, channel](const QString &text){
         dispatchInput(text, host, channel);
     });
-    connect(pane, &ChannelPane::dropReceived, this, [this, pane](const QString &sourceKey){
+    connect(pane, &ChannelPane::dragActive, this, [this](const QString &sourceKey, const QPoint &gp){
+        ChannelPane *target = paneAt(gp);
+        if (target == m_panes.value(sourceKey)) target = nullptr;
+        if (m_dragHighlighted && m_dragHighlighted != target) {
+            m_dragHighlighted->setDragHighlight(false);
+            m_dragHighlighted = nullptr;
+        }
+        if (target && !m_dragHighlighted) {
+            target->setDragHighlight(true);
+            m_dragHighlighted = target;
+        }
+    });
+    connect(pane, &ChannelPane::dragDropped, this, [this](const QString &sourceKey, const QPoint &gp){
+        if (m_dragHighlighted) {
+            m_dragHighlighted->setDragHighlight(false);
+            m_dragHighlighted = nullptr;
+        }
         ChannelPane *source = m_panes.value(sourceKey);
-        if (!source || source == pane) return;
+        ChannelPane *target = paneAt(gp);
+        if (!source || !target || source == target) return;
         const int fromIdx = m_orderedPanes.indexOf(source);
-        const int toIdx   = m_orderedPanes.indexOf(pane);
+        const int toIdx   = m_orderedPanes.indexOf(target);
         if (fromIdx < 0 || toIdx < 0) return;
         m_orderedPanes.swapItemsAt(fromIdx, toIdx);
         rebuildPaneLayout();
@@ -2519,6 +2536,16 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     rebuildPaneLayout();
     refreshPaneChatView(pane);
     refreshPaneNickList(pane);
+}
+
+ChannelPane *MainWindow::paneAt(const QPoint &globalPos) const
+{
+    QWidget *w = QApplication::widgetAt(globalPos);
+    while (w) {
+        if (auto *p = qobject_cast<ChannelPane *>(w)) return p;
+        w = w->parentWidget();
+    }
+    return nullptr;
 }
 
 void MainWindow::closeChannelPane(const QString &host, const QString &channel)

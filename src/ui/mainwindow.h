@@ -92,6 +92,7 @@ private:
 
     void openChannelPane (const QString &host, const QString &channel);
     void closeChannelPane(const QString &host, const QString &channel);
+    ChannelPane *paneAt(const QPoint &globalPos) const;
     void refreshPaneChatView(ChannelPane *pane);
     void refreshPaneNickList(ChannelPane *pane);
     void rebuildPaneLayout();
@@ -156,6 +157,7 @@ private:
     QSplitter    *m_panesSplitter{nullptr};
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
     QList<ChannelPane*>          m_orderedPanes; // insertion order for layout
+    ChannelPane                 *m_dragHighlighted{nullptr};
     QTimer       *m_gearTimer{nullptr};
     int           m_gearAngle{0};
     bool          m_nickExpanded{true};
