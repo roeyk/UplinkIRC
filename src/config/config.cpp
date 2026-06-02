@@ -336,11 +336,21 @@ void Config::save(const Config &cfg, const QString &path)
             if (!s.proxyPass.isEmpty())
                 out << "proxy_pass        = " << tomlQuote(s.proxyPass) << "\n";
         }
-        for (const auto &ch : s.channels) {
-            out << "\n[[server.channel]]\n";
-            out << "name = " << tomlQuote(ch.name) << "\n";
-            if (!ch.password.isEmpty())
-                out << "key  = " << tomlQuote(ch.password) << "\n";
+        const bool hasKeys = std::any_of(s.channels.begin(), s.channels.end(),
+                                          [](const ChannelConfig &c){ return !c.password.isEmpty(); });
+        if (hasKeys) {
+            for (const auto &ch : s.channels) {
+                out << "\n[[server.channel]]\n";
+                out << "name = " << tomlQuote(ch.name) << "\n";
+                if (!ch.password.isEmpty())
+                    out << "key  = " << tomlQuote(ch.password) << "\n";
+            }
+        } else {
+            QStringList names;
+            for (const auto &ch : s.channels)
+                names << ch.name;
+            if (!names.isEmpty())
+                out << "channels          = " << tomlQuote(names.join(", ")) << "\n";
         }
         out << "\n";
     }
