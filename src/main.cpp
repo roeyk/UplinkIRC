@@ -4,6 +4,7 @@
 #include "config/config.h"
 #include "model/sessionmodel.h"
 #include "ui/mainwindow.h"
+#include "ui/themeloader.h"
 #include "version.h"
 
 int main(int argc, char *argv[])
@@ -22,6 +23,7 @@ int main(int argc, char *argv[])
 
     const QString cfgPath = Config::defaultPath();
     Config cfg = Config::load(cfgPath);
+    ThemeLoader::ensureUserThemesDir();
 
     QFont font(cfg.ui.fontFamily);
     font.setStyleHint(QFont::Monospace);

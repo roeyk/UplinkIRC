@@ -2,27 +2,38 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QFile>
 #include <QStandardPaths>
 #include <QFileInfo>
 #include <QDebug>
 
 #include <toml++/toml.hpp>
 
-// ---------------------------------------------------------------------------
-// Theme search path: user config dir → exe dir → cwd
-// ---------------------------------------------------------------------------
-
 QString ThemeLoader::themesDir()
 {
-    const QStringList candidates = {
-        QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/themes",
+    return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/themes";
+}
+
+void ThemeLoader::ensureUserThemesDir()
+{
+    const QString userDir = themesDir();
+    QDir().mkpath(userDir);
+
+    // Seed from the bundled themes directory (next to binary or installed path).
+    const QStringList sources = {
         QCoreApplication::applicationDirPath() + "/themes",
         QCoreApplication::applicationDirPath() + "/../share/noderelay/themes",
-        "themes"
     };
-    for (const QString &p : candidates)
-        if (QDir(p).exists()) return p;
-    return "themes";
+    for (const QString &src : sources) {
+        const QDir srcDir(src);
+        if (!srcDir.exists()) continue;
+        for (const QString &f : srcDir.entryList({"*.toml"}, QDir::Files)) {
+            const QString dest = userDir + "/" + f;
+            if (!QFile::exists(dest))
+                QFile::copy(srcDir.filePath(f), dest);
+        }
+        break; // use first source that exists
+    }
 }
 
 QStringList ThemeLoader::availableThemes()
