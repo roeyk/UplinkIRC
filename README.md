@@ -12,12 +12,12 @@
   <a href="LICENSE">
     <img src="https://img.shields.io/github/license/noderelay/NodeRelay?style=flat-square&color=22863a" alt="MIT License" />
   </a>
-  <img src="https://img.shields.io/badge/Qt6%20%2F%20C%2B%2B17-cross--platform-blueviolet?style=flat-square" alt="Qt6 / C++17" />
+  <img src="https://img.shields.io/badge/Qt6%20%2F%20C%2B%2B-cross--platform-blueviolet?style=flat-square" alt="Qt6 / C++" />
   <img src="https://img.shields.io/badge/IRCv3-ready-orange?style=flat-square" alt="IRCv3" />
 </p>
 
 <p align="center">
-  A fast, secure, IRCv3-featured IRC client built with Qt6 and C++17.<br/>
+  A fast, secure, IRCv3-featured IRC client built with Qt6 and C++.<br/>
   Default network: <strong>irc.linuxdojo.org:6697</strong> &mdash; channel <strong>#uplink</strong>
 </p>
 
