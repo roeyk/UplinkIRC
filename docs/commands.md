@@ -200,6 +200,27 @@ Click **Yes**, choose a save location, and a progress dialog tracks the download
 
 ---
 
+## Sidebar right-click menu
+
+Right-clicking a **channel** in the sidebar opens a context menu:
+
+| Action | What it does |
+|---|---|
+| **Open in Pane** | Opens the channel as a side-by-side pane with its own chat view, nick list, topic bar, and input bar. Appears when the channel is not already open in a pane. |
+| **Close Pane** | Closes the side-by-side pane for this channel. Appears when a pane is already open. |
+| **Rejoin** | Parts the channel and immediately rejoins it. |
+| **Leave** | Parts the channel (`PART`). |
+| **Close** | Closes the buffer without sending a `PART` (use after a kick, for example). |
+
+Right-clicking a **server header** shows:
+
+| Action | What it does |
+|---|---|
+| **Disconnect** | Sends `QUIT` and closes the connection. |
+| **Reconnect** | Re-connects to the server using the current config. |
+
+---
+
 ## Nick list right-click menu
 
 Right-clicking any nick — in the user list or directly on a nick link in the chat view — opens the same context menu. The title shows the nick in bold.

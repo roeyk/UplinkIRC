@@ -3,6 +3,83 @@
 ---
 
 <!--
+Session summary — 2026-06-02 (v0.17.0 — detachable channel panes)
+
+What was built:
+  - Detachable channel panes: right-click any #channel in the sidebar →
+    "Open in Pane" splits the chat area so that channel gets its own
+    full-height column with its own chat view, nick list, topic bar, and
+    input bar. Up to 4 total panes (primary + 3 extras).
+  - Auto layout engine (rebuildPaneLayout): 1 view = full width; 2 =
+    side by side; 3 = primary full-height left + two stacked right;
+    4 = 2×2 grid. Layout rebuilds on every open/close.
+  - Per-pane topic bar: ▾ toggle in the pane header shows/hides the
+    channel topic. Updates live when the topic changes on the server.
+  - Primary panel header: channel name + X close button appear above
+    the primary chat area when at least one extra pane is open. X hides
+    the primary column; clicking any sidebar item brings it back.
+  - Sidebar right-click no longer changes the active channel (switched
+    from currentItemChanged to itemClicked signal) — fixes the bug where
+    opening a channel in a pane would clobber the primary view.
+  - Server messages (MOTD, welcome banners, ISUPPORT, LUSERS) now always
+    route to the server buffer, never to the active channel.
+  - "Close Pane" in right-click menu when a pane for that channel is
+    already open.
+  - Same channel cannot appear in both primary and a pane at once:
+    opening a pane for the active channel shifts primary to server buffer;
+    sidebar click on a paned channel closes the pane and makes it primary
+    (only when clicked, not on right-click).
+
+Bugs fixed:
+  - Server messages flooding #uplink on connect: onServerMessage now
+    always posts to "(server)" buffer.
+  - Right-click + "Open in Pane" was changing the primary view because
+    Qt fires currentItemChanged before customContextMenuRequested.
+    Fixed by switching to itemClicked for sidebar navigation.
+  - Primary panel header shown even with no panes open: now hidden until
+    the first pane is created.
+  - Primary close button manipulated splitter sizes which broke in nested
+    layouts: replaced with simple hide/show.
+
+Known issues:
+  - Drag-to-rearrange panes not yet implemented (planned).
+  - Pane layout not persisted across restarts.
+  - Pane input bar supports plain text and /me; other slash commands
+    must be typed in the primary input bar.
+  - About dialog slight centering drift on Wayland (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+
+Next priorities:
+  - Self-signed cert fingerprint-pin UI
+  - Drag-to-rearrange panes (swap positions by dragging)
+  - Pane layout persistence (save/restore across sessions)
+  - DCC passive / NAT traversal
+  - In-app update check UI
+-->
+
+## v0.17.0 — 2026-06-02
+
+### Detachable channel panes
+
+- **Open in Pane** — right-click any `#channel` in the sidebar to open it as a side-by-side pane. Up to 4 panes total (primary + 3 extras).
+- Each pane is fully self-contained: its own chat history, nick list, topic bar, and input bar. Type and send messages directly from any pane.
+- **Per-pane topic bar** — a `▾` toggle button in the pane header shows or hides the channel topic. The topic updates live when it changes on the server.
+- **Auto layout** — the chat area automatically restructures as panes are added or removed:
+  - 1 view: full width (no change from before)
+  - 2 views: side by side
+  - 3 views: primary full-height on the left, two panes stacked on the right
+  - 4 views: 2×2 grid
+- **Primary panel header** — when panes are open, the primary column gains a header showing the channel name and an `✕` button to temporarily hide the primary column. Clicking any channel in the sidebar brings it back.
+- **Close Pane** — right-clicking a channel that is already open in a pane shows "Close Pane" instead of "Open in Pane".
+
+### Fixes
+
+- **Fix:** server messages (MOTD, welcome banner, ISUPPORT, LUSERS) no longer appear in `#channel` buffers — they always route to the server buffer.
+- **Fix:** right-clicking a channel in the sidebar no longer changes the active primary channel; only left-clicking navigates.
+
+<!--
+
+
 Session summary — 2026-06-01 (housekeeping — local rename, CI fix, cleanup)
 
 What was done:

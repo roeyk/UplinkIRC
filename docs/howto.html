@@ -417,6 +417,7 @@
   <ul>
     <li><a href="#topic-bar">Topic bar</a></li>
     <li><a href="#sidebar">Sidebar</a></li>
+    <li><a href="#channel-panes">Channel panes</a></li>
     <li><a href="#chat-area">Chat area</a></li>
     <li><a href="#nick-panel">Nick list panel</a></li>
     <li><a href="#nick-context-menu">Nick right-click menu</a></li>
@@ -1116,10 +1117,51 @@ channels        = "#debian"</pre>
     <ul>
       <li>Click a channel to open it in the chat area.</li>
       <li>Channels with new activity show <code>🔥</code>. Channels where your nick was mentioned show <code>💡</code> in red.</li>
-      <li>Right-click a channel for options: Rejoin, Leave, Close.</li>
+      <li>Right-click a channel for options: <strong>Open in Pane</strong> (view it alongside the current channel), Rejoin, Leave, Close. See <a href="#channel-panes">Channel panes</a>.</li>
       <li>Right-click a server for: Disconnect, Reconnect.</li>
       <li>Drag the divider between the sidebar and chat area to resize it — the width is saved and restored on the next launch.</li>
       <li>Click the <code>⚙</code> gear in the topic bar (top-left) to collapse the sidebar entirely so the chat fills the window. Click it again to bring it back.</li>
+    </ul>
+  </section>
+
+  <!-- CHANNEL PANES -->
+  <section id="channel-panes">
+    <h2>Channel panes — view multiple channels at once</h2>
+    <p>NodeRelay can display up to <strong>four channels side by side</strong> in the chat area. Each pane is fully self-contained — it has its own chat history, nick list, topic bar, and input bar.</p>
+
+    <h3>Opening a pane</h3>
+    <p><strong>Right-click</strong> any <code>#channel</code> in the sidebar and choose <strong>Open in Pane</strong>. The channel opens as a new column next to the current view. You can continue typing in either pane independently.</p>
+    <div class="note"><strong>Note:</strong> Right-clicking does not navigate away from the channel you are currently viewing — only a left-click does that.</div>
+
+    <h3>Layout</h3>
+    <p>The chat area restructures automatically as panes are added:</p>
+    <table>
+      <thead><tr><th>Panes open</th><th>Layout</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Full width (normal single-channel view)</td></tr>
+        <tr><td>2</td><td>Side by side — equal halves</td></tr>
+        <tr><td>3</td><td>Primary channel full-height on the left; two panes stacked on the right</td></tr>
+        <tr><td>4</td><td>2×2 grid — two columns, each with two rows</td></tr>
+      </tbody>
+    </table>
+    <p>The splitter handles between panes are draggable so you can resize any column or row to suit your screen.</p>
+
+    <h3>Per-pane topic bar</h3>
+    <p>Each pane has a header bar showing the channel name. Click the <code>▾</code> toggle button on the left of the header to show or hide the channel topic below it. The topic updates live whenever it changes on the server.</p>
+
+    <h3>Closing a pane</h3>
+    <p>Click the <code>✕</code> button on the right of any pane header to close that pane. The remaining panes expand to fill the freed space and the layout restructures automatically. Closing a pane does <em>not</em> leave the channel — it just removes the split view for it.</p>
+    <p>You can also right-click the channel in the sidebar and choose <strong>Close Pane</strong>.</p>
+
+    <h3>Primary column header</h3>
+    <p>When at least one extra pane is open, the primary (left) channel also gains a header bar with a <code>✕</code> button. Clicking it collapses the primary column — handy if you want the extra panes to fill the whole screen. Click any channel in the sidebar to bring the primary column back.</p>
+
+    <h3>Limits and notes</h3>
+    <ul>
+      <li>Maximum 4 panes total (1 primary + 3 extras).</li>
+      <li>The same channel cannot appear in both the primary view and a pane simultaneously. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically.</li>
+      <li>Left-clicking a channel that is open in a pane navigates the primary to it and closes the pane.</li>
+      <li>The pane input bar sends plain text and <code>/me</code> actions. Other slash commands should be typed in the primary input bar.</li>
     </ul>
   </section>
 

@@ -277,6 +277,23 @@ History messages are intentionally displayed at reduced opacity and with their o
 
 ## Interface
 
+### Can I view two channels at the same time?
+
+Yes — **right-click** any `#channel` in the sidebar and choose **Open in Pane**. The chat area splits and that channel appears as a new column with its own chat history, nick list, topic bar, and input bar. You can type and send messages in either pane independently.
+
+You can have up to **4 panes** open at once (the primary view plus 3 extras). The layout adjusts automatically:
+
+| Panes | Layout |
+|---|---|
+| 1 | Full width (normal) |
+| 2 | Side by side |
+| 3 | Primary left, two panes stacked right |
+| 4 | 2×2 grid |
+
+Click the `✕` in a pane's header to close it. Closing a pane does not leave the channel — it just removes the split view.
+
+See [Channel panes](howto.html#channel-panes) in the how-to guide for a full walkthrough.
+
 ### Where is the Preferences button?
 
 The `☰` button is in the **info bar** at the top of the chat area. Click it to open the **Preferences** dialog — it stays open while you browse themes, toggle options, and try settings.
