@@ -96,7 +96,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_bouncerType->addItem("ZNC",   static_cast<int>(BouncerType::ZNC));
     m_bouncerType->addItem("Soju",  static_cast<int>(BouncerType::Soju));
     m_bouncerNetwork = new QLineEdit;
-    m_bouncerNetwork->setPlaceholderText("network name (soju only)");
+    m_bouncerNetwork->setPlaceholderText("network name");
 
     auto *channelNote = new QLabel(
         "⚠ To join a password-protected channel, edit <b>config.toml</b> directly:<br/>"
@@ -111,9 +111,21 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow("Auto-join:", m_autoJoin);
     form->addRow("", channelNote);
 
+    m_bouncerNetworkLabel = new QLabel("Network:");
+
     form->addRow(makeHeader("Bouncer"));
-    form->addRow("Type:",    m_bouncerType);
-    form->addRow("Network:", m_bouncerNetwork);
+    form->addRow("Type:",              m_bouncerType);
+    form->addRow(m_bouncerNetworkLabel, m_bouncerNetwork);
+
+    auto updateNetworkRow = [this]{
+        const bool soju = m_bouncerType->currentData().toInt()
+                          == static_cast<int>(BouncerType::Soju);
+        m_bouncerNetworkLabel->setVisible(soju);
+        m_bouncerNetwork->setVisible(soju);
+    };
+    connect(m_bouncerType, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, updateNetworkRow);
+    updateNetworkRow();
 
     m_proxyHost = new QLineEdit;
     m_proxyHost->setPlaceholderText("e.g. 127.0.0.1 (leave blank for no proxy)");

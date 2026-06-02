@@ -3,6 +3,7 @@
 #include <QDialog>
 
 class QComboBox;
+class QLabel;
 class QLineEdit;
 class QPushButton;
 class QSpinBox;
@@ -33,6 +34,7 @@ private:
     QLineEdit   *m_nickservPassword;
     QComboBox *m_bouncerType;
     QLineEdit *m_bouncerNetwork;
+    QLabel    *m_bouncerNetworkLabel{nullptr};
     QLineEdit *m_autoJoin;
     QLineEdit *m_proxyHost;
     QSpinBox  *m_proxyPort;
