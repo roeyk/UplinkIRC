@@ -261,6 +261,37 @@ Next priorities: bouncer Network field hide when ZNC selected, self-signed
 ---
 
 <!--
+Session summary — 2026-06-02
+
+What was built:
+  - Bouncer Network field hidden in server dialog when Type is None or ZNC.
+    Only appears when Soju is selected — eliminates confusion about a field
+    that does nothing for ZNC users.
+  - Split view attempted (right-click → Open in Split), then reverted.
+    Re-specced on ROADMAP as Halloy-style detachable panes — each pane gets
+    its own input bar, nick list, topic bar, freely positionable, persistent.
+  - docs: commands.md and faq.md updated — stale React "text dialog"
+    descriptions replaced with emoji picker; /caps added to user commands.
+
+Bugs fixed:
+  - Stale QSettings nickSplitter state caused split layout on launch after
+    revert — cleared from ~/.config/LinuxDojo/NodeRelay.conf.
+
+Regressions: none.
+Known issues: same as v0.16.11.
+Next priorities: detachable panes (Halloy-style), self-signed cert
+  fingerprint-pin UI, DCC passive/NAT, in-app update check.
+-->
+
+## v0.16.12 — 2026-06-02
+
+- **Bouncer: Network field hidden for ZNC** — the Network field in the Add/Edit Server dialog now only appears when **Soju** is selected as the bouncer type. For ZNC and None it is hidden, removing a confusing field that does nothing for ZNC users.
+- **Detachable panes on roadmap** — split view re-specced as Halloy-style detachable channel windows: each popped-out pane gets its own input bar, nick list, and topic bar, freely positionable and persistent across sessions.
+- **Fix: stale split layout on launch** — a leftover QSettings entry was restoring the 3-pane splitter layout after the split view code was removed.
+
+---
+
+<!--
 Session summary — 2026-06-01 (emoji size + picker UX)
 
 What was built:
