@@ -2042,7 +2042,8 @@ static QString sysinfoUptime()
 
 void MainWindow::onInputSubmit()
 {
-    const QString text = m_input->text().trimmed();
+    const QString raw  = m_input->text();
+    const QString text = raw.trimmed();
     if (text.isEmpty()) return;
 
     // Push to history (newest first, skip consecutive duplicates)
@@ -2069,14 +2070,15 @@ void MainWindow::onInputSubmit()
         m_model->sendTyping(host, channel, "done");
     }
 
-    dispatchInput(text, host, channel);
+    dispatchInput(raw, host, channel);
 }
 
 void MainWindow::dispatchInput(const QString &text, const QString &host, const QString &channel)
 {
+    const QString trimmed = text.trimmed();
     if (text.startsWith('/')) {
-        const QString cmd  = text.section(' ', 0, 0).toLower();
-        const QString args = text.section(' ', 1);
+        const QString cmd  = trimmed.section(' ', 0, 0).toLower();
+        const QString args = trimmed.section(' ', 1);
 
         if (cmd == "/join") {
             m_model->sendJoin(host, args.section(' ', 0, 0), args.section(' ', 1, 1));
@@ -2348,13 +2350,13 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
         return;
     }
 
-    if (channel == "(server)") return;
+    if (trimmed.isEmpty() || channel == "(server)") return;
 
     // Substitute any remaining :shortcode: patterns before sending
     static const QRegularExpression shortcodeRe(R"(:(\w+):)");
-    QString outText = text;
+    QString outText = trimmed;
     int offset = 0;
-    auto it = shortcodeRe.globalMatch(text);
+    auto it = shortcodeRe.globalMatch(trimmed);
     while (it.hasNext()) {
         const auto m = it.next();
         const QString emoji = emojiByCode().value(m.captured(1));

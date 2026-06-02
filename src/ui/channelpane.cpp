@@ -131,10 +131,10 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     vbox->addWidget(inputBar);
 
     connect(m_input, &QLineEdit::returnPressed, this, [this]{
-        const QString text = m_input->text().trimmed();
-        if (text.isEmpty()) return;
+        const QString raw = m_input->text();
+        if (raw.trimmed().isEmpty()) return;
         m_input->clear();
-        emit inputSubmitted(text);
+        emit inputSubmitted(raw);
     });
 }
 
