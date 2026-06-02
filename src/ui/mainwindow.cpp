@@ -2500,17 +2500,21 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
     const QString host    = item->data(0, Qt::UserRole).toString();
     const QString channel = item->data(0, Qt::UserRole + 1).toString();
 
-    QMenu menu(this);
+    // Heap-allocate and use popup() instead of exec() to avoid a Qt/Wayland
+    // issue where the pending button-release from the triggering click is
+    // delivered into exec()'s event loop, immediately selecting the first item.
+    auto *menu = new QMenu(this);
+    connect(menu, &QMenu::aboutToHide, menu, &QObject::deleteLater);
 
     if (channel == "(server)") {
         auto *sess = m_model->session(host);
         if (sess && sess->connected) {
-            menu.addAction("Disconnect", this, [this, host]{
+            menu->addAction("Disconnect", this, [this, host]{
                 if (auto *cl = m_model->clientFor(host))
                     cl->quit();
             });
         } else {
-            menu.addAction("Reconnect", this, [this, host]{
+            menu->addAction("Reconnect", this, [this, host]{
                 auto *cl = m_model->clientFor(host);
                 if (!cl) return;
                 for (const auto &sc : std::as_const(m_config.servers)) {
@@ -2521,36 +2525,38 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
     } else if (channel.startsWith('#') || channel.startsWith('&')) {
         const QString paneKey = host + "|" + channel.toLower();
         if (!m_panes.contains(paneKey)) {
-            menu.addAction("Open in Pane", this, [this, host, channel]{
+            menu->addAction("Open in Pane", this, [this, host, channel]{
                 openChannelPane(host, channel);
             });
         } else {
-            menu.addAction("Close Pane", this, [this, host, channel]{
+            menu->addAction("Close Pane", this, [this, host, channel]{
                 closeChannelPane(host, channel);
             });
         }
-        menu.addSeparator();
-        menu.addAction("Rejoin", this, [this, host, channel]{
+        menu->addSeparator();
+        menu->addAction("Rejoin", this, [this, host, channel]{
             m_model->sendPart(host, channel);
             QTimer::singleShot(500, this, [this, host, channel]{
                 m_model->sendJoin(host, channel);
             });
         });
-        menu.addAction("Leave", this, [this, host, channel]{
+        menu->addAction("Leave", this, [this, host, channel]{
             m_model->sendPart(host, channel);
         });
-        menu.addAction("Close", this, [this, host, channel]{
+        menu->addAction("Close", this, [this, host, channel]{
             m_model->closeBuffer(host, channel);
         });
     } else if (!channel.isEmpty() && channel != "(server)") {
         // PM / user query
-        menu.addAction("Close Query", this, [this, host, channel]{
+        menu->addAction("Close Query", this, [this, host, channel]{
             m_model->closeBuffer(host, channel);
         });
     }
 
-    if (!menu.actions().isEmpty())
-        menu.exec(m_sidebar->viewport()->mapToGlobal(pos));
+    if (!menu->actions().isEmpty())
+        menu->popup(m_sidebar->viewport()->mapToGlobal(pos));
+    else
+        menu->deleteLater();
 }
 
 // ---------------------------------------------------------------------------
