@@ -25,7 +25,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Persistent Preferences dialog — hamburger now opens a non-modal QDialog; stays open while browsing themes/toggles; replaces dismiss-on-click QMenu
 - [x] Preferences UI rework (v0.9.2) — Manage Servers + Documentation at top; theme as collapsible stay-open list (arrow keys browse, Enter/click applies); App Icon as radio buttons; About removed; Nick Brackets dropdown compact; Enter-triggers-Font-Config bug fixed
 - [x] Hamburger restored as dropdown — ☰ opens About NodeRelay, Documentation, Preferences, Open Config, Reload Config
-- [x] Open Config / Reload Config — Open Config opens config.toml in system editor; Reload Config re-applies all settings from disk without restarting
+- [x] Open Config / Reload Config — Open Config opens config.toml in system editor; Reload Config restarts the app to apply all changes (v0.17.1: changed from partial hot-reload to full restart)
 - [x] Input commands — /join, /j, /part, /nick, /me, /msg, /quote, /raw, /quit, /ping, /invite, /mode, /op, /deop, /voice, /devoice, /ban, /unban, /clear
 - [x] Raw command passthrough — unrecognized /CMD inputs sent directly as raw IRC lines; /REHASH, /SAMODE, /GLOBOPS etc. work without /quote prefix (v0.16.1)
 - [x] System tray — minimize to tray on close, left-click shows window, right-click menu (Show/Quit)

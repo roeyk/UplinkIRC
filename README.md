@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-0.16.0-x86_64.AppImage">
+  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-0.17.1-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.16.0-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.17.1-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.16.0-windows-x64.zip">
+  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.17.1-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.16.0-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.17.1-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -113,7 +113,8 @@
 | **55 built-in themes** | Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and many more. Click the theme button in Preferences to expand a scrollable list — arrow keys browse, Enter or click applies. |
 | **Reworked Preferences** | Manage Servers and Documentation at the top. Theme as a collapsible list. App icon as radio buttons. Hanging indent toggle. |
 | **Hanging indent** | Wrapped messages align past the timestamp+nick column. Toggle from **Preferences → Hanging Indent** or `hanging_indent = true` in config. |
-| **Hamburger menu** | Click ☰ for About, Documentation, Preferences, Open Config (opens `config.toml` in your editor), and Reload Config (applies changes without restarting). |
+| **Hamburger menu** | Click ☰ for About, Documentation, Preferences, Open Config (opens `config.toml` in your editor), and Reload Config (restarts the app to apply all config changes). |
+| **Channel panes** | Right-click any `#channel` in the sidebar → **Open in Pane**. Up to 4 panes total. Each pane has its own chat history, nick list, topic bar (with toggle), and input bar. Auto-layout: 2 = side by side, 3 = primary left + two stacked right, 4 = 2×2 grid. |
 | **Native Windows style** | On Windows, the `windows11` Qt style is used by default. No alien dark theme on fresh installs. Custom themes still available. |
 | **Per-widget font sizes** | Independent size control for chat, sidebar, nick list, topic bar, input, and typing indicator. **Preferences → Font Config...** |
 | **Panel persistence** | Nick panel width saved on quit, restored on relaunch. |

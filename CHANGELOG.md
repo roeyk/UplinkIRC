@@ -3,6 +3,62 @@
 ---
 
 <!--
+Session summary — 2026-06-02 (v0.17.1 — pane topic toggles, Reload Config restart)
+
+What was built:
+  - Per-pane topic bar: ▸/▾ topic oval button in every pane header. Topic
+    bar auto-opens when a pane is created for a channel that has a topic.
+    Clicking the button collapses/expands the topic bar independently per pane.
+  - Primary panel header topic toggle: when panes are open, the primary
+    channel column also gets the same oval topic button in its header.
+    It syncs with Preferences "Show Topic Bar" toggle.
+  - Reload Config now fully restarts the process instead of attempting a
+    partial hot-reload that missed server list, port, and SSL changes.
+  - Doc audit: ircv3.md had netsplit/netjoin, standard-replies, and UTF8ONLY
+    listed under Planned — all three are implemented (v0.16.4-v0.16.8).
+    Moved to Active with accurate descriptions. All Reload Config references
+    updated across howto.html, faq.md, and configuration.md.
+
+Bugs fixed:
+  - Topic bar in pane was hidden by default even when a topic existed.
+  - Primary panel had no topic toggle — users had to use global Preferences.
+  - Reload Config hot-reload missed server-level config changes.
+
+Known issues:
+  - Drag-to-rearrange panes not yet implemented.
+  - Pane layout not persisted across restarts.
+  - Pane input bar: plain text and /me only; other slash commands need
+    the primary input bar.
+  - About dialog slight centering drift on Wayland (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+
+Next priorities:
+  - Drag-to-rearrange panes
+  - Pane layout persistence
+  - Self-signed cert fingerprint-pin UI
+  - DCC passive / NAT traversal
+  - In-app update check UI
+-->
+
+## v0.17.1 — 2026-06-02
+
+### Pane topic toggles
+
+- **Per-pane topic bar** — each channel pane now has a `▸ topic` / `▾ topic` oval button in its header. The topic bar opens automatically when the pane is created if the channel has a topic, and updates live as the topic changes. Click the button to collapse or expand it independently per pane.
+- **Primary panel topic toggle** — when panes are open, the primary channel column gets the same oval topic button in its header. It is independent of the global Preferences toggle and stays in sync if you change the global setting.
+
+### Fixes
+
+- **Fix:** Reload Config now fully restarts NodeRelay, picking up all config changes including server list, ports, channels, and SSL settings. The previous hot-reload missed server-level changes.
+- **Fix:** pane topic bar was hidden by default even when the channel had a topic set.
+
+### Docs
+
+- `ircv3.md` — `netsplit/netjoin`, `standard-replies`, and `UTF8ONLY` corrected from Planned → Active; all implemented since v0.16.4–v0.16.8.
+- All `Reload Config` references updated across `howto.html`, `faq.md`, and `configuration.md`.
+- `howto.html` — panels section and channel panes section updated with topic toggle documentation.
+
+<!--
 Session summary — 2026-06-02 (v0.17.0 — detachable channel panes)
 
 What was built:
