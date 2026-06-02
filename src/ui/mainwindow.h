@@ -144,6 +144,7 @@ private:
     QWidget      *m_rightContent{nullptr};
     QWidget      *m_primaryPanel{nullptr};
     QWidget      *m_primaryHeader{nullptr};
+    QToolButton  *m_primaryTopicBtn{nullptr};
     QLabel       *m_primaryPaneLabel{nullptr};
     QToolButton  *m_primaryCloseBtn{nullptr};
     QListWidget  *m_nickList;

@@ -10,6 +10,7 @@
 #include <QHBoxLayout>
 #include <QScrollBar>
 #include <QFont>
+#include <QSizePolicy>
 
 ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *parent)
     : QWidget(parent), m_host(host), m_channel(channel)
@@ -22,17 +23,26 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     auto *header = new QWidget;
     header->setObjectName("paneHeader");
     auto *hbox = new QHBoxLayout(header);
-    hbox->setContentsMargins(6, 2, 2, 2);
-    hbox->setSpacing(4);
+    hbox->setContentsMargins(6, 3, 4, 3);
+    hbox->setSpacing(6);
 
     m_topicToggle = new QToolButton;
-    m_topicToggle->setText(QStringLiteral("▸ topic"));
-    m_topicToggle->setFixedHeight(18);
-    m_topicToggle->setAutoRaise(true);
+    m_topicToggle->setText(QStringLiteral("▸  topic"));
+    m_topicToggle->setAutoRaise(false);
     m_topicToggle->setCheckable(true);
+    m_topicToggle->setStyleSheet(
+        "QToolButton {"
+        "  border: 1px solid palette(mid);"
+        "  border-radius: 9px;"
+        "  padding: 2px 10px;"
+        "}"
+        "QToolButton:checked {"
+        "  border-color: palette(highlight);"
+        "}"
+    );
     {
         QFont f = m_topicToggle->font();
-        f.setPointSize(11);
+        f.setPointSize(13);
         m_topicToggle->setFont(f);
     }
 
@@ -53,24 +63,31 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     hbox->addWidget(closeBtn);
     vbox->addWidget(header);
 
-    // Topic bar (hidden by default, toggled by button)
+    // Topic bar — auto-sizes to content, scrollable if very long
     m_topicBar = new QWidget;
     m_topicBar->setObjectName("topicDisplay");
+    m_topicBar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     auto *tbhbox = new QHBoxLayout(m_topicBar);
-    tbhbox->setContentsMargins(8, 3, 8, 3);
+    tbhbox->setContentsMargins(8, 4, 8, 4);
     m_topicText = new QLabel;
     m_topicText->setObjectName("topicText");
     m_topicText->setWordWrap(true);
     m_topicText->setTextFormat(Qt::RichText);
     m_topicText->setTextInteractionFlags(Qt::TextBrowserInteraction);
     m_topicText->setOpenExternalLinks(true);
+    m_topicText->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    {
+        QFont f = m_topicText->font();
+        f.setPointSize(qMax(7, f.pointSize() - 1));
+        m_topicText->setFont(f);
+    }
     tbhbox->addWidget(m_topicText);
     m_topicBar->hide();
     vbox->addWidget(m_topicBar);
 
     connect(m_topicToggle, &QToolButton::toggled, this, [this](bool on){
         m_topicBar->setVisible(on);
-        m_topicToggle->setText(on ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
+        m_topicToggle->setText(on ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
     });
 
     // Chat view + nick list
@@ -129,11 +146,10 @@ void ChannelPane::setNick(const QString &nick)
 void ChannelPane::setTopic(const QString &html)
 {
     if (m_topicText) m_topicText->setText(html);
-    // Show topic bar automatically when there is a topic; keep collapsed if empty
     if (m_topicBar && m_topicToggle) {
         const bool hasTopic = !html.isEmpty();
         m_topicToggle->setChecked(hasTopic);
         m_topicBar->setVisible(hasTopic);
-        m_topicToggle->setText(hasTopic ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
+        m_topicToggle->setText(hasTopic ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
     }
 }

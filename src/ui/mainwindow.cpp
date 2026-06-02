@@ -313,6 +313,10 @@ void MainWindow::connectPreferences()
         m_showTopic = on;
         m_config.ui.showTopic = on;
         m_topicDisplay->setVisible(on);
+        if (m_primaryTopicBtn) {
+            m_primaryTopicBtn->setChecked(on);
+            m_primaryTopicBtn->setText(on ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
+        }
         Config::save(m_config, Config::defaultPath());
     });
 
@@ -664,8 +668,34 @@ void MainWindow::setupChatArea()
     auto *primaryHeader = m_primaryHeader;
     {
         auto *hbox = new QHBoxLayout(primaryHeader);
-        hbox->setContentsMargins(6, 2, 2, 2);
-        hbox->setSpacing(4);
+        hbox->setContentsMargins(6, 3, 4, 3);
+        hbox->setSpacing(6);
+
+        m_primaryTopicBtn = new QToolButton;
+        m_primaryTopicBtn->setCheckable(true);
+        m_primaryTopicBtn->setChecked(m_showTopic);
+        m_primaryTopicBtn->setText(m_showTopic ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
+        m_primaryTopicBtn->setAutoRaise(false);
+        m_primaryTopicBtn->setStyleSheet(
+            "QToolButton {"
+            "  border: 1px solid palette(mid);"
+            "  border-radius: 9px;"
+            "  padding: 2px 10px;"
+            "}"
+            "QToolButton:checked {"
+            "  border-color: palette(highlight);"
+            "}"
+        );
+        {
+            QFont f = m_primaryTopicBtn->font();
+            f.setPointSize(13);
+            m_primaryTopicBtn->setFont(f);
+        }
+        connect(m_primaryTopicBtn, &QToolButton::toggled, this, [this](bool on){
+            m_topicDisplay->setVisible(on);
+            m_primaryTopicBtn->setText(on ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
+        });
+
         m_primaryPaneLabel = new QLabel;
         m_primaryPaneLabel->setObjectName("paneChannelLabel");
         {
@@ -673,6 +703,7 @@ void MainWindow::setupChatArea()
             f.setBold(true);
             m_primaryPaneLabel->setFont(f);
         }
+
         m_primaryCloseBtn = new QToolButton;
         m_primaryCloseBtn->setText(QStringLiteral("✕"));
         m_primaryCloseBtn->setFixedSize(18, 18);
@@ -681,6 +712,8 @@ void MainWindow::setupChatArea()
         connect(m_primaryCloseBtn, &QToolButton::clicked, this, [this]{
             m_primaryPanel->hide();
         });
+
+        hbox->addWidget(m_primaryTopicBtn);
         hbox->addWidget(m_primaryPaneLabel, 1);
         hbox->addWidget(m_primaryCloseBtn);
     }
