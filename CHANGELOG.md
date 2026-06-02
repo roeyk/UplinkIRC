@@ -221,6 +221,39 @@ Next priorities: self-signed cert fingerprint-pin, SOCKS5 proxy, DCC passive/NAT
 -->
 
 <!--
+Session summary — 2026-06-01 (emoji size + picker UX)
+
+What was built:
+  - Configurable emoji font size: font_emoji config key (default 16pt); new
+    "Chat Emoji" row in Font Config dialog. Emoji in PRIVMSG/ACTION/NOTICE
+    are wrapped in <span style='font-size:Xpt'> at render time, independent
+    of the chat font. Detection uses isHighSurrogate()/surrogateToUcs4()
+    instead of QRegularExpression — reliable across Qt's UTF-16 strings.
+    Covers U+1F000-U+1FAFF (supplementary plane emoji) and U+2300-U+27BF
+    (BMP misc symbols/dingbats).
+  - Emoji picker Enter key: pressing Enter in the picker's search box commits
+    the first visible emoji, so ":poop: Enter" works without clicking.
+  - README: removed C++17 version label from badge and tagline → "C++".
+
+Bugs fixed:
+  - Emoji not resizing when font_emoji set — original regex approach failed
+    to match surrogate-pair emoji; replaced with character-by-character walk.
+
+Regressions: none.
+Known issues: same as v0.16.9.
+Next priorities: self-signed cert fingerprint-pin, DCC passive/NAT, split view.
+-->
+
+## v0.16.10 — 2026-06-01
+
+- **Configurable emoji size** — emoji in chat messages now render at their own independent font size (`font_emoji`, default `16`pt), separate from the chat font. Useful when using a small chat font — emoji stay readable. Set it in **Preferences → Font Config… → Chat Emoji** or add `font_emoji = 16` to the `[ui]` section of your config.
+- **Emoji picker: Enter to commit** — pressing <kbd>Enter</kbd> in the picker's search box immediately sends the first visible emoji. Type `:poop:` and hit Enter without clicking.
+- **Fix: emoji size not applying** — the initial implementation used a regex that failed to match supplementary-plane emoji (surrogate pairs) in Qt's UTF-16 strings. Replaced with a character-by-character walk using `isHighSurrogate()` / `surrogateToUcs4()`.
+- **README: C++17 → C++** — removed the version label from the badge and tagline.
+
+---
+
+<!--
 Session summary — 2026-06-01 (emoji picker improvements)
 
 What was built:

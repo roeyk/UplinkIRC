@@ -1290,9 +1290,13 @@ channels        = "#linux"</pre>
 :100:       →  💯</pre>
 
     <h3>3. Emoji picker button</h3>
-    <p>Enable the button in config or Preferences, then click 😊 to open a searchable grid of ~400 emoji. The search box accepts plain words or shortcode style — <code>poop</code> and <code>:poop</code> both work.</p>
+    <p>Enable the button in config or Preferences, then click 😊 to open a searchable grid of ~400 emoji. The search box accepts plain words or shortcode style — <code>poop</code> and <code>:poop</code> both work. Press <kbd>Enter</kbd> to commit the first match without clicking.</p>
     <pre>[ui]
 show_emoji_button = true</pre>
+
+    <h3>Emoji size</h3>
+    <p>Emoji in chat are rendered at their own independent font size so they stay readable even if you use a small chat font. The default is 16 pt. Change it in <strong>Preferences → Font Config… → Chat Emoji</strong>, or set it directly in config:</p>
+    <pre>font_emoji = 16   # pt, independent of font_chat</pre>
   </section>
 
   <!-- TAB COMPLETION -->
