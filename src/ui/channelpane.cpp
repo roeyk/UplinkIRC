@@ -155,6 +155,12 @@ void ChannelPane::setNickVisible(bool visible)
     if (m_nickPrefix) m_nickPrefix->setVisible(visible);
 }
 
+void ChannelPane::setInputFont(const QFont &nickFont, const QFont &inputFont)
+{
+    if (m_nickPrefix) m_nickPrefix->setFont(nickFont);
+    if (m_input)      m_input->setFont(inputFont);
+}
+
 void ChannelPane::setTopic(const QString &html)
 {
     if (m_topicText) m_topicText->setText(html);
