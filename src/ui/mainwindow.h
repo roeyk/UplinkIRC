@@ -93,6 +93,7 @@ private:
     void openChannelPane (const QString &host, const QString &channel);
     void closeChannelPane(const QString &host, const QString &channel);
     ChannelPane *paneAt(const QPoint &globalPos) const;
+    bool         isOverPrimary(const QPoint &globalPos) const;
     void refreshPaneChatView(ChannelPane *pane);
     void refreshPaneNickList(ChannelPane *pane);
     void rebuildPaneLayout();
@@ -158,6 +159,7 @@ private:
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
     QList<ChannelPane*>          m_orderedPanes; // insertion order for layout
     ChannelPane                 *m_dragHighlighted{nullptr};
+    int                          m_primarySlot{0}; // position of primary panel in layout order
     QTimer       *m_gearTimer{nullptr};
     int           m_gearAngle{0};
     bool          m_nickExpanded{true};

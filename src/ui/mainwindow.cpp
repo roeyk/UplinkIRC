@@ -2519,13 +2519,26 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
             m_dragHighlighted = nullptr;
         }
         ChannelPane *source = m_panes.value(sourceKey);
+        if (!source) return;
         ChannelPane *target = paneAt(gp);
-        if (!source || !target || source == target) return;
-        const int fromIdx = m_orderedPanes.indexOf(source);
-        const int toIdx   = m_orderedPanes.indexOf(target);
-        if (fromIdx < 0 || toIdx < 0) return;
-        m_orderedPanes.swapItemsAt(fromIdx, toIdx);
-        rebuildPaneLayout();
+        if (target && target != source) {
+            // pane ↔ pane swap
+            const int fromIdx = m_orderedPanes.indexOf(source);
+            const int toIdx   = m_orderedPanes.indexOf(target);
+            if (fromIdx >= 0 && toIdx >= 0) {
+                m_orderedPanes.swapItemsAt(fromIdx, toIdx);
+                rebuildPaneLayout();
+            }
+        } else if (!target && isOverPrimary(gp)) {
+            // pane ↔ primary swap: move primary to source's old slot
+            const int srcIdx  = m_orderedPanes.indexOf(source);
+            if (srcIdx >= 0) {
+                // combined slot of source (accounts for primary's current position)
+                const int paneSlot = srcIdx < m_primarySlot ? srcIdx : srcIdx + 1;
+                m_primarySlot = paneSlot;
+                rebuildPaneLayout();
+            }
+        }
     });
 
     m_panes[key] = pane;
@@ -2548,6 +2561,16 @@ ChannelPane *MainWindow::paneAt(const QPoint &globalPos) const
     return nullptr;
 }
 
+bool MainWindow::isOverPrimary(const QPoint &globalPos) const
+{
+    QWidget *w = QApplication::widgetAt(globalPos);
+    while (w) {
+        if (w == m_primaryPanel) return true;
+        w = w->parentWidget();
+    }
+    return false;
+}
+
 void MainWindow::closeChannelPane(const QString &host, const QString &channel)
 {
     const QString key = host + "|" + channel.toLower();
@@ -2555,6 +2578,7 @@ void MainWindow::closeChannelPane(const QString &host, const QString &channel)
     if (!pane) return;
 
     m_orderedPanes.removeOne(pane);
+    m_primarySlot = qMin(m_primarySlot, (int)m_orderedPanes.size());
     pane->setParent(nullptr); // detach before rebuild
     pane->deleteLater();
 
@@ -2568,11 +2592,16 @@ void MainWindow::closeChannelPane(const QString &host, const QString &channel)
 
 void MainWindow::rebuildPaneLayout()
 {
-    // Collect widgets in display order: primary first, then panes
+    // Collect widgets in display order, inserting primary at m_primarySlot.
     QList<QWidget*> widgets;
-    widgets.append(m_primaryPanel);
-    for (auto *p : std::as_const(m_orderedPanes))
-        widgets.append(p);
+    int pi = 0;
+    const int nSlots = 1 + m_orderedPanes.size();
+    for (int i = 0; i < nSlots; i++) {
+        if (i == m_primarySlot)
+            widgets.append(m_primaryPanel);
+        else
+            widgets.append(m_orderedPanes[pi++]);
+    }
 
     // Detach all pane widgets from wherever they currently live
     for (auto *w : std::as_const(widgets))
