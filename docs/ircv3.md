@@ -173,6 +173,51 @@ When negotiated, the server attaches an `account` tag to every message sent by a
 - The nick list account data is also kept current, so both tooltips always show the same value.
 - If a user is not authenticated with services, no `account` tag is sent and no tooltip appears.
 
+### `netsplit` / `netjoin` batch types
+
+When a netsplit occurs, the server wraps the resulting flood of QUITs in a `BATCH` of type `netsplit`. When the servers reconnect, the resulting flood of JOINs arrives in a `BATCH` of type `netjoin`.
+
+NodeRelay collapses both into a single status line per affected channel instead of flooding the buffer. Nick lists remain accurate — nicks are removed and re-added correctly.
+
+**Example output:**
+
+```
+-- Netsplit: 47 users lost (irc1.example.com irc2.example.com)
+-- Netjoin: 47 users returned (irc1.example.com irc2.example.com)
+```
+
+Without this, a busy network split would print one quit line per user — often hundreds — making the channel unreadable.
+
+### `standard-replies`
+
+A structured format for servers to send machine-readable diagnostics using three commands:
+
+| Command | Meaning | NodeRelay display |
+|---|---|---|
+| `FAIL` | A command the client sent failed | Red error line in the relevant buffer |
+| `WARN` | A non-fatal warning | Server info line |
+| `NOTE` | Informational server message | Server info line |
+
+Format: `FAIL <triggered-by-command> <code> [context...] :<description>`
+
+NodeRelay routes each reply to the most relevant buffer:
+- If a channel name appears in the context parameters, the message goes to that channel's buffer.
+- Otherwise it goes to the active channel, or the server buffer if no channel is active.
+
+**Example output:**
+
+```
+[FAIL] JOIN CHANNEL_BANNED: You are banned from that channel
+[WARN] PRIVMSG RATE_LIMITED: You are sending messages too quickly
+[NOTE] * SESSION_EXPIRY: Your session will expire in 5 minutes
+```
+
+The `[FAIL]` / `[WARN]` / `[NOTE]` prefix lets you tell them apart at a glance.
+
+### `UTF8ONLY`
+
+An ISUPPORT token (not a CAP) that signals the server only accepts UTF-8 encoded traffic. NodeRelay detects it in the `005 RPL_ISUPPORT` parameters, sets an internal flag, and posts a status line to the server buffer: `UTF8ONLY: server enforces UTF-8 encoding`. Non-UTF-8 input is not blocked client-side, but the server will reject it.
+
 ---
 
 ## Bouncer capabilities
@@ -218,51 +263,6 @@ Notifies the client if the server gains or loses capabilities after the initial 
 ### `draft/multiline`
 
 Allows composing and sending messages that span multiple lines, delivered to clients as a `batch` of type `draft/multiline`. Useful for pastes and structured content.
-
-### `netsplit` / `netjoin` batch types
-
-When a netsplit occurs, the server wraps the resulting flood of QUITs in a `BATCH` of type `netsplit`. When the servers reconnect, the resulting flood of JOINs arrives in a `BATCH` of type `netjoin`.
-
-NodeRelay collapses both into a single status line per affected channel instead of flooding the buffer. Nick lists remain accurate — nicks are removed and re-added correctly.
-
-**Example output:**
-
-```
--- Netsplit: 47 users lost (irc1.example.com irc2.example.com)
--- Netjoin: 47 users returned (irc1.example.com irc2.example.com)
-```
-
-Without this, a busy network split would print one quit line per user — often hundreds — making the channel unreadable.
-
-### `standard-replies`
-
-A structured format for servers to send machine-readable diagnostics using three commands:
-
-| Command | Meaning | NodeRelay display |
-|---|---|---|
-| `FAIL` | A command the client sent failed | Red error line in the relevant buffer |
-| `WARN` | A non-fatal warning | Server info line |
-| `NOTE` | Informational server message | Server info line |
-
-Format: `FAIL <triggered-by-command> <code> [context...] :<description>`
-
-NodeRelay routes each reply to the most relevant buffer:
-- If a channel name appears in the context parameters, the message goes to that channel's buffer.
-- Otherwise it goes to the active channel, or the server buffer if no channel is active.
-
-**Example output:**
-
-```
-[FAIL] JOIN CHANNEL_BANNED: You are banned from that channel
-[WARN] PRIVMSG RATE_LIMITED: You are sending messages too quickly
-[NOTE] * SESSION_EXPIRY: Your session will expire in 5 minutes
-```
-
-The `[FAIL]` / `[WARN]` / `[NOTE]` prefix lets you tell them apart at a glance.
-
-### `UTF8ONLY`
-
-An ISUPPORT token that signals the server only accepts UTF-8 encoded traffic. Allows the client to enforce UTF-8 encoding and warn the user if their input contains non-UTF-8 bytes.
 
 ### WebSocket transport
 

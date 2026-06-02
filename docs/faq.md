@@ -84,7 +84,7 @@ ls -l ~/.config/noderelay/config.toml
 
 ### My config change isn't taking effect
 
-Edit `config.toml`, then click **☰ → Reload Config** to apply changes without restarting. Channel list changes take effect on the next reconnect. For all other settings (theme, fonts, toggles) they apply immediately.
+Edit `config.toml`, then click **☰ → Reload Config** — NodeRelay restarts immediately and picks up all changes, including server list, channels, theme, and any other settings.
 
 ### TOML parse error on startup
 
@@ -321,12 +321,15 @@ Click the ⚙ button in the **header above the user list** (right side of the wi
 
 ### How do I show the channel topic?
 
-The info bar at the top of the chat area always shows `#channel (modes) * NetworkName — N users`. To see the actual channel topic text, click ☰ to open **Preferences** and check **Show Topic Bar** — a topic line will drop down below the info bar. You can also set it in config:
+The info bar at the top of the chat area always shows `#channel (modes) * NetworkName — N users`. To see the actual channel topic text:
 
-```toml
-[ui]
-show_topic = true
-```
+- **Global toggle:** click ☰ → **Preferences** → check **Show Topic Bar**. Or set in config:
+  ```toml
+  [ui]
+  show_topic = true
+  ```
+- **Per pane:** each channel pane has a **▸ topic / ▾ topic** oval button in its header — click it to show or hide that pane's topic independently. The topic opens automatically when you open a pane for a channel that has a topic.
+- **Primary column:** when panes are open, the primary channel's header also gets the same oval topic button.
 
 ### How do I hide my nick next to the input box?
 

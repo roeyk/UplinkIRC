@@ -609,7 +609,7 @@ cmake --build build</pre>
     <p>To open the hamburger menu (the <code>☰</code> button in the top-left), click it to reach Preferences, Documentation, and other settings.</p>
 
     <div class="tip">
-      <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>☰ → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>☰ → Reload Config</strong>.
+      <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>☰ → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>☰ → Reload Config</strong> — NodeRelay will restart and connect.
     </div>
   </section>
 
@@ -627,7 +627,7 @@ cmake --build build</pre>
       <tr><td>Windows</td><td><code>%USERPROFILE%\.config\noderelay\config.toml</code></td></tr>
     </table>
 
-    <p>Edit the file in any text editor. To apply changes without restarting, click <strong>☰ → Reload Config</strong>. You can also click <strong>☰ → Open Config</strong> to open the file in your system editor directly from NodeRelay.</p>
+    <p>Edit the file in any text editor. To apply changes, click <strong>☰ → Reload Config</strong> — NodeRelay restarts automatically and picks up all changes. You can also click <strong>☰ → Open Config</strong> to open the file in your system editor directly from NodeRelay.</p>
   </section>
 
   <!-- SET NICK -->
@@ -645,7 +645,7 @@ user = "uplink"
 realname = "NodeRelay User"
 channels = "#uplink"</pre>
 
-    <p>Save, then click <strong>☰ → Reload Config</strong>. The new nick takes effect on the next connect. To change your nick while already connected, type <code>/nick yournewnick</code> in the input box.</p>
+    <p>Save, then click <strong>☰ → Reload Config</strong> — NodeRelay restarts and reconnects with the new nick. To change your nick while already connected without restarting, type <code>/nick yournewnick</code> in the input box.</p>
   </section>
 
   <!-- CONNECT LINUXDOJO -->
@@ -663,7 +663,7 @@ user     = "uplink"
 realname = "NodeRelay User"
 channels = "#uplink"</pre>
 
-    <p>Click <strong>☰ → Reload Config</strong>, or restart NodeRelay. The server appears in the sidebar and connects automatically.</p>
+    <p>Click <strong>☰ → Reload Config</strong> — NodeRelay restarts and the server appears in the sidebar and connects automatically.</p>
   </section>
 
   <!-- CONNECT ANY -->
@@ -1154,7 +1154,12 @@ channels        = "#debian"</pre>
     <p>You can also right-click the channel in the sidebar and choose <strong>Close Pane</strong>.</p>
 
     <h3>Primary column header</h3>
-    <p>When at least one extra pane is open, the primary (left) channel also gains a header bar with a <code>✕</code> button. Clicking it collapses the primary column — handy if you want the extra panes to fill the whole screen. Click any channel in the sidebar to bring the primary column back.</p>
+    <p>When at least one extra pane is open, the primary (left) channel also gains a header bar matching the pane headers. It contains:</p>
+    <ul>
+      <li>A <strong>▸ topic / ▾ topic</strong> oval button — click to show or hide the primary channel's topic text independently of the global Preferences setting.</li>
+      <li>The current channel name in bold.</li>
+      <li>A <code>✕</code> button — collapses the primary column so the panes fill the screen. Click any channel in the sidebar to bring it back.</li>
+    </ul>
 
     <h3>Limits and notes</h3>
     <ul>
@@ -1749,10 +1754,14 @@ nick_brackets = "[]"   # square brackets</pre>
     <p>Drag the divider between the chat and the nick panel to resize it. Width is saved on quit.</p>
 
     <h3>Topic display</h3>
-    <p>A second text bar showing the full channel topic can be toggled:</p>
+    <p>A text bar showing the full channel topic drops below the info bar. Toggle it three ways:</p>
+    <ul>
+      <li><strong>Globally</strong> — <strong>☰ → Preferences → Show Topic Bar</strong>, or set <code>show_topic = true</code> in config. Applies to the main channel view.</li>
+      <li><strong>Per pane</strong> — each channel pane has a <strong>▸ topic / ▾ topic</strong> oval button in its header. Click to show or hide that pane's topic independently. The topic bar appears automatically when a pane first opens if the channel has a topic set.</li>
+      <li><strong>Primary column header</strong> — when panes are open, the same oval topic button appears in the primary channel's header. It is independent of the global Preferences toggle.</li>
+    </ul>
     <pre>[ui]
-show_topic = true   # drops a topic line below the info bar</pre>
-    <p>Or toggle live from <strong>☰ → Preferences → Show Topic Bar</strong>.</p>
+show_topic = true   # global default — applies to primary channel view on launch</pre>
 
     <h3>Nick label in input box</h3>
     <pre>[ui]
@@ -1853,7 +1862,7 @@ name = "LinuxDojo"
 name = "LinuxDojo"</pre>
 
     <h3>My config change isn't taking effect</h3>
-    <p>Click <strong>☰ → Reload Config</strong>. Channel list changes take effect on the next reconnect — right-click the server in the sidebar and choose <strong>Reconnect</strong>.</p>
+    <p>Click <strong>☰ → Reload Config</strong> — NodeRelay restarts and applies all changes, including server list, channels, theme, and font settings.</p>
   </section>
 
   <section id="ts-nick">

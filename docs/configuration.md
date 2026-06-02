@@ -15,7 +15,7 @@ NodeRelay is configured with a single TOML file. On first launch it is created a
 You can edit the file directly, or use the in-app tools under ☰:
 
 - **Open Config** — opens `config.toml` in your system's default text editor
-- **Reload Config** — re-applies all settings from disk without restarting (useful after a manual edit)
+- **Reload Config** — restarts NodeRelay immediately, picking up all config changes (useful after a manual edit)
 - **Preferences** — GUI for themes, font sizes, UI toggles, and server management; changes are saved automatically
 
 ---
