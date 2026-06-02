@@ -2501,6 +2501,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     m_panes[key] = pane;
     m_orderedPanes.append(pane);
     m_primaryHeader->setVisible(true);
+    m_primaryCloseBtn->setVisible(true);
 
     rebuildPaneLayout();
     refreshPaneChatView(pane);
