@@ -11,6 +11,13 @@
 #include <QScrollBar>
 #include <QFont>
 #include <QSizePolicy>
+#include <QApplication>
+#include <QDrag>
+#include <QMimeData>
+#include <QMouseEvent>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
 
 ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *parent)
     : QWidget(parent), m_host(host), m_channel(channel)
@@ -20,9 +27,10 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     vbox->setSpacing(0);
 
     // Header: topic toggle + channel name + close button
-    auto *header = new QWidget;
-    header->setObjectName("paneHeader");
-    auto *hbox = new QHBoxLayout(header);
+    m_header = new QWidget;
+    m_header->setObjectName("paneHeader");
+    m_header->installEventFilter(this);
+    auto *hbox = new QHBoxLayout(m_header);
     hbox->setContentsMargins(6, 3, 4, 3);
     hbox->setSpacing(6);
 
@@ -61,7 +69,7 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     hbox->addWidget(m_topicToggle);
     hbox->addWidget(nameLabel, 1);
     hbox->addWidget(closeBtn);
-    vbox->addWidget(header);
+    vbox->addWidget(m_header);
 
     // Topic bar — auto-sizes to content, scrollable if very long
     m_topicBar = new QWidget;
@@ -136,6 +144,8 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
         m_input->clear();
         emit inputSubmitted(raw);
     });
+
+    setAcceptDrops(true);
 }
 
 void ChannelPane::setNick(const QString &nick)
@@ -152,4 +162,49 @@ void ChannelPane::setTopic(const QString &html)
         m_topicBar->setVisible(hasTopic);
         m_topicToggle->setText(hasTopic ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
     }
+}
+
+// ---------------------------------------------------------------------------
+// Drag-to-rearrange: drag from header, drop onto another pane
+// ---------------------------------------------------------------------------
+
+bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj != m_header) return false;
+    if (event->type() == QEvent::MouseButtonPress) {
+        auto *me = static_cast<QMouseEvent *>(event);
+        if (me->button() == Qt::LeftButton)
+            m_dragStartPos = me->pos();
+    } else if (event->type() == QEvent::MouseMove) {
+        auto *me = static_cast<QMouseEvent *>(event);
+        if (!(me->buttons() & Qt::LeftButton)) return false;
+        if ((me->pos() - m_dragStartPos).manhattanLength() < QApplication::startDragDistance())
+            return false;
+        auto *drag = new QDrag(this);
+        auto *mime = new QMimeData;
+        mime->setText(key());
+        drag->setMimeData(mime);
+        drag->exec(Qt::MoveAction);
+        return true;
+    }
+    return false;
+}
+
+void ChannelPane::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (!e->mimeData()->hasText() || e->mimeData()->text() == key()) return;
+    e->acceptProposedAction();
+    m_header->setStyleSheet("background: palette(highlight);");
+}
+
+void ChannelPane::dragLeaveEvent(QDragLeaveEvent *)
+{
+    m_header->setStyleSheet({});
+}
+
+void ChannelPane::dropEvent(QDropEvent *e)
+{
+    m_header->setStyleSheet({});
+    emit dropReceived(e->mimeData()->text());
+    e->acceptProposedAction();
 }

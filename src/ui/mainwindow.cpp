@@ -2501,6 +2501,15 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     connect(pane, &ChannelPane::inputSubmitted, this, [this, host, channel](const QString &text){
         dispatchInput(text, host, channel);
     });
+    connect(pane, &ChannelPane::dropReceived, this, [this, pane](const QString &sourceKey){
+        ChannelPane *source = m_panes.value(sourceKey);
+        if (!source || source == pane) return;
+        const int fromIdx = m_orderedPanes.indexOf(source);
+        const int toIdx   = m_orderedPanes.indexOf(pane);
+        if (fromIdx < 0 || toIdx < 0) return;
+        m_orderedPanes.swapItemsAt(fromIdx, toIdx);
+        rebuildPaneLayout();
+    });
 
     m_panes[key] = pane;
     m_orderedPanes.append(pane);
