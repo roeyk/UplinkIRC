@@ -2773,10 +2773,11 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
         if (!msg.msgid.isEmpty()) {
             auto rxIt = ch->reactions.constFind(msg.msgid);
             if (rxIt != ch->reactions.constEnd()) {
-                QString rxHtml = QStringLiteral("<span style='font-size:small; color:#888;'>");
+                const int ept = m_config.ui.fontSizes.emoji;
+                QString rxHtml = QString("<span style='font-size:%1pt; color:#888;'>").arg(ept);
                 for (auto it = rxIt->constBegin(); it != rxIt->constEnd(); ++it) {
                     rxHtml += it.key()
-                              + QStringLiteral("<span style='font-size:x-small'>(")
+                              + QStringLiteral("<span style='font-size:8pt'>(")
                               + QString::number(it.value().size())
                               + QStringLiteral(")</span> ");
                 }
@@ -3013,10 +3014,11 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
         if (!msg.msgid.isEmpty()) {
             auto rxIt = ch->reactions.constFind(msg.msgid);
             if (rxIt != ch->reactions.constEnd()) {
-                QString rxHtml = QStringLiteral("<span style='font-size:small; color:#888;'>");
+                const int ept = m_config.ui.fontSizes.emoji;
+                QString rxHtml = QString("<span style='font-size:%1pt; color:#888;'>").arg(ept);
                 for (auto it = rxIt->constBegin(); it != rxIt->constEnd(); ++it) {
                     rxHtml += it.key()
-                              + QStringLiteral("<span style='font-size:x-small'>(")
+                              + QStringLiteral("<span style='font-size:8pt'>(")
                               + QString::number(it.value().size())
                               + QStringLiteral(")</span> ");
                 }
