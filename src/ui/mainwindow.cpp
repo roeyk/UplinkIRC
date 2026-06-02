@@ -1262,6 +1262,82 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         return false;
     }
 
+    // Pane chat view viewports — ContextMenu only (no hover/link preview in panes)
+    for (auto *p : std::as_const(m_orderedPanes)) {
+        if (obj != p->chatView()->viewport()) continue;
+        if (event->type() != QEvent::ContextMenu) return false;
+        auto *ce           = static_cast<QContextMenuEvent *>(event);
+        const QString anch = p->chatView()->anchorAt(ce->pos());
+        const QPoint gp    = ce->globalPos();
+        const QString host = p->host();
+        const QString chan  = p->channel();
+
+        if (anch.startsWith("nick:")) {
+            showNickContextMenu(anch.mid(5), gp);
+            return true;
+        }
+        if (anch.startsWith("msgid:")) {
+            const QString msgid = anch.mid(6);
+            QMenu menu(p->chatView()->viewport());
+            connect(menu.addAction("Reply"), &QAction::triggered, this,
+                    [this, msgid, host, chan]{
+                auto *ch = m_model->channel(host, chan);
+                QString nick;
+                if (ch) for (const auto &m : std::as_const(ch->messages))
+                    if (m.msgid == msgid) { nick = m.nick; break; }
+                m_pendingReplyMsgid = msgid;
+                if (m_replyLabel) m_replyLabel->setText("↩ " + (nick.isEmpty() ? msgid : nick));
+                if (m_replyBar)   m_replyBar->show();
+                if (m_input)      m_input->setFocus();
+            });
+            connect(menu.addAction("React"), &QAction::triggered, this,
+                    [this, msgid, host, chan, gp]{
+                m_pendingReactMsgid = msgid; m_pendingReactHost = host;
+                m_pendingReactChannel = chan; m_emojiPicker->showAt(gp);
+            });
+            auto *cl = m_model->clientFor(host);
+            auto *ch = m_model->channel(host, chan);
+            if (cl && cl->hasCap("draft/message-redaction") && ch) {
+                QString msgNick;
+                for (const auto &m : std::as_const(ch->messages))
+                    if (m.msgid == msgid) { msgNick = m.nick; break; }
+                if (msgNick == m_model->selfNick(host))
+                    connect(menu.addAction("Delete"), &QAction::triggered, this,
+                            [this, host, chan, msgid]{
+                        m_model->sendRedact(host, chan, msgid, "deleted");
+                    });
+            }
+            menu.exec(gp);
+            return true;
+        }
+        if (p->chatView()->textCursor().hasSelection()) {
+            QMenu menu(p->chatView()->viewport());
+            connect(menu.addAction("Copy"), &QAction::triggered, this,
+                    [p]{ p->chatView()->copy(); });
+            QString foundMsgid;
+            const QTextBlock blk = p->chatView()->cursorForPosition(ce->pos()).block();
+            for (auto it = blk.begin(); !it.atEnd(); ++it) {
+                const QString href = it.fragment().charFormat().anchorHref();
+                if (href.startsWith("msgid:")) { foundMsgid = href.mid(6); break; }
+            }
+            if (!foundMsgid.isEmpty())
+                connect(menu.addAction("Reply"), &QAction::triggered, this,
+                        [this, foundMsgid, host, chan]{
+                    auto *ch = m_model->channel(host, chan);
+                    QString nick;
+                    if (ch) for (const auto &m : std::as_const(ch->messages))
+                        if (m.msgid == foundMsgid) { nick = m.nick; break; }
+                    m_pendingReplyMsgid = foundMsgid;
+                    if (m_replyLabel) m_replyLabel->setText("↩ " + (nick.isEmpty() ? foundMsgid : nick));
+                    if (m_replyBar)   m_replyBar->show();
+                    if (m_input)      m_input->setFocus();
+                });
+            menu.exec(gp);
+            return true;
+        }
+        return false;
+    }
+
     if (obj == m_chatView && event->type() == QEvent::Resize) {
         repositionTypingLabel();
         return false;
@@ -2491,6 +2567,8 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     if (m_theme.valid)
         pane->chatView()->document()->setDefaultStyleSheet(
             QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
+
+    pane->chatView()->viewport()->installEventFilter(this);
 
     if (auto *sess = m_model->session(host))
         pane->setNick(sess->nick);
