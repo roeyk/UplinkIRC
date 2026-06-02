@@ -3,6 +3,59 @@
 ---
 
 <!--
+Session summary — 2026-06-02 (v0.18.1 — pane polish and bug fixes)
+
+What was built / fixed:
+  - Topic toggle button: removed forced 13pt font, reduced padding (1px 5px),
+    reduced border-radius (4px), added background:transparent to override
+    global QSS sidebarBg fill. Text changed from "▸  topic" to "▸ topic".
+    Applied to both ChannelPane and primary panel header.
+  - Close buttons: replaced setAutoRaise(true) with explicit inline stylesheet
+    (background:transparent; border:none) so global QSS doesn't show a colored
+    box behind the ✕. Hover highlights with palette(highlight).
+  - Pane nick prefix: panes now call setNickVisible(m_showNickPrefix) on open;
+    nickPrefixToggled in Preferences propagates to all open panes.
+  - Pane input font: setInputFont() method on ChannelPane; called in
+    openChannelPane and at end of applyFontSizes() for all open panes.
+  - Pane context menu: installEventFilter on pane chatView()->viewport() in
+    openChannelPane; eventFilter pane viewport loop handles ContextMenu events
+    with same nick/msgid/selection/Copy/Reply/React/Delete logic as primary view.
+  - Sidebar left-click opens pane (Wayland bug): QMenu::exec() in
+    onSidebarContextMenu was receiving the pending button-release from the
+    triggering click in its event loop, immediately activating "Open in Pane"
+    (the first menu item at cursor position). Fixed by switching to heap-allocated
+    QMenu with popup() which is non-blocking.
+  - Reaction emoji size: reactions used font-size:small (relative, tracks chat
+    font). Fixed to use m_config.ui.fontSizes.emoji pt. Count uses fixed 8pt.
+
+Bugs NOT yet fixed:
+  - About dialog slight centering drift on Wayland (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+  - Self-signed cert fingerprint-pin UI not yet built.
+  - Pane layout not persisted across restarts.
+
+Next priorities:
+  - Pane layout persistence
+  - Self-signed cert fingerprint-pin UI
+  - DCC passive / NAT traversal
+  - In-app update check UI
+-->
+
+## v0.18.1 — 2026-06-02
+
+### Fixes
+
+- **Fix:** Topic toggle button no longer appears oversized — removed forced 13pt font, reduced padding and border-radius, added transparent background so the global theme style doesn't fill it.
+- **Fix:** Close buttons (✕) in pane and primary headers no longer show a colored background box — explicit `background: transparent; border: none` overrides the global QToolButton style.
+- **Fix:** Panes now respect the **Show Nick in Input** setting on open and when toggled from Preferences.
+- **Fix:** Pane input bars now use the configured font size instead of the application default.
+- **Fix:** Right-clicking a timestamp in a pane chat view now shows the full context menu (Reply, React, Delete, Copy) — previously showed the default QTextBrowser menu.
+- **Fix:** Left-clicking a channel in the sidebar was immediately opening it in a pane on Wayland. Root cause: `QMenu::exec()` received the pending button-release from the triggering click in its synchronous event loop, activating "Open in Pane" (the first item, at cursor position) before the user could see the menu. Fixed by switching to `QMenu::popup()`.
+- **Fix:** Reaction emoji now renders at the configured `font_emoji` size (default 16pt) instead of the relative CSS `font-size:small` which tracked the chat font size.
+
+---
+
+<!--
 Session summary — 2026-06-02 (v0.17.1 — pane topic toggles, Reload Config restart, primary X button)
 
 What was built:
