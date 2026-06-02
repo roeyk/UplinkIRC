@@ -84,6 +84,10 @@ private:
     void refreshNickList(const QString &host, const QString &channel);
     void refreshTopicBar(const QString &host, const QString &channel);
     void appendMessage  (const Message &msg, bool autoPreview = false);
+    void renderMessage  (QTextBrowser *view, const Message &msg);
+    void openSplitPane  (const QString &host, const QString &channel);
+    void closeSplitPane ();
+    void refreshSplitView();
     void applyFontSizes();
     void updateTypingLabel();
     void applyAppIcon(const QString &choice);
@@ -140,6 +144,11 @@ private:
     QLabel       *m_nickCountLabel{nullptr};
     QToolButton  *m_nickToggleBtn{nullptr};
     QSplitter    *m_chatSplitter{nullptr};
+    QTextBrowser *m_splitView{nullptr};
+    QWidget      *m_splitContainer{nullptr};
+    QLabel       *m_splitLabel{nullptr};
+    QString       m_splitHost;
+    QString       m_splitChannel;
     QTimer       *m_gearTimer{nullptr};
     int           m_gearAngle{0};
     bool          m_nickExpanded{true};
