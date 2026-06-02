@@ -176,7 +176,7 @@ cmake --build build
 ./build/NodeRelay
 ```
 
-The `themes/` folder is copied next to the binary by CMake automatically.
+On first launch NodeRelay creates `~/.config/noderelay/themes/` and seeds it with all bundled themes automatically.
 
 ### Install dependencies first
 

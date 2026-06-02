@@ -592,7 +592,7 @@ cd NodeRelay
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build</pre>
 
-    <p>The binary is at <code>build/NodeRelay</code> (or <code>build\NodeRelay.exe</code> on Windows). Run it from there — the <code>themes/</code> folder is copied next to the binary automatically.</p>
+    <p>The binary is at <code>build/NodeRelay</code> (or <code>build\NodeRelay.exe</code> on Windows). Run it directly — on first launch NodeRelay creates <code>~/.config/noderelay/themes/</code> and seeds it with all bundled themes automatically.</p>
 
     <div class="note">
       <strong>macOS:</strong> after building, run <code>cmake --install build</code> to produce a proper <code>.app</code> bundle, or launch <code>build/NodeRelay.app/Contents/MacOS/NodeRelay</code> directly.
@@ -1146,6 +1146,9 @@ channels        = "#debian"</pre>
     </table>
     <p>The splitter handles between panes are draggable so you can resize any column or row to suit your screen.</p>
 
+    <h3>Rearranging panes</h3>
+    <p>Click and drag any pane's header bar to swap it with another pane. Drop it on the header of any other pane — or on the primary channel area — to swap their positions. The layout rebuilds instantly without losing any content.</p>
+
     <h3>Per-pane topic bar</h3>
     <p>Each pane has a header bar showing the channel name. Click the <code>▾</code> toggle button on the left of the header to show or hide the channel topic below it. The topic updates live whenever it changes on the server.</p>
 
@@ -1166,7 +1169,7 @@ channels        = "#debian"</pre>
       <li>Maximum 4 panes total (1 primary + 3 extras).</li>
       <li>The same channel cannot appear in both the primary view and a pane simultaneously. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically.</li>
       <li>Left-clicking a channel that is open in a pane navigates the primary to it and closes the pane.</li>
-      <li>The pane input bar sends plain text and <code>/me</code> actions. Other slash commands should be typed in the primary input bar.</li>
+      <li>All slash commands work in pane input bars — <code>/join</code>, <code>/nick</code>, <code>/me</code>, and every other command behave the same as in the primary input bar.</li>
     </ul>
   </section>
 
@@ -1875,13 +1878,12 @@ name = "LinuxDojo"</pre>
 
   <section id="ts-themes">
     <h2>Troubleshooting — Theme not loading</h2>
-    <p>The <code>themes/</code> folder must be in the same directory as the <code>NodeRelay</code> binary. If you moved the binary, copy the folder back:</p>
-    <pre>cp -r themes/ /path/to/NodeRelay/</pre>
-    <p>If you built with CMake from the project root, CMake copies the themes folder automatically. Check that <code>build/themes/</code> exists and contains <code>.toml</code> files.</p>
+    <p>NodeRelay stores themes in <code>~/.config/noderelay/themes/</code> and seeds that folder with all bundled themes on first launch. If themes are missing, delete the folder and restart — it will be recreated and repopulated automatically.</p>
     <p>Theme names are case-sensitive and must match the <code>.toml</code> filename exactly (without the extension):</p>
     <pre>[ui]
-theme = "catppuccin-mocha"   # ✓ matches themes/catppuccin-mocha.toml
+theme = "catppuccin-mocha"   # ✓ matches catppuccin-mocha.toml
 theme = "Catppuccin-Mocha"   # ✗ won't load — wrong case</pre>
+    <p>To restore a theme you deleted, copy it back from the release tarball's <code>themes/</code> directory, or from a fresh install.</p>
   </section>
 
   <section id="ts-previews">

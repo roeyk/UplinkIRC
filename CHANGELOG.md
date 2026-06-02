@@ -42,6 +42,23 @@ Next priorities:
   - In-app update check UI
 -->
 
+## v0.18.0 — 2026-06-02
+
+### Pane drag-to-rearrange
+
+- **Drag pane headers to reorder** — click and drag any pane's header bar to swap it with another pane. Drop it on any other pane header (or on the primary channel panel) to swap their positions. The layout rebuilds instantly. All configurations are supported: 2-pane side-by-side, 3-pane, and 4-pane 2×2 grid.
+
+### Themes
+
+- **Themes seeded on first launch** — NodeRelay now creates `~/.config/noderelay/themes/` on first run and copies all 55 bundled themes there. The burger menu theme list reads from this directory. Themes you delete stay deleted across restarts. Custom themes can be added by dropping `.toml` files into that folder.
+
+### Fixes
+
+- **Fix:** Slash commands now work from pane input bars — `/j`, `/join`, `/nick`, `/me`, and all other commands work the same in any pane as they do in the primary input bar.
+- **Fix:** A message beginning with a space followed by `/` (e.g. ` /version`) is now sent as plain text instead of being dispatched as a command. Only input whose very first character is `/` triggers a command.
+
+---
+
 ## v0.17.1 — 2026-06-02
 
 ### Pane topic toggles
