@@ -26,11 +26,15 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     hbox->setSpacing(4);
 
     m_topicToggle = new QToolButton;
-    m_topicToggle->setText(QStringLiteral("▾"));
-    m_topicToggle->setFixedSize(16, 18);
+    m_topicToggle->setText(QStringLiteral("▸ topic"));
+    m_topicToggle->setFixedHeight(18);
     m_topicToggle->setAutoRaise(true);
     m_topicToggle->setCheckable(true);
-    m_topicToggle->setToolTip("Toggle topic");
+    {
+        QFont f = m_topicToggle->font();
+        f.setPointSize(11);
+        m_topicToggle->setFont(f);
+    }
 
     auto *nameLabel = new QLabel(channel);
     nameLabel->setObjectName("paneChannelLabel");
@@ -64,7 +68,10 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     m_topicBar->hide();
     vbox->addWidget(m_topicBar);
 
-    connect(m_topicToggle, &QToolButton::toggled, m_topicBar, &QWidget::setVisible);
+    connect(m_topicToggle, &QToolButton::toggled, this, [this](bool on){
+        m_topicBar->setVisible(on);
+        m_topicToggle->setText(on ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
+    });
 
     // Chat view + nick list
     m_chatView = new QTextBrowser;
@@ -122,4 +129,11 @@ void ChannelPane::setNick(const QString &nick)
 void ChannelPane::setTopic(const QString &html)
 {
     if (m_topicText) m_topicText->setText(html);
+    // Show topic bar automatically when there is a topic; keep collapsed if empty
+    if (m_topicBar && m_topicToggle) {
+        const bool hasTopic = !html.isEmpty();
+        m_topicToggle->setChecked(hasTopic);
+        m_topicBar->setVisible(hasTopic);
+        m_topicToggle->setText(hasTopic ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
+    }
 }
