@@ -776,51 +776,12 @@ void MainWindow::setupChatArea()
             sb->setValue(sb->maximum());
     });
 
-    // Split pane — hidden until user chooses "Open in Split"
-    m_splitView = new ChatBrowser;
-    m_splitView->setReadOnly(true);
-    m_splitView->setLineWrapMode(QTextEdit::WidgetWidth);
-    m_splitView->setOpenLinks(false);
-    m_splitView->document()->setMaximumBlockCount(kMessageBufferCap + 300);
-    if (m_theme.valid)
-        m_splitView->document()->setDefaultStyleSheet(
-            QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
-    m_splitView->viewport()->installEventFilter(this);
-
-    m_splitLabel = new QLabel;
-    m_splitLabel->setObjectName("splitLabel");
-    m_splitLabel->setStyleSheet("font-weight:bold; padding: 2px 6px;");
-
-    auto *splitClose = new QToolButton;
-    splitClose->setText("✕");
-    splitClose->setAutoRaise(true);
-    splitClose->setFixedSize(22, 22);
-    connect(splitClose, &QToolButton::clicked, this, &MainWindow::closeSplitPane);
-
-    auto *splitHeader = new QWidget;
-    splitHeader->setObjectName("splitHeader");
-    splitHeader->setStyleSheet("QWidget#splitHeader { border-bottom: 1px solid palette(mid); }");
-    auto *shHbox = new QHBoxLayout(splitHeader);
-    shHbox->setContentsMargins(4, 2, 4, 2);
-    shHbox->addWidget(m_splitLabel, 1);
-    shHbox->addWidget(splitClose);
-
-    m_splitContainer = new QWidget;
-    auto *scVbox = new QVBoxLayout(m_splitContainer);
-    scVbox->setContentsMargins(0, 0, 0, 0);
-    scVbox->setSpacing(0);
-    scVbox->addWidget(splitHeader);
-    scVbox->addWidget(m_splitView, 1);
-    m_splitContainer->hide();
-
     m_chatSplitter = new QSplitter(Qt::Horizontal);
-    m_chatSplitter->setHandleWidth(1);
+    m_chatSplitter->setHandleWidth(0);
     m_chatSplitter->addWidget(m_chatView);
-    m_chatSplitter->addWidget(m_splitContainer);
     m_chatSplitter->addWidget(m_nickPanel);
     m_chatSplitter->setStretchFactor(0, 1);
-    m_chatSplitter->setStretchFactor(1, 1);
-    m_chatSplitter->setStretchFactor(2, 0);
+    m_chatSplitter->setStretchFactor(1, 0);
     vbox->addWidget(m_chatSplitter, 1);
 
     m_mainSplitter = new QSplitter(Qt::Horizontal);
@@ -1609,16 +1570,6 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
         appendMessage(msg, true);
     }
 
-    if (!m_splitChannel.isEmpty() &&
-        host == m_splitHost &&
-        channel.toLower() == m_splitChannel.toLower())
-    {
-        renderMessage(m_splitView, msg);
-        QScrollBar *sb = m_splitView->verticalScrollBar();
-        if (sb->value() >= sb->maximum() - 4)
-            sb->setValue(sb->maximum());
-    }
-
     if (m_config.ui.notifications && m_tray && !isActiveWindow()
         && (msg.type == MessageType::Privmsg || msg.type == MessageType::Action))
     {
@@ -1685,10 +1636,6 @@ void MainWindow::onMessageRedacted(const QString &host, const QString &channel)
     if (host == m_model->activeHost() &&
         channel.toLower() == m_model->activeChannel().toLower())
         refreshChatView(host, channel);
-    if (!m_splitChannel.isEmpty() &&
-        host == m_splitHost &&
-        channel.toLower() == m_splitChannel.toLower())
-        refreshSplitView();
 }
 
 void MainWindow::onTypingReceived(const QString &host, const QString &channel,
@@ -2389,10 +2336,6 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
             });
         }
     } else if (channel.startsWith('#') || channel.startsWith('&')) {
-        menu.addAction("Open in Split", this, [this, host, channel]{
-            openSplitPane(host, channel);
-        });
-        menu.addSeparator();
         menu.addAction("Rejoin", this, [this, host, channel]{
             m_model->sendPart(host, channel);
             QTimer::singleShot(500, this, [this, host, channel]{
@@ -2597,7 +2540,7 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
         QRegularExpression::CaseInsensitiveOption);
 
     for (const auto &msg : std::as_const(ch->messages)) {
-        renderMessage(m_chatView, msg);
+        appendMessage(msg);
         if (!ch->previews.isEmpty() &&
             (msg.type == MessageType::Privmsg ||
              msg.type == MessageType::Action  ||
@@ -2625,76 +2568,6 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
             }
         }
     }
-}
-
-void MainWindow::openSplitPane(const QString &host, const QString &channel)
-{
-    m_splitHost    = host;
-    m_splitChannel = channel;
-
-    QString label = channel;
-    for (const auto &sc : std::as_const(m_config.servers))
-        if (sc.host == host && !sc.name.isEmpty()) { label += "  —  " + sc.name; break; }
-    m_splitLabel->setText(label);
-
-    m_splitContainer->show();
-
-    // Give each pane half the available width
-    const int total = m_chatSplitter->width();
-    const int nick  = m_chatSplitter->sizes().value(2, 140);
-    const int half  = (total - nick) / 2;
-    m_chatSplitter->setSizes({half, half, nick});
-
-    refreshSplitView();
-}
-
-void MainWindow::closeSplitPane()
-{
-    m_splitHost.clear();
-    m_splitChannel.clear();
-    m_splitView->clear();
-    m_splitContainer->hide();
-}
-
-void MainWindow::refreshSplitView()
-{
-    if (!m_splitView || m_splitChannel.isEmpty()) return;
-    m_splitView->clear();
-    auto *ch = m_model->channel(m_splitHost, m_splitChannel);
-    if (!ch) return;
-
-    static const QRegularExpression urlRe(
-        R"(https?://[^\s<>"]+)",
-        QRegularExpression::CaseInsensitiveOption);
-
-    for (const auto &msg : std::as_const(ch->messages)) {
-        renderMessage(m_splitView, msg);
-        if (!ch->previews.isEmpty() &&
-            (msg.type == MessageType::Privmsg ||
-             msg.type == MessageType::Action  ||
-             msg.type == MessageType::Notice)) {
-            auto it = urlRe.globalMatch(msg.text);
-            while (it.hasNext()) {
-                const QString urlStr = QUrl(it.next().captured(0)).toString();
-                const auto p = ch->previews.constFind(urlStr);
-                if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr))
-                    insertHtmlBlock(m_splitView, p.value());
-            }
-        }
-        if (!msg.msgid.isEmpty()) {
-            auto rxIt = ch->reactions.constFind(msg.msgid);
-            if (rxIt != ch->reactions.constEnd()) {
-                QString rxHtml = QStringLiteral("<span style='font-size:small; color:#888;'>");
-                for (auto it = rxIt->constBegin(); it != rxIt->constEnd(); ++it)
-                    rxHtml += it.key() + QStringLiteral("<span style='font-size:x-small'>(")
-                              + QString::number(it.value().size()) + QStringLiteral(")</span> ");
-                rxHtml += QStringLiteral("</span>");
-                insertHtmlBlock(m_splitView, rxHtml);
-            }
-        }
-    }
-    QScrollBar *sb = m_splitView->verticalScrollBar();
-    sb->setValue(sb->maximum());
 }
 
 void MainWindow::refreshNickList(const QString &host, const QString &channel)
@@ -2818,17 +2691,12 @@ void MainWindow::clearReplyBar()
     if (m_replyBar)   m_replyBar->hide();
 }
 
-void MainWindow::renderMessage(QTextBrowser *view, const Message &msg)
+void MainWindow::appendMessage(const Message &msg, bool autoPreview)
 {
     const bool isText = (msg.type == MessageType::Privmsg ||
                          msg.type == MessageType::Action  ||
                          msg.type == MessageType::Notice);
-    insertHtmlBlock(view, formatMessage(msg), isText && m_config.ui.hangingIndent);
-}
-
-void MainWindow::appendMessage(const Message &msg, bool autoPreview)
-{
-    renderMessage(m_chatView, msg);
+    insertHtmlBlock(m_chatView, formatMessage(msg), isText && m_config.ui.hangingIndent);
 
     if (autoPreview &&
         (msg.type == MessageType::Privmsg ||
