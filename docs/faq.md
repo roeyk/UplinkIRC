@@ -448,7 +448,7 @@ The ignore list is saved in `config.toml` under `[ignore] nicks = [...]` and per
 
 ### How do I react to a message?
 
-Right-click the **timestamp** (the `hh:mm` at the left of the message) and choose **React**. Type an emoji in the dialog and click OK.
+Right-click the **timestamp** (the `hh:mm` at the left of the message) and choose **React**. The emoji picker opens — search by name (`thumbs`, `fire`) or shortcode (`:poop:`), then click the emoji or press Enter to send it.
 
 Reactions appear inline below the original message as `emoji(count)` for all clients that support `draft/react`.
 
@@ -571,7 +571,7 @@ Right-clicking the **timestamp** at the left of any chat message opens a message
 | Action | Description |
 |---|---|
 | **Reply** | Sets this message as the reply target. A `↩ nick` bar appears above the input. Type your reply and press Enter. Escape cancels. |
-| **React** | Opens an emoji input. Your reaction is sent as an IRCv3 `draft/react` and shown inline below the message for all clients that support it. |
+| **React** | Opens the emoji picker. Search by name or shortcode and click, or type `:shortcode:` and press Enter. Sends an IRCv3 `draft/react` shown inline below the message. |
 | **Copy** | Appears when you have text selected — copies the selection to the clipboard. |
 
 You do not have to click the timestamp exactly to get Reply. If you right-click anywhere in the message body while text is selected, the menu shows both **Copy** and **Reply** for the message you are in.

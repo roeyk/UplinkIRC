@@ -111,7 +111,8 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/nick <name>` | Change your nickname |
 | `/away [message]` | Set yourself as away with an optional message |
 | `/back` | Clear your away status |
-| `/whois <nick>` | Look up info about a user |
+| `/whois <nick>` | Look up info about a user — reply appears in the active channel |
+| `/caps` | List all IRCv3 capabilities currently negotiated with the server |
 
 ### Examples
 
@@ -120,6 +121,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 /away grabbing coffee
 /back
 /whois alice
+/caps
 ```
 
 ---
@@ -243,7 +245,7 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 NodeRelay supports IRCv3 `draft/react` — emoji reactions attached to specific messages.
 
 **Sending a reaction:**
-- Right-click any message **timestamp** in the chat view → **React** → type an emoji → OK
+- Right-click any message **timestamp** in the chat view → **React** → the emoji picker opens; search by name (e.g. `thumbs`, `:fire`) and click the emoji, or type a shortcode like `:poop:` and press Enter
 - Or use `/react <emoji>` after right-clicking a timestamp and choosing **Reply** (sets the message target)
 
 **Receiving reactions:**
@@ -254,7 +256,7 @@ NodeRelay supports IRCv3 `draft/react` — emoji reactions attached to specific 
 ### Examples
 
 ```
-# Right-click a timestamp → React → type 👍 → OK
+# Right-click a timestamp → React → emoji picker opens → click 👍 or type :thumbsup: Enter
 
 # Via slash command (requires a reply target set first):
 /react 🔥
@@ -270,7 +272,7 @@ Right-clicking a message **timestamp** (the `hh:mm` at the left of each line) op
 | Action | What it does |
 |---|---|
 | **Reply** | Sets this message as the reply target. A `↩ nick` bar appears above the input. Press Enter to send; Escape to cancel. |
-| **React** | Opens an emoji input dialog. The emoji is sent as an IRCv3 `+draft/react` reaction attached to this message's ID. Requires server support for `draft/react`. |
+| **React** | Opens the emoji picker. Search by name or shortcode, click an emoji or press Enter to send it as an IRCv3 `draft/react` reaction. Requires server support for `draft/react`. |
 
 ---
 
