@@ -263,29 +263,10 @@ void MainWindow::setupToolbar()
             QDesktopServices::openUrl(QUrl::fromLocalFile(Config::defaultPath()));
         });
 
-        menu->addAction(MenuIcons::connStatus(ic), "Reload Config", this, [this]{
-            m_config = Config::load(Config::defaultPath());
-            m_model->syncServers(m_config.servers);
-
-            m_showNickPrefix = m_config.ui.showNickPrefix;
-            m_showTopic      = m_config.ui.showTopic;
-            m_showEmojiBtn   = m_config.ui.showEmojiButton;
-
-            ThemeLoader::apply(m_config.ui.theme);
-            m_theme = ThemeLoader::load(m_config.ui.theme);
-            if (m_chatView && m_theme.valid)
-                m_chatView->document()->setDefaultStyleSheet(
-                    QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
-
-            applyAppIcon(m_config.ui.appIcon);
-
-            QApplication::setFont(QFont(m_config.ui.fontFamily));
-            applyFontSizes();
-
-            if (m_topicDisplay)     m_topicDisplay->setVisible(m_showTopic);
-            if (m_nickPrefix)       m_nickPrefix->setVisible(m_showNickPrefix);
-            if (m_emojiBtn)         m_emojiBtn->setVisible(m_showEmojiBtn);
-            if (m_typingLabel)      m_typingLabel->setVisible(m_config.ui.typingIndicator);
+        menu->addAction(MenuIcons::connStatus(ic), "Reload Config", this, []{
+            QProcess::startDetached(QCoreApplication::applicationFilePath(),
+                                    QCoreApplication::arguments());
+            QCoreApplication::quit();
         });
 
         menu->addSeparator();
