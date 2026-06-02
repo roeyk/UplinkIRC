@@ -315,7 +315,7 @@ void MainWindow::connectPreferences()
         m_topicDisplay->setVisible(on);
         if (m_primaryTopicBtn) {
             m_primaryTopicBtn->setChecked(on);
-            m_primaryTopicBtn->setText(on ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
+            m_primaryTopicBtn->setText(on ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
         }
         Config::save(m_config, Config::defaultPath());
     });
@@ -674,26 +674,22 @@ void MainWindow::setupChatArea()
         m_primaryTopicBtn = new QToolButton;
         m_primaryTopicBtn->setCheckable(true);
         m_primaryTopicBtn->setChecked(m_showTopic);
-        m_primaryTopicBtn->setText(m_showTopic ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
+        m_primaryTopicBtn->setText(m_showTopic ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
         m_primaryTopicBtn->setAutoRaise(false);
         m_primaryTopicBtn->setStyleSheet(
             "QToolButton {"
+            "  background: transparent;"
             "  border: 1px solid palette(mid);"
-            "  border-radius: 9px;"
-            "  padding: 2px 10px;"
+            "  border-radius: 4px;"
+            "  padding: 1px 5px;"
             "}"
             "QToolButton:checked {"
             "  border-color: palette(highlight);"
             "}"
         );
-        {
-            QFont f = m_primaryTopicBtn->font();
-            f.setPointSize(13);
-            m_primaryTopicBtn->setFont(f);
-        }
         connect(m_primaryTopicBtn, &QToolButton::toggled, this, [this](bool on){
             m_topicDisplay->setVisible(on);
-            m_primaryTopicBtn->setText(on ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
+            m_primaryTopicBtn->setText(on ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
         });
 
         m_primaryPaneLabel = new QLabel;
@@ -706,8 +702,11 @@ void MainWindow::setupChatArea()
 
         m_primaryCloseBtn = new QToolButton;
         m_primaryCloseBtn->setText(QStringLiteral("✕"));
-        m_primaryCloseBtn->setFixedSize(18, 18);
-        m_primaryCloseBtn->setAutoRaise(true);
+        m_primaryCloseBtn->setFixedSize(16, 16);
+        m_primaryCloseBtn->setStyleSheet(
+            "QToolButton { background: transparent; border: none; padding: 0px; }"
+            "QToolButton:hover { color: palette(highlight); }"
+        );
         m_primaryCloseBtn->setVisible(false);
         connect(m_primaryCloseBtn, &QToolButton::clicked, this, [this]{
             m_primaryPanel->hide();

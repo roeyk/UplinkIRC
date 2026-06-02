@@ -29,24 +29,20 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     hbox->setSpacing(6);
 
     m_topicToggle = new QToolButton;
-    m_topicToggle->setText(QStringLiteral("▸  topic"));
+    m_topicToggle->setText(QStringLiteral("▸ topic"));
     m_topicToggle->setAutoRaise(false);
     m_topicToggle->setCheckable(true);
     m_topicToggle->setStyleSheet(
         "QToolButton {"
+        "  background: transparent;"
         "  border: 1px solid palette(mid);"
-        "  border-radius: 9px;"
-        "  padding: 2px 10px;"
+        "  border-radius: 4px;"
+        "  padding: 1px 5px;"
         "}"
         "QToolButton:checked {"
         "  border-color: palette(highlight);"
         "}"
     );
-    {
-        QFont f = m_topicToggle->font();
-        f.setPointSize(13);
-        m_topicToggle->setFont(f);
-    }
 
     auto *nameLabel = new QLabel(channel);
     nameLabel->setObjectName("paneChannelLabel");
@@ -56,8 +52,11 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
 
     auto *closeBtn = new QToolButton;
     closeBtn->setText(QStringLiteral("✕"));
-    closeBtn->setFixedSize(18, 18);
-    closeBtn->setAutoRaise(true);
+    closeBtn->setFixedSize(16, 16);
+    closeBtn->setStyleSheet(
+        "QToolButton { background: transparent; border: none; padding: 0px; }"
+        "QToolButton:hover { color: palette(highlight); }"
+    );
     connect(closeBtn, &QToolButton::clicked, this, &ChannelPane::closeRequested);
 
     hbox->addWidget(m_topicToggle);
@@ -95,7 +94,7 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
 
     connect(m_topicToggle, &QToolButton::toggled, this, [this](bool on){
         m_topicBar->setVisible(on);
-        m_topicToggle->setText(on ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
+        m_topicToggle->setText(on ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
     });
 
     // Chat view + nick list
@@ -158,7 +157,7 @@ void ChannelPane::setTopic(const QString &html)
         const bool hasTopic = !html.isEmpty();
         m_topicToggle->setChecked(hasTopic);
         m_topicBar->setVisible(hasTopic);
-        m_topicToggle->setText(hasTopic ? QStringLiteral("▾  topic") : QStringLiteral("▸  topic"));
+        m_topicToggle->setText(hasTopic ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
     }
 }
 
