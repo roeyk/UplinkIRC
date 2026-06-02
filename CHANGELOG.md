@@ -221,6 +221,46 @@ Next priorities: self-signed cert fingerprint-pin, SOCKS5 proxy, DCC passive/NAT
 -->
 
 <!--
+Session summary — 2026-06-02
+
+What was built:
+  - /caps command: lists all currently negotiated IRCv3 caps in the active
+    buffer. Useful for checking whether the server supports features like
+    draft/message-redaction. ackedCaps() accessor added to IrcClient.
+  - channels save format fixed: config now saves channels = "#a, #b" instead
+    of [[server.channel]] array-of-tables when no channel has a key/password.
+    [[server.channel]] is still used (and loaded) when keys are present.
+  - Exit menu icon added: hamburger Exit item now has a door/arrow icon so it
+    aligns horizontally with all other menu items (which all had icons).
+  - Server messages routed to active channel: /whois, /version, /ping replies,
+    MOTD, and all other server numerics now appear in whatever window you're
+    looking at instead of always going to the server buffer. Falls back to
+    server buffer when there's no active channel (e.g. during connection).
+  - ZNC/soju howto sections completely rewritten: full step-by-step Manage
+    Servers walkthroughs, password format explained with examples, capability
+    tables, multiple-network configs, troubleshooting tables.
+
+Bugs fixed:
+  - ircclient.h ackedCaps() not committed — Windows CI failed with C2039.
+  - channels format reverted to [[server.channel]] on every config save.
+
+Regressions: none.
+Known issues: same as v0.16.10.
+Next priorities: bouncer Network field hide when ZNC selected, self-signed
+  cert fingerprint-pin UI, DCC passive/NAT, split view.
+-->
+
+## v0.16.11 — 2026-06-02
+
+- **Fix: WHOIS and server replies appear in active window** — `/whois`, `/version`, MOTD, and all other server responses now appear in the channel or query you are looking at, not buried in the server buffer. Falls back to the server buffer only when no channel is open.
+- **`/caps` command** — type `/caps` in any buffer to see the full list of IRCv3 capabilities negotiated with the server. Useful for checking whether features like `draft/message-redaction` (message deletion) are available.
+- **Fix: `channels` saved as one line** — NodeRelay was saving channel lists as `[[server.channel]]` array-of-tables on every config save, even when no channels had passwords. It now saves the clean `channels = "#a, #b"` format. The array form is still used (and loaded) when a channel has a key.
+- **Fix: Exit menu item alignment** — the Exit item in the ☰ menu had no icon, causing its text to appear left of all other items. It now has a matching icon.
+- **ZNC and soju docs overhauled** — the How-To guide sections for ZNC and soju are completely rewritten with step-by-step Manage Servers walkthroughs, the password format explained up front with concrete examples, capability tables, multiple-network config examples, and a ZNC troubleshooting table.
+
+---
+
+<!--
 Session summary — 2026-06-01 (emoji size + picker UX)
 
 What was built:
