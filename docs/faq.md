@@ -44,13 +44,9 @@ NodeRelay detected that your config still has the placeholder nick `yournick`. T
 
 ### themes/ folder missing — no themes load
 
-The `themes/` folder must be in the same directory as the `NodeRelay` binary (or at `~/.config/noderelay/themes/`). If you moved the binary, copy the folder back:
+NodeRelay creates `~/.config/noderelay/themes/` and seeds it with all bundled themes on first launch. If the folder is empty or missing, delete it and restart — it will be recreated and repopulated automatically.
 
-```bash
-cp -r themes/ /path/to/your/binary/
-```
-
-If you built with CMake, themes are copied to the build directory automatically via a post-build step.
+Themes you have deleted will not be restored on restart. To get a specific theme back, copy it from a fresh download or from the `themes/` directory inside the release tarball.
 
 ---
 
