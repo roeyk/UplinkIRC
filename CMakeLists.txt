@@ -67,6 +67,8 @@ qt_add_executable(NodeRelay WIN32
     src/model/message.h
     src/ui/mainwindow.cpp
     src/ui/mainwindow.h
+    src/ui/channelpane.cpp
+    src/ui/channelpane.h
     src/ui/trayicon.cpp
     src/ui/trayicon.h
     src/ui/aboutdialog.cpp

@@ -16,6 +16,7 @@
 #include "ui/emojidata.h"
 #include "ui/menuicons.h"
 #include "ui/signalbars.h"
+#include "ui/channelpane.h"
 #include "config/config.h"
 
 #include <QApplication>
@@ -661,13 +662,54 @@ void MainWindow::setupChatArea()
     tHbox->addWidget(m_topicLeft);
     tHbox->addWidget(topicRight, 1);
 
-    // Right content — topic display + chat + input (no info bar here)
+    // Right content — holds the panes splitter only
     m_rightContent = new QWidget;
     auto *vbox     = new QVBoxLayout(m_rightContent);
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
-    // Topic display — shown below info bar only when Show Topic is on
+    // Primary panel — first column in the panes splitter
+    m_primaryPanel = new QWidget;
+    auto *primaryVbox = new QVBoxLayout(m_primaryPanel);
+    primaryVbox->setContentsMargins(0, 0, 0, 0);
+    primaryVbox->setSpacing(0);
+
+    // Primary panel header: channel name + X (X only shown when extra panes exist)
+    auto *primaryHeader = new QWidget;
+    primaryHeader->setObjectName("paneHeader");
+    {
+        auto *hbox = new QHBoxLayout(primaryHeader);
+        hbox->setContentsMargins(6, 2, 2, 2);
+        hbox->setSpacing(4);
+        m_primaryPaneLabel = new QLabel;
+        m_primaryPaneLabel->setObjectName("paneChannelLabel");
+        {
+            QFont f = m_primaryPaneLabel->font();
+            f.setBold(true);
+            m_primaryPaneLabel->setFont(f);
+        }
+        m_primaryCloseBtn = new QToolButton;
+        m_primaryCloseBtn->setText(QStringLiteral("✕"));
+        m_primaryCloseBtn->setFixedSize(18, 18);
+        m_primaryCloseBtn->setAutoRaise(true);
+        m_primaryCloseBtn->setVisible(false);
+        connect(m_primaryCloseBtn, &QToolButton::clicked, this, [this]{
+            QList<int> sizes = m_panesSplitter->sizes();
+            if (sizes.size() < 2) return;
+            int total = 0;
+            for (int s : sizes) total += s;
+            sizes[0] = 0;
+            const int rest = sizes.size() - 1;
+            for (int i = 1; i < sizes.size(); ++i)
+                sizes[i] = total / rest;
+            m_panesSplitter->setSizes(sizes);
+        });
+        hbox->addWidget(m_primaryPaneLabel, 1);
+        hbox->addWidget(m_primaryCloseBtn);
+    }
+    primaryVbox->addWidget(primaryHeader);
+
+    // Topic display — shown below header when Show Topic is on
     m_topicDisplay = new QWidget;
     auto *tdHbox   = new QHBoxLayout(m_topicDisplay);
     tdHbox->setContentsMargins(8, 3, 8, 3);
@@ -680,7 +722,7 @@ void MainWindow::setupChatArea()
     tdHbox->addWidget(m_topicText);
     m_topicDisplay->setObjectName("topicDisplay");
     m_topicDisplay->setVisible(m_showTopic);
-    vbox->addWidget(m_topicDisplay);
+    primaryVbox->addWidget(m_topicDisplay);
 
     // Chat view
     m_chatView = new ChatBrowser;
@@ -782,7 +824,16 @@ void MainWindow::setupChatArea()
     m_chatSplitter->addWidget(m_nickPanel);
     m_chatSplitter->setStretchFactor(0, 1);
     m_chatSplitter->setStretchFactor(1, 0);
-    vbox->addWidget(m_chatSplitter, 1);
+    primaryVbox->addWidget(m_chatSplitter, 1);
+
+    // setupInputBar will append search/reply/typing/input into primaryVbox
+
+    m_panesSplitter = new QSplitter(Qt::Horizontal);
+    m_panesSplitter->setHandleWidth(2);
+    m_panesSplitter->setCollapsible(0, true);
+    m_panesSplitter->addWidget(m_primaryPanel);
+    m_panesSplitter->setStretchFactor(0, 1);
+    vbox->addWidget(m_panesSplitter, 1);
 
     m_mainSplitter = new QSplitter(Qt::Horizontal);
     m_mainSplitter->setHandleWidth(0);
@@ -886,7 +937,7 @@ void MainWindow::setupInputBar()
     }
     m_replyBar->hide();
 
-    auto *layout = qobject_cast<QVBoxLayout *>(m_rightContent->layout());
+    auto *layout = qobject_cast<QVBoxLayout *>(m_primaryPanel->layout());
     layout->addWidget(m_searchBar);
     layout->addWidget(m_replyBar);
     layout->addWidget(m_typingLabel);
@@ -1560,6 +1611,7 @@ void MainWindow::onChannelRemoved(const QString &host, const QString &channel)
 {
     auto *item = findChannelItem(host, channel);
     if (item) delete item;
+    closeChannelPane(host, channel);
 }
 
 void MainWindow::onMessageAdded(const QString &host, const QString &channel, const Message &msg)
@@ -1568,6 +1620,17 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
         channel.toLower() == m_model->activeChannel().toLower())
     {
         appendMessage(msg, true);
+    }
+
+    const QString paneKey = host + "|" + channel.toLower();
+    if (auto *pane = m_panes.value(paneKey)) {
+        const bool isText = (msg.type == MessageType::Privmsg ||
+                             msg.type == MessageType::Action  ||
+                             msg.type == MessageType::Notice);
+        insertHtmlBlock(pane->chatView(), formatMessage(msg),
+                        isText && m_config.ui.hangingIndent);
+        auto *sb = pane->chatView()->verticalScrollBar();
+        sb->setValue(sb->maximum());
     }
 
     if (m_config.ui.notifications && m_tray && !isActiveWindow()
@@ -1592,10 +1655,15 @@ void MainWindow::onTopicChanged(const QString &host, const QString &channel, con
 
 void MainWindow::onNickListChanged(const QString &host, const QString &channel)
 {
-    if (host != m_model->activeHost() ||
-        channel.toLower() != m_model->activeChannel().toLower()) return;
-    refreshNickList(host, channel);
-    refreshTopicBar(host, channel);
+    if (host == m_model->activeHost() &&
+        channel.toLower() == m_model->activeChannel().toLower()) {
+        refreshNickList(host, channel);
+        refreshTopicBar(host, channel);
+    }
+
+    const QString paneKey = host + "|" + channel.toLower();
+    if (auto *pane = m_panes.value(paneKey))
+        refreshPaneNickList(pane);
 }
 
 void MainWindow::onUnreadChanged(const QString &host, const QString &channel, int count)
@@ -1629,6 +1697,10 @@ void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
 {
     if (host == m_model->activeHost())
         m_nickPrefix->setText(nick);
+
+    for (auto *pane : std::as_const(m_panes))
+        if (pane->host() == host)
+            pane->setNick(nick);
 }
 
 void MainWindow::onMessageRedacted(const QString &host, const QString &channel)
@@ -2286,6 +2358,23 @@ void MainWindow::onInputSubmit()
 
 void MainWindow::switchToChannel(const QString &host, const QString &channel)
 {
+    // Re-expand primary if it was collapsed
+    if (m_panesSplitter->count() > 1 && m_panesSplitter->sizes().value(0) == 0) {
+        QList<int> sizes = m_panesSplitter->sizes();
+        int total = 0;
+        for (int s : sizes) total += s;
+        sizes[0] = total / sizes.size();
+        for (int i = 1; i < sizes.size(); ++i)
+            sizes[i] = total / sizes.size();
+        m_panesSplitter->setSizes(sizes);
+    }
+
+    if (m_primaryPaneLabel)
+        m_primaryPaneLabel->setText(channel == "(server)" ? host : channel);
+
+    // If this channel is open in a pane, close it before making it primary
+    closeChannelPane(host, channel);
+
     clearReplyBar();
     m_model->setActive(host, channel);
     refreshChatView(host, channel);
@@ -2336,6 +2425,17 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
             });
         }
     } else if (channel.startsWith('#') || channel.startsWith('&')) {
+        const QString paneKey = host + "|" + channel.toLower();
+        if (!m_panes.contains(paneKey)) {
+            menu.addAction("Open in Pane", this, [this, host, channel]{
+                openChannelPane(host, channel);
+            });
+        } else {
+            menu.addAction("Close Pane", this, [this, host, channel]{
+                closeChannelPane(host, channel);
+            });
+        }
+        menu.addSeparator();
         menu.addAction("Rejoin", this, [this, host, channel]{
             m_model->sendPart(host, channel);
             QTimer::singleShot(500, this, [this, host, channel]{
@@ -2357,6 +2457,130 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
 
     if (!menu.actions().isEmpty())
         menu.exec(m_sidebar->viewport()->mapToGlobal(pos));
+}
+
+// ---------------------------------------------------------------------------
+// Channel panes
+// ---------------------------------------------------------------------------
+
+void MainWindow::openChannelPane(const QString &host, const QString &channel)
+{
+    const QString key = host + "|" + channel.toLower();
+    if (m_panes.contains(key)) return;
+
+    auto *pane = new ChannelPane(host, channel, this);
+    if (m_theme.valid)
+        pane->chatView()->document()->setDefaultStyleSheet(
+            QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
+
+    // If opening the active channel, shift primary to server buffer to avoid duplication
+    if (host == m_model->activeHost() &&
+        channel.toLower() == m_model->activeChannel().toLower()) {
+        auto *srvItem = findServerItem(host);
+        if (srvItem) {
+            m_sidebar->setCurrentItem(srvItem);
+            switchToChannel(host, "(server)");
+        }
+    }
+
+    if (auto *sess = m_model->session(host))
+        pane->setNick(sess->nick);
+
+    connect(pane, &ChannelPane::closeRequested, this, [this, host, channel]{
+        closeChannelPane(host, channel);
+    });
+
+    connect(pane, &ChannelPane::inputSubmitted, this, [this, host, channel](const QString &text){
+        if (text.startsWith("/me ", Qt::CaseInsensitive))
+            m_model->sendAction(host, channel, text.mid(4));
+        else if (!text.startsWith('/'))
+            m_model->sendMessage(host, channel, text);
+    });
+
+    m_panes[key] = pane;
+    m_panesSplitter->addWidget(pane);
+    m_primaryCloseBtn->setVisible(true);
+
+    refreshPaneChatView(pane);
+    refreshPaneNickList(pane);
+}
+
+void MainWindow::closeChannelPane(const QString &host, const QString &channel)
+{
+    const QString key = host + "|" + channel.toLower();
+    auto *pane = m_panes.take(key);
+    if (!pane) return;
+    pane->deleteLater();
+    if (m_panes.isEmpty()) {
+        m_primaryCloseBtn->setVisible(false);
+        // Re-expand primary if it was collapsed
+        QList<int> sizes = m_panesSplitter->sizes();
+        if (sizes.value(0) == 0) {
+            int total = 0;
+            for (int s : sizes) total += s;
+            sizes[0] = total;
+            m_panesSplitter->setSizes(sizes);
+        }
+    }
+}
+
+void MainWindow::refreshPaneChatView(ChannelPane *pane)
+{
+    pane->chatView()->clear();
+    auto *ch = m_model->channel(pane->host(), pane->channel());
+    if (!ch) return;
+
+    for (const auto &msg : std::as_const(ch->messages)) {
+        const bool isText = (msg.type == MessageType::Privmsg ||
+                             msg.type == MessageType::Action  ||
+                             msg.type == MessageType::Notice);
+        insertHtmlBlock(pane->chatView(), formatMessage(msg),
+                        isText && m_config.ui.hangingIndent);
+
+        if (!msg.msgid.isEmpty()) {
+            auto rxIt = ch->reactions.constFind(msg.msgid);
+            if (rxIt != ch->reactions.constEnd()) {
+                QString rxHtml = QStringLiteral("<span style='font-size:small; color:#888;'>");
+                for (auto it = rxIt->constBegin(); it != rxIt->constEnd(); ++it) {
+                    rxHtml += it.key()
+                              + QStringLiteral("<span style='font-size:x-small'>(")
+                              + QString::number(it.value().size())
+                              + QStringLiteral(")</span> ");
+                }
+                rxHtml += QStringLiteral("</span>");
+                insertHtmlBlock(pane->chatView(), rxHtml);
+            }
+        }
+    }
+
+    auto *sb = pane->chatView()->verticalScrollBar();
+    sb->setValue(sb->maximum());
+}
+
+void MainWindow::refreshPaneNickList(ChannelPane *pane)
+{
+    pane->nickList()->clear();
+    auto *ch   = m_model->channel(pane->host(), pane->channel());
+    if (!ch) return;
+    auto *sess = m_model->session(pane->host());
+
+    for (const auto &e : std::as_const(ch->nicks)) {
+        const bool isBot = ch->botNicks.contains(e.nick.toLower())
+                        || (sess && sess->botNicks.contains(e.nick.toLower()));
+        if (isBot && !m_botIcons.contains(e.nick.toLower()))
+            m_botIcons[e.nick.toLower()] = QRandomGenerator::global()->bounded(2)
+                                           ? QStringLiteral("🤖") : QStringLiteral("👾");
+        const QString label = isBot
+            ? e.display() + " " + m_botIcons[e.nick.toLower()]
+            : e.display();
+        auto *item = new QListWidgetItem(label);
+        item->setData(Qt::UserRole, e.nick);
+        if (!e.account.isEmpty())
+            item->setToolTip("Account: " + e.account);
+        if (m_config.ui.coloredNicks)
+            item->setForeground(nickColor(e.nick));
+        pane->nickList()->addItem(item);
+    }
 }
 
 void MainWindow::onNickListContextMenu(const QPoint &pos)

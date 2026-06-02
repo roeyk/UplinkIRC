@@ -19,6 +19,7 @@ class LinkPreview;
 class EmojiPicker;
 class DccSend;
 class DccReceive;
+class ChannelPane;
 
 class QTimer;
 class QTreeWidget;
@@ -88,6 +89,11 @@ private:
     void updateTypingLabel();
     void applyAppIcon(const QString &choice);
 
+    void openChannelPane (const QString &host, const QString &channel);
+    void closeChannelPane(const QString &host, const QString &channel);
+    void refreshPaneChatView(ChannelPane *pane);
+    void refreshPaneNickList(ChannelPane *pane);
+
     QString    formatMessage(const Message &msg) const;
     void       showNickContextMenu(const QString &nick, const QPoint &globalPos);
     static QColor nickColor(const QString &nick);
@@ -135,11 +141,16 @@ private:
     int           m_sidebarExpandedWidth{180};
     QSplitter    *m_mainSplitter{nullptr};
     QWidget      *m_rightContent{nullptr};
+    QWidget      *m_primaryPanel{nullptr};
+    QLabel       *m_primaryPaneLabel{nullptr};
+    QToolButton  *m_primaryCloseBtn{nullptr};
     QListWidget  *m_nickList;
     QWidget      *m_nickPanel{nullptr};
     QLabel       *m_nickCountLabel{nullptr};
     QToolButton  *m_nickToggleBtn{nullptr};
     QSplitter    *m_chatSplitter{nullptr};
+    QSplitter    *m_panesSplitter{nullptr};
+    QHash<QString, ChannelPane*> m_panes;  // key: "host|channel_lower"
     QTimer       *m_gearTimer{nullptr};
     int           m_gearAngle{0};
     bool          m_nickExpanded{true};
