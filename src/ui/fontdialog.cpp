@@ -29,6 +29,7 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     m_spInputNick    = makeSpinBox(sizes.inputNick);
     m_spInput        = makeSpinBox(sizes.input);
     m_spTyping       = makeSpinBox(sizes.typing);
+    m_spEmoji        = makeSpinBox(sizes.emoji);
 
     m_preview = new QLabel("The quick brown fox — AaBbCc 0123");
     m_preview->setAlignment(Qt::AlignCenter);
@@ -64,16 +65,19 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
         { "Topic Bar",   m_spTopicBar,     "Nick Label",   m_spInputNick    },
         { "Server Name", m_spServerHeader, "Typing",       m_spTyping       },
         { "Toolbar",     m_spToolbar,      "Users Title",  m_spNickDock     },
+        { "Chat Emoji",  m_spEmoji,        "",             nullptr          },
     };
-    for (int r = 0; r < 5; ++r) {
+    for (int r = 0; r < 6; ++r) {
         auto *la = new QLabel(QString(rows[r].l1) + ":");
         la->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        auto *lb = new QLabel(QString(rows[r].l2) + ":");
-        lb->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        grid->addWidget(la,          r, 0);
-        grid->addWidget(rows[r].s1,  r, 1);
-        grid->addWidget(lb,          r, 2);
-        grid->addWidget(rows[r].s2,  r, 3);
+        grid->addWidget(la,         r, 0);
+        grid->addWidget(rows[r].s1, r, 1);
+        if (rows[r].s2) {
+            auto *lb = new QLabel(QString(rows[r].l2) + ":");
+            lb->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+            grid->addWidget(lb,          r, 2);
+            grid->addWidget(rows[r].s2,  r, 3);
+        }
     }
     grid->setColumnStretch(1, 1);
     grid->setColumnStretch(3, 1);
@@ -101,5 +105,5 @@ FontSizes FontDialog::selectedSizes()  const
     return { m_spToolbar->value(), m_spServerHeader->value(), m_spSidebar->value(),
              m_spChat->value(), m_spNickList->value(), m_spNickDock->value(),
              m_spTopicBar->value(), m_spInputNick->value(), m_spInput->value(),
-             m_spTyping->value() };
+             m_spTyping->value(), m_spEmoji->value() };
 }

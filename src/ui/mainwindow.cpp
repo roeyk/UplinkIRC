@@ -2824,6 +2824,56 @@ static QString ircToHtml(const QString &raw)
     return out;
 }
 
+static QString wrapEmojiHtml(const QString &html, int ptSize)
+{
+    const QString open  = QString("<span style='font-size:%1pt'>").arg(ptSize);
+    const QString close = QStringLiteral("</span>");
+
+    QString result;
+    result.reserve(html.size() * 2);
+
+    int i = 0;
+    while (i < html.size()) {
+        if (html[i] == '<') {
+            int end = html.indexOf('>', i);
+            if (end == -1) { result += html.mid(i); break; }
+            result += html.mid(i, end - i + 1);
+            i = end + 1;
+            continue;
+        }
+
+        // Supplementary-plane emoji: surrogate pair
+        if (html[i].isHighSurrogate() && i + 1 < html.size() && html[i+1].isLowSurrogate()) {
+            const uint cp = QChar::surrogateToUcs4(html[i], html[i+1]);
+            if (cp >= 0x1F000 && cp <= 0x1FAFF) {
+                result += open;
+                result += html[i]; result += html[i+1];
+                i += 2;
+                if (i < html.size() && html[i].unicode() == 0xFE0F)
+                    result += html[i++];
+                result += close;
+            } else {
+                result += html[i++]; result += html[i++];
+            }
+            continue;
+        }
+
+        // BMP misc symbols and dingbats (☀ ★ ✓ etc.)
+        const ushort c = html[i].unicode();
+        if (c >= 0x2300 && c <= 0x27BF) {
+            result += open + html[i];
+            ++i;
+            if (i < html.size() && html[i].unicode() == 0xFE0F)
+                result += html[i++];
+            result += close;
+            continue;
+        }
+
+        result += html[i++];
+    }
+    return result;
+}
+
 QString MainWindow::formatMessage(const Message &msg) const
 {
     const QDateTime local = msg.timestamp.toLocalTime();
@@ -2872,7 +2922,7 @@ QString MainWindow::formatMessage(const Message &msg) const
             : " title='account: " + msg.account.toHtmlEscaped() + "'";
         const QString nickAnchor  = QString("<a href='nick:%1'%2 style='color:%3; text-decoration:none; font-weight:bold'>%4</a>")
             .arg(msg.nick.toHtmlEscaped(), titleAttr, color, nickDisplay);
-        QString textHtml = linkifyHtml(ircToHtml(msg.text));
+        QString textHtml = wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), m_config.ui.fontSizes.emoji);
         const QString sn = m_model->selfNick(m_model->activeHost());
         if (!sn.isEmpty()) {
             QRegularExpression snRe("(\\b" + QRegularExpression::escape(sn) + "\\b)",
@@ -2903,14 +2953,14 @@ QString MainWindow::formatMessage(const Message &msg) const
         const QString actionNick = QString("<a href='nick:%1'%2 style='color:inherit; text-decoration:none'>%1</a>")
             .arg(msg.nick.toHtmlEscaped(), aTitleAttr);
         html = QString("%1 <i>* %2 %3</i>")
-            .arg(tsSpan, actionNick, linkifyHtml(ircToHtml(msg.text)));
+            .arg(tsSpan, actionNick, wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), m_config.ui.fontSizes.emoji));
         break;
     }
     case MessageType::Notice: {
         const QString noticeNick = QString("<a href='nick:%1' style='color:inherit; text-decoration:none'>%1</a>")
             .arg(msg.nick.toHtmlEscaped());
         html = QString("%1 <span style='color:#cc8800'>-%2- %3</span>")
-            .arg(tsSpan, noticeNick, linkifyHtml(ircToHtml(msg.text)));
+            .arg(tsSpan, noticeNick, wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), m_config.ui.fontSizes.emoji));
         break;
     }
 

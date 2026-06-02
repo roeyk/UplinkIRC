@@ -52,6 +52,15 @@ EmojiPicker::EmojiPicker(QWidget *parent)
     filterGrid({});
 
     connect(m_search, &QLineEdit::textChanged, this, &EmojiPicker::onSearch);
+    connect(m_search, &QLineEdit::returnPressed, this, [this]{
+        for (const auto &entry : std::as_const(m_buttons)) {
+            if (entry.btn->isVisible()) {
+                hide();
+                emit emojiSelected(entry.btn->text());
+                return;
+            }
+        }
+    });
 }
 
 void EmojiPicker::buildButtons()

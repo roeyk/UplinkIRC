@@ -63,6 +63,7 @@ struct FontSizes {
     int inputNick{10};    // your nick label
     int input{10};        // message typing area
     int typing{9};        // "nick is typing..." indicator
+    int emoji{16};        // emoji in chat messages
 };
 
 struct UiConfig {

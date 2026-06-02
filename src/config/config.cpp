@@ -139,6 +139,7 @@ Config Config::load(const QString &path)
             cfg.ui.fontSizes.inputNick    = (*ui)["font_input_nick"].value_or(10);
             cfg.ui.fontSizes.input        = (*ui)["font_input"].value_or(10);
             cfg.ui.fontSizes.typing       = (*ui)["font_typing"].value_or(9);
+            cfg.ui.fontSizes.emoji        = (*ui)["font_emoji"].value_or(16);
         }
 
         // [ignore]
@@ -270,7 +271,8 @@ void Config::save(const Config &cfg, const QString &path)
     out << "font_topic_bar     = " << cfg.ui.fontSizes.topicBar     << "\n";
     out << "font_input_nick    = " << cfg.ui.fontSizes.inputNick    << "\n";
     out << "font_input         = " << cfg.ui.fontSizes.input        << "\n";
-    out << "font_typing        = " << cfg.ui.fontSizes.typing       << "\n\n";
+    out << "font_typing        = " << cfg.ui.fontSizes.typing       << "\n";
+    out << "font_emoji         = " << cfg.ui.fontSizes.emoji        << "\n\n";
 
     if (!cfg.ignoredNicks.isEmpty()) {
         out << "[ignore]\nnicks = [";
