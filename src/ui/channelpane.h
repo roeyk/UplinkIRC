@@ -19,6 +19,7 @@ public:
     QTextBrowser *chatView() const { return m_chatView; }
     QListWidget  *nickList() const { return m_nickList; }
     void setNick(const QString &nick);
+    void setNickVisible(bool visible);
     void setTopic(const QString &html);
     void setDragHighlight(bool on);
 signals:

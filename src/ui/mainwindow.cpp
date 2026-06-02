@@ -324,6 +324,8 @@ void MainWindow::connectPreferences()
         m_showNickPrefix = on;
         m_config.ui.showNickPrefix = on;
         m_nickPrefix->setVisible(on);
+        for (auto *p : std::as_const(m_orderedPanes))
+            p->setNickVisible(on);
         Config::save(m_config, Config::defaultPath());
     });
 
@@ -2490,6 +2492,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
 
     if (auto *sess = m_model->session(host))
         pane->setNick(sess->nick);
+    pane->setNickVisible(m_showNickPrefix);
 
     if (auto *ch = m_model->channel(host, channel))
         pane->setTopic(linkifyTopic(ch->topic));

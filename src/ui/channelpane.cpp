@@ -150,6 +150,11 @@ void ChannelPane::setNick(const QString &nick)
     if (m_nickPrefix) m_nickPrefix->setText(nick);
 }
 
+void ChannelPane::setNickVisible(bool visible)
+{
+    if (m_nickPrefix) m_nickPrefix->setVisible(visible);
+}
+
 void ChannelPane::setTopic(const QString &html)
 {
     if (m_topicText) m_topicText->setText(html);
