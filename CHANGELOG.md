@@ -3,7 +3,7 @@
 ---
 
 <!--
-Session summary — 2026-06-02 (v0.17.1 — pane topic toggles, Reload Config restart)
+Session summary — 2026-06-02 (v0.17.1 — pane topic toggles, Reload Config restart, primary X button)
 
 What was built:
   - Per-pane topic bar: ▸/▾ topic oval button in every pane header. Topic
@@ -23,6 +23,8 @@ Bugs fixed:
   - Topic bar in pane was hidden by default even when a topic existed.
   - Primary panel had no topic toggle — users had to use global Preferences.
   - Reload Config hot-reload missed server-level config changes.
+  - Primary panel X close button was never made visible when panes opened —
+    m_primaryCloseBtn was initialized hidden and never shown.
 
 Known issues:
   - Drag-to-rearrange panes not yet implemented.
@@ -51,6 +53,7 @@ Next priorities:
 
 - **Fix:** Reload Config now fully restarts NodeRelay, picking up all config changes including server list, ports, channels, and SSL settings. The previous hot-reload missed server-level changes.
 - **Fix:** pane topic bar was hidden by default even when the channel had a topic set.
+- **Fix:** primary panel `✕` close button was not shown when panes were opened — it now appears in the primary header whenever any pane is open, matching the behavior of all extra panes.
 
 ### Docs
 
