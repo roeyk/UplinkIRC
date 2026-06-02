@@ -93,6 +93,7 @@ private:
     void closeChannelPane(const QString &host, const QString &channel);
     void refreshPaneChatView(ChannelPane *pane);
     void refreshPaneNickList(ChannelPane *pane);
+    void rebuildPaneLayout();
 
     QString    formatMessage(const Message &msg) const;
     void       showNickContextMenu(const QString &nick, const QPoint &globalPos);
@@ -142,6 +143,7 @@ private:
     QSplitter    *m_mainSplitter{nullptr};
     QWidget      *m_rightContent{nullptr};
     QWidget      *m_primaryPanel{nullptr};
+    QWidget      *m_primaryHeader{nullptr};
     QLabel       *m_primaryPaneLabel{nullptr};
     QToolButton  *m_primaryCloseBtn{nullptr};
     QListWidget  *m_nickList;
@@ -150,7 +152,8 @@ private:
     QToolButton  *m_nickToggleBtn{nullptr};
     QSplitter    *m_chatSplitter{nullptr};
     QSplitter    *m_panesSplitter{nullptr};
-    QHash<QString, ChannelPane*> m_panes;  // key: "host|channel_lower"
+    QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
+    QList<ChannelPane*>          m_orderedPanes; // insertion order for layout
     QTimer       *m_gearTimer{nullptr};
     int           m_gearAngle{0};
     bool          m_nickExpanded{true};

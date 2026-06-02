@@ -4,11 +4,12 @@
 #include <QListWidget>
 #include <QLineEdit>
 #include <QLabel>
+#include <QToolButton>
 #include <QSplitter>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QToolButton>
 #include <QScrollBar>
+#include <QFont>
 
 ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *parent)
     : QWidget(parent), m_host(host), m_channel(channel)
@@ -17,27 +18,55 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
-    // Header: channel name + close button
+    // Header: topic toggle + channel name + close button
     auto *header = new QWidget;
     header->setObjectName("paneHeader");
     auto *hbox = new QHBoxLayout(header);
     hbox->setContentsMargins(6, 2, 2, 2);
     hbox->setSpacing(4);
+
+    m_topicToggle = new QToolButton;
+    m_topicToggle->setText(QStringLiteral("▾"));
+    m_topicToggle->setFixedSize(16, 18);
+    m_topicToggle->setAutoRaise(true);
+    m_topicToggle->setCheckable(true);
+    m_topicToggle->setToolTip("Toggle topic");
+
     auto *nameLabel = new QLabel(channel);
     nameLabel->setObjectName("paneChannelLabel");
     QFont f = nameLabel->font();
     f.setBold(true);
     nameLabel->setFont(f);
+
     auto *closeBtn = new QToolButton;
     closeBtn->setText(QStringLiteral("✕"));
     closeBtn->setFixedSize(18, 18);
     closeBtn->setAutoRaise(true);
     connect(closeBtn, &QToolButton::clicked, this, &ChannelPane::closeRequested);
+
+    hbox->addWidget(m_topicToggle);
     hbox->addWidget(nameLabel, 1);
     hbox->addWidget(closeBtn);
     vbox->addWidget(header);
 
-    // Chat browser + nick list
+    // Topic bar (hidden by default, toggled by button)
+    m_topicBar = new QWidget;
+    m_topicBar->setObjectName("topicDisplay");
+    auto *tbhbox = new QHBoxLayout(m_topicBar);
+    tbhbox->setContentsMargins(8, 3, 8, 3);
+    m_topicText = new QLabel;
+    m_topicText->setObjectName("topicText");
+    m_topicText->setWordWrap(true);
+    m_topicText->setTextFormat(Qt::RichText);
+    m_topicText->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    m_topicText->setOpenExternalLinks(true);
+    tbhbox->addWidget(m_topicText);
+    m_topicBar->hide();
+    vbox->addWidget(m_topicBar);
+
+    connect(m_topicToggle, &QToolButton::toggled, m_topicBar, &QWidget::setVisible);
+
+    // Chat view + nick list
     m_chatView = new QTextBrowser;
     m_chatView->setReadOnly(true);
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -87,6 +116,10 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
 
 void ChannelPane::setNick(const QString &nick)
 {
-    if (m_nickPrefix)
-        m_nickPrefix->setText(nick);
+    if (m_nickPrefix) m_nickPrefix->setText(nick);
+}
+
+void ChannelPane::setTopic(const QString &html)
+{
+    if (m_topicText) m_topicText->setText(html);
 }

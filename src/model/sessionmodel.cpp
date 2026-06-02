@@ -800,9 +800,7 @@ void SessionModel::onWhoEntry(const QString &host, const QString &channel,
 
 void SessionModel::onServerMessage(const QString &host, const QString &text)
 {
-    const QString target = (host == m_activeHost && !m_activeChannel.isEmpty())
-        ? m_activeChannel : "(server)";
-    postMessage(host, target, Message::make(MessageType::Server, "", text));
+    postMessage(host, "(server)", Message::make(MessageType::Server, "", text));
 }
 
 void SessionModel::onErrorMessage(const QString &host, const QString &text)

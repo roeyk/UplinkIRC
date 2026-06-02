@@ -73,6 +73,8 @@
 // hamburger (22) + gear (22) + right margin (4) even when the sidebar is closed.
 static constexpr int kBtnZoneMinW = 48;
 
+static QString linkifyTopic(const QString &text);
+
 class ChatBrowser : public QTextBrowser {
 public:
     using QTextBrowser::QTextBrowser;
@@ -524,8 +526,8 @@ void MainWindow::setupSidebar()
     m_sidebar->setMinimumWidth(112);
     m_sidebar->setObjectName("sidebar");
 
-    connect(m_sidebar, &QTreeWidget::currentItemChanged,
-            this, [this](QTreeWidgetItem *, QTreeWidgetItem *){ onSidebarSelectionChanged(); });
+    connect(m_sidebar, &QTreeWidget::itemClicked,
+            this, [this](QTreeWidgetItem *, int){ onSidebarSelectionChanged(); });
     m_sidebar->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_sidebar, &QTreeWidget::customContextMenuRequested,
             this, &MainWindow::onSidebarContextMenu);
@@ -674,9 +676,11 @@ void MainWindow::setupChatArea()
     primaryVbox->setContentsMargins(0, 0, 0, 0);
     primaryVbox->setSpacing(0);
 
-    // Primary panel header: channel name + X (X only shown when extra panes exist)
-    auto *primaryHeader = new QWidget;
-    primaryHeader->setObjectName("paneHeader");
+    // Primary panel header: hidden until the first extra pane is opened
+    m_primaryHeader = new QWidget;
+    m_primaryHeader->setObjectName("paneHeader");
+    m_primaryHeader->setVisible(false);
+    auto *primaryHeader = m_primaryHeader;
     {
         auto *hbox = new QHBoxLayout(primaryHeader);
         hbox->setContentsMargins(6, 2, 2, 2);
@@ -694,15 +698,7 @@ void MainWindow::setupChatArea()
         m_primaryCloseBtn->setAutoRaise(true);
         m_primaryCloseBtn->setVisible(false);
         connect(m_primaryCloseBtn, &QToolButton::clicked, this, [this]{
-            QList<int> sizes = m_panesSplitter->sizes();
-            if (sizes.size() < 2) return;
-            int total = 0;
-            for (int s : sizes) total += s;
-            sizes[0] = 0;
-            const int rest = sizes.size() - 1;
-            for (int i = 1; i < sizes.size(); ++i)
-                sizes[i] = total / rest;
-            m_panesSplitter->setSizes(sizes);
+            m_primaryPanel->hide();
         });
         hbox->addWidget(m_primaryPaneLabel, 1);
         hbox->addWidget(m_primaryCloseBtn);
@@ -830,7 +826,6 @@ void MainWindow::setupChatArea()
 
     m_panesSplitter = new QSplitter(Qt::Horizontal);
     m_panesSplitter->setHandleWidth(2);
-    m_panesSplitter->setCollapsible(0, true);
     m_panesSplitter->addWidget(m_primaryPanel);
     m_panesSplitter->setStretchFactor(0, 1);
     vbox->addWidget(m_panesSplitter, 1);
@@ -1647,10 +1642,13 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
 
 void MainWindow::onTopicChanged(const QString &host, const QString &channel, const QString &topic)
 {
-    Q_UNUSED(topic)
     if (host == m_model->activeHost() &&
         channel.toLower() == m_model->activeChannel().toLower())
         refreshTopicBar(host, channel);
+
+    const QString paneKey = host + "|" + channel.toLower();
+    if (auto *pane = m_panes.value(paneKey))
+        pane->setTopic(linkifyTopic(topic));
 }
 
 void MainWindow::onNickListChanged(const QString &host, const QString &channel)
@@ -2358,22 +2356,18 @@ void MainWindow::onInputSubmit()
 
 void MainWindow::switchToChannel(const QString &host, const QString &channel)
 {
-    // Re-expand primary if it was collapsed
-    if (m_panesSplitter->count() > 1 && m_panesSplitter->sizes().value(0) == 0) {
-        QList<int> sizes = m_panesSplitter->sizes();
-        int total = 0;
-        for (int s : sizes) total += s;
-        sizes[0] = total / sizes.size();
-        for (int i = 1; i < sizes.size(); ++i)
-            sizes[i] = total / sizes.size();
-        m_panesSplitter->setSizes(sizes);
+    m_primaryPanel->setVisible(true);
+
+    if (m_primaryPaneLabel) {
+        if (channel == "(server)") {
+            QString serverName = host;
+            for (const auto &sc : std::as_const(m_config.servers))
+                if (sc.host == host && !sc.name.isEmpty()) { serverName = sc.name; break; }
+            m_primaryPaneLabel->setText(serverName);
+        } else {
+            m_primaryPaneLabel->setText(channel);
+        }
     }
-
-    if (m_primaryPaneLabel)
-        m_primaryPaneLabel->setText(channel == "(server)" ? host : channel);
-
-    // If this channel is open in a pane, close it before making it primary
-    closeChannelPane(host, channel);
 
     clearReplyBar();
     m_model->setActive(host, channel);
@@ -2467,29 +2461,22 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
 {
     const QString key = host + "|" + channel.toLower();
     if (m_panes.contains(key)) return;
+    if (m_orderedPanes.size() >= 3) return; // max 4 total (primary + 3)
 
     auto *pane = new ChannelPane(host, channel, this);
     if (m_theme.valid)
         pane->chatView()->document()->setDefaultStyleSheet(
             QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
 
-    // If opening the active channel, shift primary to server buffer to avoid duplication
-    if (host == m_model->activeHost() &&
-        channel.toLower() == m_model->activeChannel().toLower()) {
-        auto *srvItem = findServerItem(host);
-        if (srvItem) {
-            m_sidebar->setCurrentItem(srvItem);
-            switchToChannel(host, "(server)");
-        }
-    }
-
     if (auto *sess = m_model->session(host))
         pane->setNick(sess->nick);
+
+    if (auto *ch = m_model->channel(host, channel))
+        pane->setTopic(linkifyTopic(ch->topic));
 
     connect(pane, &ChannelPane::closeRequested, this, [this, host, channel]{
         closeChannelPane(host, channel);
     });
-
     connect(pane, &ChannelPane::inputSubmitted, this, [this, host, channel](const QString &text){
         if (text.startsWith("/me ", Qt::CaseInsensitive))
             m_model->sendAction(host, channel, text.mid(4));
@@ -2498,9 +2485,10 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     });
 
     m_panes[key] = pane;
-    m_panesSplitter->addWidget(pane);
-    m_primaryCloseBtn->setVisible(true);
+    m_orderedPanes.append(pane);
+    m_primaryHeader->setVisible(true);
 
+    rebuildPaneLayout();
     refreshPaneChatView(pane);
     refreshPaneNickList(pane);
 }
@@ -2510,17 +2498,84 @@ void MainWindow::closeChannelPane(const QString &host, const QString &channel)
     const QString key = host + "|" + channel.toLower();
     auto *pane = m_panes.take(key);
     if (!pane) return;
+
+    m_orderedPanes.removeOne(pane);
+    pane->setParent(nullptr); // detach before rebuild
     pane->deleteLater();
-    if (m_panes.isEmpty()) {
-        m_primaryCloseBtn->setVisible(false);
-        // Re-expand primary if it was collapsed
-        QList<int> sizes = m_panesSplitter->sizes();
-        if (sizes.value(0) == 0) {
-            int total = 0;
-            for (int s : sizes) total += s;
-            sizes[0] = total;
-            m_panesSplitter->setSizes(sizes);
+
+    if (m_orderedPanes.isEmpty()) {
+        m_primaryHeader->setVisible(false);
+        m_primaryPanel->setVisible(true);
+    }
+
+    rebuildPaneLayout();
+}
+
+void MainWindow::rebuildPaneLayout()
+{
+    // Collect widgets in display order: primary first, then panes
+    QList<QWidget*> widgets;
+    widgets.append(m_primaryPanel);
+    for (auto *p : std::as_const(m_orderedPanes))
+        widgets.append(p);
+
+    // Detach all pane widgets from wherever they currently live
+    for (auto *w : std::as_const(widgets))
+        if (w->parentWidget())
+            w->setParent(nullptr);
+
+    // Remove and delete any nested splitters left in m_panesSplitter
+    while (m_panesSplitter->count() > 0) {
+        auto *w = m_panesSplitter->widget(0);
+        w->setParent(nullptr);
+        if (auto *s = qobject_cast<QSplitter *>(w))
+            delete s;
+    }
+
+    auto makeVert = [this]() -> QSplitter * {
+        auto *s = new QSplitter(Qt::Vertical);
+        s->setHandleWidth(2);
+        return s;
+    };
+
+    const int n = widgets.size();
+    if (n <= 2) {
+        // 1 or 2 panes: flat horizontal
+        for (auto *w : std::as_const(widgets)) {
+            m_panesSplitter->addWidget(w);
+            w->show();
         }
+    } else if (n == 3) {
+        // primary full-height left, two panes stacked right
+        m_panesSplitter->addWidget(widgets[0]);
+        widgets[0]->show();
+        auto *right = makeVert();
+        right->addWidget(widgets[1]);
+        right->addWidget(widgets[2]);
+        widgets[1]->show();
+        widgets[2]->show();
+        m_panesSplitter->addWidget(right);
+    } else { // n == 4  (2×2 grid)
+        auto *left = makeVert();
+        left->addWidget(widgets[0]);
+        left->addWidget(widgets[1]);
+        widgets[0]->show();
+        widgets[1]->show();
+        auto *right = makeVert();
+        right->addWidget(widgets[2]);
+        right->addWidget(widgets[3]);
+        widgets[2]->show();
+        widgets[3]->show();
+        m_panesSplitter->addWidget(left);
+        m_panesSplitter->addWidget(right);
+    }
+
+    // Equalize top-level columns
+    const int total = m_panesSplitter->width();
+    if (total > 0 && m_panesSplitter->count() > 0) {
+        const int each = total / m_panesSplitter->count();
+        QList<int> sizes(m_panesSplitter->count(), each);
+        m_panesSplitter->setSizes(sizes);
     }
 }
 

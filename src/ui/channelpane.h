@@ -6,6 +6,7 @@ class QTextBrowser;
 class QListWidget;
 class QLineEdit;
 class QLabel;
+class QToolButton;
 
 class ChannelPane : public QWidget {
     Q_OBJECT
@@ -16,6 +17,7 @@ public:
     QTextBrowser *chatView() const { return m_chatView; }
     QListWidget  *nickList() const { return m_nickList; }
     void setNick(const QString &nick);
+    void setTopic(const QString &html);
 signals:
     void closeRequested();
     void inputSubmitted(const QString &text);
@@ -26,4 +28,7 @@ private:
     QListWidget  *m_nickList{nullptr};
     QLineEdit    *m_input{nullptr};
     QLabel       *m_nickPrefix{nullptr};
+    QWidget      *m_topicBar{nullptr};
+    QLabel       *m_topicText{nullptr};
+    QToolButton  *m_topicToggle{nullptr};
 };
