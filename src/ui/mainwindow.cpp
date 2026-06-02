@@ -2069,6 +2069,11 @@ void MainWindow::onInputSubmit()
         m_model->sendTyping(host, channel, "done");
     }
 
+    dispatchInput(text, host, channel);
+}
+
+void MainWindow::dispatchInput(const QString &text, const QString &host, const QString &channel)
+{
     if (text.startsWith('/')) {
         const QString cmd  = text.section(' ', 0, 0).toLower();
         const QString args = text.section(' ', 1);
@@ -2492,10 +2497,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
         closeChannelPane(host, channel);
     });
     connect(pane, &ChannelPane::inputSubmitted, this, [this, host, channel](const QString &text){
-        if (text.startsWith("/me ", Qt::CaseInsensitive))
-            m_model->sendAction(host, channel, text.mid(4));
-        else if (!text.startsWith('/'))
-            m_model->sendMessage(host, channel, text);
+        dispatchInput(text, host, channel);
     });
 
     m_panes[key] = pane;

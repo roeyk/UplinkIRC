@@ -66,6 +66,7 @@ private slots:
     // UI → Model
     void onSidebarSelectionChanged();
     void onInputSubmit();
+    void dispatchInput(const QString &text, const QString &host, const QString &channel);
 
     // Typing
     void onTypingReceived(const QString &host, const QString &channel,
