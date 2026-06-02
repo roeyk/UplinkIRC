@@ -286,7 +286,7 @@ void MainWindow::setupToolbar()
         });
 
         menu->addSeparator();
-        menu->addAction("Exit", menu, &QMenu::close);
+        menu->addAction(MenuIcons::exit(ic), "Exit", menu, &QMenu::close);
 
         QPoint pos = m_hamburger->mapToGlobal(QPoint(0, m_hamburger->height()));
         menu->exec(pos);
@@ -1310,7 +1310,7 @@ void MainWindow::handleTabComplete()
 
         if (prefix.startsWith('/')) {
             static const QStringList commands = {
-                "/away", "/back", "/ban", "/clear", "/ctcp",
+                "/away", "/back", "/ban", "/caps", "/clear", "/ctcp",
                 "/deop", "/devoice", "/invite", "/j", "/join",
                 "/close", "/kick", "/leave", "/me", "/mode", "/motd", "/msg",
                 "/nick", "/notice", "/op", "/part", "/ping", "/time",
@@ -2061,6 +2061,14 @@ void MainWindow::onInputSubmit()
             if (!target.isEmpty())
                 m_model->sendRaw(host, "KICK " + channel + " " + target
                                  + (reason.isEmpty() ? "" : " :" + reason));
+        } else if (cmd == "/caps") {
+            auto *cl = m_model->clientFor(host);
+            if (cl) {
+                const QStringList caps = cl->ackedCaps();
+                m_model->localMessage(host, channel,
+                    caps.isEmpty() ? "No caps negotiated."
+                                   : "Active caps: " + caps.join("  "));
+            }
         } else if (cmd == "/version") {
             if (args.isEmpty())
                 m_model->sendRaw(host, "VERSION");

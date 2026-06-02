@@ -230,4 +230,21 @@ inline QIcon coloredNicks(const QColor &col = {}) {
     }, col);
 }
 
+inline QIcon exit(const QColor &col = {}) {
+    return make([](QPainter &p, const QColor &c, float s) {
+        QPen pen(c, 1.8f, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        p.setPen(pen); p.setBrush(Qt::NoBrush);
+        // Box with open right side
+        float m = s * 0.15f, mid = s * 0.5f, r = s - m;
+        p.drawLine(QPointF(mid, m),   QPointF(m, m));
+        p.drawLine(QPointF(m, m),     QPointF(m, r));
+        p.drawLine(QPointF(m, r),     QPointF(mid, r));
+        // Arrow pointing right
+        float ax = s * 0.82f;
+        p.drawLine(QPointF(mid, mid), QPointF(ax, mid));
+        p.drawLine(QPointF(ax - s*0.15f, mid - s*0.15f), QPointF(ax, mid));
+        p.drawLine(QPointF(ax - s*0.15f, mid + s*0.15f), QPointF(ax, mid));
+    }, col);
+}
+
 } // namespace MenuIcons

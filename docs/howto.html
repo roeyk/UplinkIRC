@@ -927,58 +927,165 @@ sasl_password = "mysecretpassword"</pre>
   <!-- ZNC -->
   <section id="znc">
     <h2>ZNC bouncer</h2>
-    <p>A bouncer keeps you connected to IRC 24/7 and replays missed messages when you reconnect. Set <code>bouncer = "znc"</code> to activate ZNC-specific features like playback and self-message echo.</p>
 
-    <p>ZNC expects the password in <code>username/network:password</code> format, passed as the connection <code>password</code>:</p>
+    <p>A bouncer is a program that sits between you and IRC. It stays connected 24/7 so you never miss messages — when you open NodeRelay it replays everything that arrived while you were away. <strong>ZNC</strong> is the most widely used bouncer.</p>
 
+    <h3>How ZNC authentication works</h3>
+    <p>ZNC does not use SASL. Instead it identifies you through the <strong>Server Password</strong> field, using a specific format:</p>
+    <pre>username/network:password</pre>
+    <ul>
+      <li><strong>username</strong> — your ZNC login name (set when ZNC was installed)</li>
+      <li><strong>network</strong> — the name of the IRC network inside ZNC (e.g. <code>libera</code>, <code>oftc</code>). Check your ZNC web panel or <code>/znc ListNetworks</code> to see the exact names.</li>
+      <li><strong>password</strong> — your ZNC account password</li>
+    </ul>
+    <p>So if your ZNC username is <code>alice</code>, your network is named <code>libera</code>, and your password is <code>hunter2</code>, the Server Password field should contain:</p>
+    <pre>alice/libera:hunter2</pre>
+
+    <div class="note">
+      <strong>Leave SASL blank.</strong> ZNC uses the Server Password field for authentication — do not fill in SASL User or SASL Password. Those fields are for connecting directly to IRC servers that support SASL, not for ZNC.
+    </div>
+
+    <h3>Setting up ZNC in Manage Servers</h3>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Preferences</strong>, then click <strong>Manage Servers</strong> and click <strong>Add</strong>.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Fill in <strong>Connection</strong>: set <strong>Host</strong> to your ZNC server's hostname or IP, and <strong>Port</strong> to the port ZNC listens on (commonly <code>6697</code> for SSL or <code>6667</code> for plain). Check <strong>Use SSL/TLS</strong> if your ZNC has SSL enabled (recommended).</div></div>
+    <div class="step-row"><span class="step">3</span><div>Fill in <strong>Identity</strong>: set <strong>Nick</strong>, <strong>Username</strong>, and <strong>Real Name</strong> to whatever you normally use on IRC. These are sent to the IRC network through ZNC.</div></div>
+    <div class="step-row"><span class="step">4</span><div>Under <strong>Authentication → Server Password</strong>, enter your ZNC password in <code>username/network:password</code> format. Example: <code>alice/libera:hunter2</code>. Leave all SASL fields blank.</div></div>
+    <div class="step-row"><span class="step">5</span><div>Under <strong>Channels → Auto-join</strong>, list the channels you want to join: <code>#linux, #archlinux</code></div></div>
+    <div class="step-row"><span class="step">6</span><div>Under <strong>Bouncer → Type</strong>, select <strong>ZNC</strong>. Leave the Network field blank (it is not used for ZNC). Click <strong>OK</strong>, then <strong>OK</strong> again in Manage Servers.</div></div>
+
+    <h3>Config file equivalent</h3>
+    <p>The Manage Servers dialog writes this to <code>config.toml</code> for you, but you can also edit it directly:</p>
     <pre>[[server]]
 name     = "ZNC → Libera"
-host     = "znc.example.com"   # your ZNC host
+host     = "znc.example.com"
 port     = 6697
 ssl      = true
 nick     = "alice"
-user     = "uplink"
-realname = "NodeRelay User"
-password = "alice/libera:myzncpassword"   # username/network:password
+user     = "alice"
+realname = "Alice Smith"
+password = "alice/libera:hunter2"   # ZNC: username/network:password
 bouncer  = "znc"
 channels = "#linux, #archlinux"</pre>
 
-    <p>With <code>bouncer = "znc"</code>, NodeRelay negotiates <code>znc.in/playback</code> and requests all missed messages after connecting. Messages you sent from other IRC clients are echoed back via <code>znc.in/self-message</code>.</p>
+    <h3>What ZNC mode enables</h3>
+    <p>Setting <code>bouncer = "znc"</code> (or selecting ZNC in the dialog) tells NodeRelay to negotiate two ZNC-specific IRCv3 capabilities:</p>
+    <table>
+      <tr><th>Capability</th><th>What it does</th></tr>
+      <tr><td><code>znc.in/playback</code></td><td>Requests all messages that arrived since your last disconnect. NodeRelay asks for them automatically on connect — you see your missed messages instantly at reduced opacity.</td></tr>
+      <tr><td><code>znc.in/self-message</code></td><td>Echoes messages you sent from other IRC clients (phone, another PC) back into NodeRelay so your conversation history stays complete.</td></tr>
+    </table>
 
-    <p>If your ZNC carries multiple networks, add one block per network — just change the network name in the password:</p>
-
+    <h3>Multiple networks on one ZNC</h3>
+    <p>ZNC can carry several IRC networks simultaneously. Add a separate NodeRelay server entry for each one — same host and port, different network name in the password:</p>
     <pre>[[server]]
+name     = "ZNC → Libera"
+host     = "znc.example.com"
+port     = 6697
+ssl      = true
+nick     = "alice"
+user     = "alice"
+realname = "Alice Smith"
+password = "alice/libera:hunter2"
+bouncer  = "znc"
+channels = "#linux"
+
+[[server]]
 name     = "ZNC → OFTC"
 host     = "znc.example.com"
 port     = 6697
 ssl      = true
 nick     = "alice"
-user     = "uplink"
-realname = "NodeRelay User"
-password = "alice/oftc:myzncpassword"   # different network
+user     = "alice"
+realname = "Alice Smith"
+password = "alice/oftc:hunter2"   # same password, different network name
 bouncer  = "znc"
 channels = "#debian"</pre>
+
+    <div class="tip">
+      <strong>Not sure what your network is named in ZNC?</strong> Connect once without setting the bouncer type, then type <code>/znc ListNetworks</code> in the server buffer. ZNC will reply with the exact names to use in the password.
+    </div>
+
+    <h3>Troubleshooting</h3>
+    <table>
+      <tr><th>Symptom</th><th>Likely cause</th></tr>
+      <tr><td>Password incorrect / access denied</td><td>Wrong format — double-check <code>username/network:password</code>. The network name must match exactly what ZNC has (case-sensitive on some ZNC versions).</td></tr>
+      <tr><td>Connected but no channels join</td><td>The channels in Auto-join don't exist on that ZNC network, or ZNC is set to manage joins itself. Check ZNC's channel settings in its web panel.</td></tr>
+      <tr><td>No message history on connect</td><td><code>znc.in/playback</code> not loaded in ZNC. Enable the <em>playback</em> module in ZNC's web panel under your network's modules.</td></tr>
+      <tr><td>TLS errors</td><td>Port mismatch — ZNC's SSL port is usually different from the plain port. Check the ZNC web panel under <em>Global Settings → Listeners</em>.</td></tr>
+    </table>
   </section>
 
   <!-- SOJU -->
   <section id="soju">
     <h2>soju bouncer</h2>
-    <p>soju is a modern IRC bouncer with excellent IRCv3 support. Set <code>bouncer = "soju"</code>. The password is <code>username:password</code>. If your soju instance manages more than one IRC network, use <code>bouncer_network</code> to pick one.</p>
 
+    <p><strong>soju</strong> is a modern IRC bouncer with deep IRCv3 support. It is simpler to configure than ZNC and handles multiple networks cleanly. If you are running your own bouncer, soju is worth considering.</p>
+
+    <h3>How soju authentication works</h3>
+    <p>soju uses SASL PLAIN for authentication — but NodeRelay handles this transparently when you select the soju bouncer type. You just put your credentials in the <strong>Server Password</strong> field in the simpler <code>username:password</code> format (no network name needed here):</p>
+    <pre>alice:hunter2</pre>
+
+    <h3>Setting up soju in Manage Servers</h3>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Preferences → Manage Servers → Add</strong>.</div></div>
+    <div class="step-row"><span class="step">2</span><div><strong>Host</strong>: your soju server hostname. <strong>Port</strong>: typically <code>6697</code> SSL. Check <strong>Use SSL/TLS</strong>.</div></div>
+    <div class="step-row"><span class="step">3</span><div><strong>Identity</strong>: fill in Nick, Username, and Real Name as usual.</div></div>
+    <div class="step-row"><span class="step">4</span><div><strong>Server Password</strong>: enter <code>username:password</code>. Example: <code>alice:hunter2</code>. Leave SASL fields blank.</div></div>
+    <div class="step-row"><span class="step">5</span><div><strong>Auto-join</strong>: list your channels.</div></div>
+    <div class="step-row"><span class="step">6</span><div><strong>Bouncer → Type</strong>: select <strong>Soju</strong>. If your soju manages multiple IRC networks, fill in the <strong>Network</strong> field with the network name (e.g. <code>libera</code>). If soju only has one network, leave it blank.</div></div>
+
+    <h3>Config file equivalent</h3>
     <pre>[[server]]
 name            = "soju → Libera"
 host            = "soju.example.com"
 port            = 6697
 ssl             = true
 nick            = "alice"
-user            = "uplink"
-realname        = "NodeRelay User"
-password        = "alice:mysojupassword"   # username:password
+user            = "alice"
+realname        = "Alice Smith"
+password        = "alice:hunter2"   # soju: username:password
 bouncer         = "soju"
-bouncer_network = "libera"                 # omit if only one network
+bouncer_network = "libera"          # omit if soju only manages one network
 channels        = "#linux"</pre>
 
-    <p>With <code>bouncer = "soju"</code>, NodeRelay negotiates <code>soju.im/bouncer-networks</code> (lists your networks in the server buffer), <code>soju.im/read</code> (syncs your read position across all connected clients), and requests chat history on each join.</p>
+    <h3>What soju mode enables</h3>
+    <table>
+      <tr><th>Capability</th><th>What it does</th></tr>
+      <tr><td><code>soju.im/bouncer-networks</code></td><td>Lists all IRC networks your soju manages in the server buffer on connect, so you can see what's available.</td></tr>
+      <tr><td><code>soju.im/read</code></td><td>Syncs your read position across all connected clients. If you read a message on your phone, NodeRelay on your desktop already knows.</td></tr>
+      <tr><td><code>chathistory</code></td><td>Requests missed messages on each channel join — soju supports this natively and delivers history with original timestamps.</td></tr>
+    </table>
+
+    <h3>Multiple networks on one soju</h3>
+    <p>Add one NodeRelay server entry per IRC network. The password is the same — only <code>bouncer_network</code> changes:</p>
+    <pre>[[server]]
+name            = "soju → Libera"
+host            = "soju.example.com"
+port            = 6697
+ssl             = true
+nick            = "alice"
+user            = "alice"
+realname        = "Alice Smith"
+password        = "alice:hunter2"
+bouncer         = "soju"
+bouncer_network = "libera"
+channels        = "#linux"
+
+[[server]]
+name            = "soju → OFTC"
+host            = "soju.example.com"
+port            = 6697
+ssl             = true
+nick            = "alice"
+user            = "alice"
+realname        = "Alice Smith"
+password        = "alice:hunter2"
+bouncer         = "soju"
+bouncer_network = "oftc"
+channels        = "#debian"</pre>
+
+    <div class="tip">
+      <strong>Not sure what your network names are?</strong> Connect once without setting <code>bouncer_network</code>. soju will list all available networks in the server buffer automatically via <code>soju.im/bouncer-networks</code>.
+    </div>
 
     <div class="note">
       <strong>Chat history replay</strong> is automatic on both ZNC and soju (and any server supporting the <code>chathistory</code> CAP). NodeRelay requests the last 100 messages for each channel on join. History messages appear at reduced opacity with their original timestamps so you can tell them apart from live messages.
