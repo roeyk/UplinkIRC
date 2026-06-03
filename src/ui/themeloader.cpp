@@ -280,11 +280,12 @@ QListWidget::item:hover:!selected {
 
 /* ── Input bar ── */
 QWidget#inputBar {
-    background-color: {{inputBg}};
-    border-top: 1px solid {{border}};
+    background-color: {{bufferBg}};
+    border: none;
+    padding: 4px 6px;
 }
 QWidget#inputBar QLabel {
-    background-color: {{inputBg}};
+    background-color: transparent;
     color: {{inputNick}};
     border: none;
 }
@@ -292,8 +293,8 @@ QWidget#inputBar QLineEdit {
     background-color: {{inputBg}};
     color: {{inputText}};
     border: none;
-    border-radius: 0px;
-    padding: 4px 6px;
+    border-radius: 6px;
+    padding: 4px 8px;
     selection-background-color: {{accent}};
 }
 
