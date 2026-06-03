@@ -153,6 +153,7 @@ QStatusBar {
     color: {{srvText}};
     border: none;
     font-size: 7pt;
+    padding: 0px 4px;
 }
 /* ── Dock title bars ── */
 QWidget#dockTitleBar {
@@ -194,6 +195,11 @@ QSizeGrip {
 QMenuBar {
     background-color: {{bg}};
     color: {{text}};
+    padding: 1px 0px;
+}
+QMenuBar::item {
+    padding: 3px 10px;
+    border-radius: 4px;
 }
 QMenuBar::item:selected {
     background-color: {{accent}};
@@ -203,12 +209,21 @@ QMenu {
     background-color: {{bg}};
     color: {{text}};
     border: 1px solid {{border}};
+    border-radius: 6px;
+    padding: 4px 0px;
 }
 QMenu::item {
-    padding: 4px 20px 4px 20px;
+    padding: 5px 22px 5px 14px;
+    border-radius: 3px;
+    margin: 1px 4px;
 }
 QMenu::item:selected {
     background-color: {{accent}};
+}
+QMenu::separator {
+    height: 1px;
+    background: {{border}};
+    margin: 4px 8px;
 }
 
 /* ── Sidebar ── */
@@ -220,11 +235,14 @@ QTreeWidget {
 }
 QTreeWidget::item {
     padding: 0px 4px;
-    height: 18px;
+    height: 20px;
 }
 QTreeWidget::item:selected {
     background-color: {{accent}};
     color: {{sidebarActive}};
+}
+QTreeWidget::item:hover:!selected {
+    background-color: {{border}};
 }
 QTreeWidget::item:hover:selected {
     background-color: {{accent}};
@@ -253,13 +271,13 @@ QListWidget {
 }
 QListWidget::item {
     padding: 0px 4px;
-    height: 18px;
+    height: 20px;
 }
 QListWidget::item:selected {
     background-color: {{accent}};
     color: {{sidebarActive}};
 }
-QListWidget::item:hover {
+QListWidget::item:hover:!selected {
     background-color: {{border}};
 }
 
@@ -273,15 +291,140 @@ QWidget#inputBar QLabel {
     color: {{inputNick}};
     border: none;
 }
-QLineEdit {
+QWidget#inputBar QLineEdit {
     background-color: {{inputBg}};
     color: {{inputText}};
     border: none;
+    border-radius: 0px;
     padding: 4px 6px;
     selection-background-color: {{accent}};
 }
+
+/* ── Line edit (dialogs) ── */
+QLineEdit {
+    background-color: {{inputBg}};
+    color: {{inputText}};
+    border: 1px solid {{border}};
+    border-radius: 5px;
+    padding: 4px 8px;
+    selection-background-color: {{accent}};
+}
+QLineEdit:focus {
+    border-color: {{accent}};
+}
 QLineEdit::placeholder-text {
     color: {{placeholder}};
+}
+
+/* ── Combo box ── */
+QComboBox {
+    background-color: {{inputBg}};
+    color: {{inputText}};
+    border: 1px solid {{border}};
+    border-radius: 5px;
+    padding: 3px 8px;
+    min-width: 80px;
+}
+QComboBox:focus {
+    border-color: {{accent}};
+}
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+QComboBox QAbstractItemView {
+    background-color: {{bg}};
+    color: {{text}};
+    border: 1px solid {{border}};
+    selection-background-color: {{accent}};
+    outline: none;
+}
+
+/* ── Spin box ── */
+QSpinBox {
+    background-color: {{inputBg}};
+    color: {{inputText}};
+    border: 1px solid {{border}};
+    border-radius: 5px;
+    padding: 3px 6px;
+}
+QSpinBox:focus {
+    border-color: {{accent}};
+}
+QSpinBox::up-button, QSpinBox::down-button {
+    border: none;
+    background: transparent;
+    width: 14px;
+}
+
+/* ── Check box ── */
+QCheckBox {
+    spacing: 6px;
+    color: {{text}};
+}
+QCheckBox::indicator {
+    width: 14px;
+    height: 14px;
+    border: 1px solid {{border}};
+    border-radius: 3px;
+    background-color: {{inputBg}};
+}
+QCheckBox::indicator:checked {
+    background-color: {{accent}};
+    border-color: {{accent}};
+}
+QCheckBox::indicator:hover {
+    border-color: {{accent}};
+}
+
+/* ── Radio button ── */
+QRadioButton {
+    spacing: 6px;
+    color: {{text}};
+}
+QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    border: 1px solid {{border}};
+    border-radius: 7px;
+    background-color: {{inputBg}};
+}
+QRadioButton::indicator:checked {
+    background-color: {{accent}};
+    border-color: {{accent}};
+}
+QRadioButton::indicator:hover {
+    border-color: {{accent}};
+}
+
+/* ── Tab widget ── */
+QTabWidget::pane {
+    border: 1px solid {{border}};
+    border-top: none;
+}
+QTabBar::tab {
+    background-color: transparent;
+    color: {{placeholder}};
+    padding: 6px 16px;
+    border: none;
+    border-bottom: 2px solid transparent;
+}
+QTabBar::tab:selected {
+    color: {{text}};
+    border-bottom: 2px solid {{accent}};
+}
+QTabBar::tab:hover:!selected {
+    color: {{text}};
+    background-color: {{border}};
+}
+
+/* ── Tooltip ── */
+QToolTip {
+    background-color: {{sidebarBg}};
+    color: {{text}};
+    border: 1px solid {{border}};
+    border-radius: 4px;
+    padding: 4px 8px;
 }
 
 /* ── Dock widgets ── */
@@ -296,14 +439,18 @@ QDockWidget::title {
 
 /* ── Scroll bars ── */
 QScrollBar:vertical {
-    background: {{bg}};
-    width: 4px;
+    background: transparent;
+    width: 6px;
     border: none;
+    margin: 2px;
 }
 QScrollBar::handle:vertical {
     background: {{border}};
-    border-radius: 2px;
-    min-height: 20px;
+    border-radius: 3px;
+    min-height: 24px;
+}
+QScrollBar::handle:vertical:hover {
+    background: {{placeholder}};
 }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
 QScrollBar:horizontal { height: 0; }
@@ -311,6 +458,8 @@ QScrollBar:horizontal { height: 0; }
 /* ── Splitter ── */
 QSplitter::handle {
     background: {{border}};
+    width: 1px;
+    height: 1px;
 }
 
 /* ── Embedded nick panel ── */
@@ -352,9 +501,9 @@ QLabel {
 QPushButton {
     background-color: {{border}};
     color: {{text}};
-    border: 1px solid {{border}};
-    border-radius: 3px;
-    padding: 4px 12px;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 14px;
 }
 QPushButton:hover   { background-color: {{accent}}; }
 QPushButton:pressed { background-color: {{sidebarBg}}; }
@@ -393,6 +542,21 @@ QLabel#topicText {
     color: {{placeholder}};
     background: transparent;
     padding: 0px;
+}
+
+/* ── Topic toggle button ── */
+QToolButton#topicToggle {
+    background: transparent;
+    color: {{text}};
+    border: 1px solid {{border}};
+    border-radius: 4px;
+    padding: 1px 5px;
+}
+QToolButton#topicToggle:checked {
+    border-color: {{accent}};
+}
+QToolButton#topicToggle:hover {
+    background: {{border}};
 }
 
 /* ── Typing indicator ── */

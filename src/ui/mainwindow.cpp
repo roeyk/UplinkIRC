@@ -688,7 +688,7 @@ void MainWindow::setupChatArea()
     // Primary panel header: hidden until the first extra pane is opened
     m_primaryHeader = new QWidget;
     m_primaryHeader->setObjectName("paneHeader");
-    m_primaryHeader->setVisible(false);
+    m_primaryHeader->setVisible(true);
     auto *primaryHeader = m_primaryHeader;
     {
         auto *hbox = new QHBoxLayout(primaryHeader);
@@ -2697,7 +2697,7 @@ void MainWindow::closeChannelPane(const QString &host, const QString &channel)
     pane->deleteLater();
 
     if (m_orderedPanes.isEmpty()) {
-        m_primaryHeader->setVisible(false);
+        m_primaryCloseBtn->setVisible(false);
         m_primaryPanel->setVisible(true);
     }
 

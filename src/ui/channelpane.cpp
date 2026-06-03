@@ -29,20 +29,10 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     hbox->setSpacing(6);
 
     m_topicToggle = new QToolButton;
+    m_topicToggle->setObjectName("topicToggle");
     m_topicToggle->setText(QStringLiteral("▸ topic"));
     m_topicToggle->setAutoRaise(false);
     m_topicToggle->setCheckable(true);
-    m_topicToggle->setStyleSheet(
-        "QToolButton {"
-        "  background: transparent;"
-        "  border: 1px solid palette(mid);"
-        "  border-radius: 4px;"
-        "  padding: 1px 5px;"
-        "}"
-        "QToolButton:checked {"
-        "  border-color: palette(highlight);"
-        "}"
-    );
 
     auto *nameLabel = new QLabel(channel);
     nameLabel->setObjectName("paneChannelLabel");
