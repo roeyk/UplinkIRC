@@ -76,16 +76,16 @@ jobs:
       - name: Package (Linux)
         if: runner.os == 'Linux'
         run: |
-          mkdir -p artifact/NodeRelay
-          cp build/NodeRelay artifact/NodeRelay/
-          cp -r build/themes artifact/NodeRelay/
-          tar -czf NodeRelay-${{ github.ref_name }}-linux-x86_64.tar.gz \
-              -C artifact NodeRelay
+          mkdir -p artifact/Uplink
+          cp build/Uplink artifact/Uplink/
+          cp -r build/themes artifact/Uplink/
+          tar -czf Uplink-${{ github.ref_name }}-linux-x86_64.tar.gz \
+              -C artifact Uplink
 
       - name: Build AppImage (Linux)
         if: runner.os == 'Linux'
         env:
-          UPDATE_INFORMATION: "gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|NodeRelay-*-x86_64.AppImage.zsync"
+          UPDATE_INFORMATION: "gh-releases-zsync|${{ github.repository_owner }}|${{ github.event.repository.name }}|latest|Uplink-*-x86_64.AppImage.zsync"
         run: bash packaging/build-appimage.sh
 
       # ── Windows ──────────────────────────────────────────────────────────
@@ -93,22 +93,22 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Path artifact\NodeRelay | Out-Null
-          Copy-Item build\Release\NodeRelay.exe artifact\NodeRelay\
-          Copy-Item -Recurse build\Release\themes artifact\NodeRelay\themes
+          New-Item -ItemType Directory -Path artifact\Uplink | Out-Null
+          Copy-Item build\Release\Uplink.exe artifact\Uplink\
+          Copy-Item -Recurse build\Release\themes artifact\Uplink\themes
           $qkcDll = Get-ChildItem -Path build -Recurse -Filter qt6keychain.dll | Select-Object -First 1
           if ($qkcDll) { Copy-Item $qkcDll.FullName "$env:QT_ROOT_DIR\bin\" }
-          windeployqt --release artifact\NodeRelay\NodeRelay.exe
-          Compress-Archive -Path artifact\NodeRelay\* `
-              -DestinationPath NodeRelay-${{ github.ref_name }}-windows-x64.zip
+          windeployqt --release artifact\Uplink\Uplink.exe
+          Compress-Archive -Path artifact\Uplink\* `
+              -DestinationPath Uplink-${{ github.ref_name }}-windows-x64.zip
 
       # ── macOS ────────────────────────────────────────────────────────────
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          $(brew --prefix qt)/bin/macdeployqt build/NodeRelay.app -dmg
-          mv build/NodeRelay.dmg \
-              NodeRelay-${{ github.ref_name }}-macos-${{ runner.arch == 'ARM64' && 'arm64' || 'x86_64' }}.dmg
+          $(brew --prefix qt)/bin/macdeployqt build/Uplink.app -dmg
+          mv build/Uplink.dmg \
+              Uplink-${{ github.ref_name }}-macos-${{ runner.arch == 'ARM64' && 'arm64' || 'x86_64' }}.dmg
 
       # ── Upload ───────────────────────────────────────────────────────────
       - name: Upload to release
@@ -116,8 +116,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           files: |
-            NodeRelay-${{ github.ref_name }}-*
-            NodeRelay-*.AppImage
-            NodeRelay-*.AppImage.zsync
+            Uplink-${{ github.ref_name }}-*
+            Uplink-*.AppImage
+            Uplink-*.AppImage.zsync
           generate_release_notes: true
-

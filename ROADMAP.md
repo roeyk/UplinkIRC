@@ -1,4 +1,4 @@
-# NodeRelay Roadmap
+# Uplink Roadmap
 
 A fast, secure, IRCv3-featured IRC client built with Qt6 and C++.  
 Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
@@ -8,7 +8,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## Completed
 
 - [x] Project scaffold — Qt6/C++17, CMake, directory structure
-- [x] Config loader — TOML format via toml++, auto-creates `~/.config/noderelay/config.toml` on first run
+- [x] Config loader — TOML format via toml++, auto-creates `~/.config/uplink/config.toml` on first run
 - [x] First-run nick dialog — prompts for nick if config has placeholder `yournick`
 - [x] IRC connection — SSL/TLS via QSslSocket, CAP LS 302 negotiation
 - [x] IRCv3 message tag parser — full prefix + tag parsing
@@ -24,7 +24,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Hamburger menu — About, Documentation (stub), App Icon picker, Theme picker, topic/nick/emoji toggles
 - [x] Persistent Preferences dialog — hamburger now opens a non-modal QDialog; stays open while browsing themes/toggles; replaces dismiss-on-click QMenu
 - [x] Preferences UI rework (v0.9.2) — Manage Servers + Documentation at top; theme as collapsible stay-open list (arrow keys browse, Enter/click applies); App Icon as radio buttons; About removed; Nick Brackets dropdown compact; Enter-triggers-Font-Config bug fixed
-- [x] Hamburger restored as dropdown — ☰ opens About NodeRelay, Documentation, Preferences, Open Config, Reload Config
+- [x] Hamburger restored as dropdown — ☰ opens About Uplink, Documentation, Preferences, Open Config, Reload Config
 - [x] Open Config / Reload Config — Open Config opens config.toml in system editor; Reload Config restarts the app to apply all changes (v0.17.1: changed from partial hot-reload to full restart)
 - [x] Input commands — /join, /j, /part, /nick, /me, /msg, /quote, /raw, /quit, /ping, /invite, /mode, /op, /deop, /voice, /devoice, /ban, /unban, /clear
 - [x] Raw command passthrough — unrecognized /CMD inputs sent directly as raw IRC lines; /REHASH, /SAMODE, /GLOBOPS etc. work without /quote prefix (v0.16.1)
@@ -37,13 +37,13 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Version baked into binary — `version.h` generated from CMake `PROJECT_VERSION` at build time
 - [x] Full documentation — configuration.md, commands.md, faq.md, ircv3.md, keyboard-shortcuts.md (beginner-friendly, real examples)
 - [x] How-To guide — docs/howto.html: left-side nav tree, step-by-step from install to tweaks, platform tabs, callout boxes, scroll-spy; linked from GitHub Pages and README
-- [x] GitHub repo — public, branch-protected, invite-only contributions; renamed to noderelay/NodeRelay (v0.16.2)
-- [x] GitHub Pages landing page — https://noderelay.github.io/NodeRelay/
+- [x] GitHub repo — public, branch-protected, invite-only contributions; renamed to uplink/UplinkIRC (v0.16.2)
+- [x] GitHub Pages landing page — https://uplink.github.io/Uplink/
 - [x] README beautification — badges, icon gallery, feature tables, annotated config, commands table, download buttons
-- [x] Full rebrand to NodeRelay — name, binary, config path, icons, docs, CI, GitHub repo (v0.16.2)
+- [x] Full rebrand to Uplink — name, binary, config path, icons, docs, CI, GitHub repo (v0.16.2)
 - [x] Downloadable icon set on docs site — 8 PNGs (3 styles × dark/light + avatar + banner) with inline preview (v0.16.2)
-- [x] Local directory renamed to NodeRelay; all paths, hooks, and memory updated (v0.16.2 housekeeping)
-- [x] Release CI fixed — all three platform builds produce NodeRelay-v0.16.2-* artifacts (v0.16.2 housekeeping)
+- [x] Local directory renamed to Uplink; all paths, hooks, and memory updated (v0.16.2 housekeeping)
+- [x] Release CI fixed — all three platform builds produce Uplink-v0.16.2-* artifacts (v0.16.2 housekeeping)
 - [x] Nick completion — Tab key completes nicks in input bar
 - [x] Slash command tab completion — Tab also completes /commands (e.g. /pi → /ping)
 - [x] Input history — Up/Down arrow cycles through sent messages
@@ -135,7 +135,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Hanging indent — wrapped message lines align past the timestamp+nick column; toggleable from Preferences and `hanging_indent` config key; uses QTextBlockFormat for correct Qt rendering
 - [x] Message search — Ctrl+F opens search bar; Enter/Shift+Enter next/prev with wrap; Escape closes
 - [x] Hamburger Close Menu button — explicit dismiss action at bottom of ☰ menu
-- [x] Logging — per-channel log files at `~/.config/noderelay/logs/<server>/<channel>.log`; `log_messages` config key; Preferences toggle (v0.15.0)
+- [x] Logging — per-channel log files at `~/.config/uplink/logs/<server>/<channel>.log`; `log_messages` config key; Preferences toggle (v0.15.0)
 - [x] Ignore list — client-side suppress of incoming PRIVMSGs/NOTICEs/ACTIONs from specific nicks; right-click → Ignore/Unignore; /ignore /unignore /ignored commands; persists as [ignore] nicks in config.toml (v0.14.0)
 - [x] msgid — IRCv3 unique message IDs stored on every received message; full signal chain (messageReceived, noticeReceived, actionReceived, batch delivery); prerequisite for reply threading, reactions, and redaction
 - [x] echo-message — server echoes sent messages back; duplicate local echo suppressed; PM routing corrected for self-echoes; also fixes ZNC self-message PM routing
@@ -149,7 +149,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] setname — CAP negotiated; SETNAME parsed; "nick changed their realname" posted to shared channels (v0.16.0)
 - [x] WHOX — WHO <channel> %cnfa,42; 354 RPL_WHOSPCRPL parsed; account names populated on join; bot flags preserved (v0.16.0)
 - [x] userhost-in-names — CAP negotiated; !user@host stripped from NAMES entries before display (v0.16.0)
-- [x] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; policy cached to ~/.config/noderelay/sts.ini; stsstore.h/cpp; m_stsUpgrade flag; downgrade prevention (v0.16.3)
+- [x] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; policy cached to ~/.config/uplink/sts.ini; stsstore.h/cpp; m_stsUpgrade flag; downgrade prevention (v0.16.3)
 - [x] netsplit/netjoin batch types — collapse netsplit noise into a single folded entry (v0.16.4)
 - [x] Standard Replies — structured error/warning/note messages from server (v0.16.5)
 - [x] UTF8ONLY — detect server UTF-8-only signal, enforce encoding, warn on violations (v0.16.8)

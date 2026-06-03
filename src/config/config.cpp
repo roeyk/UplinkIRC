@@ -73,7 +73,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "yournick"
-realname = "NodeRelay User"
+realname = "Uplink User"
 channels = "#uplink"
 )";
 
@@ -82,7 +82,7 @@ channels = "#uplink"
 QString Config::defaultPath()
 {
     return QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-           + "/.config/noderelay/config.toml";
+           + "/.config/uplink/config.toml";
 }
 
 void Config::ensureExists(const QString &path)
@@ -96,7 +96,7 @@ void Config::ensureExists(const QString &path)
         f.write(kDefaultConfig);
         f.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
     } else {
-        qWarning() << "NodeRelay: could not create config at" << path;
+        qWarning() << "Uplink: could not create config at" << path;
     }
 }
 
@@ -109,7 +109,7 @@ Config Config::load(const QString &path)
     try {
         QFile f(path);
         if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qWarning() << "NodeRelay: could not open config at" << path;
+            qWarning() << "Uplink: could not open config at" << path;
             return cfg;
         }
         const std::string content = f.readAll().toStdString();
@@ -127,7 +127,6 @@ Config Config::load(const QString &path)
             cfg.ui.logMessages           = (*ui)["log_messages"].value_or(true);
             cfg.ui.nickBrackets          = QString::fromStdString((*ui)["nick_brackets"].value_or<std::string>("<>"));
             cfg.ui.notifications         = (*ui)["notifications"].value_or(true);
-            cfg.ui.appIcon               = QString::fromStdString((*ui)["app_icon"].value_or<std::string>("dark"));
             cfg.ui.fontFamily            = QString::fromStdString((*ui)["font_family"].value_or<std::string>(kDefaultFontFamily));
             cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10);
             cfg.ui.fontSizes.serverHeader = (*ui)["font_server_header"].value_or(9);
@@ -181,7 +180,7 @@ Config Config::load(const QString &path)
                 sc.ssl      = (*s)["ssl"].value_or(true);
                 sc.nick     = QString::fromStdString((*s)["nick"].value_or<std::string>(""));
                 sc.user     = QString::fromStdString((*s)["user"].value_or<std::string>("uplink"));
-                sc.realname = QString::fromStdString((*s)["realname"].value_or<std::string>("NodeRelay User"));
+                sc.realname = QString::fromStdString((*s)["realname"].value_or<std::string>("Uplink User"));
                 sc.password     = resolvePassword(
                     QString::fromStdString((*s)["password"].value_or<std::string>("")),
                     sc.name, "password");
@@ -232,7 +231,7 @@ Config Config::load(const QString &path)
         }
 
     } catch (const toml::parse_error &e) {
-        qWarning() << "NodeRelay: config parse error:" << e.what();
+        qWarning() << "Uplink: config parse error:" << e.what();
     }
 
     return cfg;
@@ -244,7 +243,7 @@ void Config::save(const Config &cfg, const QString &path)
 
     QSaveFile f(path);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qWarning() << "NodeRelay: could not open config for writing at" << path;
+        qWarning() << "Uplink: could not open config for writing at" << path;
         return;
     }
 
@@ -261,7 +260,6 @@ void Config::save(const Config &cfg, const QString &path)
     out << "log_messages      = " << (cfg.ui.logMessages     ? "true" : "false") << "\n";
     out << "nick_brackets     = " << tomlQuote(cfg.ui.nickBrackets) << "\n";
     out << "notifications     = " << (cfg.ui.notifications    ? "true" : "false") << "\n";
-    out << "app_icon          = " << tomlQuote(cfg.ui.appIcon)     << "\n";
     out << "font_family       = " << tomlQuote(cfg.ui.fontFamily)  << "\n";
     out << "font_toolbar       = " << cfg.ui.fontSizes.toolbar      << "\n";
     out << "font_server_header = " << cfg.ui.fontSizes.serverHeader << "\n";
@@ -359,7 +357,7 @@ void Config::save(const Config &cfg, const QString &path)
     }
 
     if (!f.commit())
-        qWarning() << "NodeRelay: failed to commit config to" << path;
+        qWarning() << "Uplink: failed to commit config to" << path;
     else
         QFile::setPermissions(path, QFileDevice::ReadOwner | QFileDevice::WriteOwner);
 }

@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="assets/banner.png" alt="NodeRelay" width="860" />
+  <img src="assets/banner.png" alt="Uplink" width="860" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/noderelay/NodeRelay/releases/latest">
-    <img src="https://img.shields.io/github/v/release/noderelay/NodeRelay?style=flat-square&color=4a9eda&label=release" alt="Latest Release" />
+  <a href="https://github.com/uplink/UplinkIRC/releases/latest">
+    <img src="https://img.shields.io/github/v/release/uplink/UplinkIRC?style=flat-square&color=4a9eda&label=release" alt="Latest Release" />
   </a>
-  <a href="https://github.com/noderelay/NodeRelay/actions/workflows/ci.yml">
-    <img src="https://github.com/noderelay/NodeRelay/actions/workflows/ci.yml/badge.svg" alt="CI" />
+  <a href="https://github.com/uplink/UplinkIRC/actions/workflows/ci.yml">
+    <img src="https://github.com/uplink/UplinkIRC/actions/workflows/ci.yml/badge.svg" alt="CI" />
   </a>
   <a href="LICENSE">
-    <img src="https://img.shields.io/github/license/noderelay/NodeRelay?style=flat-square&color=22863a" alt="MIT License" />
+    <img src="https://img.shields.io/github/license/uplink/UplinkIRC?style=flat-square&color=22863a" alt="MIT License" />
   </a>
   <img src="https://img.shields.io/badge/Qt6%20%2F%20C%2B%2B-cross--platform-blueviolet?style=flat-square" alt="Qt6 / C++" />
   <img src="https://img.shields.io/badge/IRCv3-ready-orange?style=flat-square" alt="IRCv3" />
@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-0.20.0-x86_64.AppImage">
+  <a href="https://github.com/uplink/UplinkIRC/releases/latest/download/Uplink-0.20.0-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.20.0-linux-x86_64.tar.gz">
+  <a href="https://github.com/uplink/UplinkIRC/releases/latest/download/Uplink-v0.20.0-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.20.0-windows-x64.zip">
+  <a href="https://github.com/uplink/UplinkIRC/releases/latest/download/Uplink-v0.20.0-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.20.0-macos-arm64.dmg">
+  <a href="https://github.com/uplink/UplinkIRC/releases/latest/download/Uplink-v0.20.0-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -46,7 +46,7 @@
 </p>
 
 <p align="center">
-  <a href="https://noderelay.github.io/NodeRelay/howto.html">
+  <a href="https://uplink.github.io/Uplink/howto.html">
     <img src="https://img.shields.io/badge/📖%20How--To%20Guide-install%20→%20tweaks-0368a4?style=for-the-badge&logo=readthedocs&logoColor=white" alt="How-To Guide" />
   </a>
 </p>
@@ -100,7 +100,7 @@
 | **CAP LS 302** | `multi-prefix`, `away-notify`, `server-time`, `message-tags`, `batch`, `chathistory`, `labeled-response`, `draft/typing`, `echo-message`, `chghost`, `draft/react`, `sasl`, `account-notify`, `account-tag`, `extended-join`, `invite-notify`, `setname`, `userhost-in-names`, `draft/message-redaction`, `sts`, `standard-replies` |
 | **Netsplit / netjoin collapse** | Server-sent `netsplit` and `netjoin` batch types collapse into a single summary line per channel instead of flooding the buffer with individual quit/join lines. |
 | **Standard Replies** | `FAIL`, `WARN`, and `NOTE` server commands displayed in the relevant channel or server buffer with clear `[FAIL]`/`[WARN]`/`[NOTE]` prefixes. |
-| **STS (Strict Transport Security)** | When a server advertises STS, NodeRelay upgrades plain connections to TLS automatically and caches the policy to `~/.config/noderelay/sts.ini`. Future connections enforce TLS regardless of `ssl` in config. Equivalent to HSTS for IRC. |
+| **STS (Strict Transport Security)** | When a server advertises STS, Uplink upgrades plain connections to TLS automatically and caches the policy to `~/.config/uplink/sts.ini`. Future connections enforce TLS regardless of `ssl` in config. Equivalent to HSTS for IRC. |
 | **Chat history replay** | Requests the last 100 messages via `CHATHISTORY LATEST` on join. History messages display dimmed with original timestamps. |
 | **Bouncer support** | First-class ZNC and soju: `znc.in/playback`, `soju.im/bouncer-networks`, `soju.im/read`, self-message echo. |
 | **mIRC formatting** | Bold, italic, underline, strikethrough, reverse, 16 IRC colors (fg + bg). |
@@ -134,7 +134,7 @@
 | **Message deletion** | IRCv3 `draft/message-redaction`. Right-click your own message timestamp → **Delete**. Redacted messages show `[message deleted]` in all clients that support it. |
 | **Account tracking** | `account-notify` + `extended-join` + `account-tag` + WHOX. NickServ account shown as a tooltip when you hover a nick in the **nick list** or directly on a **nick in the chat view**. Updated in real time on every message (account-tag), on login/logout (account-notify), on join (extended-join), and on channel join via bulk WHO scan. |
 | **Watch list (Monitor)** | IRCv3 MONITOR. Use `/monitor add <nick>` to watch for someone coming online. Status changes post to the server buffer. List persists in config. |
-| **Per-channel logging** | All messages written to `~/.config/noderelay/logs/<server>/<channel>.log`. Toggle in **Preferences → Log Messages to Disk**. |
+| **Per-channel logging** | All messages written to `~/.config/uplink/logs/<server>/<channel>.log`. Toggle in **Preferences → Log Messages to Disk**. |
 | **Reply to messages** | Right-click a timestamp → **Reply**. Outgoing message carries `+draft/reply` tag. Received replies show `↩ origNick` inline. |
 | **Message search** | **Ctrl+F** opens a search bar. Enter = next match, Shift+Enter = previous, Escape = close. |
 | **mIRC colors** | Full IRC color codes rendered in chat. |
@@ -169,14 +169,14 @@
 ## Quick Start
 
 ```bash
-git clone https://github.com/noderelay/NodeRelay.git
-cd NodeRelay
+git clone https://github.com/uplink/UplinkIRC.git
+cd Uplink
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
-./build/NodeRelay
+./build/Uplink
 ```
 
-On first launch NodeRelay creates `~/.config/noderelay/themes/` and seeds it with all bundled themes automatically.
+On first launch Uplink creates `~/.config/uplink/themes/` and seeds it with all bundled themes automatically.
 
 ### Install dependencies first
 
@@ -228,9 +228,9 @@ The config file is created automatically on first launch. You only need to fill 
 
 | Platform | Path |
 |---|---|
-| Linux / FreeBSD | `~/.config/noderelay/config.toml` |
-| macOS | `~/.config/noderelay/config.toml` |
-| Windows | `%USERPROFILE%\.config\noderelay\config.toml` |
+| Linux / FreeBSD | `~/.config/uplink/config.toml` |
+| macOS | `~/.config/uplink/config.toml` |
+| Windows | `%USERPROFILE%\.config\uplink\config.toml` |
 
 ### Minimal example
 
@@ -241,7 +241,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "NodeRelay User"
+realname = "Uplink User"
 channels = "#uplink"
 ```
 
@@ -254,7 +254,7 @@ channels = "#uplink"
 # Leave as "default" for the native OS look (recommended on Windows).
 theme             = "catppuccin-mocha"
 
-# Show your nick label in the input bar (e.g. "noderelay ▸ ...")
+# Show your nick label in the input bar (e.g. "uplink ▸ ...")
 show_nick_prefix  = true
 
 # Drop the topic text below the info bar
@@ -301,7 +301,7 @@ port     = 6697
 ssl      = true
 nick     = "yournick"
 user     = "uplink"
-realname = "NodeRelay User"
+realname = "Uplink User"
 
 # SASL PLAIN — authenticate before appearing on the network
 # sasl_user     = "yournick"
@@ -330,7 +330,7 @@ port = 6697
 ssl  = true
 nick = "yournick"
 user = "uplink"
-realname = "NodeRelay User"
+realname = "Uplink User"
 channels = "#linux, #archlinux"
 ```
 
@@ -410,7 +410,7 @@ Type a colon to trigger inline autocomplete:
 
 | Doc | Contents |
 |---|---|
-| [**How-To Guide**](https://noderelay.github.io/NodeRelay/howto.html) | Step-by-step from install to tweaks — start here |
+| [**How-To Guide**](https://uplink.github.io/Uplink/howto.html) | Step-by-step from install to tweaks — start here |
 | [Configuration](docs/configuration.md) | Every config key with examples, bouncer setup, SASL |
 | [Commands](docs/commands.md) | All slash commands + emoji shortcuts |
 | [IRCv3 support](docs/ircv3.md) | Capability status and notes |
@@ -422,7 +422,7 @@ Type a colon to trigger inline autocomplete:
 ## Brand Assets
 
 <p align="center">
-  <img src="assets/logo.svg" alt="NodeRelay logo" width="320" />
+  <img src="assets/logo.svg" alt="Uplink logo" width="320" />
 </p>
 
 The `assets/` directory contains all brand files for free use:

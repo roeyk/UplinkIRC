@@ -25,7 +25,7 @@ TrayIcon::TrayIcon(SessionModel *model, MainWindow *window)
 {
     m_baseIcon = AppIcons::appIcon();
     setIcon(m_baseIcon);
-    setToolTip("NodeRelay");
+    setToolTip("Uplink");
 
     buildMenu();
     // Right-click menu only — left click is handled via activated signal
@@ -143,6 +143,6 @@ void TrayIcon::updateTooltip()
         if (sess.connected) connected << sess.host;
 
     setToolTip(connected.isEmpty()
-               ? "NodeRelay — not connected"
-               : "NodeRelay — " + connected.join(", "));
+               ? "Uplink — not connected"
+               : "Uplink — " + connected.join(", "));
 }

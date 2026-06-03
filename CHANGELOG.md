@@ -375,7 +375,7 @@ Session summary — 2026-06-02 (v0.18.0 — pane drag-to-rearrange, themes seedi
 
 What was built:
   - Themes seeded on first run: ThemeLoader::ensureUserThemesDir() creates
-    ~/.config/noderelay/themes/ and copies all bundled .toml files there.
+    ~/.config/uplink/themes/ and copies all bundled .toml files there.
     Deleted themes stay deleted across restarts. themesDir() now always
     returns the user config location.
   - Pane drag-to-rearrange: drag any pane's header bar to swap it with
@@ -426,7 +426,7 @@ Next priorities:
 
 ### Themes
 
-- **Themes seeded on first launch** — NodeRelay now creates `~/.config/noderelay/themes/` on first run and copies all 55 bundled themes there. The burger menu theme list reads from this directory. Themes you delete stay deleted across restarts. Custom themes can be added by dropping `.toml` files into that folder.
+- **Themes seeded on first launch** — Uplink now creates `~/.config/uplink/themes/` on first run and copies all 55 bundled themes there. The burger menu theme list reads from this directory. Themes you delete stay deleted across restarts. Custom themes can be added by dropping `.toml` files into that folder.
 
 ### Fixes
 
@@ -444,7 +444,7 @@ Next priorities:
 
 ### Fixes
 
-- **Fix:** Reload Config now fully restarts NodeRelay, picking up all config changes including server list, ports, channels, and SSL settings. The previous hot-reload missed server-level changes.
+- **Fix:** Reload Config now fully restarts Uplink, picking up all config changes including server list, ports, channels, and SSL settings. The previous hot-reload missed server-level changes.
 - **Fix:** pane topic bar was hidden by default even when the channel had a topic set.
 - **Fix:** primary panel `✕` close button was not shown when panes were opened — it now appears in the primary header whenever any pane is open, matching the behavior of all extra panes.
 
@@ -535,17 +535,17 @@ Next priorities:
 Session summary — 2026-06-01 (housekeeping — local rename, CI fix, cleanup)
 
 What was done:
-  - Local project directory renamed ~/Projects/UplinkIRC → ~/Projects/NodeRelay.
+  - Local project directory renamed ~/Projects/UplinkIRC → ~/Projects/Uplink.
   - Stale /home/joe/Projects/UplinkIRC/ leftover (empty + orphaned .claude dir) deleted.
   - Old UplinkIRC-*.AppImage binaries deleted from project root.
   - Stale build/ and build-appimage/ CMake caches wiped; clean rebuild done.
-  - Claude memory files copied to new -home-joe-Projects-NodeRelay/ path; old directory deleted.
-  - .claude/settings.json hook path updated to Projects/NodeRelay.
+  - Claude memory files copied to new -home-joe-Projects-Uplink/ path; old directory deleted.
+  - .claude/settings.json hook path updated to Projects/Uplink.
   - README App Icons section fixed: correct labels (Node N / Tower / Hub Spoke), stale
     icon-mark.svg and duplicate hub-spoke entries removed, brand assets table rewritten.
   - release.yml was still using UplinkIRC binary names — caused v0.16.2 Release CI to fail.
     Fixed by re-tagging v0.16.2 at HEAD (after the workflow fix commit). All three platform
-    jobs (Linux, macOS, Windows) passed; NodeRelay-v0.16.2-* artifacts uploaded to release.
+    jobs (Linux, macOS, Windows) passed; Uplink-v0.16.2-* artifacts uploaded to release.
 
 Regressions: none.
 Known issues: light icon variants are PNGs (no SVG light versions yet).
@@ -556,10 +556,10 @@ Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
 Session summary — 2026-05-31 (close session — docs polish, logo, howto completeness)
 
 What was done:
-  - Config migrated from ~/.config/uplinkirc/config.toml to NodeRelay: UI settings,
+  - Config migrated from ~/.config/uplinkirc/config.toml to Uplink: UI settings,
     LinuxDojo server, and Libera SASL config all transferred.
   - assets/logo.svg replaced: stale Uplink "U" mark and wordmark replaced with
-    NodeRelay tower icon + "NodeRelay" wordmark on dark navy background, same tagline.
+    Uplink tower icon + "Uplink" wordmark on dark navy background, same tagline.
   - howto.html coverage gaps filled: message deletion section, Monitor section +
     command table, /monitor added to slash commands table, /ignore /ns /cs rows added,
     account tooltip bullets in chat-area and nick-panel sections, timestamp right-click
@@ -586,7 +586,7 @@ Session summary — 2026-05-31 (v0.16.3 — STS, account-tag, howto icon fix)
 
 What was done:
   - STS (Strict Transport Security) implemented. stsstore.h/cpp: QSettings-based
-    persistent policy store at ~/.config/noderelay/sts.ini. connectToServer applies
+    persistent policy store at ~/.config/uplink/sts.ini. connectToServer applies
     any cached policy before dialing (upgrades plain→TLS). handleCap LS parses
     sts=port=X,duration=Y: on plain connection stores policy and reconnects over TLS
     via QTimer::singleShot+socket abort; on TLS refreshes expiry. duration=0 clears
@@ -783,7 +783,7 @@ Next priorities: bouncer Network field hide when ZNC selected, self-signed
 
 - **Fix: WHOIS and server replies appear in active window** — `/whois`, `/version`, MOTD, and all other server responses now appear in the channel or query you are looking at, not buried in the server buffer. Falls back to the server buffer only when no channel is open.
 - **`/caps` command** — type `/caps` in any buffer to see the full list of IRCv3 capabilities negotiated with the server. Useful for checking whether features like `draft/message-redaction` (message deletion) are available.
-- **Fix: `channels` saved as one line** — NodeRelay was saving channel lists as `[[server.channel]]` array-of-tables on every config save, even when no channels had passwords. It now saves the clean `channels = "#a, #b"` format. The array form is still used (and loaded) when a channel has a key.
+- **Fix: `channels` saved as one line** — Uplink was saving channel lists as `[[server.channel]]` array-of-tables on every config save, even when no channels had passwords. It now saves the clean `channels = "#a, #b"` format. The array form is still used (and loaded) when a channel has a key.
 - **Fix: Exit menu item alignment** — the Exit item in the ☰ menu had no icon, causing its text to appear left of all other items. It now has a matching icon.
 - **ZNC and soju docs overhauled** — the How-To guide sections for ZNC and soju are completely rewritten with step-by-step Manage Servers walkthroughs, the password format explained up front with concrete examples, capability tables, multiple-network config examples, and a ZNC troubleshooting table.
 
@@ -804,7 +804,7 @@ What was built:
 
 Bugs fixed:
   - Stale QSettings nickSplitter state caused split layout on launch after
-    revert — cleared from ~/.config/LinuxDojo/NodeRelay.conf.
+    revert — cleared from ~/.config/LinuxDojo/Uplink.conf.
 
 Regressions: none.
 Known issues: same as v0.16.11.
@@ -885,7 +885,7 @@ Next priorities: self-signed cert fingerprint-pin UI, DCC passive/NAT, split vie
 ## v0.16.8 — 2026-06-01
 
 - **SOCKS5 proxy support** — each server can route its connection through a SOCKS5 proxy. Configure with `proxy_host`, `proxy_port` (default `1080`), and optional `proxy_user` / `proxy_pass` in the `[[server]]` block, or set it from the server dialog. The proxy is applied to every connect attempt including reconnects and STS upgrades.
-- **UTF8ONLY** — NodeRelay now detects the `UTF8ONLY` ISUPPORT token from the server and enforces UTF-8 encoding. A notice appears in the server buffer when the token is seen. Incoming non-UTF-8 bytes and outgoing messages containing replacement characters both trigger warnings.
+- **UTF8ONLY** — Uplink now detects the `UTF8ONLY` ISUPPORT token from the server and enforces UTF-8 encoding. A notice appears in the server buffer when the token is seen. Incoming non-UTF-8 bytes and outgoing messages containing replacement characters both trigger warnings.
 - **`/leave` and `/close` commands** — in a channel, both send PART. In a query (PM window), both close the buffer without sending anything to the server. Both complete via Tab.
 - **Fix: NickServ password still shown when server has `echo-message`** — the server-echo path in `onMessage` was missing the credential redaction that the local-echo path had. Both paths now redact `IDENTIFY`, `REGISTER`, `GHOST`, `RECOVER`, `RELEASE`, `REGAIN`, and `SETPASS`.
 
@@ -926,7 +926,7 @@ Next priorities: self-signed cert fingerprint-pin UI, DCC passive/NAT, split vie
 - **howto.html: STS section** — full dedicated section under Authentication with behavior table (plain/TLS/duration=0/expired), server buffer example (`STS: upgrading to TLS on port 6697`), policy file location, and zero-config callout.
 - **howto.html: Account tracking section** — full dedicated section under The Interface; covers both tooltip locations (chat view and nick list) with example output, four-source table (account-tag, account-notify, extended-join, WHOX), and nick-rename survival tip.
 - **howto.html: coverage gaps** — message deletion section, Monitor section, timestamp right-click lists Reply/React/Delete, nick-context-menu nav link, account tooltip bullets, `/monitor` `/ignore` `/ns` `/cs` added to commands table.
-- **logo.svg** — replaced stale Uplink mark with NodeRelay tower icon + wordmark on dark navy background.
+- **logo.svg** — replaced stale Uplink mark with Uplink tower icon + wordmark on dark navy background.
 - **ircv3.md** — STS and `account-tag` graduated from Planned → Active.
 - **faq.md** — STS auto-TLS FAQ entry added; account tooltip updated to list all four sources including `account-tag` and the chat view location.
 
@@ -934,27 +934,27 @@ Next priorities: self-signed cert fingerprint-pin UI, DCC passive/NAT, split vie
 
 ## v0.16.3 — 2026-05-31
 
-- **STS (Strict Transport Security)** — IRCv3 `sts` capability implemented. When a server advertises an STS policy over a plain connection, NodeRelay immediately reconnects over TLS on the advertised port and caches the policy to `~/.config/noderelay/sts.ini`. Future connections to that host enforce TLS even if `ssl = false` in config. Policies expire after the server-specified duration; `duration=0` clears them immediately.
+- **STS (Strict Transport Security)** — IRCv3 `sts` capability implemented. When a server advertises an STS policy over a plain connection, Uplink immediately reconnects over TLS on the advertised port and caches the policy to `~/.config/uplink/sts.ini`. Future connections to that host enforce TLS even if `ssl = false` in config. Policies expire after the server-specified duration; `duration=0` clears them immediately.
 - **`account-tag`** — IRCv3 `account-tag` capability negotiated. The sender's NickServ account name is stored on each message and shown as a hover tooltip on the nick in the chat view — the same account tooltip as in the nick list.
-- **Docs: howto.html icon** — replaced stale `uplink-minimal-mark.svg` header graphic with the NodeRelay tower icon; stale file removed.
+- **Docs: howto.html icon** — replaced stale `uplink-minimal-mark.svg` header graphic with the Uplink tower icon; stale file removed.
 
 ---
 
 ## Housekeeping — 2026-06-01
 
-- **Local directory renamed** — `~/Projects/UplinkIRC` → `~/Projects/NodeRelay`; stale leftover directory and old `UplinkIRC-*.AppImage` binaries removed.
-- **Release CI fixed** — `release.yml` still referenced `UplinkIRC` binary names; v0.16.2 tag re-created at HEAD so all three platform builds (Linux, macOS, Windows) pass and upload `NodeRelay-v0.16.2-*` artifacts correctly.
+- **Local directory renamed** — `~/Projects/UplinkIRC` → `~/Projects/Uplink`; stale leftover directory and old `UplinkIRC-*.AppImage` binaries removed.
+- **Release CI fixed** — `release.yml` still referenced `UplinkIRC` binary names; v0.16.2 tag re-created at HEAD so all three platform builds (Linux, macOS, Windows) pass and upload `Uplink-v0.16.2-*` artifacts correctly.
 - **README App Icons fixed** — labels corrected to Node N / Tower / Hub Spoke; stale `icon-mark.svg` and duplicate entries removed; brand assets table rewritten to reflect actual files.
 
 ---
 
 <!--
-Session summary — 2026-06-01 (v0.16.2 — full NodeRelay rebrand + icon rework)
+Session summary — 2026-06-01 (v0.16.2 — full Uplink rebrand + icon rework)
 
 What was done:
-  - Full project rebrand from UplinkIRC to NodeRelay: app name, binary name, window title,
+  - Full project rebrand from UplinkIRC to Uplink: app name, binary name, window title,
     tray tooltip, CTCP VERSION reply, About dialog, QSettings key, config path
-    (~/.config/uplinkirc/ → ~/.config/noderelay/), version macro (UPLINKIRC_VERSION →
+    (~/.config/uplinkirc/ → ~/.config/uplink/), version macro (UPLINKIRC_VERSION →
     NODERELAY_VERSION), CMakeLists project/target, desktop file, packaging scripts,
     release.yml CI artifacts, all docs (README, howto.html, faq.md, configuration.md,
     commands.md, ircv3.md, index.html), CLAUDE.md.
@@ -963,9 +963,9 @@ What was done:
     (qApp->palette().window().color().lightness() < 128). Theme change triggers icon refresh.
     Tray icon locked to hub-spoke SVG. About dialog uses static Node-Relay-Tower.png at 128px.
   - Preferences icon picker collapsed from 6 options to 3 (removed separate light entries).
-  - docs/index.html: new noderelay-banner.png header, Icons section with 8 downloadable PNGs,
+  - docs/index.html: new uplink-banner.png header, Icons section with 8 downloadable PNGs,
     Icons nav link added, all version strings updated to 0.16.2.
-  - GitHub repo renamed from noderelay/UplinkIRC to noderelay/NodeRelay.
+  - GitHub repo renamed from uplink/UplinkIRC to uplink/UplinkIRC.
   - v0.16.2 release created with AppImage attached.
   - Version bump: 0.16.1 → 0.16.2.
 
@@ -976,14 +976,14 @@ Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
 
 ## v0.16.2 — 2026-06-01
 
-- **Full rebrand to NodeRelay** — app name, binary, window title, tray tooltip, CTCP VERSION reply, About dialog, QSettings key, config path (`~/.config/noderelay/`), version macro (`NODERELAY_VERSION`), CMakeLists target, desktop file, CI artifacts, and all docs updated project-wide.
+- **Full rebrand to Uplink** — app name, binary, window title, tray tooltip, CTCP VERSION reply, About dialog, QSettings key, config path (`~/.config/uplink/`), version macro (`NODERELAY_VERSION`), CMakeLists target, desktop file, CI artifacts, and all docs updated project-wide.
 - **New icon set** — three switchable styles: Node N, Tower, Hub Spoke. Dark variants are SVGs; light variants are PNGs. Selection auto-switches based on active theme brightness — no separate light/dark picker needed.
 - **Preferences icon picker simplified** — 3 choices (Node N, Tower, Hub Spoke) instead of 6; light variant selected automatically.
 - **Theme change refreshes icon** — switching themes now also re-applies the window/taskbar icon to match the new palette.
 - **About dialog logo** — static Node-Relay-Tower.png at 128 × 128 px; no longer tied to the switchable icon choice.
 - **Tray icon** — locked to hub-spoke SVG regardless of icon choice setting.
-- **Docs site updated** — new banner, downloadable icon set section (8 PNGs), all GitHub URLs updated to `noderelay/NodeRelay`.
-- **GitHub repo renamed** — `noderelay/UplinkIRC` → `noderelay/NodeRelay`; old URL auto-redirects.
+- **Docs site updated** — new banner, downloadable icon set section (8 PNGs), all GitHub URLs updated to `uplink/UplinkIRC`.
+- **GitHub repo renamed** — `uplink/UplinkIRC` → `uplink/UplinkIRC`; old URL auto-redirects.
 
 ---
 
@@ -1044,8 +1044,8 @@ What was done:
     CHANGELOG-sourced release notes. v0.16.1 marked as Latest.
   - Remaining joehonkey references cleaned up:
     * settings.local.json: two GIT_COMMITTER_EMAIL / GIT_AUTHOR_EMAIL allowed-command
-      entries updated from joehonkey noreply email to noderelay noreply email.
-    * README.md: nick prefix config comment example ("joehonkey ▸ ...") updated to noderelay.
+      entries updated from joehonkey noreply email to uplink noreply email.
+    * README.md: nick prefix config comment example ("joehonkey ▸ ...") updated to uplink.
     * CHANGELOG.md references are historical (documenting the rename) — left as-is.
 
 Regressions: none.
@@ -1082,11 +1082,11 @@ Next priorities: unchanged.
 Session summary — 2026-05-31 (housekeeping — username rename)
 
 What was done:
-  - GitHub account renamed from joehonkey → noderelay.
-  - Git remote URL updated to https://github.com/noderelay/UplinkIRC.git.
+  - GitHub account renamed from joehonkey → uplink.
+  - Git remote URL updated to https://github.com/uplink/UplinkIRC.git.
   - All joehonkey references replaced in README.md, CHANGELOG.md, ROADMAP.md,
     SECURITY.md, docs/faq.md, themes/BreezeDarkPlus.toml, CLAUDE.md.
-  - Global git user.name updated to noderelay.
+  - Global git user.name updated to uplink.
   - Verified GitHub repo and GitHub Pages both live at new URLs.
   - ~/.claude/CLAUDE.md updated.
 
@@ -1161,7 +1161,7 @@ Next priorities: STS, account-tag display, password keychain, DCC passive/NAT tr
 
 ## Maintenance — 2026-05-31
 
-- **GitHub username renamed** — account and all project URLs updated from `joehonkey` to `noderelay`. Git remote, README badges, docs, and theme attribution all reflect the new username.
+- **GitHub username renamed** — account and all project URLs updated from `joehonkey` to `uplink`. Git remote, README badges, docs, and theme attribution all reflect the new username.
 
 ---
 
@@ -3304,10 +3304,10 @@ What was built:
   - Global git commit-msg hook at ~/.config/git/hooks/commit-msg strips
     all AI co-author/attribution lines from every commit on this machine.
     git config --global core.hooksPath set to ~/.config/git/hooks.
-  - GitHub repo created: https://github.com/noderelay/UplinkIRC (public).
+  - GitHub repo created: https://github.com/uplink/UplinkIRC (public).
   - Branch protection on main — force push and deletion blocked.
   - GitHub Pages enabled from docs/ folder.
-    Live at: https://noderelay.github.io/UplinkIRC/
+    Live at: https://uplink.github.io/UplinkIRC/
   - Landing page (docs/index.html) — dark Catppuccin design, hero with
     About.png logo, cross-platform section (Linux/FreeBSD/macOS/Windows/ARM64),
     feature cards, IRCv3 capability status grid, docs links, footer.

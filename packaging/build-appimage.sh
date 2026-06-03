@@ -8,10 +8,10 @@ BUILD_DIR="$PROJECT_DIR/build-appimage"
 APPDIR="$BUILD_DIR/AppDir"
 
 # Read version from CMakeLists.txt
-VERSION=$(grep -oP '(?<=project\(NodeRelay VERSION )\S+' "$PROJECT_DIR/CMakeLists.txt")
+VERSION=$(grep -oP '(?<=project\(UplinkIRC VERSION )\S+' "$PROJECT_DIR/CMakeLists.txt")
 ARCH=$(uname -m)
 
-echo "==> NodeRelay $VERSION  ($ARCH)"
+echo "==> Uplink $VERSION  ($ARCH)"
 
 # ---------------------------------------------------------------------------
 # Tools: linuxdeploy + Qt plugin
@@ -34,26 +34,9 @@ if [[ ! -x "$LD_QT" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Icon: convert SVG → PNG (requires rsvg-convert, inkscape, or ImageMagick)
+# Icon
 # ---------------------------------------------------------------------------
-ICON_SVG="$PROJECT_DIR/resources/icons/icon-tower.svg"
-ICON_PNG="$SCRIPT_DIR/noderelay.png"
-
-if [[ ! -f "$ICON_PNG" ]]; then
-    echo "==> Converting icon..."
-    if command -v rsvg-convert &>/dev/null; then
-        rsvg-convert -w 512 -h 512 -o "$ICON_PNG" "$ICON_SVG"
-    elif command -v inkscape &>/dev/null; then
-        inkscape --export-width=512 --export-height=512 \
-                 --export-filename="$ICON_PNG" "$ICON_SVG"
-    elif command -v convert &>/dev/null; then
-        convert -background none -resize 512x512 "$ICON_SVG" "$ICON_PNG"
-    else
-        echo "ERROR: no SVG→PNG converter found."
-        echo "       Install one of: librsvg (rsvg-convert), inkscape, or imagemagick"
-        exit 1
-    fi
-fi
+ICON_PNG="$SCRIPT_DIR/uplink.png"
 
 # ---------------------------------------------------------------------------
 # Build
@@ -102,7 +85,7 @@ if [[ -n "$(ls -A "$STUB_DIR" 2>/dev/null)" ]]; then
     export LD_LIBRARY_PATH="$STUB_DIR:${LD_LIBRARY_PATH:-}"
 fi
 
-OUTPUT_FILE="NodeRelay-$VERSION-$ARCH.AppImage"
+OUTPUT_FILE="Uplink-$VERSION-$ARCH.AppImage"
 
 # ---------------------------------------------------------------------------
 # Download appimagetool (used for the final packaging step — separate from
@@ -156,14 +139,14 @@ export PATH="$WRAPPER_DIR:$TOOLS_DIR:$PATH"
 "$LD_PATCHED" \
     --appdir "$APPDIR" \
     --plugin qt \
-    --desktop-file "$SCRIPT_DIR/NodeRelay.desktop" \
+    --desktop-file "$SCRIPT_DIR/Uplink.desktop" \
     --icon-file "$ICON_PNG"
 
 # Phase 2b: ensure AppDir root has the required files for appimagetool
-cp -n "$APPDIR/usr/share/applications/NodeRelay.desktop" "$APPDIR/" 2>/dev/null || true
-cp -n "$APPDIR/usr/share/icons/hicolor/scalable/apps/noderelay.svg" "$APPDIR/" 2>/dev/null || true
-if [[ -f "$SCRIPT_DIR/noderelay.png" ]] && [[ ! -f "$APPDIR/noderelay.png" ]]; then
-    cp "$SCRIPT_DIR/noderelay.png" "$APPDIR/"
+cp -n "$APPDIR/usr/share/applications/Uplink.desktop" "$APPDIR/" 2>/dev/null || true
+cp -n "$APPDIR/usr/share/icons/hicolor/256x256/apps/uplink.png" "$APPDIR/" 2>/dev/null || true
+if [[ -f "$SCRIPT_DIR/uplink.png" ]] && [[ ! -f "$APPDIR/uplink.png" ]]; then
+    cp "$SCRIPT_DIR/uplink.png" "$APPDIR/"
 fi
 if [[ ! -f "$APPDIR/AppRun" ]]; then
     cat > "$APPDIR/AppRun" << 'APPRUN'
@@ -173,7 +156,7 @@ export LD_LIBRARY_PATH="$HERE/usr/lib:${LD_LIBRARY_PATH:-}"
 export QT_PLUGIN_PATH="$HERE/usr/plugins:${QT_PLUGIN_PATH:-}"
 export QT_QPA_PLATFORM_PLUGIN_PATH="$HERE/usr/plugins/platforms"
 export XDG_DATA_DIRS="$HERE/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-exec "$HERE/usr/bin/NodeRelay" "$@"
+exec "$HERE/usr/bin/Uplink" "$@"
 APPRUN
     chmod +x "$APPDIR/AppRun"
 fi

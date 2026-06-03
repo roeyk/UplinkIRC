@@ -22,7 +22,7 @@ public:
     ~IrcClient() override;
 
     void connectToServer(const ServerConfig &cfg);
-    void quit(const QString &reason = "NodeRelay");
+    void quit(const QString &reason = "Uplink");
     void abort();
     void setPinnedFingerprint(const QString &fp) { m_pinnedFingerprint = fp; }
 

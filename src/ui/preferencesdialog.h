@@ -14,7 +14,6 @@ public:
 signals:
     void themeChanged(const QString &name);
     void fontConfigRequested();
-    void appIconChanged(const QString &key);
     void topicBarToggled(bool on);
     void nickPrefixToggled(bool on);
     void emojiBtnToggled(bool on);
@@ -39,6 +38,5 @@ private:
     QCheckBox *m_loggingCheck{nullptr};
     QComboBox *m_bracketsCombo{nullptr};
 
-    static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;
 };

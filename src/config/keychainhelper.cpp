@@ -3,7 +3,7 @@
 #include <QEventLoop>
 #include <qt6keychain/keychain.h>
 
-static const QString kService = QStringLiteral("NodeRelay");
+static const QString kService = QStringLiteral("Uplink");
 
 namespace KeychainHelper {
 

@@ -89,8 +89,6 @@ private:
     void appendMessage  (const Message &msg, bool autoPreview = false);
     void applyFontSizes();
     void updateTypingLabel();
-    void applyAppIcon(const QString &choice);
-
     void openChannelPane (const QString &host, const QString &channel);
     void closeChannelPane(const QString &host, const QString &channel);
     ChannelPane *paneAt(const QPoint &globalPos) const;

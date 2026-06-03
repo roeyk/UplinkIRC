@@ -7,7 +7,7 @@
 static QString stsPath()
 {
     return QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
-           + "/.config/noderelay/sts.ini";
+           + "/.config/uplink/sts.ini";
 }
 
 bool StsStore::lookup(const QString &host, Policy &out)

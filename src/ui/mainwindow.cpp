@@ -252,8 +252,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_showTopic      = cfg.ui.showTopic;
     m_showEmojiBtn   = cfg.ui.showEmojiButton;
 
-    setWindowTitle("NodeRelay");
-    setWindowIcon(AppIcons::appIcon(m_config.ui.appIcon));
+    setWindowTitle("Uplink");
+    setWindowIcon(AppIcons::appIcon());
     resize(1100, 700);
 
     ThemeLoader::apply(m_config.ui.theme);
@@ -276,7 +276,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     statusBar()->hide();
 
-    QSettings settings("LinuxDojo", "NodeRelay");
+    QSettings settings("LinuxDojo", "Uplink");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
     if (settings.contains("nickSplitter"))
@@ -314,7 +314,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     connect(qApp, &QApplication::aboutToQuit, this, [this]{
-        QSettings s("LinuxDojo", "NodeRelay");
+        QSettings s("LinuxDojo", "Uplink");
         s.setValue("geometry", saveGeometry());
         s.setValue("windowState", saveState());
         s.setValue("nickSplitter", m_chatSplitter->saveState());
@@ -357,7 +357,7 @@ void MainWindow::setupToolbar()
         menu->setAttribute(Qt::WA_DeleteOnClose);
         const QColor ic(m_theme.valid ? m_theme.text : "#ffffff");
 
-        menu->addAction(MenuIcons::about(ic), "About NodeRelay", this, [this]{
+        menu->addAction(MenuIcons::about(ic), "About Uplink", this, [this]{
             if (!m_aboutDialog) m_aboutDialog = new AboutDialog(this);
             m_aboutDialog->showCentered();
         });
@@ -428,7 +428,6 @@ void MainWindow::connectPreferences()
                     makeTopicIcon(QColor(m_theme.accent)));
             }
         }
-        applyAppIcon(m_config.ui.appIcon);
         Config::save(m_config, Config::defaultPath());
     });
 
@@ -445,11 +444,6 @@ void MainWindow::connectPreferences()
         }
     });
 
-    connect(m_prefsDialog, &PreferencesDialog::appIconChanged, this, [this](const QString &key){
-        m_config.ui.appIcon = key;
-        Config::save(m_config, Config::defaultPath());
-        applyAppIcon(key);
-    });
 
     connect(m_prefsDialog, &PreferencesDialog::topicBarToggled, this, [this](bool on){
         m_showTopic = on;
@@ -562,11 +556,6 @@ void MainWindow::connectPreferences()
     });
 }
 
-void MainWindow::applyAppIcon(const QString &choice)
-{
-    setWindowIcon(AppIcons::appIcon(choice));
-    if (m_tray) m_tray->setBaseIcon(AppIcons::trayIcon());
-}
 
 static QIcon makeTopicIcon(const QColor &color)
 {
@@ -2417,7 +2406,7 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
         } else if (cmd == "/quote" || cmd == "/raw") {
             m_model->sendRaw(host, args);
         } else if (cmd == "/quit") {
-            if (auto *cl = m_model->clientFor(host)) cl->quit(args.isEmpty() ? "NodeRelay" : args);
+            if (auto *cl = m_model->clientFor(host)) cl->quit(args.isEmpty() ? "Uplink" : args);
         } else if (cmd == "/away") {
             m_model->sendRaw(host, args.isEmpty() ? "AWAY" : "AWAY :" + args);
         } else if (cmd == "/back") {
@@ -2700,7 +2689,7 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
             m_signalBars->setState(SignalBars::State::Disconnected);
     }
 
-    setWindowTitle("NodeRelay — " + channel + " @ " + host);
+    setWindowTitle("Uplink — " + channel + " @ " + host);
     updateTypingLabel();
 }
 

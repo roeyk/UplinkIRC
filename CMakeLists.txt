@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(NodeRelay VERSION 0.20.0 LANGUAGES CXX)
+project(UplinkIRC VERSION 0.20.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -53,7 +53,7 @@ if(NOT tomlplusplus_FOUND)
 endif()
 qt_standard_project_setup()
 
-qt_add_executable(NodeRelay WIN32
+qt_add_executable(Uplink WIN32
     resources/resources.qrc
     src/main.cpp
     src/config/config.cpp
@@ -106,9 +106,9 @@ qt_add_executable(NodeRelay WIN32
 )
 
 configure_file(src/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
-target_include_directories(NodeRelay PRIVATE src ${CMAKE_CURRENT_BINARY_DIR} ${QTKEYCHAIN_COMPAT_INCLUDE})
+target_include_directories(Uplink PRIVATE src ${CMAKE_CURRENT_BINARY_DIR} ${QTKEYCHAIN_COMPAT_INCLUDE})
 
-target_link_libraries(NodeRelay PRIVATE
+target_link_libraries(Uplink PRIVATE
     Qt6::Core
     Qt6::Widgets
     Qt6::Network
@@ -119,22 +119,22 @@ target_link_libraries(NodeRelay PRIVATE
 
 # Prevent .relr.dyn sections that linuxdeploy's bundled strip cannot handle
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_link_options(NodeRelay PRIVATE -Wl,-z,nopack-relative-relocs)
+    target_link_options(Uplink PRIVATE -Wl,-z,nopack-relative-relocs)
 endif()
 
 # Copy themes next to binary for development
-add_custom_command(TARGET NodeRelay POST_BUILD
+add_custom_command(TARGET Uplink POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/themes $<TARGET_FILE_DIR:NodeRelay>/themes
+        ${CMAKE_SOURCE_DIR}/themes $<TARGET_FILE_DIR:Uplink>/themes
 )
 
 if(APPLE)
-    set_target_properties(NodeRelay PROPERTIES MACOSX_BUNDLE TRUE)
+    set_target_properties(Uplink PROPERTIES MACOSX_BUNDLE TRUE)
 endif()
 
-install(TARGETS NodeRelay DESTINATION bin)
-install(DIRECTORY themes/ DESTINATION share/noderelay/themes)
-install(FILES packaging/NodeRelay.desktop DESTINATION share/applications)
-install(FILES resources/icons/icon-tower.svg
-        DESTINATION share/icons/hicolor/scalable/apps
-        RENAME noderelay.svg)
+install(TARGETS Uplink DESTINATION bin)
+install(DIRECTORY themes/ DESTINATION share/uplink/themes)
+install(FILES packaging/Uplink.desktop DESTINATION share/applications)
+install(FILES resources/icons/uplink-dark.png
+        DESTINATION share/icons/hicolor/256x256/apps
+        RENAME uplink.png)

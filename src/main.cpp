@@ -10,8 +10,8 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("NodeRelay");
-    app.setApplicationVersion(NODERELAY_VERSION);
+    app.setApplicationName("Uplink");
+    app.setApplicationVersion(UPLINK_VERSION);
 
 #if defined(Q_OS_WIN)
     // Use native Windows rendering as the base style.
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     if (cfg.needsNickSetup()) {
         bool ok = false;
         const QString nick = QInputDialog::getText(
-            nullptr, "NodeRelay — Set Your Nick",
+            nullptr, "Uplink — Set Your Nick",
             "Choose a nickname:", QLineEdit::Normal, "", &ok);
         if (ok && !nick.trimmed().isEmpty()) {
             for (auto &s : cfg.servers)

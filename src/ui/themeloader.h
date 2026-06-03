@@ -27,6 +27,6 @@ public:
     static QString  toStyleSheet(const Theme &t);
     static void     apply(const QString &name);          // load + set on QApplication
     static QStringList availableThemes();                // names without .toml
-    static QString  themesDir();                         // ~/.config/noderelay/themes
+    static QString  themesDir();                         // ~/.config/uplink/themes
     static void     ensureUserThemesDir();               // create + seed on first run
 };

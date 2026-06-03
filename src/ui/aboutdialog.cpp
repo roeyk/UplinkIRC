@@ -33,7 +33,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     logo->setAlignment(Qt::AlignCenter);
     layout->addWidget(logo);
 
-    auto *version = new QLabel("NodeRelay  v" NODERELAY_VERSION);
+    auto *version = new QLabel("Uplink  v" UPLINK_VERSION);
     QFont f = version->font();
     f.setBold(true);
     f.setPointSize(f.pointSize() + 2);
