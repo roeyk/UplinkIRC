@@ -9,6 +9,22 @@
         <file alias="tray-icon.svg">icons/tray-icon.svg</file>
         <file alias="about-logo.png">icons/about-logo.png</file>
         <file alias="banner.png">icons/banner.png</file>
+        <file alias="menu.svg">icons/menu.svg</file>
+        <file alias="settings.svg">icons/settings.svg</file>
+        <file alias="mi-info.svg">icons/mi-info.svg</file>
+        <file alias="mi-menu-book.svg">icons/mi-menu-book.svg</file>
+        <file alias="mi-tune.svg">icons/mi-tune.svg</file>
+        <file alias="mi-dns.svg">icons/mi-dns.svg</file>
+        <file alias="mi-font-download.svg">icons/mi-font-download.svg</file>
+        <file alias="mi-palette.svg">icons/mi-palette.svg</file>
+        <file alias="mi-widgets.svg">icons/mi-widgets.svg</file>
+        <file alias="mi-view-headline.svg">icons/mi-view-headline.svg</file>
+        <file alias="mi-badge.svg">icons/mi-badge.svg</file>
+        <file alias="mi-emoji-emotions.svg">icons/mi-emoji-emotions.svg</file>
+        <file alias="mi-pending.svg">icons/mi-pending.svg</file>
+        <file alias="mi-signal-cellular-alt.svg">icons/mi-signal-cellular-alt.svg</file>
+        <file alias="mi-format-color-text.svg">icons/mi-format-color-text.svg</file>
+        <file alias="mi-logout.svg">icons/mi-logout.svg</file>
     </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>

@@ -199,6 +199,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Topic button speech bubble icon — custom QPainter icon replaces text label; muted when collapsed, accent when open; ChannelPane::setTopicIcon() API; updates on theme change (v0.19.1)
 - [x] Floating rounded input bar — separator line removed; bar blends into chat area via bufferBg; QLineEdit gets border-radius pill shape (v0.19.1)
 - [x] Rounded chat panel with padding — RoundedPane widget clips all chat content (panes splitter + children) to a 10 px rounded rect via setMask(); 8 px right/bottom padding shows sidebarBg for contrast; sidebar toggle balances left margin to match (v0.19.2)
+- [x] MD3-inspired UI pass — pill buttons (20px radius via PillButton QPainter subclass), rounder inputs/menus/tooltips, Material Symbols SVG icons for hamburger/gear/all menu items, sidebar pill highlight padding fixed, row heights via sizeHint delegates (v0.20.0)
+- [x] Self-signed cert fingerprint pinning — per-server accept/reject/pin dialog on first connect; SHA-256 fingerprint saved to config; mismatch disconnects with warning; IrcClient::abort() for clean reject (v0.20.0)
 
 ---
 
@@ -223,7 +225,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] howto.html full-text search — live search box in nav sidebar, match count, keyboard navigation (v0.16.7)
 - [x] /leave and /close commands — close query buffer or part channel (v0.16.8)
 - [x] NickServ credential redaction complete — echo-message server echo path also redacted (v0.16.8)
-- [ ] Self-signed cert option — per-server accept/reject + fingerprint-pin UI
+- [x] Self-signed cert option — per-server accept/reject + fingerprint-pin UI (v0.20.0)
 - [x] SOCKS5 proxy support — per-server proxy_host/port/user/pass; GUI in server dialog (v0.16.8)
 
 ---

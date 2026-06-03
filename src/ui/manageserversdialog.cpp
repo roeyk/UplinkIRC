@@ -1,5 +1,6 @@
 #include "manageserversdialog.h"
 #include "serverdialog.h"
+#include "ui/pillbutton.h"
 
 #include <QDialogButtonBox>
 #include <QHBoxLayout>
@@ -17,9 +18,9 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
     m_list = new QListWidget;
     refreshList();
 
-    auto *btnAdd    = new QPushButton("Add");
-    auto *btnEdit   = new QPushButton("Edit");
-    auto *btnRemove = new QPushButton("Remove");
+    auto *btnAdd    = new PillButton("Add");
+    auto *btnEdit   = new PillButton("Edit");
+    auto *btnRemove = new PillButton("Remove");
 
     connect(btnAdd,    &QPushButton::clicked, this, &ManageServersDialog::addServer);
     connect(btnEdit,   &QPushButton::clicked, this, &ManageServersDialog::editServer);

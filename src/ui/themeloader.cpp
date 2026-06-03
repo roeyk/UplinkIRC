@@ -500,15 +500,16 @@ QLabel {
 
 /* ── Push buttons ── */
 QPushButton {
-    background-color: {{border}};
+    background: {{border}};
     color: {{text}};
-    border: none;
+    border: 2px solid {{border}};
     border-radius: 20px;
-    padding: 8px 24px;
+    padding: 6px 22px;
     font-weight: 500;
+    outline: 0;
 }
-QPushButton:hover   { background-color: {{accent}}; }
-QPushButton:pressed { background-color: {{sidebarBg}}; }
+QPushButton:hover   { background: {{accent}}; border-color: {{accent}}; }
+QPushButton:pressed { background: {{sidebarBg}}; border-color: {{sidebarBg}}; }
 
 /* ── Dialog buttons ── */
 QDialogButtonBox QPushButton {

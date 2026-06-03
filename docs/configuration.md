@@ -65,7 +65,7 @@ realname = "NodeRelay User"
 # proxy_host        = "127.0.0.1"      # SOCKS5 proxy hostname (omit for direct connection)
 # proxy_port        = 1080             # SOCKS5 proxy port (default 1080)
 # proxy_user        = ""               # optional: proxy username
-# proxy_pass        = ""               # optional: proxy password
+# proxy_pass        = ""               # optional: proxy password\n# ssl_fingerprint   = ""               # pin a self-signed cert SHA-256 fingerprint (set automatically on first connect)
 
 [[server.channel]]
 name = "#uplink"
@@ -184,7 +184,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `proxy_host` | string | no | SOCKS5 proxy hostname or IP (e.g. `"127.0.0.1"`). Leave empty (the default) to connect directly with no proxy. |
 | `proxy_port` | integer | no | SOCKS5 proxy port. Defaults to `1080`. |
 | `proxy_user` | string | no | SOCKS5 proxy username. Only needed if your proxy requires authentication. |
-| `proxy_pass` | string | no | SOCKS5 proxy password. Only needed if your proxy requires authentication. |
+| `proxy_pass` | string | no | SOCKS5 proxy password. Only needed if your proxy requires authentication. |\n| `ssl_fingerprint` | string | no | SHA-256 fingerprint of a pinned self-signed TLS certificate. Set automatically when you choose "Pin Certificate" on first connect. Once set, the connection is rejected if the certificate changes. |
 
 ### Minimal server block
 
@@ -659,3 +659,53 @@ name = "LinuxDojo"
 ### Nick contains spaces or invalid characters
 
 IRC nicks cannot contain spaces. Allowed characters: letters, digits, `_`, `-`, `[`, `]`, `{`, `}`, `|`, `\`, `^`, and `` ` ``. Most servers enforce a max length of 30 characters.
+
+---
+
+## Self-signed certificate pinning
+
+Most public IRC servers use valid TLS certificates. If you connect to a private or self-hosted server with a self-signed certificate, NodeRelay will show a dialog on first connect:
+
+> **Untrusted Certificate**
+> `irc.myserver.example` is using a self-signed certificate.
+> SHA-256 fingerprint: `AB:CD:EF:...`
+> Trust this certificate?
+
+You have three choices:
+
+| Option | What it does |
+|---|---|
+| **Pin Certificate** | Saves the fingerprint to `config.toml`. Future connections verify the fingerprint and fail with an error if the certificate changes. |
+| **Accept Once** | Allows this connection only. No config change. You will be asked again on next connect. |
+| **Reject** | Disconnects immediately. |
+
+### What gets saved
+
+When you choose **Pin Certificate**, NodeRelay adds this line to your server block:
+
+```toml
+[[server]]
+name            = "MyServer"
+host            = "irc.myserver.example"
+port            = 6697
+ssl             = true
+ssl_fingerprint = "AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45"
+```
+
+### Certificate changed warning
+
+If the pinned certificate no longer matches (e.g. the server renewed its self-signed cert), NodeRelay disconnects and shows an error in the server buffer:
+
+```
+TLS: certificate fingerprint mismatch!
+Pinned: AB:CD:...
+Got:    FF:EE:...
+```
+
+To re-pin, remove the `ssl_fingerprint` line from `config.toml` and reconnect. You will get the pin dialog again.
+
+### Notes
+
+- Fingerprints are SHA-256, formatted as uppercase hex pairs separated by colons.
+- Only self-signed certificate errors trigger the dialog. Other TLS errors (expired, wrong hostname, etc.) always disconnect immediately.
+- Pinning is only as trustworthy as your first connection. If you are on a network where someone could intercept that first connect, the pin gives no protection. For servers you set up yourself, it is safe.

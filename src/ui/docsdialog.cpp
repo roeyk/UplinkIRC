@@ -35,7 +35,8 @@ DocsDialog::DocsDialog(QWidget *parent)
     m_search = new QLineEdit;
     m_search->setPlaceholderText("Search...");
     m_search->setClearButtonEnabled(true);
-    m_search->setFixedWidth(180);
+    m_search->setFixedWidth(160);
+    m_search->setStyleSheet("QLineEdit { border-radius: 10px; padding: 3px 8px; }");
     m_search->addAction(
         QApplication::style()->standardIcon(QStyle::SP_FileDialogContentsView),
         QLineEdit::LeadingPosition);

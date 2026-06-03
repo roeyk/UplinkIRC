@@ -51,6 +51,7 @@
 #include <QProcess>
 #include <QPainter>
 #include <QPixmap>
+#include <QSvgRenderer>
 #include "version.h"
 #include <QRegularExpression>
 #include <QToolTip>
@@ -161,7 +162,7 @@ public:
 
 // Minimum width of the topic bar left zone — wide enough to always show the
 // hamburger (22) + gear (22) + right margin (4) even when the sidebar is closed.
-static constexpr int kBtnZoneMinW = 48;
+static constexpr int kBtnZoneMinW = 60;
 
 static QString linkifyTopic(const QString &text);
 
@@ -344,14 +345,8 @@ void MainWindow::setupToolbar()
     connect(tb, &QWidget::customContextMenuRequested, this, [](const QPoint&){});
 
     m_hamburger = new QToolButton;
-    m_hamburger->setText("☰");
-    m_hamburger->setFixedSize(22, 22);
+    m_hamburger->setFixedSize(28, 28);
     m_hamburger->setAutoRaise(true);
-    {
-        QFont f;
-        f.setPixelSize(15);
-        m_hamburger->setFont(f);
-    }
     m_hamburger->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_hamburger, &QWidget::customContextMenuRequested, this, [](const QPoint&){});
     m_hamburger->setObjectName("hamburger");
@@ -406,6 +401,7 @@ void MainWindow::setupToolbar()
 }
 
 static QIcon makeTopicIcon(const QColor &color);
+static QIcon makeMenuIcon(const QColor &color);
 
 void MainWindow::connectPreferences()
 {
@@ -597,19 +593,19 @@ static QIcon makeTopicIcon(const QColor &color)
 
 static QIcon makeGearIcon(int angleDeg, const QColor &color)
 {
-    const int sz = 16;
-    QPixmap pix(sz, sz);
+    QSvgRenderer renderer(QStringLiteral(":/icons/settings.svg"));
+    QPixmap pix(20, 20);
     pix.fill(Qt::transparent);
     QPainter p(&pix);
-    p.setRenderHint(QPainter::TextAntialiasing);
-    p.translate(sz / 2.0, sz / 2.0);
-    p.rotate(angleDeg);
-    p.translate(-sz / 2.0, -sz / 2.0);
-    QFont f;
-    f.setPixelSize(sz - 1);
-    p.setFont(f);
-    p.setPen(color);
-    p.drawText(QRect(0, 0, sz, sz), Qt::AlignCenter, QStringLiteral("⚙"));
+    if (angleDeg != 0) {
+        p.translate(10, 10);
+        p.rotate(angleDeg);
+        p.translate(-10, -10);
+    }
+    renderer.render(&p);
+    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    p.fillRect(pix.rect(), color);
+    p.end();
     return QIcon(pix);
 }
 
@@ -648,6 +644,9 @@ void MainWindow::applyFontSizes()
     if (m_sidebarToggleBtn)
         m_sidebarToggleBtn->setIcon(
             makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
+    if (m_hamburger)
+        m_hamburger->setIcon(
+            makeMenuIcon(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
     if (m_modesLabel)    m_modesLabel->setFont(makeFont(fs.topicBar));
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
@@ -660,6 +659,19 @@ void MainWindow::applyFontSizes()
         f.setItalic(true);
         m_typingLabel->setFont(f);
     }
+}
+
+static QIcon makeMenuIcon(const QColor &color)
+{
+    QSvgRenderer renderer(QStringLiteral(":/icons/menu.svg"));
+    QPixmap pix(20, 20);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    renderer.render(&p);
+    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    p.fillRect(pix.rect(), color);
+    p.end();
+    return QIcon(pix);
 }
 
 static QIcon makeConnectedIcon()
@@ -697,7 +709,7 @@ void MainWindow::setupSidebar()
             this, &MainWindow::onSidebarContextMenu);
 
     m_sidebarToggleBtn = new QToolButton;
-    m_sidebarToggleBtn->setFixedSize(22, 22);
+    m_sidebarToggleBtn->setFixedSize(28, 28);
     m_sidebarToggleBtn->setAutoRaise(true);
     m_sidebarToggleBtn->setObjectName("sidebarToggleBtn");
     m_sidebarToggleBtn->setToolTip(tr("Toggle channel list"));
@@ -743,7 +755,7 @@ void MainWindow::setupNickPanel()
     m_nickCountLabel->setContentsMargins(4, 0, 4, 0);
 
     m_nickToggleBtn = new QToolButton;
-    m_nickToggleBtn->setFixedSize(22, 22);
+    m_nickToggleBtn->setFixedSize(28, 28);
     m_nickToggleBtn->setAutoRaise(true);
     m_nickToggleBtn->setToolTip(tr("Toggle user list"));
     m_nickToggleBtn->setIcon(makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));

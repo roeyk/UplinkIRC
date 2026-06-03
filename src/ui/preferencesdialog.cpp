@@ -1,6 +1,7 @@
 #include "preferencesdialog.h"
 #include "ui/themeloader.h"
 #include "ui/menuicons.h"
+#include "ui/pillbutton.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -49,21 +50,26 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     setWindowTitle("Preferences");
     setMinimumWidth(330);
 
+    const Theme t = ThemeLoader::load(cfg.ui.theme);
+    const QColor accent(t.accent);
+
     auto *inner = new QWidget;
     auto *vbox  = new QVBoxLayout(inner);
-    vbox->setContentsMargins(12, 8, 12, 12);
-    vbox->setSpacing(4);
+    vbox->setContentsMargins(8, 6, 8, 6);
+    vbox->setSpacing(3);
 
     // ── Quick access ─────────────────────────────────────────────────────────
     {
         auto *row = new QHBoxLayout;
-        auto *manageBtn = new QPushButton("Manage Servers...");
+        auto *manageBtn = new PillButton("Manage Servers...");
         manageBtn->setIcon(MenuIcons::servers());
+        manageBtn->setAccentColor(accent);
         manageBtn->setAutoDefault(false);
         connect(manageBtn, &QPushButton::clicked, this, [this]{ emit manageServersRequested(); });
         row->addWidget(manageBtn);
-        auto *docsBtn = new QPushButton("Documentation");
+        auto *docsBtn = new PillButton("Documentation");
         docsBtn->setIcon(MenuIcons::documentation());
+        docsBtn->setAccentColor(accent);
         docsBtn->setAutoDefault(false);
         connect(docsBtn, &QPushButton::clicked, this, [this]{ emit docsRequested(); });
         row->addWidget(docsBtn);
@@ -71,15 +77,16 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     }
 
     // ── Appearance ────────────────────────────────────────────────────────────
-    vbox->addSpacing(4);
+    vbox->addSpacing(2);
     vbox->addWidget(makeSep());
     vbox->addWidget(sectionLabel("Appearance"));
 
     // Theme — compact toggle button + collapsible list
-    auto *themeBtn = new QPushButton(cfg.ui.theme);
+    auto *themeBtn = new PillButton(cfg.ui.theme);
     themeBtn->setCheckable(true);
     themeBtn->setAutoDefault(false);
-    themeBtn->setStyleSheet("text-align:left; padding-left:6px;");
+    themeBtn->setAccentColor(accent);
+    themeBtn->setLeftAlign(true);
     {
         auto *row = new QHBoxLayout;
         row->addWidget(new QLabel("Theme:"));
@@ -112,7 +119,7 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     connect(themeList, &QListWidget::itemClicked,   this, applyTheme);
     connect(themeList, &QListWidget::itemActivated, this, applyTheme);
 
-    vbox->addSpacing(6);
+    vbox->addSpacing(3);
     vbox->addWidget(sectionLabel("App Icon"));
     {
         auto *iconGroup = new QButtonGroup(this);
@@ -129,15 +136,16 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
         });
     }
 
-    vbox->addSpacing(4);
-    auto *fontBtn = new QPushButton("Font Config...");
+    vbox->addSpacing(2);
+    auto *fontBtn = new PillButton("Font Config...");
     fontBtn->setIcon(MenuIcons::fontConfig());
+    fontBtn->setAccentColor(accent);
     fontBtn->setAutoDefault(false);
     connect(fontBtn, &QPushButton::clicked, this, [this]{ emit fontConfigRequested(); });
     vbox->addWidget(fontBtn);
 
     // ── Interface ─────────────────────────────────────────────────────────────
-    vbox->addSpacing(4);
+    vbox->addSpacing(2);
     vbox->addWidget(makeSep());
     vbox->addWidget(sectionLabel("Interface"));
 
@@ -181,7 +189,7 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     connect(m_loggingCheck, &QCheckBox::toggled, this, [this](bool on){ emit loggingToggled(on); });
     vbox->addWidget(m_loggingCheck);
 
-    vbox->addSpacing(4);
+    vbox->addSpacing(2);
     {
         auto *row = new QHBoxLayout;
         row->addWidget(new QLabel("Nick Brackets:"));
@@ -204,7 +212,7 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
         vbox->addLayout(row);
     }
 
-    vbox->addStretch(1);
+    vbox->addSpacing(2);
 
     auto *scroll = new QScrollArea;
     scroll->setWidget(inner);

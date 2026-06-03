@@ -3,6 +3,72 @@
 ---
 
 <!--
+Session summary — 2026-06-03 (v0.20.0 — MD3 UI pass + cert pinning)
+
+What was built:
+  - Self-signed cert fingerprint pinning: on first connect to a self-signed
+    server, a dialog offers Accept Once / Pin Certificate / Reject. Pinning
+    saves the SHA-256 fingerprint to config.toml under ssl_fingerprint. Future
+    connections verify the fingerprint; mismatch disconnects with a warning.
+    IrcClient::abort() added for clean reject without reconnect.
+  - MD3-inspired UI pass: QSS overhaul across all themes — pill buttons
+    (20px border-radius), rounder inputs (10px), menus (12px item radius),
+    tabs, tooltips, scrollbar. Border-radius was unreliable on QPushButton
+    in Qt's Fusion style; introduced PillButton (QPainter subclass) that draws
+    its own rounded background, guaranteeing the pill shape regardless of style.
+  - Material Symbols Outlined SVG icons: hamburger menu (menu.svg), gear/
+    settings (settings.svg), and 14 menu icons replacing hand-drawn QPainter
+    icons in menuicons.h. All icons colorized at runtime via
+    CompositionMode_SourceIn to match active theme text color.
+  - Sidebar pill highlight: fixed asymmetric left/right padding by accounting
+    for Qt's internal PM_FocusFrameHMargin text offset; pill radius bumped to
+    10px; padding bumped to 8px each side.
+  - Row height: FixedRowDelegate controls sidebar (20px) and nick list (16px)
+    height reliably via sizeHint override; QSS height on ::item was silently
+    ignored by Qt.
+  - Preferences dialog: PillButton for Manage Servers, Documentation, Theme,
+    Font Config; compact spacing; no scrollbar on open.
+  - Docs dialog: search box compact style fix — no longer collides with
+    Shortcuts tab at default dialog width.
+  - Buttons enlarged: hamburger, gear, and sidebar gear buttons now 28×28px
+    with 20×20px icons.
+
+Bugs fixed:
+  - QSS border-radius silently ignored on QPushButton in Fusion style — fixed
+    with PillButton custom paintEvent.
+  - Sidebar pill left/right padding asymmetric — fixed via internal text margin
+    offset calculation.
+  - QSS height on QTreeWidget::item and QListWidget::item ignored — fixed via
+    sizeHint delegate overrides.
+  - Preferences dialog showed scrollbar on open — fixed with compact spacing.
+  - Docs search box collided with Shortcuts tab — fixed with compact inline style.
+
+Known issues left open:
+  - About dialog Wayland centering drift (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+  - Sidebar pill highlight may still clip on very long server names in a
+    very narrow sidebar.
+
+Next priorities:
+  - DCC passive / NAT traversal
+  - In-app update check UI
+  - SVG light icon variants
+-->
+
+## v0.20.0 — 2026-06-03
+
+- **Feat:** Self-signed TLS certificate fingerprint pinning — first connect to a self-signed server shows a dialog (Accept Once / Pin Certificate / Reject); pinning saves `ssl_fingerprint` to config and verifies on every reconnect; fingerprint mismatch disconnects with a clear error
+- **Feat:** MD3-inspired UI pass across all themes — pill buttons, rounder inputs/menus/tooltips/tabs, thinner scrollbar, larger touch targets on checkboxes and radio buttons
+- **Feat:** Material Symbols Outlined icons — hamburger, settings gear, and all 14 hamburger-menu icons replaced with Google Material Symbols SVGs; icons colorized to active theme text color at runtime
+- **Feat:** `PillButton` — custom `QPushButton` subclass that draws rounded background via `QPainter`, bypassing Qt Fusion style's silent border-radius suppression
+- **Fix:** Sidebar pill highlight left/right padding was asymmetric (Qt internal text margin offset not accounted for) — now symmetric 8 px each side
+- **Fix:** `QTreeWidget::item` and `QListWidget::item` row heights were being ignored by Qt — replaced with `sizeHint` delegate overrides; sidebar 20 px, nick list 16 px
+- **Fix:** Preferences dialog no longer shows a scrollbar on open — spacing tightened, minimum height removed
+- **Fix:** Documentation dialog search box no longer collides with the Shortcuts tab — compact inline style applied
+
+---
+
+<!--
 Session summary — 2026-06-03 (v0.19.3 — FreeBSD preview card bg fix)
 
 Bugs fixed:
