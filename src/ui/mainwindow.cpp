@@ -103,7 +103,7 @@ public:
                    const QModelIndex &index) const override
     {
         QSize s = QStyledItemDelegate::sizeHint(option, index);
-        s.setHeight(20);
+        s.setHeight(26);
         return s;
     }
 
