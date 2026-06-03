@@ -3,6 +3,44 @@
 ---
 
 <!--
+Session summary — 2026-06-02 (v0.19.1 — topic icon + rounded input bar)
+
+What was built:
+  - Speech bubble topic icon: makeTopicIcon() uses QPainter to draw a small
+    speech bubble (rounded rect body + tail + two text lines). Muted
+    placeholder color when topic is hidden, accent color when open. Replaces
+    the old "▸ topic" / "▾ topic" text+border pill on both the primary panel
+    and all channel panes. ChannelPane gains setTopicIcon(collapsed, expanded)
+    which wires the toggled signal to swap between the two icons.
+  - Floating rounded input bar: removed border-top separator line; input bar
+    background now matches {{bufferBg}} so it flows seamlessly from the chat
+    area. The QLineEdit gets border-radius 6px and {{inputBg}} background with
+    no border — a rounded pill shape defined only by the background color
+    contrast, no outline. Users responded positively to this look.
+
+Known issues left open:
+  - About dialog Wayland centering drift (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+  - Self-signed cert fingerprint-pin UI not yet built.
+  - Sidebar pill highlight may still clip on very long server names in a
+    very narrow sidebar.
+
+Next priorities:
+  - Self-signed cert fingerprint-pin UI
+  - DCC passive / NAT traversal
+  - In-app update check UI
+-->
+
+## v0.19.1 — 2026-06-02
+
+### UI Polish
+
+- **New:** Topic toggle button is now a custom-painted **speech bubble icon** — a small rounded rectangle with a tail and two text lines drawn via QPainter. No text, no border box. Icon is muted (`{{placeholder}}` color) when the topic is hidden and accent-colored when the topic is open, giving a clear at-a-glance state indicator. Updates live when you switch themes.
+- **New:** **Floating rounded input bar** — the separator line between the chat area and input bar is removed. The input bar background now matches the chat buffer color so the two areas flow together. The message input field uses `border-radius: 6px` with the `{{inputBg}}` background color — a rounded pill shape defined purely by the color contrast, no visible border.
+
+---
+
+<!--
 Session summary — 2026-06-02 (v0.19.0 — QSS visual polish + sidebar highlight overhaul)
 
 What was built / fixed:
