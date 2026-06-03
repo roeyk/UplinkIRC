@@ -61,6 +61,7 @@ public:
     void monitorRemove(const QString &host, const QString &nick);
     void monitorClear (const QString &host);
     void monitorStatus(const QString &host);
+    void pinCertificate(const QString &host, const QString &fingerprint);
 
 signals:
     // Structural changes — sidebar needs a repaint
@@ -89,6 +90,9 @@ signals:
     // Typing
     void typingReceived(const QString &host, const QString &channel,
                         const QString &nick, const QString &state);
+
+    // TLS cert pin
+    void sslFingerprintPrompt(const QString &host, const QString &fingerprint);
 
     // DCC
     void dccSendReceived(const QString &server, const QString &fromNick,

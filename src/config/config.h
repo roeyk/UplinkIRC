@@ -38,6 +38,7 @@ struct ServerConfig {
     quint16            proxyPort{1080};  // SOCKS5 proxy port
     QString            proxyUser;        // optional proxy username
     QString            proxyPass;        // optional proxy password
+    QString            pinnedFingerprint; // SHA-256 hex of pinned TLS cert (empty = verify normally)
     QList<ChannelConfig> channels;
 
     bool operator==(const ServerConfig &o) const {
@@ -47,7 +48,8 @@ struct ServerConfig {
             && saslUser == o.saslUser && saslPassword == o.saslPassword
             && saslExternal == o.saslExternal
             && clientCertFile == o.clientCertFile && clientKeyFile == o.clientKeyFile
-            && nickservPassword == o.nickservPassword;
+            && nickservPassword == o.nickservPassword
+            && pinnedFingerprint == o.pinnedFingerprint;
     }
     bool operator!=(const ServerConfig &o) const { return !(*this == o); }
 };

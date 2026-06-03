@@ -4,6 +4,7 @@
 #include "config/config.h"
 #include "version.h"
 
+#include <QCryptographicHash>
 #include <QFile>
 #include <QNetworkProxy>
 #include <QSslCertificate>
@@ -79,10 +80,11 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_nickservPassword = cfg.nickservPassword;
     m_bouncerType     = cfg.bouncerType;
     m_bouncerNetwork  = cfg.bouncerNetwork;
-    m_proxyHost       = cfg.proxyHost;
-    m_proxyPort       = cfg.proxyPort;
-    m_proxyUser       = cfg.proxyUser;
-    m_proxyPass       = cfg.proxyPass;
+    m_proxyHost           = cfg.proxyHost;
+    m_proxyPort           = cfg.proxyPort;
+    m_proxyUser           = cfg.proxyUser;
+    m_proxyPass           = cfg.proxyPass;
+    m_pinnedFingerprint   = cfg.pinnedFingerprint;
 
     // Apply cached STS policy — upgrade plain to TLS if one exists
     if (!m_ssl) {
@@ -346,11 +348,55 @@ void IrcClient::onReadyRead()
 
 void IrcClient::onSslErrors(const QList<QSslError> &errors)
 {
-    QStringList msgs;
-    for (const auto &e : errors)
-        msgs << e.errorString();
-    emit socketError(m_host, "TLS error: " + msgs.join("; "));
-    m_socket->disconnectFromHost();
+    bool allSelfSigned = true;
+    for (const auto &e : errors) {
+        if (e.error() != QSslError::SelfSignedCertificate &&
+            e.error() != QSslError::SelfSignedCertificateInChain) {
+            allSelfSigned = false;
+            break;
+        }
+    }
+
+    if (!allSelfSigned) {
+        QStringList msgs;
+        for (const auto &e : errors)
+            msgs << e.errorString();
+        emit socketError(m_host, "TLS error: " + msgs.join("; "));
+        m_socket->disconnectFromHost();
+        return;
+    }
+
+    const auto chain = m_socket->peerCertificateChain();
+    if (chain.isEmpty()) {
+        emit socketError(m_host, "TLS error: no peer certificate");
+        m_socket->disconnectFromHost();
+        return;
+    }
+    const QString fp = QString::fromLatin1(
+        chain.first().digest(QCryptographicHash::Sha256).toHex(':').toUpper());
+
+    if (!m_pinnedFingerprint.isEmpty()) {
+        if (m_pinnedFingerprint.compare(fp, Qt::CaseInsensitive) == 0) {
+            m_socket->ignoreSslErrors(errors);
+            return;
+        }
+        emit socketError(m_host,
+            QString("TLS: certificate fingerprint mismatch!\nPinned: %1\nGot:    %2")
+                .arg(m_pinnedFingerprint, fp));
+        m_socket->disconnectFromHost();
+        return;
+    }
+
+    // No pin — allow the handshake, then ask the user
+    m_socket->ignoreSslErrors(errors);
+    emit sslFingerprintPrompt(m_host, fp);
+}
+
+void IrcClient::abort()
+{
+    m_intentionalDisconnect = true;
+    if (m_socket->state() != QAbstractSocket::UnconnectedState)
+        m_socket->disconnectFromHost();
 }
 
 void IrcClient::onErrorOccurred(QAbstractSocket::SocketError)

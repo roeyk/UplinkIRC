@@ -359,7 +359,8 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::ctcpTimeReply,   this, &SessionModel::onCtcpTimeReply);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
     connect(cl, &IrcClient::typingReceived,  this, &SessionModel::typingReceived);
-    connect(cl, &IrcClient::dccSendReceived, this, &SessionModel::dccSendReceived);
+    connect(cl, &IrcClient::dccSendReceived,        this, &SessionModel::dccSendReceived);
+    connect(cl, &IrcClient::sslFingerprintPrompt,   this, &SessionModel::sslFingerprintPrompt);
     connect(cl, &IrcClient::hostChanged,     this, &SessionModel::onHostChanged);
     connect(cl, &IrcClient::reactReceived,   this, &SessionModel::onReactReceived);
     connect(cl, &IrcClient::pingRtt,         this, &SessionModel::pingRtt);
@@ -955,4 +956,17 @@ void SessionModel::onMonitorOffline(const QString &host, const QStringList &nick
 {
     postMessage(host, "(server)", Message::make(MessageType::Server, "",
         "Now offline: " + nicks.join(", ")));
+}
+
+void SessionModel::pinCertificate(const QString &host, const QString &fingerprint)
+{
+    for (auto &sc : m_config.servers) {
+        if (sc.host == host) {
+            sc.pinnedFingerprint = fingerprint;
+            Config::save(m_config, Config::defaultPath());
+            break;
+        }
+    }
+    if (auto *cl = clientFor(host))
+        cl->setPinnedFingerprint(fingerprint);
 }

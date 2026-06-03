@@ -23,6 +23,8 @@ public:
 
     void connectToServer(const ServerConfig &cfg);
     void quit(const QString &reason = "NodeRelay");
+    void abort();
+    void setPinnedFingerprint(const QString &fp) { m_pinnedFingerprint = fp; }
 
     void join(const QString &channel, const QString &key = {});
     void part(const QString &channel, const QString &reason = {});
@@ -92,6 +94,7 @@ signals:
     void ctcpTimeReply  (const QString &server, const QString &nick, const QString &timeStr);
     void rawReceived  (const QString &line);
     void selfNickChanged(const QString &server, const QString &newNick);
+    void sslFingerprintPrompt(const QString &host, const QString &fingerprint);
     void dccSendReceived(const QString &server, const QString &fromNick,
                          const QString &filename, quint32 ip, quint16 port, qint64 filesize);
     void typingReceived(const QString &server, const QString &channel,
@@ -157,6 +160,7 @@ private:
 
     BouncerType  m_bouncerType{BouncerType::None};
     QString      m_bouncerNetwork;
+    QString      m_pinnedFingerprint;
     QString      m_proxyHost;
     quint16      m_proxyPort{1080};
     QString      m_proxyUser;

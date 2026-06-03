@@ -1203,6 +1203,24 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
     connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
 
+    connect(m_model, &SessionModel::sslFingerprintPrompt, this,
+            [this](const QString &host, const QString &fp)
+    {
+        QMessageBox box(this);
+        box.setWindowTitle("Untrusted Certificate");
+        box.setText(host + " is using a self-signed certificate.");
+        box.setInformativeText("SHA-256 fingerprint:\n" + fp + "\n\nTrust this certificate?");
+        auto *pinBtn    = box.addButton("Pin Certificate", QMessageBox::AcceptRole);
+        auto *onceBtn   = box.addButton("Accept Once",     QMessageBox::AcceptRole);
+        auto *rejectBtn = box.addButton("Reject",          QMessageBox::RejectRole);
+        Q_UNUSED(onceBtn)
+        box.exec();
+        if (box.clickedButton() == pinBtn)
+            m_model->pinCertificate(host, fp);
+        else if (box.clickedButton() == rejectBtn)
+            if (auto *cl = m_model->clientFor(host)) cl->abort();
+    });
+
     connect(m_model, &SessionModel::dccSendReceived, this,
             [this](const QString &server, const QString &fromNick,
                    const QString &filename, quint32 ip, quint16 port, qint64 filesize)

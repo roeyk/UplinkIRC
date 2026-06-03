@@ -204,6 +204,7 @@ Config Config::load(const QString &path)
                 sc.proxyPort = static_cast<quint16>((*s)["proxy_port"].value_or(1080));
                 sc.proxyUser = QString::fromStdString((*s)["proxy_user"].value_or<std::string>(""));
                 sc.proxyPass = QString::fromStdString((*s)["proxy_pass"].value_or<std::string>(""));
+                sc.pinnedFingerprint = QString::fromStdString((*s)["ssl_fingerprint"].value_or<std::string>(""));
 
                 if (auto chans = (*s)["channel"].as_array()) {
                     for (auto &cnode : *chans) {
@@ -336,6 +337,8 @@ void Config::save(const Config &cfg, const QString &path)
             if (!s.proxyPass.isEmpty())
                 out << "proxy_pass        = " << tomlQuote(s.proxyPass) << "\n";
         }
+        if (!s.pinnedFingerprint.isEmpty())
+            out << "ssl_fingerprint   = " << tomlQuote(s.pinnedFingerprint) << "\n";
         const bool hasKeys = std::any_of(s.channels.begin(), s.channels.end(),
                                           [](const ChannelConfig &c){ return !c.password.isEmpty(); });
         if (hasKeys) {
