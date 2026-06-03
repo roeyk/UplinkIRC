@@ -937,7 +937,7 @@ void MainWindow::setupChatArea()
                 .arg(dataUri).arg(thumbnail.width()).arg(thumbnail.height());
         }
 
-        const QColor bg(m_theme.bufferBg);
+        const QColor bg = m_chatView->palette().color(QPalette::Base);
         const QColor border(m_theme.border);
         const QColor fg(m_theme.text);
         const QColor sub(m_theme.timestamp);
