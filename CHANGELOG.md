@@ -3,6 +3,36 @@
 ---
 
 <!--
+Session summary — 2026-06-03 (v0.19.3 — FreeBSD preview card bg fix)
+
+Bugs fixed:
+  - Link preview card background did not match the chat view on FreeBSD.
+    Root cause: card HTML was built with m_theme.bufferBg, but Qt on FreeBSD
+    renders QTextBrowser using QPalette::Base which can diverge from the raw
+    theme value when QSS palette translation is incomplete on the platform.
+    Fix: read `m_chatView->palette().color(QPalette::Base)` instead — this is
+    the actual color Qt uses to paint the viewport, so it always matches.
+
+Known issues left open:
+  - About dialog Wayland centering drift (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+  - Self-signed cert fingerprint-pin UI not yet built.
+  - Sidebar pill highlight may still clip on very long server names in a
+    very narrow sidebar.
+
+Next priorities:
+  - Self-signed cert fingerprint-pin UI
+  - DCC passive / NAT traversal
+  - In-app update check UI
+-->
+
+## v0.19.3 — 2026-06-03
+
+- **Fix:** Link preview card background now matches the chat view on FreeBSD — reads `QPalette::Base` from the chat widget directly instead of the raw theme value, ensuring the two are always the same color regardless of how the platform applies QSS
+
+---
+
+<!--
 Session summary — 2026-06-02 (v0.19.2 — rounded chat panel + padding)
 
 What was built:
