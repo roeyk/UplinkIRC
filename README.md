@@ -60,11 +60,13 @@
 ## App Icon
 
 <p align="center">
-  <img src="assets/uplink-dark.png" width="80" title="Uplink" alt="Uplink icon" />
+  <img src="assets/uplink-dark.png" width="80" title="Dark" alt="Uplink dark icon" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/uplink-light.png" width="80" title="Light" alt="Uplink light icon" />
 </p>
 
 <p align="center">
-  <sub>Auto-selects dark or light variant based on your active theme.</sub>
+  <sub>Dark &nbsp;·&nbsp; Light — choose in <strong>Preferences → App Icon</strong></sub>
 </p>
 
 ---
