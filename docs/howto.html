@@ -476,7 +476,7 @@
       <span>Uplink How-To Guide
         <span class="sub">Everything from installation to tweaks, step by step.</span>
       </span>
-      <img src="icons/tower.svg" alt="Uplink logo" style="width:192px;height:192px;flex-shrink:0;opacity:0.85;margin-top:64px;">
+      <img src="icons/uplink-dark.png" alt="Uplink logo" style="width:192px;height:192px;flex-shrink:0;opacity:0.85;margin-top:64px;">
     </h1>
 
     <h2>What is Uplink?</h2>
@@ -1787,18 +1787,15 @@ hanging_indent = true   # default on</pre>
   <!-- APP ICON -->
   <section id="app-icon">
     <h2>App icon variant</h2>
-    <p>Uplink ships five icon variants. Switch at runtime from <strong>☰ → App Icon</strong>, or set in config:</p>
+    <p>Uplink has two icon variants. Switch at runtime from <strong>☰ → Preferences → App Icon</strong>, or set in config:</p>
 
     <pre>[ui]
-app_icon = "dark"   # "dark" | "light" | "light-default" | "avatar" | "mark"</pre>
+app_icon = "dark"   # "dark" | "light"</pre>
 
     <table>
       <tr><th>Value</th><th>Description</th></tr>
-      <tr><td><code>"dark"</code></td><td>Dark background icon (default)</td></tr>
-      <tr><td><code>"light-default"</code></td><td>Light variant, recommended for light OS themes</td></tr>
-      <tr><td><code>"light"</code></td><td>Light variant, alternate style</td></tr>
-      <tr><td><code>"avatar"</code></td><td>Circular avatar style</td></tr>
-      <tr><td><code>"mark"</code></td><td>Minimal mark / wordless</td></tr>
+      <tr><td><code>"dark"</code></td><td>Dark icon (default)</td></tr>
+      <tr><td><code>"light"</code></td><td>Light icon, recommended for light OS themes</td></tr>
     </table>
   </section>
 
