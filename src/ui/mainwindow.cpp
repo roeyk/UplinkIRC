@@ -3439,7 +3439,7 @@ QString MainWindow::formatMessage(const Message &msg) const
     case MessageType::Join:
         html = wrapEvent("seagreen",  ts + " → " + msg.text); break;
     case MessageType::Part:
-        html = wrapEvent("firebrick", ts + " ← " + msg.text); break;
+        html = wrapEvent("#e06b6b", ts + " ← " + msg.text); break;
     case MessageType::Quit:
         html = wrapEvent("#e06b6b", ts + " ✕ " + msg.text); break;
     case MessageType::Nick:
