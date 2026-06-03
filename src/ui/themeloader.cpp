@@ -545,18 +545,12 @@ QLabel#topicText {
 /* ── Topic toggle button ── */
 QToolButton#topicToggle {
     background: transparent;
-    color: {{text}};
-    border: 1px solid {{border}};
-    border-radius: 4px;
-    padding: 1px 5px;
-}
-QToolButton#topicToggle:checked {
-    border-color: {{accent}};
-    color: {{text}};
-    font-weight: normal;
+    border: none;
+    padding: 2px;
 }
 QToolButton#topicToggle:hover {
     background: {{border}};
+    border-radius: 3px;
 }
 
 /* ── Typing indicator ── */

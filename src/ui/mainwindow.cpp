@@ -360,6 +360,8 @@ void MainWindow::setupToolbar()
     });
 }
 
+static QIcon makeTopicIcon(const QColor &color);
+
 void MainWindow::connectPreferences()
 {
     connect(m_prefsDialog, &PreferencesDialog::themeChanged, this, [this](const QString &name){
@@ -373,6 +375,18 @@ void MainWindow::connectPreferences()
             m_sidebarDelegate->setColors(QColor(m_theme.accent),
                                          QColor(m_theme.border),
                                          QColor(m_theme.text));
+        if (m_theme.valid) {
+            if (m_primaryTopicBtn) {
+                const bool on = m_primaryTopicBtn->isChecked();
+                m_primaryTopicBtn->setIcon(makeTopicIcon(
+                    QColor(on ? m_theme.accent : m_theme.placeholder)));
+            }
+            for (auto *pane : std::as_const(m_panes)) {
+                pane->setTopicIcon(
+                    makeTopicIcon(QColor(m_theme.placeholder)),
+                    makeTopicIcon(QColor(m_theme.accent)));
+            }
+        }
         applyAppIcon(m_config.ui.appIcon);
         Config::save(m_config, Config::defaultPath());
     });
@@ -402,7 +416,7 @@ void MainWindow::connectPreferences()
         m_topicDisplay->setVisible(on);
         if (m_primaryTopicBtn) {
             m_primaryTopicBtn->setChecked(on);
-            m_primaryTopicBtn->setText(on ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
+            m_primaryTopicBtn->setText(on ? QStringLiteral("▾") : QStringLiteral("▸"));
         }
         Config::save(m_config, Config::defaultPath());
     });
@@ -511,6 +525,29 @@ void MainWindow::applyAppIcon(const QString &choice)
 {
     setWindowIcon(AppIcons::appIcon(choice));
     if (m_tray) m_tray->setBaseIcon(AppIcons::trayIcon());
+}
+
+static QIcon makeTopicIcon(const QColor &color)
+{
+    const int sz = 14;
+    QPixmap pix(sz, sz);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing);
+    QPen pen(color, 1.3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+    // Speech bubble body
+    p.drawRoundedRect(QRectF(1.0, 1.0, 11.0, 8.5), 2.0, 2.0);
+    // Tail pointing bottom-left
+    QPolygonF tail;
+    tail << QPointF(2.5, 9.5) << QPointF(1.0, 13.0) << QPointF(5.5, 9.5);
+    p.drawPolyline(tail);
+    // Two text lines inside the bubble
+    p.setPen(QPen(color, 1.0, Qt::SolidLine, Qt::RoundCap));
+    p.drawLine(QPointF(3.5, 4.0), QPointF(9.5, 4.0));
+    p.drawLine(QPointF(3.5, 6.5), QPointF(7.5, 6.5));
+    return QIcon(pix);
 }
 
 static QIcon makeGearIcon(int angleDeg, const QColor &color)
@@ -772,11 +809,16 @@ void MainWindow::setupChatArea()
         m_primaryTopicBtn->setObjectName("topicToggle");
         m_primaryTopicBtn->setCheckable(true);
         m_primaryTopicBtn->setChecked(m_showTopic);
-        m_primaryTopicBtn->setText(m_showTopic ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
+        m_primaryTopicBtn->setText({});
+        m_primaryTopicBtn->setIcon(makeTopicIcon(
+            QColor(m_theme.valid ? m_theme.placeholder : "#888888")));
+        m_primaryTopicBtn->setIconSize(QSize(14, 14));
         m_primaryTopicBtn->setAutoRaise(false);
         connect(m_primaryTopicBtn, &QToolButton::toggled, this, [this](bool on){
             m_topicDisplay->setVisible(on);
-            m_primaryTopicBtn->setText(on ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
+            if (m_theme.valid)
+                m_primaryTopicBtn->setIcon(makeTopicIcon(
+                    QColor(on ? m_theme.accent : m_theme.placeholder)));
         });
 
         m_primaryPaneLabel = new QLabel;
@@ -2722,6 +2764,12 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     m_orderedPanes.append(pane);
     m_primaryHeader->setVisible(true);
     m_primaryCloseBtn->setVisible(true);
+
+    if (m_theme.valid) {
+        pane->setTopicIcon(
+            makeTopicIcon(QColor(m_theme.placeholder)),
+            makeTopicIcon(QColor(m_theme.accent)));
+    }
 
     rebuildPaneLayout();
     refreshPaneChatView(pane);

@@ -2,6 +2,7 @@
 #include <QWidget>
 #include <QString>
 #include <QPoint>
+#include <QIcon>
 
 class QTextBrowser;
 class QListWidget;
@@ -22,6 +23,7 @@ public:
     void setNickVisible(bool visible);
     void setInputFont(const QFont &nickFont, const QFont &inputFont);
     void setTopic(const QString &html);
+    void setTopicIcon(const QIcon &collapsed, const QIcon &expanded);
     void setDragHighlight(bool on);
 signals:
     void closeRequested();

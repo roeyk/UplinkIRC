@@ -30,7 +30,8 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
 
     m_topicToggle = new QToolButton;
     m_topicToggle->setObjectName("topicToggle");
-    m_topicToggle->setText(QStringLiteral("▸ topic"));
+    m_topicToggle->setText({});
+    m_topicToggle->setIconSize(QSize(14, 14));
     m_topicToggle->setAutoRaise(false);
     m_topicToggle->setCheckable(true);
 
@@ -84,7 +85,6 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
 
     connect(m_topicToggle, &QToolButton::toggled, this, [this](bool on){
         m_topicBar->setVisible(on);
-        m_topicToggle->setText(on ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
     });
 
     // Chat view + nick list
@@ -158,8 +158,19 @@ void ChannelPane::setTopic(const QString &html)
         const bool hasTopic = !html.isEmpty();
         m_topicToggle->setChecked(hasTopic);
         m_topicBar->setVisible(hasTopic);
-        m_topicToggle->setText(hasTopic ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
     }
+}
+
+void ChannelPane::setTopicIcon(const QIcon &collapsed, const QIcon &expanded)
+{
+    if (!m_topicToggle) return;
+    m_topicToggle->setIcon(m_topicToggle->isChecked() ? expanded : collapsed);
+    // Reconnect toggled to swap icon
+    disconnect(m_topicToggle, &QToolButton::toggled, nullptr, nullptr);
+    connect(m_topicToggle, &QToolButton::toggled, this, [this, collapsed, expanded](bool on){
+        m_topicBar->setVisible(on);
+        m_topicToggle->setIcon(on ? expanded : collapsed);
+    });
 }
 
 void ChannelPane::setDragHighlight(bool on)
