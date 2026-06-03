@@ -65,9 +65,72 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QRandomGenerator>
+#include <QStyledItemDelegate>
 #if defined(Q_OS_WIN)
 #  include <windows.h>
 #endif
+
+class SidebarDelegate : public QStyledItemDelegate {
+    QColor m_accent;
+    QColor m_hover;
+    QColor m_activeText;
+public:
+    explicit SidebarDelegate(QObject *parent = nullptr)
+        : QStyledItemDelegate(parent) {}
+
+    void setColors(const QColor &accent, const QColor &hover, const QColor &activeText) {
+        m_accent     = accent;
+        m_hover      = hover;
+        m_activeText = activeText;
+    }
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const override
+    {
+        QStyleOptionViewItem opt = option;
+        initStyleOption(&opt, index);
+
+        const bool selected = opt.state & QStyle::State_Selected;
+        const bool hovered  = opt.state & QStyle::State_MouseOver;
+
+        if (selected || hovered) {
+            const QColor bg = selected ? m_accent : m_hover;
+            if (bg.isValid()) {
+                // Use the style's actual text rect so we measure from where
+                // Qt will draw the text, not the raw item rect edge.
+                const QWidget *w = opt.widget;
+                const QStyle  *s = w ? w->style() : QApplication::style();
+                const QRect textRect = s->subElementRect(
+                    QStyle::SE_ItemViewItemText, &opt, w);
+
+                const QFontMetrics fm(opt.font);
+                const int textW = fm.horizontalAdvance(opt.text);
+                constexpr int hPad = 6;
+                constexpr int vPad = 1;
+                QRect r(textRect.x() - hPad,
+                        opt.rect.y() + vPad,
+                        qMin(textW + hPad * 2, opt.rect.right() - textRect.x() + hPad),
+                        opt.rect.height() - vPad * 2);
+                painter->save();
+                painter->setRenderHint(QPainter::Antialiasing);
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(bg);
+                painter->drawRoundedRect(r, 5.0, 5.0);
+                painter->restore();
+            }
+        }
+
+        // Suppress focus rect and hover shift from the native style.
+        opt.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver);
+        if (selected && m_activeText.isValid()) {
+            // Keep State_Selected so Qt uses HighlightedText for the text color,
+            // but make the Highlight background transparent so our rounded rect shows.
+            opt.palette.setColor(QPalette::All, QPalette::Highlight,       QColor(Qt::transparent));
+            opt.palette.setColor(QPalette::All, QPalette::HighlightedText, m_activeText);
+        }
+        QStyledItemDelegate::paint(painter, opt, index);
+    }
+};
 
 // Minimum width of the topic bar left zone — wide enough to always show the
 // hamburger (22) + gear (22) + right margin (4) even when the sidebar is closed.
@@ -306,6 +369,10 @@ void MainWindow::connectPreferences()
         if (m_chatView && m_theme.valid)
             m_chatView->document()->setDefaultStyleSheet(
                 QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
+        if (m_sidebarDelegate && m_theme.valid)
+            m_sidebarDelegate->setColors(QColor(m_theme.accent),
+                                         QColor(m_theme.border),
+                                         QColor(m_theme.text));
         applyAppIcon(m_config.ui.appIcon);
         Config::save(m_config, Config::defaultPath());
     });
@@ -534,6 +601,12 @@ void MainWindow::setupSidebar()
     m_sidebar->setIndentation(8);
     m_sidebar->setMinimumWidth(112);
     m_sidebar->setObjectName("sidebar");
+    m_sidebarDelegate = new SidebarDelegate(m_sidebar);
+    if (m_theme.valid)
+        m_sidebarDelegate->setColors(QColor(m_theme.accent),
+                                     QColor(m_theme.border),
+                                     QColor(m_theme.text));
+    m_sidebar->setItemDelegate(m_sidebarDelegate);
 
     connect(m_sidebar, &QTreeWidget::itemClicked,
             this, [this](QTreeWidgetItem *, int){ onSidebarSelectionChanged(); });
@@ -696,21 +769,11 @@ void MainWindow::setupChatArea()
         hbox->setSpacing(6);
 
         m_primaryTopicBtn = new QToolButton;
+        m_primaryTopicBtn->setObjectName("topicToggle");
         m_primaryTopicBtn->setCheckable(true);
         m_primaryTopicBtn->setChecked(m_showTopic);
         m_primaryTopicBtn->setText(m_showTopic ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));
         m_primaryTopicBtn->setAutoRaise(false);
-        m_primaryTopicBtn->setStyleSheet(
-            "QToolButton {"
-            "  background: transparent;"
-            "  border: 1px solid palette(mid);"
-            "  border-radius: 4px;"
-            "  padding: 1px 5px;"
-            "}"
-            "QToolButton:checked {"
-            "  border-color: palette(highlight);"
-            "}"
-        );
         connect(m_primaryTopicBtn, &QToolButton::toggled, this, [this](bool on){
             m_topicDisplay->setVisible(on);
             m_primaryTopicBtn->setText(on ? QStringLiteral("▾ topic") : QStringLiteral("▸ topic"));

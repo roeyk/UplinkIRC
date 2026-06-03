@@ -238,14 +238,11 @@ QTreeWidget::item {
     height: 20px;
 }
 QTreeWidget::item:selected {
-    background-color: {{accent}};
+    background: transparent;
     color: {{sidebarActive}};
 }
-QTreeWidget::item:hover:!selected {
-    background-color: {{border}};
-}
-QTreeWidget::item:hover:selected {
-    background-color: {{accent}};
+QTreeWidget::item:hover {
+    background: transparent;
 }
 QTreeWidget::branch {
     background-color: {{sidebarBg}};

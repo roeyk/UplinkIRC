@@ -10,6 +10,7 @@
 #include "config/config.h"
 #include "ui/themeloader.h"
 
+class SidebarDelegate;
 class TrayIcon;
 class SignalBars;
 class AboutDialog;
@@ -132,7 +133,8 @@ private:
     QTreeWidgetItem *findChannelItem(const QString &host, const QString &channel) const;
 
     // Widgets
-    QTreeWidget  *m_sidebar;
+    QTreeWidget      *m_sidebar;
+    SidebarDelegate  *m_sidebarDelegate{nullptr};
     QTextBrowser *m_chatView;
     QLineEdit    *m_input;
     QLabel       *m_nickPrefix;
