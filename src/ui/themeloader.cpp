@@ -554,6 +554,8 @@ QToolButton#topicToggle {
 }
 QToolButton#topicToggle:checked {
     border-color: {{accent}};
+    color: {{text}};
+    font-weight: normal;
 }
 QToolButton#topicToggle:hover {
     background: {{border}};
