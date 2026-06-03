@@ -138,6 +138,24 @@ static constexpr int kBtnZoneMinW = 48;
 
 static QString linkifyTopic(const QString &text);
 
+// Clips all child widgets to a rounded rect via a bitmap mask.
+class RoundedPane : public QWidget {
+public:
+    explicit RoundedPane(QWidget *parent = nullptr) : QWidget(parent) {}
+protected:
+    void resizeEvent(QResizeEvent *e) override {
+        QWidget::resizeEvent(e);
+        if (size().isEmpty()) return;
+        QBitmap bm(size());
+        bm.fill(Qt::color0);
+        QPainter p(&bm);
+        p.setBrush(Qt::color1);
+        p.setPen(Qt::NoPen);
+        p.drawRoundedRect(rect(), 10, 10);
+        setMask(bm);
+    }
+};
+
 class ChatBrowser : public QTextBrowser {
 public:
     using QTextBrowser::QTextBrowser;
@@ -665,9 +683,13 @@ void MainWindow::setupSidebar()
         if (m_sidebarExpanded) {
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
             if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
+            if (auto *l = qobject_cast<QVBoxLayout *>(m_rightContent->layout()))
+                l->setContentsMargins(0, 0, 8, 8);
         } else {
             m_mainSplitter->setSizes({0, total});
             if (m_topicLeft) m_topicLeft->setFixedWidth(kBtnZoneMinW);
+            if (auto *l = qobject_cast<QVBoxLayout *>(m_rightContent->layout()))
+                l->setContentsMargins(8, 0, 8, 8);
         }
     });
 
@@ -785,8 +807,9 @@ void MainWindow::setupChatArea()
 
     // Right content — holds the panes splitter only
     m_rightContent = new QWidget;
+    m_rightContent->setObjectName("rightContent");
     auto *vbox     = new QVBoxLayout(m_rightContent);
-    vbox->setContentsMargins(0, 0, 0, 0);
+    vbox->setContentsMargins(0, 0, 8, 8);
     vbox->setSpacing(0);
 
     // Primary panel — first column in the panes splitter
@@ -970,7 +993,13 @@ void MainWindow::setupChatArea()
     m_panesSplitter->setHandleWidth(2);
     m_panesSplitter->addWidget(m_primaryPanel);
     m_panesSplitter->setStretchFactor(0, 1);
-    vbox->addWidget(m_panesSplitter, 1);
+
+    auto *chatWrapper = new RoundedPane;
+    auto *cwLayout    = new QVBoxLayout(chatWrapper);
+    cwLayout->setContentsMargins(0, 0, 0, 0);
+    cwLayout->setSpacing(0);
+    cwLayout->addWidget(m_panesSplitter);
+    vbox->addWidget(chatWrapper, 1);
 
     m_mainSplitter = new QSplitter(Qt::Horizontal);
     m_mainSplitter->setHandleWidth(0);

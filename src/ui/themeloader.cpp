@@ -511,6 +511,11 @@ QDialogButtonBox QPushButton {
     min-width: 70px;
 }
 
+/* ── Right content area — background shows in padding + rounded corners ── */
+QWidget#rightContent {
+    background-color: {{sidebarBg}};
+}
+
 /* ── Topic / info bar ── */
 QWidget#topicBar {
     background-color: {{inputBg}};
