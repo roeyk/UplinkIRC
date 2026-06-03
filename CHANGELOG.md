@@ -3,6 +3,39 @@
 ---
 
 <!--
+Session summary — 2026-06-02 (v0.18.2 — event message visual polish)
+
+What was built / fixed:
+  - Join/part/quit/nick event messages now render at 82% of the chat font size
+    using an explicit pt value via a wrapEvent() lambda (Qt rich text does not
+    support percentage font-size or opacity CSS properties).
+  - Part, quit, and kick colors changed from "firebrick" (#B22222) to #e06b6b —
+    a lighter red that is readable on dark backgrounds. Join stays seagreen.
+    Nick stays steelblue. Error and server messages unchanged.
+
+Bugs NOT yet fixed:
+  - About dialog slight centering drift on Wayland (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+  - Self-signed cert fingerprint-pin UI not yet built.
+  - Pane layout not persisted across restarts.
+
+Next priorities:
+  - Pane layout persistence
+  - Self-signed cert fingerprint-pin UI
+  - DCC passive / NAT traversal
+  - In-app update check UI
+-->
+
+## v0.18.2 — 2026-06-02
+
+### Fixes
+
+- **Fix:** Join/part/quit/nick event lines now render at 82% of the chat font size — less visually heavy on busy channels.
+- **Fix:** Part, quit, and kick message color changed from `firebrick` to `#e06b6b` — readable on dark backgrounds without being harsh.
+
+---
+
+<!--
 Session summary — 2026-06-02 (v0.18.1 — pane polish and bug fixes)
 
 What was built / fixed:

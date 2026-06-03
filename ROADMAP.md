@@ -192,6 +192,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Right-click copy in chat view — selecting text and right-clicking shows Copy (v0.14.0)
 - [x] Theme-aware icons — hamburger menu and gear buttons use m_theme.text; link preview card hardcoded dark (v0.14.0)
 - [ ] In-app update check UI — zsync metadata is embedded; appimageupdatetool works externally; no "Check for Updates" button inside the app yet
+- [x] Event message visual polish — join/part/quit/nick lines render at 82% font size; part/quit/kick color softened to #e06b6b for dark backgrounds (v0.18.2)
 
 ---
 
