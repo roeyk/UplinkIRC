@@ -198,6 +198,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Topic toggle button theme integration — both primary panel and channel pane topic buttons use #topicToggle QSS rule; removed palette(mid)/palette(highlight) inline stylesheets; always visible in single-window mode (v0.19.0)
 - [x] Topic button speech bubble icon — custom QPainter icon replaces text label; muted when collapsed, accent when open; ChannelPane::setTopicIcon() API; updates on theme change (v0.19.1)
 - [x] Floating rounded input bar — separator line removed; bar blends into chat area via bufferBg; QLineEdit gets border-radius pill shape (v0.19.1)
+- [x] Rounded chat panel with padding — RoundedPane widget clips all chat content (panes splitter + children) to a 10 px rounded rect via setMask(); 8 px right/bottom padding shows sidebarBg for contrast; sidebar toggle balances left margin to match (v0.19.2)
 
 ---
 

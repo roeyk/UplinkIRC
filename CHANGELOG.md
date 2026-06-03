@@ -3,6 +3,52 @@
 ---
 
 <!--
+Session summary — 2026-06-02 (v0.19.2 — rounded chat panel + padding)
+
+What was built:
+  - RoundedPane: new QWidget subclass that applies a bitmap mask via setMask()
+    on every resize, clipping all child content (chat view, nick list, input
+    bar, headers) to a 10px rounded rectangle at the OS compositor level.
+  - m_panesSplitter wrapped in RoundedPane so ALL panes (primary + detached)
+    are clipped together as one rounded block.
+  - m_rightContent vbox margins: 0,0,8,8 — 8px padding at bottom and right so
+    the chat panel floats inside the window with breathing room.
+  - QWidget#rightContent background set to {{sidebarBg}} so the padding gap
+    and corner clip areas contrast against the chat panel (bufferBg), making
+    the rounded corners visible.
+  - Sidebar toggle (gear icon) now also adjusts the left margin of
+    m_rightContent: 8px when sidebar is closed (matches right), 0 when open
+    (sidebar is the left boundary). Prevents the lopsided look when the
+    sidebar is hidden.
+
+Bugs fixed:
+  - No rounded corners visible: root cause was color contrast — bg == bufferBg
+    in most themes; fixed by giving rightContent the sidebarBg color.
+  - Asymmetric padding when sidebar closed: left=0, right=8 looked odd; fixed
+    by dynamically setting left margin to 8 on sidebar close.
+
+Known issues left open:
+  - About dialog Wayland centering drift (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+  - Self-signed cert fingerprint-pin UI not yet built.
+  - Sidebar pill highlight may still clip on very long server names in a
+    very narrow sidebar.
+
+Next priorities:
+  - Self-signed cert fingerprint-pin UI
+  - DCC passive / NAT traversal
+  - In-app update check UI
+-->
+
+## v0.19.2 — 2026-06-02
+
+- Rounded chat panel: `RoundedPane` widget clips all chat content to a 10 px rounded rectangle via `setMask()` — corners are clipped at the OS level, not just the background
+- Padding: 8 px breathing room at the right and bottom of the chat area; gap shows the sidebar background color so rounded corners are visually distinct
+- Sidebar toggle: when the sidebar is closed the left margin matches the right (8 px each side) so the panel stays centered and balanced; when reopened the left margin returns to zero
+
+---
+
+<!--
 Session summary — 2026-06-02 (v0.19.1 — topic icon + rounded input bar)
 
 What was built:

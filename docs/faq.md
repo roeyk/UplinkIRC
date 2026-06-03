@@ -25,7 +25,7 @@ The AppImage is the recommended Linux download — it is self-contained, runs on
 The AppImage embeds zsync metadata pointing to the latest release. Install [`appimageupdatetool`](https://github.com/AppImageCommunity/AppImageUpdate) and run:
 
 ```bash
-appimageupdatetool ./NodeRelay-0.19.1-x86_64.AppImage
+appimageupdatetool ./NodeRelay-0.19.2-x86_64.AppImage
 ```
 
 This downloads only the changed blocks from the new release — much faster than a full re-download. The tool prints progress and replaces the file in place when done.
@@ -307,7 +307,7 @@ theme = "nord"
 
 ### How do I hide or show the server/channel list?
 
-Click the ⚙ gear button at the **left end of the info bar** (just left of the ☰ hamburger). The sidebar collapses completely, giving the chat area the full window width. Click the gear again to bring it back. The gear stays visible in the info bar at all times, so you can always get the sidebar back.
+Click the ⚙ gear button at the **left end of the info bar** (just left of the ☰ hamburger). The sidebar collapses completely; the chat panel expands to fill the window with equal padding on both sides. Click the gear again to bring it back. The gear stays visible in the info bar at all times, so you can always get the sidebar back.
 
 You can also drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.
 
