@@ -70,6 +70,20 @@
 #  include <windows.h>
 #endif
 
+class FixedRowDelegate : public QStyledItemDelegate {
+    int m_height;
+public:
+    explicit FixedRowDelegate(int height, QObject *parent = nullptr)
+        : QStyledItemDelegate(parent), m_height(height) {}
+    QSize sizeHint(const QStyleOptionViewItem &option,
+                   const QModelIndex &index) const override
+    {
+        QSize s = QStyledItemDelegate::sizeHint(option, index);
+        s.setHeight(m_height);
+        return s;
+    }
+};
+
 class SidebarDelegate : public QStyledItemDelegate {
     QColor m_accent;
     QColor m_hover;
@@ -83,6 +97,15 @@ public:
         m_hover      = hover;
         m_activeText = activeText;
     }
+
+    QSize sizeHint(const QStyleOptionViewItem &option,
+                   const QModelIndex &index) const override
+    {
+        QSize s = QStyledItemDelegate::sizeHint(option, index);
+        s.setHeight(20);
+        return s;
+    }
+
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override
@@ -105,17 +128,21 @@ public:
 
                 const QFontMetrics fm(opt.font);
                 const int textW = fm.horizontalAdvance(opt.text);
-                constexpr int hPad = 6;
-                constexpr int vPad = 1;
-                QRect r(textRect.x() - hPad,
+                constexpr int hPad = 8;
+                constexpr int vPad = 2;
+                // Qt draws text at textRect.x() + PM_FocusFrameHMargin+1 internally;
+                // shift pill origin right by that margin so padding is symmetric.
+                const int textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, w) + 1;
+                const int pillX = textRect.x() + textMargin - hPad;
+                QRect r(pillX,
                         opt.rect.y() + vPad,
-                        qMin(textW + hPad * 2, opt.rect.right() - textRect.x() + hPad),
+                        qMin(textW + hPad * 2, opt.rect.right() - pillX),
                         opt.rect.height() - vPad * 2);
                 painter->save();
                 painter->setRenderHint(QPainter::Antialiasing);
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(bg);
-                painter->drawRoundedRect(r, 5.0, 5.0);
+                painter->drawRoundedRect(r, 10.0, 10.0);
                 painter->restore();
             }
         }
@@ -706,6 +733,7 @@ void MainWindow::setupNickPanel()
 {
     m_nickList = new QListWidget;
     m_nickList->setSpacing(0);
+    m_nickList->setItemDelegate(new FixedRowDelegate(16, m_nickList));
     m_nickList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_nickList, &QListWidget::customContextMenuRequested,
             this, &MainWindow::onNickListContextMenu);
