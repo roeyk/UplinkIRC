@@ -25,7 +25,7 @@ The AppImage is the recommended Linux download — it is self-contained, runs on
 The AppImage embeds zsync metadata pointing to the latest release. Install [`appimageupdatetool`](https://github.com/AppImageCommunity/AppImageUpdate) and run:
 
 ```bash
-appimageupdatetool ./NodeRelay-0.16.2-x86_64.AppImage
+appimageupdatetool ./NodeRelay-0.19.0-x86_64.AppImage
 ```
 
 This downloads only the changed blocks from the new release — much faster than a full re-download. The tool prints progress and replaces the file in place when done.
@@ -324,8 +324,9 @@ The info bar at the top of the chat area always shows `#channel (modes) * Networ
   [ui]
   show_topic = true
   ```
-- **Per pane:** each channel pane has a **▸ topic / ▾ topic** oval button in its header — click it to show or hide that pane's topic independently. The topic opens automatically when you open a pane for a channel that has a topic.
-- **Primary column:** when panes are open, the primary channel's header also gets the same oval topic button.
+- **Topic button:** every channel view has a **▸ topic / ▾ topic** pill button in the channel header. Click it to show or hide the topic text independently of other channels. It is always visible — whether you are in single-window mode or have multiple panes open.
+  - Border turns **accent-colored** when the topic is showing, and returns to the muted theme border when hidden, so you can see the topic state at a glance.
+  - The topic opens automatically when you open a pane for a channel that has a topic set.
 
 ### How do I hide my nick next to the input box?
 

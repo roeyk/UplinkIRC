@@ -193,6 +193,9 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Theme-aware icons — hamburger menu and gear buttons use m_theme.text; link preview card hardcoded dark (v0.14.0)
 - [ ] In-app update check UI — zsync metadata is embedded; appimageupdatetool works externally; no "Check for Updates" button inside the app yet
 - [x] Event message visual polish — join/part/quit/nick lines render at 82% font size; part/quit/kick color softened to #e06b6b for dark backgrounds (v0.18.2)
+- [x] QSS visual polish overhaul — rounded inputs with focus rings, themed checkboxes/radio/tabs/tooltips, floating scrollbars, pill-shaped sidebar selection, menu border-radius and separators (v0.19.0)
+- [x] Sidebar fitted pill highlight — custom SidebarDelegate draws rounded rect sized to text width; no full-row highlight; hover shift eliminated; selected text always readable (v0.19.0)
+- [x] Topic toggle button theme integration — both primary panel and channel pane topic buttons use #topicToggle QSS rule; removed palette(mid)/palette(highlight) inline stylesheets; always visible in single-window mode (v0.19.0)
 
 ---
 

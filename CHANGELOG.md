@@ -3,6 +3,68 @@
 ---
 
 <!--
+Session summary — 2026-06-02 (v0.19.0 — QSS visual polish + sidebar highlight overhaul)
+
+What was built / fixed:
+  - Full QSS template overhaul: rounded inputs (border-radius 5px), accent-colored
+    focus rings on QLineEdit/QComboBox/QSpinBox, custom checkbox and radio button
+    indicators using {{accent}}, underline-style QTabBar, themed QToolTip,
+    floating scrollbars with hover state, menu separators and border-radius,
+    improved button padding/radius.
+  - Topic toggle button wired into theme system for BOTH the primary panel
+    (m_primaryTopicBtn) and channel panes (m_topicToggle). Both now use the
+    #topicToggle objectName and the QSS rule; old palette(mid)/palette(highlight)
+    inline stylesheets removed.
+  - Topic button fixed: was disappearing visually on unchecked state due to
+    {{sidebarText}} having low contrast against the chat background. Now uses
+    {{text}} (full foreground color) in all states.
+  - Topic button: checked state no longer renders bold/blue via native Qt style;
+    font-weight:normal and explicit color:{{text}} lock it down.
+  - Primary panel header now always visible (was hidden until a second pane
+    opened), so the topic toggle button is accessible in single-window mode.
+  - Sidebar selection: replaced QSS background with a custom SidebarDelegate
+    that paints a rounded pill highlight fitted to the text width. Uses
+    QStyle::SE_ItemViewItemText to anchor width, clears State_MouseOver to
+    prevent Fusion hover shift, and uses transparent Highlight palette +
+    HighlightedText = {{text}} so selected text is always readable.
+
+Known issues left open:
+  - About dialog slight centering drift on Wayland (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+  - Self-signed cert fingerprint-pin UI not yet built.
+  - Sidebar pill highlight width may still clip on very long server names if
+    the sidebar is narrower than the text.
+
+Next priorities:
+  - Self-signed cert fingerprint-pin UI
+  - DCC passive / NAT traversal
+  - In-app update check UI
+  - AppImage build verification for v0.19.0
+-->
+
+## v0.19.0 — 2026-06-02
+
+### UI Polish
+
+- **New:** Full QSS theme template overhaul — all form widgets now themed consistently:
+  - `QLineEdit`, `QComboBox`, `QSpinBox` get `border-radius: 5px` and an accent-colored focus ring
+  - `QCheckBox` and `QRadioButton` use custom square/round indicators filled with `{{accent}}` when checked
+  - `QTabBar` uses an underline style (`border-bottom: 2px solid {{accent}}` on selected tab) instead of raised tabs
+  - `QToolTip` is now themed to match the active color scheme instead of using the OS default
+  - Scrollbars get 2 px margin for a floating appearance and a hover-highlight state
+  - Menus get `border-radius: 6px`, per-item rounded hover with margins, and styled separators
+  - Buttons get `border-radius: 5px`, no border, and slightly more padding
+- **New:** Sidebar channel/server selection rendered as a **fitted rounded pill** — the highlight wraps only the text plus a small padding, not the full row width. Implemented via a custom `SidebarDelegate` that measures the actual text rect per item.
+- **Fix:** Selected sidebar items (servers especially) now have fully readable text — uses `{{text}}` (full foreground color) via the `HighlightedText` palette role so it works across all themes.
+- **Fix:** Sidebar items no longer shift position on hover — `State_MouseOver` is cleared before the native painter runs, preventing Fusion style's built-in hover nudge.
+- **Fix:** Topic toggle button now always visible in single-window mode — the primary panel header is shown on startup rather than only when a second pane opens.
+- **Fix:** Topic toggle button on the primary panel was using `palette(highlight)` (system blue) for the checked-state border. It is now wired into the theme system via `#topicToggle` — border uses `{{accent}}`, matching every other theme-aware element.
+- **Fix:** Topic button text no longer goes blue or bold when the topic is open — `color: {{text}}` and `font-weight: normal` are explicitly locked in the checked pseudo-state.
+- **Fix:** Topic button text was invisible after collapsing the topic on channels with no server-set topic — caused by `{{sidebarText}}` being low-contrast against the chat background. Now uses `{{text}}` in all states.
+
+---
+
+<!--
 Session summary — 2026-06-02 (v0.18.2 — event message visual polish)
 
 What was built / fixed:
