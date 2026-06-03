@@ -3352,6 +3352,11 @@ QString MainWindow::formatMessage(const Message &msg) const
     auto wrap = [](const QString &color, const QString &text) {
         return QString("<span style='color:%1'>%2</span>").arg(color, text.toHtmlEscaped());
     };
+    const int eventPt = qMax(7, qRound(m_config.ui.fontSizes.chat * 0.82));
+    auto wrapEvent = [&eventPt](const QString &color, const QString &text) {
+        return QString("<span style='color:%1; font-size:%2pt'>%3</span>")
+            .arg(color, QString::number(eventPt), text.toHtmlEscaped());
+    };
 
     QString html;
     // Timestamp span — double as msgid anchor when present
@@ -3432,13 +3437,13 @@ QString MainWindow::formatMessage(const Message &msg) const
     }
 
     case MessageType::Join:
-        html = wrap("seagreen",  ts + " → " + msg.text); break;
+        html = wrapEvent("seagreen",  ts + " → " + msg.text); break;
     case MessageType::Part:
-        html = wrap("firebrick", ts + " ← " + msg.text); break;
+        html = wrapEvent("firebrick", ts + " ← " + msg.text); break;
     case MessageType::Quit:
-        html = wrap("firebrick", ts + " ✕ " + msg.text); break;
+        html = wrapEvent("firebrick", ts + " ✕ " + msg.text); break;
     case MessageType::Nick:
-        html = wrap("steelblue", ts + " ~ "  + msg.text); break;
+        html = wrapEvent("steelblue", ts + " ~ "  + msg.text); break;
     case MessageType::Kick:
         html = wrap("firebrick", ts + " ✕ " + msg.text); break;
     case MessageType::Topic:
