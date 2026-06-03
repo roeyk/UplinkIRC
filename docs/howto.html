@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NodeRelay — How-To Guide</title>
+  <title>Uplink — How-To Guide</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -359,7 +359,7 @@
 <!-- ── LEFT NAVIGATION ──────────────────────────────── -->
 <nav id="sidenav">
   <div class="nav-logo">
-    <a href="index.html">⬡ NodeRelay</a>
+    <a href="index.html">⬡ Uplink</a>
     <span>How-To Guide</span>
   </div>
 
@@ -376,7 +376,7 @@
 
   <div class="nav-section">Getting Started</div>
   <ul>
-    <li><a href="#what-is">What is NodeRelay?</a></li>
+    <li><a href="#what-is">What is Uplink?</a></li>
     <li><a href="#download">Download (pre-built)</a></li>
     <li><a href="#appimage">AppImage (Linux)</a></li>
     <li><a href="#dependencies">Install dependencies</a></li>
@@ -473,18 +473,18 @@
   <!-- INTRO -->
   <section id="what-is">
     <h1 style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-      <span>NodeRelay How-To Guide
+      <span>Uplink How-To Guide
         <span class="sub">Everything from installation to tweaks, step by step.</span>
       </span>
-      <img src="icons/tower.svg" alt="NodeRelay logo" style="width:192px;height:192px;flex-shrink:0;opacity:0.85;margin-top:64px;">
+      <img src="icons/tower.svg" alt="Uplink logo" style="width:192px;height:192px;flex-shrink:0;opacity:0.85;margin-top:64px;">
     </h1>
 
-    <h2>What is NodeRelay?</h2>
-    <p>NodeRelay is a fast, secure IRC chat client built with Qt6 and C++17. It connects over TLS (encrypted) by default, supports IRCv3 features like chat history, typing indicators, and SASL authentication, and ships with 55 built-in color themes. The default server is <strong>irc.linuxdojo.org:6697</strong>, channel <strong>#uplink</strong>.</p>
+    <h2>What is Uplink?</h2>
+    <p>Uplink is a fast, secure IRC chat client built with Qt6 and C++17. It connects over TLS (encrypted) by default, supports IRCv3 features like chat history, typing indicators, and SASL authentication, and ships with 55 built-in color themes. The default server is <strong>irc.linuxdojo.org:6697</strong>, channel <strong>#uplink</strong>.</p>
     <p>It runs on Linux, macOS, Windows, and FreeBSD.</p>
 
     <div class="note">
-      <strong>New to IRC?</strong> IRC is a real-time chat protocol that has been running since 1988. You connect to a <em>server</em>, join <em>channels</em> (chat rooms that start with <code>#</code>), and chat with other people. NodeRelay handles all the protocol details — you just type.
+      <strong>New to IRC?</strong> IRC is a real-time chat protocol that has been running since 1988. You connect to a <em>server</em>, join <em>channels</em> (chat rooms that start with <code>#</code>), and chat with other people. Uplink handles all the protocol details — you just type.
     </div>
   </section>
 
@@ -497,28 +497,28 @@
       <tr><th>Platform</th><th>Download</th><th>How to run</th></tr>
       <tr>
         <td>Linux x86_64 (AppImage)</td>
-        <td><a href="https://github.com/noderelay/NodeRelay/releases/latest">Latest release ↗</a></td>
-        <td><code>chmod +x NodeRelay-*.AppImage &amp;&amp; ./NodeRelay-*.AppImage</code></td>
+        <td><a href="https://github.com/noderelay/UplinkIRC/releases/latest">Latest release ↗</a></td>
+        <td><code>chmod +x Uplink-*.AppImage &amp;&amp; ./Uplink-*.AppImage</code></td>
       </tr>
       <tr>
         <td>Linux x86_64 (tar.gz)</td>
-        <td><a href="https://github.com/noderelay/NodeRelay/releases/latest">Latest release ↗</a></td>
-        <td>Extract the <code>.tar.gz</code>, run <code>./NodeRelay</code></td>
+        <td><a href="https://github.com/noderelay/UplinkIRC/releases/latest">Latest release ↗</a></td>
+        <td>Extract the <code>.tar.gz</code>, run <code>./Uplink</code></td>
       </tr>
       <tr>
         <td>Windows x64</td>
-        <td><a href="https://github.com/noderelay/NodeRelay/releases/latest">Latest release ↗</a></td>
-        <td>Extract the <code>.zip</code>, double-click <code>NodeRelay.exe</code></td>
+        <td><a href="https://github.com/noderelay/UplinkIRC/releases/latest">Latest release ↗</a></td>
+        <td>Extract the <code>.zip</code>, double-click <code>Uplink.exe</code></td>
       </tr>
       <tr>
         <td>macOS arm64</td>
-        <td><a href="https://github.com/noderelay/NodeRelay/releases/latest">Latest release ↗</a></td>
-        <td>Open the <code>.dmg</code>, drag NodeRelay to Applications</td>
+        <td><a href="https://github.com/noderelay/UplinkIRC/releases/latest">Latest release ↗</a></td>
+        <td>Open the <code>.dmg</code>, drag Uplink to Applications</td>
       </tr>
       <tr>
         <td>FreeBSD</td>
         <td>Build from source (see below)</td>
-        <td><code>./NodeRelay</code></td>
+        <td><code>./Uplink</code></td>
       </tr>
     </table>
 
@@ -530,15 +530,15 @@
   <!-- APPIMAGE -->
   <section id="appimage">
     <h2>AppImage — run anywhere, update in-place</h2>
-    <p>The AppImage bundles NodeRelay and its Qt libraries into a single executable file. It runs on any modern x86_64 Linux with glibc 2.35+ — no package manager, no Qt install needed.</p>
+    <p>The AppImage bundles Uplink and its Qt libraries into a single executable file. It runs on any modern x86_64 Linux with glibc 2.35+ — no package manager, no Qt install needed.</p>
 
     <h3>Run it</h3>
-    <pre>chmod +x NodeRelay-*.AppImage
-./NodeRelay-*.AppImage</pre>
+    <pre>chmod +x Uplink-*.AppImage
+./Uplink-*.AppImage</pre>
 
     <h3>Update in-place (zsync)</h3>
     <p>The AppImage embeds zsync metadata pointing to the latest release. Install <a href="https://github.com/AppImageCommunity/AppImageUpdate" target="_blank">appimageupdatetool</a>, then:</p>
-    <pre>appimageupdatetool ./NodeRelay-0.16.0-x86_64.AppImage</pre>
+    <pre>appimageupdatetool ./Uplink-0.16.0-x86_64.AppImage</pre>
     <p>Only the changed blocks are downloaded — much faster than a full re-download.</p>
 
     <div class="tip">
@@ -587,29 +587,29 @@
     <h2>Build from source</h2>
     <p>Three commands. CMake downloads tomlplusplus automatically if your package manager doesn't have it.</p>
 
-    <pre>git clone https://github.com/noderelay/NodeRelay.git
-cd NodeRelay
+    <pre>git clone https://github.com/noderelay/UplinkIRC.git
+cd Uplink
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build</pre>
 
-    <p>The binary is at <code>build/NodeRelay</code> (or <code>build\NodeRelay.exe</code> on Windows). Run it directly — on first launch NodeRelay creates <code>~/.config/noderelay/themes/</code> and seeds it with all bundled themes automatically.</p>
+    <p>The binary is at <code>build/Uplink</code> (or <code>build\Uplink.exe</code> on Windows). Run it directly — on first launch Uplink creates <code>~/.config/uplink/themes/</code> and seeds it with all bundled themes automatically.</p>
 
     <div class="note">
-      <strong>macOS:</strong> after building, run <code>cmake --install build</code> to produce a proper <code>.app</code> bundle, or launch <code>build/NodeRelay.app/Contents/MacOS/NodeRelay</code> directly.
+      <strong>macOS:</strong> after building, run <code>cmake --install build</code> to produce a proper <code>.app</code> bundle, or launch <code>build/Uplink.app/Contents/MacOS/Uplink</code> directly.
     </div>
   </section>
 
   <!-- FIRST LAUNCH -->
   <section id="first-launch">
     <h2>First launch</h2>
-    <p>On the very first run, NodeRelay creates your config file and may show a <strong>nick dialog</strong> asking for your nickname. Type the name you want to use on IRC and click OK.</p>
+    <p>On the very first run, Uplink creates your config file and may show a <strong>nick dialog</strong> asking for your nickname. Type the name you want to use on IRC and click OK.</p>
 
     <p>The app then connects to <strong>irc.linuxdojo.org</strong> and joins <strong>#uplink</strong> automatically. You'll see the server list on the left, the chat area in the middle, and the user list on the right.</p>
 
     <p>To open the hamburger menu (the <code>☰</code> button in the top-left), click it to reach Preferences, Documentation, and other settings.</p>
 
     <div class="tip">
-      <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>☰ → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>☰ → Reload Config</strong> — NodeRelay will restart and connect.
+      <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>☰ → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>☰ → Reload Config</strong> — Uplink will restart and connect.
     </div>
   </section>
 
@@ -618,16 +618,16 @@ cmake --build build</pre>
   <!-- CONFIG FILE -->
   <section id="config-file">
     <h2>Config file location</h2>
-    <p>All settings live in a single <code>config.toml</code> file. NodeRelay creates it automatically on first launch.</p>
+    <p>All settings live in a single <code>config.toml</code> file. Uplink creates it automatically on first launch.</p>
 
     <table>
       <tr><th>Platform</th><th>Path</th></tr>
-      <tr><td>Linux / FreeBSD</td><td><code>~/.config/noderelay/config.toml</code></td></tr>
-      <tr><td>macOS</td><td><code>~/.config/noderelay/config.toml</code></td></tr>
-      <tr><td>Windows</td><td><code>%USERPROFILE%\.config\noderelay\config.toml</code></td></tr>
+      <tr><td>Linux / FreeBSD</td><td><code>~/.config/uplink/config.toml</code></td></tr>
+      <tr><td>macOS</td><td><code>~/.config/uplink/config.toml</code></td></tr>
+      <tr><td>Windows</td><td><code>%USERPROFILE%\.config\uplink\config.toml</code></td></tr>
     </table>
 
-    <p>Edit the file in any text editor. To apply changes, click <strong>☰ → Reload Config</strong> — NodeRelay restarts automatically and picks up all changes. You can also click <strong>☰ → Open Config</strong> to open the file in your system editor directly from NodeRelay.</p>
+    <p>Edit the file in any text editor. To apply changes, click <strong>☰ → Reload Config</strong> — Uplink restarts automatically and picks up all changes. You can also click <strong>☰ → Open Config</strong> to open the file in your system editor directly from Uplink.</p>
   </section>
 
   <!-- SET NICK -->
@@ -642,10 +642,10 @@ port = 6697
 ssl  = true
 <span style="color:var(--peach)">nick = "alice"</span>       # ← change this to your nick
 user = "uplink"
-realname = "NodeRelay User"
+realname = "Uplink User"
 channels = "#uplink"</pre>
 
-    <p>Save, then click <strong>☰ → Reload Config</strong> — NodeRelay restarts and reconnects with the new nick. To change your nick while already connected without restarting, type <code>/nick yournewnick</code> in the input box.</p>
+    <p>Save, then click <strong>☰ → Reload Config</strong> — Uplink restarts and reconnects with the new nick. To change your nick while already connected without restarting, type <code>/nick yournewnick</code> in the input box.</p>
   </section>
 
   <!-- CONNECT LINUXDOJO -->
@@ -660,10 +660,10 @@ port     = 6697
 ssl      = true
 nick     = "alice"
 user     = "uplink"
-realname = "NodeRelay User"
+realname = "Uplink User"
 channels = "#uplink"</pre>
 
-    <p>Click <strong>☰ → Reload Config</strong> — NodeRelay restarts and the server appears in the sidebar and connects automatically.</p>
+    <p>Click <strong>☰ → Reload Config</strong> — Uplink restarts and the server appears in the sidebar and connects automatically.</p>
   </section>
 
   <!-- CONNECT ANY -->
@@ -678,11 +678,11 @@ port     = 6697
 ssl      = true
 nick     = "alice"
 user     = "uplink"
-realname = "NodeRelay User"
+realname = "Uplink User"
 channels = "#linux, #archlinux"</pre>
 
     <div class="note">
-      <strong>Always set <code>ssl = true</code>.</strong> NodeRelay also supports <a href="#sts">STS (Strict Transport Security)</a> — if the server advertises it, TLS is enforced automatically and the policy is cached for future connections, even if <code>ssl</code> is missing from your config.
+      <strong>Always set <code>ssl = true</code>.</strong> Uplink also supports <a href="#sts">STS (Strict Transport Security)</a> — if the server advertises it, TLS is enforced automatically and the policy is cached for future connections, even if <code>ssl</code> is missing from your config.
     </div>
 
     <p>Common IRC networks and their TLS hostnames:</p>
@@ -699,7 +699,7 @@ channels = "#linux, #archlinux"</pre>
   <!-- AUTO-JOIN -->
   <section id="auto-join">
     <h2>Auto-join channels</h2>
-    <p>Set the <code>channels</code> key in a server block to a comma-separated list. NodeRelay joins them all automatically on connect.</p>
+    <p>Set the <code>channels</code> key in a server block to a comma-separated list. Uplink joins them all automatically on connect.</p>
 
     <pre>[[server]]
 name     = "Libera.Chat"
@@ -708,7 +708,7 @@ port     = 6697
 ssl      = true
 nick     = "alice"
 user     = "uplink"
-realname = "NodeRelay User"
+realname = "Uplink User"
 channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
 
     <p>You can also set channels from the GUI: click <strong>☰ → Preferences → Manage Servers → Edit</strong> and fill in the Auto-join field.</p>
@@ -755,7 +755,7 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
   <!-- KEYCHAIN -->
   <section id="keychain">
     <h2>Password storage — OS keychain</h2>
-    <p>NodeRelay stores all passwords in your <strong>OS keychain</strong>, not as plaintext in <code>config.toml</code>.</p>
+    <p>Uplink stores all passwords in your <strong>OS keychain</strong>, not as plaintext in <code>config.toml</code>.</p>
     <table>
       <tr><th>Platform</th><th>Backend</th></tr>
       <tr><td>Linux</td><td>Secret Service (GNOME Keyring, KWallet, or any compatible daemon)</td></tr>
@@ -777,7 +777,7 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
   <!-- NICKSERV -->
   <section id="nickserv">
     <h2>NickServ auto-identify</h2>
-    <p>If you have a registered nick on a server, add <code>nickserv_password</code>. NodeRelay sends <code>PRIVMSG NickServ :IDENTIFY yourpassword</code> automatically after connecting.</p>
+    <p>If you have a registered nick on a server, add <code>nickserv_password</code>. Uplink sends <code>PRIVMSG NickServ :IDENTIFY yourpassword</code> automatically after connecting.</p>
 
     <pre>[[server]]
 name              = "LinuxDojo"
@@ -786,7 +786,7 @@ port              = 6697
 ssl               = true
 nick              = "alice"
 user              = "uplink"
-realname          = "NodeRelay User"
+realname          = "Uplink User"
 channels          = "#uplink"
 nickserv_password = "mysecretpassword"   # ← add this</pre>
 
@@ -805,7 +805,7 @@ port          = 6697
 ssl           = true
 nick          = "alice"
 user          = "uplink"
-realname      = "NodeRelay User"
+realname      = "Uplink User"
 channels      = "#linux"
 sasl_user     = "alice"            # ← your registered nick
 sasl_password = "mysecretpassword" # ← your NickServ password</pre>
@@ -838,7 +838,7 @@ openssl req -newkey ec -pkeyopt ec_paramgen_curve:P-384 -nodes -x509 -days 3650 
     <pre>/msg NickServ cert add</pre>
     <p>The server extracts the fingerprint automatically from your certificate.</p>
 
-    <h3>3. Configure NodeRelay</h3>
+    <h3>3. Configure Uplink</h3>
     <pre>[[server]]
 name          = "Libera.Chat"
 host          = "irc.libera.chat"
@@ -846,13 +846,13 @@ port          = 6697
 ssl           = true
 nick          = "alice"
 user          = "uplink"
-realname      = "NodeRelay User"
+realname      = "Uplink User"
 channels      = "#linux"
 sasl_external = true
 client_cert   = "/home/alice/.irc/client.crt"
 client_key    = "/home/alice/.irc/client.key"</pre>
 
-    <p>NodeRelay loads the certificate before the TLS handshake, negotiates <code>AUTHENTICATE EXTERNAL</code>, and sends an empty response. Both RSA and EC (ECDSA) PEM keys are supported.</p>
+    <p>Uplink loads the certificate before the TLS handshake, negotiates <code>AUTHENTICATE EXTERNAL</code>, and sends an empty response. Both RSA and EC (ECDSA) PEM keys are supported.</p>
     <p>You can also set the cert and key paths from the Server dialog: <strong>☰ → Preferences → Manage Servers → Edit</strong>, then tick <strong>SASL EXTERNAL</strong> and browse to your files.</p>
 
     <div class="warn">
@@ -863,13 +863,13 @@ client_key    = "/home/alice/.irc/client.key"</pre>
   <!-- STS -->
   <section id="sts">
     <h2>STS — Strict Transport Security</h2>
-    <p>STS is an IRCv3 security feature that prevents your IRC client from ever being silently downgraded to a plain-text connection. It works exactly like HSTS in web browsers — once a server tells NodeRelay "always connect over TLS," that instruction is remembered and enforced automatically on every future connection.</p>
+    <p>STS is an IRCv3 security feature that prevents your IRC client from ever being silently downgraded to a plain-text connection. It works exactly like HSTS in web browsers — once a server tells Uplink "always connect over TLS," that instruction is remembered and enforced automatically on every future connection.</p>
 
     <h3>How it works</h3>
-    <p>During the initial CAP handshake, a server that supports STS sends a policy containing a TLS port and a duration (how long to enforce it). NodeRelay handles everything automatically from there:</p>
+    <p>During the initial CAP handshake, a server that supports STS sends a policy containing a TLS port and a duration (how long to enforce it). Uplink handles everything automatically from there:</p>
 
     <table>
-      <tr><th>Scenario</th><th>What NodeRelay does</th></tr>
+      <tr><th>Scenario</th><th>What Uplink does</th></tr>
       <tr><td>Plain connection — server advertises STS</td><td>Immediately disconnects and reconnects over TLS on the server-specified port. Stores the policy.</td></tr>
       <tr><td>TLS connection — server advertises STS</td><td>Refreshes the stored policy expiry. No reconnect needed — already encrypted.</td></tr>
       <tr><td>Server sends <code>duration=0</code></td><td>Deletes the cached policy. Plain connections permitted again.</td></tr>
@@ -882,8 +882,8 @@ client_key    = "/home/alice/.irc/client.key"</pre>
     <p>After that the connection continues normally — you're now on TLS. On all future connections the stored policy is applied silently before the socket is even opened, so you won't see the message again.</p>
 
     <h3>Where the policy is stored</h3>
-    <pre>~/.config/noderelay/sts.ini</pre>
-    <p>Each entry records the host, TLS port, and an expiry timestamp. NodeRelay checks this file before dialing any server. If a valid policy exists for the host, TLS is used regardless of what <code>ssl</code> is set to in <code>config.toml</code>.</p>
+    <pre>~/.config/uplink/sts.ini</pre>
+    <p>Each entry records the host, TLS port, and an expiry timestamp. Uplink checks this file before dialing any server. If a valid policy exists for the host, TLS is used regardless of what <code>ssl</code> is set to in <code>config.toml</code>.</p>
 
     <div class="note">
       <strong>Nothing to configure.</strong> STS is fully automatic. Set <code>ssl = true</code> in your config as usual — STS provides an additional layer that protects you even if that setting is ever wrong or missing. Most modern networks already support it: Libera.Chat, OFTC, and LinuxDojo all advertise STS policies.
@@ -895,7 +895,7 @@ client_key    = "/home/alice/.irc/client.key"</pre>
   <!-- MULTI SERVER -->
   <section id="multi-server">
     <h2>Two servers at the same time</h2>
-    <p>Add one <code>[[server]]</code> block per server. NodeRelay connects to all of them on launch and shows each one in the sidebar independently.</p>
+    <p>Add one <code>[[server]]</code> block per server. Uplink connects to all of them on launch and shows each one in the sidebar independently.</p>
 
     <pre>[ui]
 theme = "catppuccin-mocha"
@@ -907,7 +907,7 @@ port     = 6697
 ssl      = true
 nick     = "alice"
 user     = "uplink"
-realname = "NodeRelay User"
+realname = "Uplink User"
 channels = "#uplink"
 
 [[server]]
@@ -917,7 +917,7 @@ port          = 6697
 ssl           = true
 nick          = "alice"
 user          = "uplink"
-realname      = "NodeRelay User"
+realname      = "Uplink User"
 channels      = "#linux, #archlinux"
 sasl_user     = "alice"
 sasl_password = "mysecretpassword"</pre>
@@ -929,7 +929,7 @@ sasl_password = "mysecretpassword"</pre>
   <section id="znc">
     <h2>ZNC bouncer</h2>
 
-    <p>A bouncer is a program that sits between you and IRC. It stays connected 24/7 so you never miss messages — when you open NodeRelay it replays everything that arrived while you were away. <strong>ZNC</strong> is the most widely used bouncer.</p>
+    <p>A bouncer is a program that sits between you and IRC. It stays connected 24/7 so you never miss messages — when you open Uplink it replays everything that arrived while you were away. <strong>ZNC</strong> is the most widely used bouncer.</p>
 
     <h3>How ZNC authentication works</h3>
     <p>ZNC does not use SASL. Instead it identifies you through the <strong>Server Password</strong> field, using a specific format:</p>
@@ -969,15 +969,15 @@ bouncer  = "znc"
 channels = "#linux, #archlinux"</pre>
 
     <h3>What ZNC mode enables</h3>
-    <p>Setting <code>bouncer = "znc"</code> (or selecting ZNC in the dialog) tells NodeRelay to negotiate two ZNC-specific IRCv3 capabilities:</p>
+    <p>Setting <code>bouncer = "znc"</code> (or selecting ZNC in the dialog) tells Uplink to negotiate two ZNC-specific IRCv3 capabilities:</p>
     <table>
       <tr><th>Capability</th><th>What it does</th></tr>
-      <tr><td><code>znc.in/playback</code></td><td>Requests all messages that arrived since your last disconnect. NodeRelay asks for them automatically on connect — you see your missed messages instantly at reduced opacity.</td></tr>
-      <tr><td><code>znc.in/self-message</code></td><td>Echoes messages you sent from other IRC clients (phone, another PC) back into NodeRelay so your conversation history stays complete.</td></tr>
+      <tr><td><code>znc.in/playback</code></td><td>Requests all messages that arrived since your last disconnect. Uplink asks for them automatically on connect — you see your missed messages instantly at reduced opacity.</td></tr>
+      <tr><td><code>znc.in/self-message</code></td><td>Echoes messages you sent from other IRC clients (phone, another PC) back into Uplink so your conversation history stays complete.</td></tr>
     </table>
 
     <h3>Multiple networks on one ZNC</h3>
-    <p>ZNC can carry several IRC networks simultaneously. Add a separate NodeRelay server entry for each one — same host and port, different network name in the password:</p>
+    <p>ZNC can carry several IRC networks simultaneously. Add a separate Uplink server entry for each one — same host and port, different network name in the password:</p>
     <pre>[[server]]
 name     = "ZNC → Libera"
 host     = "znc.example.com"
@@ -1023,7 +1023,7 @@ channels = "#debian"</pre>
     <p><strong>soju</strong> is a modern IRC bouncer with deep IRCv3 support. It is simpler to configure than ZNC and handles multiple networks cleanly. If you are running your own bouncer, soju is worth considering.</p>
 
     <h3>How soju authentication works</h3>
-    <p>soju uses SASL PLAIN for authentication — but NodeRelay handles this transparently when you select the soju bouncer type. You just put your credentials in the <strong>Server Password</strong> field in the simpler <code>username:password</code> format (no network name needed here):</p>
+    <p>soju uses SASL PLAIN for authentication — but Uplink handles this transparently when you select the soju bouncer type. You just put your credentials in the <strong>Server Password</strong> field in the simpler <code>username:password</code> format (no network name needed here):</p>
     <pre>alice:hunter2</pre>
 
     <h3>Setting up soju in Manage Servers</h3>
@@ -1052,12 +1052,12 @@ channels        = "#linux"</pre>
     <table>
       <tr><th>Capability</th><th>What it does</th></tr>
       <tr><td><code>soju.im/bouncer-networks</code></td><td>Lists all IRC networks your soju manages in the server buffer on connect, so you can see what's available.</td></tr>
-      <tr><td><code>soju.im/read</code></td><td>Syncs your read position across all connected clients. If you read a message on your phone, NodeRelay on your desktop already knows.</td></tr>
+      <tr><td><code>soju.im/read</code></td><td>Syncs your read position across all connected clients. If you read a message on your phone, Uplink on your desktop already knows.</td></tr>
       <tr><td><code>chathistory</code></td><td>Requests missed messages on each channel join — soju supports this natively and delivers history with original timestamps.</td></tr>
     </table>
 
     <h3>Multiple networks on one soju</h3>
-    <p>Add one NodeRelay server entry per IRC network. The password is the same — only <code>bouncer_network</code> changes:</p>
+    <p>Add one Uplink server entry per IRC network. The password is the same — only <code>bouncer_network</code> changes:</p>
     <pre>[[server]]
 name            = "soju → Libera"
 host            = "soju.example.com"
@@ -1089,7 +1089,7 @@ channels        = "#debian"</pre>
     </div>
 
     <div class="note">
-      <strong>Chat history replay</strong> is automatic on both ZNC and soju (and any server supporting the <code>chathistory</code> CAP). NodeRelay requests the last 100 messages for each channel on join. History messages appear at reduced opacity with their original timestamps so you can tell them apart from live messages.
+      <strong>Chat history replay</strong> is automatic on both ZNC and soju (and any server supporting the <code>chathistory</code> CAP). Uplink requests the last 100 messages for each channel on join. History messages appear at reduced opacity with their original timestamps so you can tell them apart from live messages.
     </div>
   </section>
 
@@ -1127,7 +1127,7 @@ channels        = "#debian"</pre>
   <!-- CHANNEL PANES -->
   <section id="channel-panes">
     <h2>Channel panes — view multiple channels at once</h2>
-    <p>NodeRelay can display up to <strong>four channels side by side</strong> in the chat area. Each pane is fully self-contained — it has its own chat history, nick list, topic bar, and input bar.</p>
+    <p>Uplink can display up to <strong>four channels side by side</strong> in the chat area. Each pane is fully self-contained — it has its own chat history, nick list, topic bar, and input bar.</p>
 
     <h3>Opening a pane</h3>
     <p><strong>Right-click</strong> any <code>#channel</code> in the sidebar and choose <strong>Open in Pane</strong>. The channel opens as a new column next to the current view. You can continue typing in either pane independently.</p>
@@ -1181,7 +1181,7 @@ channels        = "#debian"</pre>
 
     <ul>
       <li>Click any URL to open it in your browser.</li>
-      <li>When a URL is posted, NodeRelay fetches a preview card (title + thumbnail) automatically.</li>
+      <li>When a URL is posted, Uplink fetches a preview card (title + thumbnail) automatically.</li>
       <li>When someone mentions your nick, it is highlighted in red and bold.</li>
       <li>A "nick is typing…" line appears above the input bar when someone with IRCv3 typing support is composing a message.</li>
       <li><strong>Right-click the timestamp</strong> (hh:mm) on any message for a context menu: <strong>Reply</strong>, <strong>React</strong>, and <strong>Delete</strong> (own messages only, when the server supports it). If you have text selected when you right-click the timestamp, a <strong>Copy</strong> option appears in the same menu. See <a href="#reply">Reply</a>, <a href="#reactions">Reactions</a>, and <a href="#deletion">Message deletion</a>.</li>
@@ -1239,7 +1239,7 @@ channels        = "#debian"</pre>
   <!-- ACCOUNT TRACKING -->
   <section id="account-tracking">
     <h2>Account tracking</h2>
-    <p>NodeRelay tracks each user's NickServ account name in real time. This lets you see who is actually behind a nickname — even if someone changes their nick — as long as they're authenticated with services.</p>
+    <p>Uplink tracks each user's NickServ account name in real time. This lets you see who is actually behind a nickname — even if someone changes their nick — as long as they're authenticated with services.</p>
 
     <h3>Where to see it</h3>
     <p>Account names appear as tooltips in two places. Simply hover over any nick:</p>
@@ -1254,7 +1254,7 @@ channels        = "#debian"</pre>
     <p>If the tooltip is absent, the user is either not authenticated with services or the server does not report account names for that nick.</p>
 
     <h3>How it stays current</h3>
-    <p>NodeRelay pulls account data from four sources so the information is always up to date without any manual queries:</p>
+    <p>Uplink pulls account data from four sources so the information is always up to date without any manual queries:</p>
 
     <table>
       <tr><th>Source</th><th>When it fires</th><th>What it provides</th></tr>
@@ -1276,7 +1276,7 @@ channels        = "#debian"</pre>
       <tr>
         <td>WHOX scan</td>
         <td>After you join a channel</td>
-        <td>NodeRelay sends <code>WHO #channel %cnfa,42</code> to bulk-populate all accounts for everyone already in the channel.</td>
+        <td>Uplink sends <code>WHO #channel %cnfa,42</code> to bulk-populate all accounts for everyone already in the channel.</td>
       </tr>
     </table>
 
@@ -1302,13 +1302,13 @@ channels        = "#debian"</pre>
       <tr><td>Red flashing</td><td>Disconnected</td></tr>
     </table>
 
-    <p>NodeRelay sends a <code>PING</code> every 30 seconds and measures the round-trip time (RTT). The bar count updates automatically after each ping reply.</p>
+    <p>Uplink sends a <code>PING</code> every 30 seconds and measures the round-trip time (RTT). The bar count updates automatically after each ping reply.</p>
   </section>
 
   <!-- TRAY -->
   <section id="tray">
     <h2>System tray</h2>
-    <p>Closing the window minimizes NodeRelay to the system tray — it keeps running in the background.</p>
+    <p>Closing the window minimizes Uplink to the system tray — it keeps running in the background.</p>
 
     <ul>
       <li><strong>Left-click</strong> the tray icon to show or hide the window.</li>
@@ -1376,9 +1376,9 @@ channels        = "#debian"</pre>
 
     <div class="callout">
       <strong>Tip: oper and server-specific commands work directly.</strong>
-      If a command is not in the list above, just type it — NodeRelay passes it straight to the server.
+      If a command is not in the list above, just type it — Uplink passes it straight to the server.
       This means IRC operator commands like <code>/REHASH</code>, <code>/SAMODE</code>, <code>/GLOBOPS</code>, <code>/OPER</code>, and any other server-specific command work without needing a <code>/raw</code> prefix.
-      NodeRelay does not need to know about every command your server supports.
+      Uplink does not need to know about every command your server supports.
     </div>
   </section>
 
@@ -1390,7 +1390,7 @@ channels        = "#debian"</pre>
     <pre>/msg bob hey, are you around?</pre>
 
     <h3>Messaging IRC services (NickServ, ChanServ…)</h3>
-    <p>Services like NickServ and ChanServ are bots that live on the server and respond via private message. NodeRelay has shortcut commands for the most common ones:</p>
+    <p>Services like NickServ and ChanServ are bots that live on the server and respond via private message. Uplink has shortcut commands for the most common ones:</p>
     <table>
       <thead><tr><th>Command</th><th>Sends to</th><th>Example</th></tr></thead>
       <tbody>
@@ -1402,10 +1402,10 @@ channels        = "#debian"</pre>
     </table>
     <p>Or use the full form: <code>/msg NickServ help</code>, <code>/msg ChanServ op #uplink</code>, etc.</p>
 
-    <p><strong>Where do the replies appear?</strong> When you send a message to a service, NodeRelay opens a PM tab for that service in the sidebar (e.g. a <strong>NickServ</strong> tab or <strong>ChanServ</strong> tab). Replies from that service — including help output, error messages, and confirmations — arrive in that same tab. If you have not messaged the service yet, their replies go to the server buffer instead.</p>
+    <p><strong>Where do the replies appear?</strong> When you send a message to a service, Uplink opens a PM tab for that service in the sidebar (e.g. a <strong>NickServ</strong> tab or <strong>ChanServ</strong> tab). Replies from that service — including help output, error messages, and confirmations — arrive in that same tab. If you have not messaged the service yet, their replies go to the server buffer instead.</p>
 
     <div class="tip">
-      <strong>Password commands are safe to type.</strong> When you use <code>/ns identify mypassword</code> or <code>/msg NickServ identify mypassword</code>, NodeRelay shows <code>IDENTIFY &lt;redacted&gt;</code> in the NickServ tab — your actual password is never displayed in the chat view. The command still goes to the server correctly. This redaction covers <code>IDENTIFY</code>, <code>REGISTER</code>, <code>GHOST</code>, <code>RECOVER</code>, and other password-taking commands.
+      <strong>Password commands are safe to type.</strong> When you use <code>/ns identify mypassword</code> or <code>/msg NickServ identify mypassword</code>, Uplink shows <code>IDENTIFY &lt;redacted&gt;</code> in the NickServ tab — your actual password is never displayed in the chat view. The command still goes to the server correctly. This redaction covers <code>IDENTIFY</code>, <code>REGISTER</code>, <code>GHOST</code>, <code>RECOVER</code>, and other password-taking commands.
     </div>
 
     <div class="note">
@@ -1416,7 +1416,7 @@ channels        = "#debian"</pre>
   <!-- FORMATTING -->
   <section id="formatting">
     <h2>IRC colors and formatting</h2>
-    <p>NodeRelay renders all standard IRC formatting codes in received messages:</p>
+    <p>Uplink renders all standard IRC formatting codes in received messages:</p>
 
     <table>
       <tr><th>Code</th><th>Effect</th></tr>
@@ -1427,13 +1427,13 @@ channels        = "#debian"</pre>
       <tr><td>IRC color codes (03xx)</td><td>16 foreground + background colors</td></tr>
     </table>
 
-    <p>Most IRC clients let you insert formatting codes by pressing the key combinations above in the input box. NodeRelay displays whatever formatting codes come through from the server.</p>
+    <p>Most IRC clients let you insert formatting codes by pressing the key combinations above in the input box. Uplink displays whatever formatting codes come through from the server.</p>
   </section>
 
   <!-- EMOJI -->
   <section id="emoji">
     <h2>Emoji and shortcodes</h2>
-    <p>There are three ways to use emoji in NodeRelay:</p>
+    <p>There are three ways to use emoji in Uplink:</p>
 
     <h3>1. Type a shortcode — inline autocomplete</h3>
     <p>Start typing <code>:</code> followed by the emoji name. A completion list pops up:</p>
@@ -1481,7 +1481,7 @@ show_emoji_button = true</pre>
   <!-- MESSAGE SEARCH -->
   <section id="search">
     <h2>Message search (Ctrl+F)</h2>
-    <p>Press <kbd>Ctrl+F</kbd> anywhere in NodeRelay to open a search bar below the chat area. Start typing and the first match jumps into view immediately with the text highlighted.</p>
+    <p>Press <kbd>Ctrl+F</kbd> anywhere in Uplink to open a search bar below the chat area. Start typing and the first match jumps into view immediately with the text highlighted.</p>
 
     <table>
       <tr><th>Key</th><th>Action</th></tr>
@@ -1501,7 +1501,7 @@ show_emoji_button = true</pre>
   <!-- REPLY -->
   <section id="reply">
     <h2>Reply to a message</h2>
-    <p>NodeRelay supports IRCv3 <code>draft/reply</code> — replies that reference a specific message by its unique ID. The server must have negotiated <code>message-tags</code> (all modern IRC servers do).</p>
+    <p>Uplink supports IRCv3 <code>draft/reply</code> — replies that reference a specific message by its unique ID. The server must have negotiated <code>message-tags</code> (all modern IRC servers do).</p>
 
     <h3>Sending a reply</h3>
     <p>There are two ways to trigger a reply — both work equally well:</p>
@@ -1533,7 +1533,7 @@ show_emoji_button = true</pre>
   <!-- REACTIONS -->
   <section id="reactions">
     <h2>Reactions</h2>
-    <p>NodeRelay supports IRCv3 <code>draft/react</code> — emoji reactions attached to specific messages. Both sending and receiving are supported.</p>
+    <p>Uplink supports IRCv3 <code>draft/react</code> — emoji reactions attached to specific messages. Both sending and receiving are supported.</p>
 
     <h3>Sending a reaction</h3>
     <div class="step-row"><span class="step">1</span><div>Right-click the <strong>timestamp</strong> (the <code>hh:mm</code> at the left of the message).</div></div>
@@ -1556,7 +1556,7 @@ show_emoji_button = true</pre>
   <!-- MESSAGE DELETION -->
   <section id="deletion">
     <h2>Message deletion</h2>
-    <p>NodeRelay supports IRCv3 <code>draft/message-redaction</code> — you can delete your own sent messages from the chat history.</p>
+    <p>Uplink supports IRCv3 <code>draft/message-redaction</code> — you can delete your own sent messages from the chat history.</p>
 
     <div class="step-row"><span class="step">1</span><div>Right-click the <strong>timestamp</strong> on one of your own messages.</div></div>
     <div class="step-row"><span class="step">2</span><div>Choose <strong>Delete</strong> from the context menu.</div></div>
@@ -1612,11 +1612,11 @@ nicks = ["alice", "bob"]</pre>
   <!-- LOGGING -->
   <section id="logging">
     <h2>Message logging</h2>
-    <p>NodeRelay writes all messages to plain-text log files on disk — one file per channel and per PM conversation.</p>
+    <p>Uplink writes all messages to plain-text log files on disk — one file per channel and per PM conversation.</p>
 
     <h3>Log file location</h3>
-    <pre>~/.config/noderelay/logs/&lt;server&gt;/&lt;channel&gt;.log</pre>
-    <p>For example: <code>~/.config/noderelay/logs/irc.linuxdojo.org/#uplink.log</code></p>
+    <pre>~/.config/uplink/logs/&lt;server&gt;/&lt;channel&gt;.log</pre>
+    <p>For example: <code>~/.config/uplink/logs/irc.linuxdojo.org/#uplink.log</code></p>
 
     <h3>Log format</h3>
     <pre>[2026-05-31 15:04:22] &lt;nick&gt; message text
@@ -1635,7 +1635,7 @@ log_messages = true</pre>
   <!-- LINK PREVIEWS -->
   <section id="link-previews">
     <h2>Link previews</h2>
-    <p>When a message contains a URL, NodeRelay fetches a small preview card automatically and appends it below the message:</p>
+    <p>When a message contains a URL, Uplink fetches a small preview card automatically and appends it below the message:</p>
 
     <ul>
       <li><strong>Web pages</strong> — shows the page title (from <code>og:title</code> or <code>&lt;title&gt;</code>) and a thumbnail if an Open Graph image is set.</li>
@@ -1653,7 +1653,7 @@ log_messages = true</pre>
     <h3>Sending a file</h3>
     <div class="step-row"><span class="step">1</span><div>Right-click the recipient's nick in the user list.</div></div>
     <div class="step-row"><span class="step">2</span><div>Choose <strong>Send File</strong>.</div></div>
-    <div class="step-row"><span class="step">3</span><div>Pick a file in the file picker. NodeRelay opens a TCP port and sends the offer.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Pick a file in the file picker. Uplink opens a TCP port and sends the offer.</div></div>
     <div class="step-row"><span class="step">4</span><div>A progress dialog with a Cancel button appears. Transfer begins once the recipient accepts.</div></div>
 
     <h3>Receiving a file</h3>
@@ -1675,7 +1675,7 @@ log_messages = true</pre>
   <!-- THEMES -->
   <section id="themes">
     <h2>Picking a theme</h2>
-    <p>NodeRelay ships with 55 built-in color themes. The fastest way is to try them live:</p>
+    <p>Uplink ships with 55 built-in color themes. The fastest way is to try them live:</p>
 
     <div class="step-row"><span class="step">1</span><div>Click <strong>☰ → Preferences</strong>.</div></div>
     <div class="step-row"><span class="step">2</span><div>Click the <strong>theme button</strong> (shows your current theme name) to expand the list.</div></div>
@@ -1701,7 +1701,7 @@ theme = "catppuccin-mocha"</pre>
     </table>
 
     <div class="tip">
-      <strong>Custom themes:</strong> drop a <code>.toml</code> file into <code>~/.config/noderelay/themes/</code> and it appears in the list on next launch. The format matches the shipped themes in the <code>themes/</code> folder.
+      <strong>Custom themes:</strong> drop a <code>.toml</code> file into <code>~/.config/uplink/themes/</code> and it appears in the list on next launch. The format matches the shipped themes in the <code>themes/</code> folder.
     </div>
   </section>
 
@@ -1787,7 +1787,7 @@ hanging_indent = true   # default on</pre>
   <!-- APP ICON -->
   <section id="app-icon">
     <h2>App icon variant</h2>
-    <p>NodeRelay ships five icon variants. Switch at runtime from <strong>☰ → App Icon</strong>, or set in config:</p>
+    <p>Uplink ships five icon variants. Switch at runtime from <strong>☰ → App Icon</strong>, or set in config:</p>
 
     <pre>[ui]
 app_icon = "dark"   # "dark" | "light" | "light-default" | "avatar" | "mark"</pre>
@@ -1866,12 +1866,12 @@ name = "LinuxDojo"
 name = "LinuxDojo"</pre>
 
     <h3>My config change isn't taking effect</h3>
-    <p>Click <strong>☰ → Reload Config</strong> — NodeRelay restarts and applies all changes, including server list, channels, theme, and font settings.</p>
+    <p>Click <strong>☰ → Reload Config</strong> — Uplink restarts and applies all changes, including server list, channels, theme, and font settings.</p>
   </section>
 
   <section id="ts-nick">
     <h2>Troubleshooting — Nick in use</h2>
-    <p>If your nick is taken, NodeRelay appends <code>_</code> and tries again (e.g. <code>alice_</code>). The new nick is shown next to the input box. Once the original becomes available, type:</p>
+    <p>If your nick is taken, Uplink appends <code>_</code> and tries again (e.g. <code>alice_</code>). The new nick is shown next to the input box. Once the original becomes available, type:</p>
     <pre>/nick alice</pre>
     <p>If you have NickServ authentication set up, services may ghost the old connection:</p>
     <pre>/msg NickServ GHOST alice yourpassword</pre>
@@ -1879,7 +1879,7 @@ name = "LinuxDojo"</pre>
 
   <section id="ts-themes">
     <h2>Troubleshooting — Theme not loading</h2>
-    <p>NodeRelay stores themes in <code>~/.config/noderelay/themes/</code> and seeds that folder with all bundled themes on first launch. If themes are missing, delete the folder and restart — it will be recreated and repopulated automatically.</p>
+    <p>Uplink stores themes in <code>~/.config/uplink/themes/</code> and seeds that folder with all bundled themes on first launch. If themes are missing, delete the folder and restart — it will be recreated and repopulated automatically.</p>
     <p>Theme names are case-sensitive and must match the <code>.toml</code> filename exactly (without the extension):</p>
     <pre>[ui]
 theme = "catppuccin-mocha"   # ✓ matches catppuccin-mocha.toml
@@ -1892,7 +1892,7 @@ theme = "Catppuccin-Mocha"   # ✗ won't load — wrong case</pre>
 
     <h3>Preview didn't appear</h3>
     <ul>
-      <li>The site may block bots — NodeRelay uses a standard Chrome/Linux user-agent, but some sites still block.</li>
+      <li>The site may block bots — Uplink uses a standard Chrome/Linux user-agent, but some sites still block.</li>
       <li>The page may have no <code>og:title</code> or <code>&lt;title&gt;</code> — nothing to show.</li>
       <li>SSL certificate errors block the fetch silently (self-signed or expired certs).</li>
     </ul>
@@ -1904,7 +1904,7 @@ theme = "Catppuccin-Mocha"   # ✗ won't load — wrong case</pre>
 </main>
 
 <footer>
-  NodeRelay &mdash; <a href="https://github.com/noderelay/NodeRelay">GitHub</a> &middot;
+  Uplink &mdash; <a href="https://github.com/noderelay/UplinkIRC">GitHub</a> &middot;
   <a href="index.html">Home</a> &middot;
   <a href="configuration.md">Config reference</a> &middot;
   <a href="commands.md">Commands</a> &middot;

@@ -125,6 +125,7 @@ Config Config::load(const QString &path)
             cfg.ui.typingIndicator       = (*ui)["typing_indicator"].value_or(true);
             cfg.ui.hangingIndent         = (*ui)["hanging_indent"].value_or(true);
             cfg.ui.logMessages           = (*ui)["log_messages"].value_or(true);
+            cfg.ui.appIcon               = QString::fromStdString((*ui)["app_icon"].value_or<std::string>("dark"));
             cfg.ui.nickBrackets          = QString::fromStdString((*ui)["nick_brackets"].value_or<std::string>("<>"));
             cfg.ui.notifications         = (*ui)["notifications"].value_or(true);
             cfg.ui.fontFamily            = QString::fromStdString((*ui)["font_family"].value_or<std::string>(kDefaultFontFamily));
@@ -258,6 +259,7 @@ void Config::save(const Config &cfg, const QString &path)
     out << "typing_indicator  = " << (cfg.ui.typingIndicator  ? "true" : "false") << "\n";
     out << "hanging_indent    = " << (cfg.ui.hangingIndent    ? "true" : "false") << "\n";
     out << "log_messages      = " << (cfg.ui.logMessages     ? "true" : "false") << "\n";
+    out << "app_icon          = " << tomlQuote(cfg.ui.appIcon)     << "\n";
     out << "nick_brackets     = " << tomlQuote(cfg.ui.nickBrackets) << "\n";
     out << "notifications     = " << (cfg.ui.notifications    ? "true" : "false") << "\n";
     out << "font_family       = " << tomlQuote(cfg.ui.fontFamily)  << "\n";

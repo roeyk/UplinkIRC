@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NodeRelay — Fast, Secure IRC Client</title>
+  <title>Uplink — Fast, Secure IRC Client</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -454,7 +454,7 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-brand">NodeRelay <span>v0.16.3</span></div>
+  <div class="nav-brand">Uplink <span>v0.16.3</span></div>
   <ul>
     <li><a href="#download">Download</a></li>
     <li><a href="#features">Features</a></li>
@@ -462,7 +462,7 @@
     <li><a href="#ircv3">IRCv3</a></li>
     <li><a href="#docs">Docs</a></li>
     <li><a href="#icons">Icons</a></li>
-    <li><a href="https://github.com/noderelay/NodeRelay">GitHub</a></li>
+    <li><a href="https://github.com/noderelay/UplinkIRC">GitHub</a></li>
   </ul>
 </nav>
 
@@ -470,12 +470,12 @@
 <section class="hero">
   <div class="hero-badge">IRC Client &mdash; Qt6 / C++</div>
   <div style="background:#ffffff; border-radius:16px; display:inline-block; padding:1.2rem 2.5rem; margin-bottom:1.8rem;">
-    <img src="about.png" alt="NodeRelay" style="max-width:380px; width:90%; display:block;" />
+    <img src="about.png" alt="Uplink" style="max-width:380px; width:90%; display:block;" />
   </div>
-  <p>NodeRelay is a fast, secure, IRCv3-featured IRC client built to run for days. Native Qt6, small footprint, no Electron.</p>
+  <p>Uplink is a fast, secure, IRCv3-featured IRC client built to run for days. Native Qt6, small footprint, no Electron.</p>
   <div class="hero-buttons">
     <a class="btn btn-primary" href="#download">Download v0.16.3</a>
-    <a class="btn btn-secondary" href="https://github.com/noderelay/NodeRelay">GitHub</a>
+    <a class="btn btn-secondary" href="https://github.com/noderelay/UplinkIRC">GitHub</a>
     <a class="btn btn-secondary" href="#docs">Documentation</a>
   </div>
 </section>
@@ -487,19 +487,19 @@
     <h2 class="section-title">v0.20.0 — Latest release</h2>
     <p class="section-sub" style="margin: 0 auto 2rem">Pre-built binaries for all platforms. No installer required — extract and run.</p>
     <div class="download-grid">
-      <a class="download-card" href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-0.20.0-x86_64.AppImage">
+      <a class="download-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.20.0-x86_64.AppImage">
         <span class="dl-icon">🐧</span>
         <strong>Linux</strong>
         <span>x86_64 · AppImage</span>
         <span class="dl-btn">Download</span>
       </a>
-      <a class="download-card" href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.20.0-windows-x64.zip">
+      <a class="download-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.20.0-windows-x64.zip">
         <span class="dl-icon">🪟</span>
         <strong>Windows</strong>
         <span>x64 · .zip</span>
         <span class="dl-btn">Download</span>
       </a>
-      <a class="download-card" href="https://github.com/noderelay/NodeRelay/releases/latest/download/NodeRelay-v0.20.0-macos-arm64.dmg">
+      <a class="download-card" href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.20.0-macos-arm64.dmg">
         <span class="dl-icon">🍎</span>
         <strong>macOS</strong>
         <span>ARM64 · .dmg</span>
@@ -507,7 +507,7 @@
       </a>
     </div>
     <p style="font-size:0.85rem; color:var(--subtext)">
-      <a href="https://github.com/noderelay/NodeRelay/releases">All releases and source archives →</a>
+      <a href="https://github.com/noderelay/UplinkIRC/releases">All releases and source archives →</a>
     </p>
   </div>
 </section>
@@ -527,7 +527,7 @@
 <!-- FEATURES -->
 <section id="features">
   <div class="container">
-    <div class="section-label">Why NodeRelay</div>
+    <div class="section-label">Why Uplink</div>
     <h2 class="section-title">Built for long sessions</h2>
     <p class="section-sub">Designed to stay connected and stable for hours or days — a client named for what it does.</p>
     <div class="feature-grid">
@@ -607,7 +607,7 @@
   <div class="container">
     <div class="section-label">Cross-Platform</div>
     <h2 class="section-title">Runs where you do</h2>
-    <p class="section-sub">One codebase, native builds on every major OS. Qt6 handles the platform layer — NodeRelay stays fast everywhere.</p>
+    <p class="section-sub">One codebase, native builds on every major OS. Qt6 handles the platform layer — Uplink stays fast everywhere.</p>
 
     <div class="platform-grid">
       <div class="platform-card">
@@ -633,7 +633,7 @@
     </div>
 
     <div class="platform-note">
-      <strong>ARM64 support</strong> — Qt6 ships native ARM64 libraries for Linux, macOS (Apple Silicon), and Windows on ARM. NodeRelay builds and runs on all of them with no code changes.
+      <strong>ARM64 support</strong> — Qt6 ships native ARM64 libraries for Linux, macOS (Apple Silicon), and Windows on ARM. Uplink builds and runs on all of them with no code changes.
     </div>
   </div>
 </section>
@@ -643,7 +643,7 @@
   <div class="container">
     <div class="section-label">IRCv3</div>
     <h2 class="section-title">Modern IRC, fully negotiated</h2>
-    <p class="section-sub">CAP LS 302 — NodeRelay waits for the server's full capability list before requesting anything, so it never NAKs on unsupported caps.</p>
+    <p class="section-sub">CAP LS 302 — Uplink waits for the server's full capability list before requesting anything, so it never NAKs on unsupported caps.</p>
 
     <div class="cap-legend">
       <span><span class="cap-status active"></span> Active</span>
@@ -752,23 +752,23 @@
         <h3 style="color:var(--blue)">📖 How-To Guide</h3>
         <p>Start here. Install to first connection to tweaks — step by step with examples written for everyone.</p>
       </a>
-      <a class="doc-card" href="https://github.com/noderelay/NodeRelay/blob/main/docs/configuration.md">
+      <a class="doc-card" href="https://github.com/noderelay/UplinkIRC/blob/main/docs/configuration.md">
         <h3>Configuration</h3>
         <p>Every config option with full examples. Multi-server, bouncer, themes, and channels.</p>
       </a>
-      <a class="doc-card" href="https://github.com/noderelay/NodeRelay/blob/main/docs/commands.md">
+      <a class="doc-card" href="https://github.com/noderelay/UplinkIRC/blob/main/docs/commands.md">
         <h3>Commands</h3>
         <p>All slash commands — /join, /part, /nick, /me, /msg, /raw, and more.</p>
       </a>
-      <a class="doc-card" href="https://github.com/noderelay/NodeRelay/blob/main/docs/ircv3.md">
+      <a class="doc-card" href="https://github.com/noderelay/UplinkIRC/blob/main/docs/ircv3.md">
         <h3>IRCv3 Support</h3>
         <p>Full capability status — active, negotiated, and planned.</p>
       </a>
-      <a class="doc-card" href="https://github.com/noderelay/NodeRelay/blob/main/docs/faq.md">
+      <a class="doc-card" href="https://github.com/noderelay/UplinkIRC/blob/main/docs/faq.md">
         <h3>FAQ &amp; Troubleshooting</h3>
         <p>Common questions, config mistakes, and platform-specific fixes.</p>
       </a>
-      <a class="doc-card" href="https://github.com/noderelay/NodeRelay/blob/main/docs/keyboard-shortcuts.md">
+      <a class="doc-card" href="https://github.com/noderelay/UplinkIRC/blob/main/docs/keyboard-shortcuts.md">
         <h3>Keyboard Shortcuts</h3>
         <p>Input, navigation, and interface shortcuts.</p>
       </a>
@@ -784,7 +784,7 @@
 <section id="icons">
   <div class="container">
     <div class="section-label">Icons</div>
-    <h2 class="section-title">NodeRelay Icon Set</h2>
+    <h2 class="section-title">Uplink Icon Set</h2>
     <p class="section-sub">Three icon styles, each with a dark and light variant. Free to use — click any card to download the PNG.</p>
 
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.5rem; margin-top:2.5rem;">
@@ -861,15 +861,15 @@
 <footer>
   <div class="footer-inner">
     <div class="footer-links">
-      <a href="https://github.com/noderelay/NodeRelay">GitHub</a>
+      <a href="https://github.com/noderelay/UplinkIRC">GitHub</a>
       <a href="howto.html">How-To Guide</a>
-      <a href="https://github.com/noderelay/NodeRelay/blob/main/docs/configuration.md">Config</a>
-      <a href="https://github.com/noderelay/NodeRelay/blob/main/ROADMAP.md">Roadmap</a>
-      <a href="https://github.com/noderelay/NodeRelay/blob/main/CHANGELOG.md">Changelog</a>
-      <a href="https://github.com/noderelay/NodeRelay/blob/main/SECURITY.md">Security</a>
+      <a href="https://github.com/noderelay/UplinkIRC/blob/main/docs/configuration.md">Config</a>
+      <a href="https://github.com/noderelay/UplinkIRC/blob/main/ROADMAP.md">Roadmap</a>
+      <a href="https://github.com/noderelay/UplinkIRC/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/noderelay/UplinkIRC/blob/main/SECURITY.md">Security</a>
     </div>
     <div class="version-tag">v0.16.3</div>
-    <p>NodeRelay &mdash; irc.linuxdojo.org &middot; #uplink</p>
+    <p>Uplink &mdash; irc.linuxdojo.org &middot; #uplink</p>
   </div>
 </footer>
 

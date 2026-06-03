@@ -965,7 +965,7 @@ What was done:
   - Preferences icon picker collapsed from 6 options to 3 (removed separate light entries).
   - docs/index.html: new uplink-banner.png header, Icons section with 8 downloadable PNGs,
     Icons nav link added, all version strings updated to 0.16.2.
-  - GitHub repo renamed from uplink/UplinkIRC to uplink/UplinkIRC.
+  - GitHub repo renamed from noderelay/UplinkIRC to noderelay/UplinkIRC.
   - v0.16.2 release created with AppImage attached.
   - Version bump: 0.16.1 → 0.16.2.
 
@@ -982,8 +982,8 @@ Next priorities: STS, account-tag display, password keychain, DCC passive/NAT.
 - **Theme change refreshes icon** — switching themes now also re-applies the window/taskbar icon to match the new palette.
 - **About dialog logo** — static Node-Relay-Tower.png at 128 × 128 px; no longer tied to the switchable icon choice.
 - **Tray icon** — locked to hub-spoke SVG regardless of icon choice setting.
-- **Docs site updated** — new banner, downloadable icon set section (8 PNGs), all GitHub URLs updated to `uplink/UplinkIRC`.
-- **GitHub repo renamed** — `uplink/UplinkIRC` → `uplink/UplinkIRC`; old URL auto-redirects.
+- **Docs site updated** — new banner, downloadable icon set section (8 PNGs), all GitHub URLs updated to `noderelay/UplinkIRC`.
+- **GitHub repo renamed** — `noderelay/UplinkIRC` → `noderelay/UplinkIRC`; old URL auto-redirects.
 
 ---
 
@@ -1083,7 +1083,7 @@ Session summary — 2026-05-31 (housekeeping — username rename)
 
 What was done:
   - GitHub account renamed from joehonkey → uplink.
-  - Git remote URL updated to https://github.com/uplink/UplinkIRC.git.
+  - Git remote URL updated to https://github.com/noderelay/UplinkIRC.git.
   - All joehonkey references replaced in README.md, CHANGELOG.md, ROADMAP.md,
     SECURITY.md, docs/faq.md, themes/BreezeDarkPlus.toml, CLAUDE.md.
   - Global git user.name updated to uplink.
@@ -3304,7 +3304,7 @@ What was built:
   - Global git commit-msg hook at ~/.config/git/hooks/commit-msg strips
     all AI co-author/attribution lines from every commit on this machine.
     git config --global core.hooksPath set to ~/.config/git/hooks.
-  - GitHub repo created: https://github.com/uplink/UplinkIRC (public).
+  - GitHub repo created: https://github.com/noderelay/UplinkIRC (public).
   - Branch protection on main — force push and deletion blocked.
   - GitHub Pages enabled from docs/ folder.
     Live at: https://uplink.github.io/UplinkIRC/

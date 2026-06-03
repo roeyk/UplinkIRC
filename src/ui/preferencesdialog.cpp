@@ -8,11 +8,18 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QPushButton>
+#include <QRadioButton>
+#include <QButtonGroup>
 #include <QLabel>
 #include <QFrame>
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+
+const QList<QPair<QString,QString>> PreferencesDialog::s_iconChoices = {
+    { "dark",  "Dark"  },
+    { "light", "Light" },
+};
 
 const QList<QPair<QString,QString>> PreferencesDialog::s_bracketChoices = {
     { "<>",   "<nick>  (angle)"   },
@@ -110,6 +117,23 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     };
     connect(themeList, &QListWidget::itemClicked,   this, applyTheme);
     connect(themeList, &QListWidget::itemActivated, this, applyTheme);
+
+    vbox->addSpacing(3);
+    vbox->addWidget(sectionLabel("App Icon"));
+    {
+        auto *iconGroup = new QButtonGroup(this);
+        iconGroup->setExclusive(true);
+        for (int i = 0; i < s_iconChoices.size(); ++i) {
+            auto *rb = new QRadioButton(s_iconChoices[i].second);
+            rb->setChecked(s_iconChoices[i].first == cfg.ui.appIcon);
+            iconGroup->addButton(rb, i);
+            vbox->addWidget(rb);
+        }
+        connect(iconGroup, &QButtonGroup::idClicked, this, [this](int id){
+            if (id >= 0 && id < s_iconChoices.size())
+                emit appIconChanged(s_iconChoices[id].first);
+        });
+    }
 
     vbox->addSpacing(2);
     auto *fontBtn = new PillButton("Font Config...");

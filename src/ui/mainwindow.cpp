@@ -253,7 +253,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_showEmojiBtn   = cfg.ui.showEmojiButton;
 
     setWindowTitle("Uplink");
-    setWindowIcon(AppIcons::appIcon());
+    setWindowIcon(AppIcons::appIcon(m_config.ui.appIcon));
     resize(1100, 700);
 
     ThemeLoader::apply(m_config.ui.theme);
@@ -444,6 +444,13 @@ void MainWindow::connectPreferences()
         }
     });
 
+
+    connect(m_prefsDialog, &PreferencesDialog::appIconChanged, this, [this](const QString &key){
+        m_config.ui.appIcon = key;
+        setWindowIcon(AppIcons::appIcon(key));
+        if (m_tray) m_tray->setBaseIcon(AppIcons::appIcon(key));
+        Config::save(m_config, Config::defaultPath());
+    });
 
     connect(m_prefsDialog, &PreferencesDialog::topicBarToggled, this, [this](bool on){
         m_showTopic = on;

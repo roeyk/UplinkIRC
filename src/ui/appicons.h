@@ -13,10 +13,11 @@ inline bool isDark()
     return qApp->palette().window().color().lightness() < 128;
 }
 
-inline QIcon appIcon(const QString & = {})
+inline QIcon appIcon(const QString &choice = "dark")
 {
-    return isDark() ? QIcon(":/icons/uplink-dark.png")
-                    : QIcon(":/icons/uplink-light.png");
+    if (choice == "light")
+        return QIcon(":/icons/uplink-light.png");
+    return QIcon(":/icons/uplink-dark.png");
 }
 inline QIcon trayIcon()    { return appIcon(); }
 inline QPixmap aboutLogo() { return QPixmap(":/icons/about-logo.png"); }

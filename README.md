@@ -3,14 +3,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/uplink/UplinkIRC/releases/latest">
-    <img src="https://img.shields.io/github/v/release/uplink/UplinkIRC?style=flat-square&color=4a9eda&label=release" alt="Latest Release" />
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest">
+    <img src="https://img.shields.io/github/v/release/noderelay/UplinkIRC?style=flat-square&color=4a9eda&label=release" alt="Latest Release" />
   </a>
-  <a href="https://github.com/uplink/UplinkIRC/actions/workflows/ci.yml">
-    <img src="https://github.com/uplink/UplinkIRC/actions/workflows/ci.yml/badge.svg" alt="CI" />
+  <a href="https://github.com/noderelay/UplinkIRC/actions/workflows/ci.yml">
+    <img src="https://github.com/noderelay/UplinkIRC/actions/workflows/ci.yml/badge.svg" alt="CI" />
   </a>
   <a href="LICENSE">
-    <img src="https://img.shields.io/github/license/uplink/UplinkIRC?style=flat-square&color=22863a" alt="MIT License" />
+    <img src="https://img.shields.io/github/license/noderelay/UplinkIRC?style=flat-square&color=22863a" alt="MIT License" />
   </a>
   <img src="https://img.shields.io/badge/Qt6%20%2F%20C%2B%2B-cross--platform-blueviolet?style=flat-square" alt="Qt6 / C++" />
   <img src="https://img.shields.io/badge/IRCv3-ready-orange?style=flat-square" alt="IRCv3" />
@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/uplink/UplinkIRC/releases/latest/download/Uplink-0.20.0-x86_64.AppImage">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.20.0-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/uplink/UplinkIRC/releases/latest/download/Uplink-v0.20.0-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.20.0-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/uplink/UplinkIRC/releases/latest/download/Uplink-v0.20.0-windows-x64.zip">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.20.0-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/uplink/UplinkIRC/releases/latest/download/Uplink-v0.20.0-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.20.0-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -46,7 +46,7 @@
 </p>
 
 <p align="center">
-  <a href="https://uplink.github.io/Uplink/howto.html">
+  <a href="https://noderelay.github.io/UplinkIRC/howto.html">
     <img src="https://img.shields.io/badge/📖%20How--To%20Guide-install%20→%20tweaks-0368a4?style=for-the-badge&logo=readthedocs&logoColor=white" alt="How-To Guide" />
   </a>
 </p>
@@ -164,7 +164,7 @@
 ## Quick Start
 
 ```bash
-git clone https://github.com/uplink/UplinkIRC.git
+git clone https://github.com/noderelay/UplinkIRC.git
 cd Uplink
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
@@ -405,7 +405,7 @@ Type a colon to trigger inline autocomplete:
 
 | Doc | Contents |
 |---|---|
-| [**How-To Guide**](https://uplink.github.io/Uplink/howto.html) | Step-by-step from install to tweaks — start here |
+| [**How-To Guide**](https://noderelay.github.io/UplinkIRC/howto.html) | Step-by-step from install to tweaks — start here |
 | [Configuration](docs/configuration.md) | Every config key with examples, bouncer setup, SASL |
 | [Commands](docs/commands.md) | All slash commands + emoji shortcuts |
 | [IRCv3 support](docs/ircv3.md) | Capability status and notes |
