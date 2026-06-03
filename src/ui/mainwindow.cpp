@@ -3445,7 +3445,7 @@ QString MainWindow::formatMessage(const Message &msg) const
     case MessageType::Nick:
         html = wrapEvent("steelblue", ts + " ~ "  + msg.text); break;
     case MessageType::Kick:
-        html = wrap("firebrick", ts + " ✕ " + msg.text); break;
+        html = wrap("#e06b6b", ts + " ✕ " + msg.text); break;
     case MessageType::Topic:
         html = wrap("steelblue", ts + " ⦁ Topic: " + msg.text); break;
     case MessageType::Error:
