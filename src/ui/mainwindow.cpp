@@ -175,12 +175,27 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     if (settings.contains("sidebarWidth"))
         m_sidebarExpandedWidth = settings.value("sidebarWidth").toInt();
 
+    const QStringList savedPanes       = settings.value("panes").toStringList();
+    const int         savedPrimarySlot = settings.value("primarySlot", 0).toInt();
+
     QTimer::singleShot(0, this, [this]{
         const int total = m_mainSplitter->width();
         if (total > 0)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
         if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
     });
+
+    if (!savedPanes.isEmpty()) {
+        QTimer::singleShot(0, this, [this, savedPanes, savedPrimarySlot]{
+            for (const QString &k : savedPanes) {
+                const int sep = k.indexOf('|');
+                if (sep < 0) continue;
+                openChannelPane(k.left(sep), k.mid(sep + 1));
+            }
+            m_primarySlot = qBound(0, savedPrimarySlot, (int)m_orderedPanes.size());
+            rebuildPaneLayout();
+        });
+    }
 
     connect(m_mainSplitter, &QSplitter::splitterMoved, this, [this](int, int){
         const int w = m_mainSplitter->sizes().value(0);
@@ -195,6 +210,11 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         s.setValue("windowState", saveState());
         s.setValue("nickSplitter", m_chatSplitter->saveState());
         s.setValue("sidebarWidth", m_sidebarExpandedWidth);
+        QStringList paneList;
+        for (auto *p : std::as_const(m_orderedPanes))
+            paneList << p->key();
+        s.setValue("panes", paneList);
+        s.setValue("primarySlot", m_primarySlot);
     });
 }
 
