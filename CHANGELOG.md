@@ -3,6 +3,37 @@
 ---
 
 <!--
+Session summary — 2026-06-04 (lightweight code review — small patches)
+
+What was fixed:
+  - Topic link gate (#10): setOpenExternalLinks(false) + linkActivated →
+    http/https scheme check in mainwindow.cpp and channelpane.cpp; topic
+    labels now go through the same validator as chat links
+  - DCC timeout cleanup (#11): all three timeout handlers (dccsend::listen,
+    dccreceive::start, dccreceive::listenPassive) call cancel() before
+    emitting error — sockets and file handles are now closed on timeout
+  - hiddenPreviews pruning (#3): addPreview() removes the evicted URL from
+    hiddenPreviews when the preview cache rolls over; keeps the set bounded
+    with the 100-entry preview cap
+  - Compiler warnings (#13): -Wall -Wextra -Wpedantic -Wconversion
+    -Wsign-conversion -Wshadow -Wnon-virtual-dtor -Wold-style-cast added
+    to CMakeLists.txt; UPLINK_WARNINGS_AS_ERRORS and UPLINK_ENABLE_SANITIZERS
+    options added (both off by default)
+
+New warnings surfaced (deferred):
+  - qsizetype→int narrowing in channel.h, ircparser.cpp, ircclient.cpp,
+    linkpreview.cpp, manageserversdialog.cpp, mainwindow.cpp
+  - Shadow locals in serversession.h, channelpane.cpp, serverdialog.cpp,
+    mainwindow.cpp
+  - Old-style casts in mainwindow.cpp, pillbutton.h
+
+ROADMAP updated:
+  - New "Performance & Maintainability Backlog" section added with all
+    deferred review items organized into near-term / medium / architectural
+
+-->
+
+<!--
 Session summary — 2026-06-04 (security audit — F-01 through F-12)
 
 All findings from the full security audit triaged and resolved.
