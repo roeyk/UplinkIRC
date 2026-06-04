@@ -648,7 +648,7 @@ You can also use:
 
 Click the server name (e.g. **LINUXDOJO**) at the top of the sidebar. It shows connection messages, server notices, CTCP replies, and other server-level output. If the server name is highlighted purple, there are unread messages waiting.
 
-
+### How do I search the in-app documentation?
 
 Click **☰ → Documentation** to open the help viewer. A search field sits at the top right of the tab bar, just to the right of the **Shortcuts** tab. Type any word or phrase — the active tab jumps to the first match immediately. Click **×** to clear. Switching tabs with a query active re-runs the search in the new tab.
 
@@ -706,6 +706,70 @@ Switching channels automatically cancels any pending reply.
 ### How do I minimize to the system tray?
 
 Close the window normally — it minimizes to the system tray instead of quitting. Left-click the tray icon to bring the window back. Right-click for a menu with **Show** and **Quit**.
+
+### How do I switch the app icon between dark and light?
+
+Click **☰ → Preferences** and find the **App Icon** section. Select **Dark** or **Light** — the icon changes immediately in the title bar and system tray without restarting.
+
+You can also set it directly in `config.toml`:
+
+```toml
+[ui]
+app_icon = "dark"    # or "light"
+```
+
+Use **Dark** for dark OS themes and **Light** for light OS themes. The preference is saved automatically.
+
+### How do I connect to a server with a self-signed certificate?
+
+Uplink shows a dialog on first connect:
+
+```
+Untrusted Certificate
+irc.myserver.example is using a self-signed certificate.
+SHA-256 fingerprint: AB:CD:EF:...
+```
+
+You have three options:
+
+| Option | What it does |
+|---|---|
+| **Pin Certificate** | Saves the fingerprint to `config.toml`. All future connections verify this fingerprint — if it changes, you get a clear error and the connection is refused. |
+| **Accept Once** | Allows this connection only. You will be asked again on the next connect. |
+| **Reject** | Disconnects immediately. |
+
+**Pin Certificate** is the right choice for a server you control or trust. Once pinned, `config.toml` gets a line like:
+
+```toml
+ssl_fingerprint = "AB:CD:EF:01:23:45:67:89:..."
+```
+
+If the server ever renews its self-signed cert, delete that line and reconnect — you will get the pin dialog again with the new fingerprint.
+
+### The pinned certificate no longer matches — what do I do?
+
+Uplink will disconnect with an error in the server buffer:
+
+```
+TLS: certificate fingerprint mismatch!
+Pinned: AB:CD:...
+Got:    FF:EE:...
+```
+
+This means the server's certificate changed. To re-pin:
+
+1. Open `~/.config/uplink/config.toml`
+2. Find the `ssl_fingerprint` line in the affected server block and delete it
+3. Click **☰ → Reload Config**
+4. Reconnect — the pin dialog appears with the new fingerprint
+
+### How do I add a custom theme?
+
+1. Create a `.toml` file in `~/.config/uplink/themes/` — the simplest starting point is to copy an existing theme from the `themes/` directory next to the binary and edit the color values.
+2. Restart Uplink (or click **☰ → Reload Config**).
+3. Your theme appears in the **Preferences** theme list.
+
+The theme format uses named `{{key}}` placeholders for colors. Look at any of the 55 built-in themes for the full list of keys.
 
 ---
 

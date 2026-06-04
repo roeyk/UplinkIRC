@@ -65,7 +65,8 @@ realname = "Uplink User"
 # proxy_host        = "127.0.0.1"      # SOCKS5 proxy hostname (omit for direct connection)
 # proxy_port        = 1080             # SOCKS5 proxy port (default 1080)
 # proxy_user        = ""               # optional: proxy username
-# proxy_pass        = ""               # optional: proxy password\n# ssl_fingerprint   = ""               # pin a self-signed cert SHA-256 fingerprint (set automatically on first connect)
+# proxy_pass        = ""               # optional: proxy password
+# ssl_fingerprint   = ""               # pin a self-signed cert SHA-256 fingerprint (set automatically on first connect)
 
 [[server.channel]]
 name = "#uplink"
@@ -92,7 +93,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `log_messages` | bool | `true` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Toggle from **Preferences → Log Messages to Disk**. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Tray Notifications**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
-| `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`, `"light-default"`, `"avatar"` |
+| `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`. Change from **☰ → Preferences → App Icon**. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
 | `font_toolbar` | integer | `10` | Font size (pt) for the ☰ button |
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
