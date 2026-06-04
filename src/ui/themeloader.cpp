@@ -293,7 +293,7 @@ QWidget#inputBar QLineEdit {
     background-color: {{inputBg}};
     color: {{inputText}};
     border: none;
-    border-radius: 20px;
+    border-radius: 8px;
     padding: 6px 14px;
     selection-background-color: {{accent}};
 }
