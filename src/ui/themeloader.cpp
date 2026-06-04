@@ -23,6 +23,7 @@ void ThemeLoader::ensureUserThemesDir()
     const QStringList sources = {
         QCoreApplication::applicationDirPath() + "/themes",
         QCoreApplication::applicationDirPath() + "/../share/uplink/themes",
+        QCoreApplication::applicationDirPath() + "/../themes",
     };
     for (const QString &src : sources) {
         const QDir srcDir(src);
