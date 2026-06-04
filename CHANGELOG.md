@@ -3,6 +3,38 @@
 ---
 
 <!--
+Session summary — 2026-06-03 (v0.20.1 — UplinkIRC rename + new icons)
+
+What was built:
+  - Full project rename: NodeRelay → UplinkIRC (repo), Uplink (app/binary).
+    All source, docs, packaging, CI, config paths, and memory updated.
+  - New Uplink icon set: dark and light transparent PNG variants wired into
+    QRC, About dialog, tray, window title bar, AppImage packaging, README,
+    docs site, and howto.html.
+  - Icon picker in Preferences simplified to two radio buttons: Dark / Light.
+    Old 3-style system (Node N / Tower / Hub Spoke) removed along with all
+    old icon files.
+  - Sidebar pill row height fix: 20 → 26 px — descenders no longer clipped.
+  - Docs site (index.html, howto.html) fully rebranded to Uplink.
+  - GitHub Pages URL corrected to noderelay.github.io/UplinkIRC/.
+  - Local project folder renamed ~/Projects/NodeRelay → ~/Projects/UplinkIRC.
+  - Config dirs cleaned up: ~/.config/noderelay, NodeRelay, uplinkirc removed.
+
+Bugs fixed:
+  - Sidebar pill clipped descenders (p, g, y) at 20 px row height.
+  - GitHub URLs had noderelay username replaced with uplink during rename sweep.
+  - docs/index.html icon grid still showed old 6-icon NodeRelay set.
+  - howto.html hero image still pointed to old tower.svg.
+
+Known issues left open:
+  - About dialog Wayland centering drift (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+  - GitHub Pages needs enabling in repo Settings → Pages → /docs.
+
+Next priorities:
+  - DCC passive / NAT traversal
+  - In-app update check UI
+
 Session summary — 2026-06-03 (v0.20.0 — MD3 UI pass + cert pinning)
 
 What was built:
@@ -54,6 +86,14 @@ Next priorities:
   - In-app update check UI
   - SVG light icon variants
 -->
+
+## v0.20.1 — 2026-06-03
+
+- **Chore:** Project renamed to UplinkIRC — repo, binary, config path (`~/.config/uplink/`), window title, tray tooltip, CTCP VERSION, and all docs updated
+- **Feat:** New Uplink icon — dark and light transparent PNG variants; icon picker in Preferences simplified to Dark / Light (removed old 3-style system)
+- **Fix:** Sidebar channel item row height increased (20 → 26 px) — pill highlight taller, descenders (e.g. `p` in `#uplink`) no longer clipped
+- **Chore:** Old unused icon files removed from `resources/icons/` and `assets/`
+- **Docs:** `docs/index.html` and `docs/howto.html` fully updated to Uplink branding and new icon grid
 
 ## v0.20.0 — 2026-06-03
 
