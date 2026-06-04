@@ -33,7 +33,7 @@ show_emoji_button = true               # shows 😊 button next to input bar
 colored_nicks     = true
 typing_indicator  = true
 hanging_indent    = true               # wrap long messages past the timestamp+nick column
-log_messages      = true               # write all messages to ~/.config/uplink/logs/
+log_messages      = false              # write all messages to ~/.config/uplink/logs/ (opt-in)
 notifications     = true               # green dot on tray icon for mentions/PMs when unfocused
 nick_brackets     = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
 app_icon          = "dark"
@@ -48,6 +48,9 @@ font_input_nick   = 10
 font_input        = 10
 font_typing       = 9
 font_emoji        = 16   # emoji size in chat messages (independent of font_chat)
+
+[privacy]
+link_previews = false              # set to true to enable URL preview cards in chat
 
 [[server]]
 name     = "LinuxDojo"
@@ -90,7 +93,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `colored_nicks` | bool | `true` | Give each nickname a unique color in chat and the nick list |
 | `typing_indicator` | bool | `true` | Show "nick is typing…" notifications (IRCv3 `draft/typing`) and send your own |
 | `hanging_indent` | bool | `true` | Indent wrapped message lines past the timestamp+nick column so they align with the message text. Toggle live from **Preferences → Hanging Indent**. |
-| `log_messages` | bool | `true` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Toggle from **Preferences → Log Messages to Disk**. |
+| `log_messages` | bool | `false` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Opt-in — off by default. Toggle from **Preferences → Log Messages to Disk**. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Tray Notifications**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`. Change from **☰ → Preferences → App Icon**. |
@@ -160,6 +163,23 @@ font_input        = 11
 
 ---
 
+## The `[privacy]` block
+
+Controls features that make outgoing network requests triggered by incoming data. All keys are optional and default to `false`.
+
+| Key | Type | Default | Description |
+|---|---|---|---|
+| `link_previews` | bool | `false` | Fetch page titles and thumbnail images for URLs posted in chat. When enabled, Uplink makes background HTTP requests to linked sites — the linked site receives your IP address and user-agent. Disabled by default. Toggle from **Preferences → Link Previews** or set here. |
+
+```toml
+[privacy]
+link_previews = true    # enable URL preview cards
+```
+
+> **Privacy note:** When link previews are on, every URL posted in chat triggers a background HTTP request from your machine. The target site sees your IP address. Uplink blocks requests to private/LAN addresses, but external URLs are always fetched. Disable if you want no outgoing requests from chat content.
+
+---
+
 ## The `[[server]]` block
 
 Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) define an array entry, so you can have as many as you like.
@@ -185,7 +205,8 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `proxy_host` | string | no | SOCKS5 proxy hostname or IP (e.g. `"127.0.0.1"`). Leave empty (the default) to connect directly with no proxy. |
 | `proxy_port` | integer | no | SOCKS5 proxy port. Defaults to `1080`. |
 | `proxy_user` | string | no | SOCKS5 proxy username. Only needed if your proxy requires authentication. |
-| `proxy_pass` | string | no | SOCKS5 proxy password. Only needed if your proxy requires authentication. |\n| `ssl_fingerprint` | string | no | SHA-256 fingerprint of a pinned self-signed TLS certificate. Set automatically when you choose "Pin Certificate" on first connect. Once set, the connection is rejected if the certificate changes. |
+| `proxy_pass` | string | no | SOCKS5 proxy password. Only needed if your proxy requires authentication. |
+| `ssl_fingerprint` | string | no | SHA-256 fingerprint of a pinned self-signed TLS certificate. Set automatically when you choose "Pin Certificate" on first connect. Once set, the connection is rejected if the certificate changes. |
 
 ### Minimal server block
 

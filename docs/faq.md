@@ -25,7 +25,7 @@ The AppImage is the recommended Linux download — it is self-contained, runs on
 The AppImage embeds zsync metadata pointing to the latest release. Install [`appimageupdatetool`](https://github.com/AppImageCommunity/AppImageUpdate) and run:
 
 ```bash
-appimageupdatetool ./Uplink-0.19.2-x86_64.AppImage
+appimageupdatetool ./Uplink-*.AppImage
 ```
 
 This downloads only the changed blocks from the new release — much faster than a full re-download. The tool prints progress and replaces the file in place when done.
@@ -492,7 +492,7 @@ History replay messages are never logged — only live messages.
 You can also set it in config:
 ```toml
 [ui]
-log_messages = true
+log_messages = true    # off by default — opt-in
 ```
 
 ### How do I message NickServ or ChanServ?
@@ -654,7 +654,14 @@ Click **☰ → Documentation** to open the help viewer. A search field sits at 
 
 ### How do link previews work?
 
-When a live message arrives containing an `http://` or `https://` URL, Uplink fetches the link in the background and appends a preview card below the message.
+Link previews are **disabled by default**. To enable them, click **☰ → Preferences** and check **Link Previews**, or add this to `config.toml`:
+
+```toml
+[privacy]
+link_previews = true
+```
+
+When enabled, any live message containing an `http://` or `https://` URL causes Uplink to fetch the link in the background and append a preview card below the message.
 
 **Card layout** — the card shows the page title and domain name on top, with the thumbnail image below. The card is anchored to the left edge with a colored border.
 
@@ -829,6 +836,7 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 
 Uplink fetches the page title and thumbnail for URLs posted in chat. If a preview isn't appearing:
 
+- **Are link previews enabled?** They are off by default. Click **☰ → Preferences** and check **Link Previews**, or add `link_previews = true` under `[privacy]` in `config.toml`.
 - **Direct image link** — `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp` URLs are handled automatically and show a thumbnail card.
 - **The site redirects** (e.g. `http://` → `https://`, or bare domain → `www.`) — redirects are followed automatically.
 - **YouTube and heavy sites** — as of v0.12.0, Uplink uses the `WhatsApp/2` user-agent, which causes most major sites to serve a compact OG-metadata page. If a site still doesn't preview, it may not publish `og:title` or `<title>` at all.

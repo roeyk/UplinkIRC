@@ -538,7 +538,7 @@
 
     <h3>Update in-place (zsync)</h3>
     <p>The AppImage embeds zsync metadata pointing to the latest release. Install <a href="https://github.com/AppImageCommunity/AppImageUpdate" target="_blank">appimageupdatetool</a>, then:</p>
-    <pre>appimageupdatetool ./Uplink-0.16.0-x86_64.AppImage</pre>
+    <pre>appimageupdatetool ./Uplink-*.AppImage</pre>
     <p>Only the changed blocks are downloaded — much faster than a full re-download.</p>
 
     <div class="tip">
@@ -1628,21 +1628,29 @@ nicks = ["alice", "bob"]</pre>
     <h3>Turning logging on or off</h3>
     <p>Click <strong>☰ → Preferences</strong> and check or uncheck <strong>Log Messages to Disk</strong>. Or set it in config:</p>
     <pre>[ui]
-log_messages = true</pre>
-    <p>Logging is on by default.</p>
+log_messages = true    # off by default — opt-in</pre>
+    <p>Logging is <strong>off by default</strong>. Enable it in Preferences or by setting <code>log_messages = true</code> in config.</p>
   </section>
 
   <!-- LINK PREVIEWS -->
   <section id="link-previews">
     <h2>Link previews</h2>
-    <p>When a message contains a URL, Uplink fetches a small preview card automatically and appends it below the message:</p>
+    <p>Link previews are <strong>disabled by default</strong>. To enable them, click <strong>☰ → Preferences</strong> and check <strong>Link Previews</strong>, or add the following to <code>config.toml</code>:</p>
+    <pre>[privacy]
+link_previews = true</pre>
+
+    <p>When enabled, any message containing a URL causes Uplink to fetch a preview card and append it below the message:</p>
 
     <ul>
       <li><strong>Web pages</strong> — shows the page title (from <code>og:title</code> or <code>&lt;title&gt;</code>) and a thumbnail if an Open Graph image is set.</li>
       <li><strong>Direct image links</strong> — <code>.png .jpg .jpeg .gif .webp</code> URLs are detected and shown as a thumbnail without any HTML parsing.</li>
     </ul>
 
-    <p>Previews are lightweight — HTML is capped at 32 KB, images at 200 KB, results are cached for the session.</p>
+    <p>Previews are lightweight — HTML is capped at 32 KB, images at 200 KB, results are cached for the session. Private/LAN addresses are never fetched.</p>
+
+    <div class="tip">
+      <strong>Privacy:</strong> when link previews are on, every URL posted in chat triggers a background HTTP request from your machine. The target site sees your IP address. Disable if you want no outgoing requests triggered by chat content.
+    </div>
   </section>
 
   <!-- DCC -->
@@ -1889,13 +1897,14 @@ theme = "Catppuccin-Mocha"   # ✗ won't load — wrong case</pre>
 
     <h3>Preview didn't appear</h3>
     <ul>
-      <li>The site may block bots — Uplink uses a standard Chrome/Linux user-agent, but some sites still block.</li>
+      <li><strong>Are link previews enabled?</strong> They are off by default. Click <strong>☰ → Preferences</strong> and check <strong>Link Previews</strong>, or add <code>link_previews = true</code> under <code>[privacy]</code> in <code>config.toml</code>.</li>
+      <li>The site may block bots — Uplink uses a messaging-app user-agent, but some sites still block.</li>
       <li>The page may have no <code>og:title</code> or <code>&lt;title&gt;</code> — nothing to show.</li>
       <li>SSL certificate errors block the fetch silently (self-signed or expired certs).</li>
     </ul>
 
     <h3>Previews disappeared when I switched channels</h3>
-    <p>This was fixed in v0.8.1 — preview cards are now stored per-channel and reinjected when you switch back. If you are still seeing this, make sure you are running v0.8.1 or later.</p>
+    <p>Preview cards are stored per-channel and reinjected when you switch back. If a card is missing after switching back, the fetch may still be in progress — wait a moment and it will appear.</p>
   </section>
 
 </main>

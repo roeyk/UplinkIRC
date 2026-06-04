@@ -143,6 +143,30 @@ Next priorities:
   - In-app update check UI
 -->
 
+## v0.21.0 — 2026-06-04
+
+### Security
+
+- **Fix:** TLS first-connect MITM — credentials (PASS, SASL, NickServ) are no longer sent before the user accepts an unknown self-signed certificate fingerprint. The connection is now aborted immediately on an unrecognized cert; it reconnects only after the user chooses Pin Certificate or Accept Once. "Accept Once" was previously a dead button (`Q_UNUSED`) — it now works correctly for session-only trust.
+- **Fix:** IRCv3 reaction values are now HTML-escaped before insertion into the chat view. A malicious server or user could previously inject rich text, styling, or misleading links via `+draft/react` tag values.
+- **Fix:** `sendRaw()` now strips embedded CR/LF from every outgoing line using the existing `stripCrlf()` helper, preventing potential command injection in future code paths.
+- **Fix:** IRC parser replaced `raw.trimmed()` with targeted `\r`/`\n` removal only — trailing spaces in IRC trailing parameters are now preserved correctly.
+- **Fix:** Keychain write failure is no longer silent. If the OS keychain is unavailable, Uplink logs a warning and keeps the plaintext value in config rather than replacing it with the `<keychain>` sentinel and silently losing the secret.
+- **Fix:** Log file and log directory are now created with owner-only permissions (`600`/`700`) regardless of system umask.
+- **Change:** `log_messages` defaults to `false` (was `true`). Existing configs with an explicit `log_messages = true` are unaffected.
+- **Change:** Link previews are now **opt-in**. A new `[privacy]` section in `config.toml` controls this with `link_previews = false` by default. Toggle from **Preferences → Link Previews**. Previously previews fetched automatically for every URL in chat.
+
+### Build
+
+- **Hardening:** `FetchContent` git dependencies (`qtkeychain`, `tomlplusplus`) pinned to full immutable commit hashes instead of mutable version tags.
+- **Hardening:** AppImage packaging script pins `linuxdeploy` and `linuxdeploy-plugin-qt` to dated versioned releases (previously `continuous`). SHA256 verification added for all three packaging tools — script aborts on mismatch.
+
+### UI
+
+- **Feat:** Link Previews checkbox added to Preferences → Interface, below Log Messages to Disk. Toggle takes effect immediately and saves to config.
+
+---
+
 ## v0.20.2 — 2026-06-03
 
 - **Docs:** Expanded keyboard shortcuts guide — Tab/Shift+Tab completion detail, emoji shortcode keys, planned shortcuts table
