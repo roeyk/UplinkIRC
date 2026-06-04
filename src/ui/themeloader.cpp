@@ -11,7 +11,7 @@
 
 QString ThemeLoader::themesDir()
 {
-    return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/themes";
+    return QDir::homePath() + "/.config/uplink/themes";
 }
 
 void ThemeLoader::ensureUserThemesDir()
