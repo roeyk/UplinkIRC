@@ -3,6 +3,58 @@
 ---
 
 <!--
+Session summary — 2026-06-04 (v0.22.0 — passive DCC + in-app update check)
+
+What was built:
+  - DCC passive / NAT traversal:
+    - DccReceive::listenPassive() — opens a QTcpServer so the passive sender
+      can connect in; DccReceive::listenPort() returns the bound port; 60s
+      timeout before cancellation
+    - DccSend::initPassive() — validates file, generates random 8-digit token;
+      DccSend::connectOut(ip, port) — connects out as TCP client and starts
+      sending; replaces the listen() path for passive mode
+    - ircclient.cpp — DCC SEND parsing extended to read optional token (field 6);
+      port==0+token → dccPassiveOfferReceived; port!=0+token → dccPassiveSendReply;
+      plain port!=0 → existing dccSendReceived
+    - SessionModel — forwards both new signals through the model layer
+    - mainwindow.cpp — dccPassiveOfferReceived handler: asks user, calls
+      listenPassive(), sends CTCP reply with our IP:port, shows progress dialog;
+      dccPassiveSendReply handler: looks up pending token, calls connectOut();
+      "Send File (Passive)" added to nick right-click context menu;
+      m_pendingPassiveSends (QMap<QString, DccSend*>) tracks in-flight offers
+  - In-app update check:
+    - "Check for Updates" added to hamburger menu between "About Uplink" and
+      "Documentation"; fetches api.github.com/repos/noderelay/UplinkIRC/releases/latest;
+      parses tag_name with QRegularExpression; compares to UPLINK_VERSION_MAJOR/
+      MINOR/PATCH; shows "Update Available vX.Y.Z" or "Up to Date" QMessageBox
+  - Documentation full pass:
+    - ROADMAP.md — DCC passive and update check ticked done; Known Issues updated
+    - README.md — DCC entry, right-click table, hamburger entry all updated
+    - docs/commands.md — DCC section rewritten with mode table and passive steps;
+      Send File (Passive) added to nick right-click table
+    - docs/faq.md — DCC FAQ rewritten with plain-language mode guidance; new
+      "How do I check for updates?" FAQ entry; table updated
+    - docs/howto.html — DCC section rewritten with both modes, comparison table,
+      step-by-step, timeout list; Send File (Passive) in nick table; hamburger
+      description updated
+    - docs/index.html — two new feature cards: DCC file transfer and update check
+
+Bugs fixed:
+  - Raw string literal delimiter clash in update check regex (R"_( )_" form)
+  - \x01DCC hex escape ambiguity fixed with split string literal (\x01""DCC)
+
+Known issues left open:
+  - DCC when both sides are behind NAT — no relay mechanism; neither mode works
+  - DCC passive receive over NAT — receiver's port must be reachable from outside
+
+Next priorities:
+  - Pane layout persistence (save/restore pane arrangement across sessions)
+  - Virtual scrolling (performance on busy channels)
+  - FreeBSD port skeleton
+
+-->
+
+<!--
 Session summary — 2026-06-03 (v0.20.2 — documentation pass)
 
 What was built:

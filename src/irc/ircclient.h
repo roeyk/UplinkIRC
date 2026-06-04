@@ -98,6 +98,12 @@ signals:
     void sslFingerprintPrompt(const QString &host, const QString &fingerprint);
     void dccSendReceived(const QString &server, const QString &fromNick,
                          const QString &filename, quint32 ip, quint16 port, qint64 filesize);
+    void dccPassiveOfferReceived(const QString &server, const QString &fromNick,
+                                  const QString &filename, quint32 ip,
+                                  qint64 filesize, const QString &token);
+    void dccPassiveSendReply(const QString &server, const QString &fromNick,
+                              const QString &filename, quint32 ip, quint16 port,
+                              qint64 filesize, const QString &token);
     void typingReceived(const QString &server, const QString &channel,
                         const QString &nick,   const QString &state);
     void hostChanged   (const QString &server, const QString &nick,

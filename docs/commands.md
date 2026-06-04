@@ -176,16 +176,31 @@ Incoming CTCP VERSION and PING requests are answered automatically.
 
 DCC Send is initiated from the **nick list right-click menu**, not a slash command.
 
-**Sending a file:**
+Uplink supports two DCC modes. Choose based on your network situation:
+
+| Mode | When to use |
+|---|---|
+| **Send File** (active) | You have a reachable port — direct internet connection, or your router has port forwarding set up. The sender listens; the recipient connects in. |
+| **Send File (Passive)** | You are behind NAT (home router, VPN) and cannot accept incoming connections. The recipient opens the port instead and you connect out to them. |
+
+**Sending a file (active mode):**
 
 1. Right-click any nick in the user list on the right side of the window.
 2. Choose **Send File**.
 3. Pick a file in the file dialog.
-4. A progress dialog appears while Uplink waits for the recipient to accept.
+4. A progress dialog appears. Transfer begins as soon as the recipient accepts.
+
+**Sending a file (passive mode — use if you're behind NAT):**
+
+1. Right-click the recipient's nick.
+2. Choose **Send File (Passive)**.
+3. Pick a file. Uplink sends the offer with `port=0` — signalling that the recipient should open the port.
+4. The recipient's client opens a port and sends you its address. Uplink then connects out to them automatically.
+5. A progress dialog tracks the transfer.
 
 **Receiving a file:**
 
-When someone sends you a file, a dialog appears:
+When someone sends you a file (either mode), a dialog appears:
 
 ```
 alice wants to send you:
@@ -196,7 +211,7 @@ Accept?   [Yes]  [No]
 
 Click **Yes**, choose a save location, and a progress dialog tracks the download. Click **Cancel** at any time to abort.
 
-> **NAT note:** DCC works directly between clients over TCP. It works reliably on the same LAN. Over the internet, it requires the sender's port to be reachable — NAT or a firewall on the sender's side will block the connection. This is a fundamental DCC limitation, not an Uplink bug.
+> **NAT and firewalls:** Active DCC requires the sender's port to be reachable from the internet. If the sender is behind a home router, use **Send File (Passive)** — this flips who opens the port. If *both* sides are behind NAT, neither mode will work without a relay.
 
 ---
 
@@ -228,7 +243,8 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 | Action | What it does |
 |---|---|
 | **Message** | Opens a private message buffer in the sidebar. Equivalent to `/msg nick`. |
-| **Send File** | Opens a file picker and sends the file via DCC SEND. |
+| **Send File** | Opens a file picker and sends the file via active DCC. Use when you have a reachable port. |
+| **Send File (Passive)** | Same as Send File, but the recipient opens the port instead. Use when you are behind NAT. |
 | **Whois** | Sends `WHOIS nick`. The response appears in the server window. |
 | **Invite** | Opens a dialog pre-filled with the current channel. Edit if needed and click OK to send `INVITE nick #channel`. |
 | **Give Op** | Sets `+o` on the nick. Requires op. |

@@ -47,6 +47,7 @@
 #include <QSettings>
 #include <QDateTime>
 #include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
 #include <QProcess>
 #include <QPainter>
@@ -65,6 +66,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QProgressDialog>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QRandomGenerator>
 #include <QStyledItemDelegate>
 #if defined(Q_OS_WIN)
@@ -360,6 +364,43 @@ void MainWindow::setupToolbar()
         menu->addAction(MenuIcons::about(ic), "About Uplink", this, [this]{
             if (!m_aboutDialog) m_aboutDialog = new AboutDialog(this);
             m_aboutDialog->showCentered();
+        });
+
+        menu->addAction(MenuIcons::about(ic), "Check for Updates", this, [this]{
+            auto *nam = new QNetworkAccessManager(this);
+            QNetworkRequest req(QUrl("https://api.github.com/repos/noderelay/UplinkIRC/releases/latest"));
+            req.setRawHeader("User-Agent", "Uplink/" UPLINK_VERSION);
+            auto *reply = nam->get(req);
+            connect(reply, &QNetworkReply::finished, this, [this, reply, nam]{
+                reply->deleteLater();
+                nam->deleteLater();
+                if (reply->error() != QNetworkReply::NoError) {
+                    QMessageBox::warning(this, "Update Check",
+                        "Could not check for updates:\n" + reply->errorString());
+                    return;
+                }
+                const QByteArray body = reply->readAll();
+                const QRegularExpression re(R"_("tag_name"\s*:\s*"v?(\d+)\.(\d+)\.(\d+)")_");
+                const auto m = re.match(body);
+                if (!m.hasMatch()) {
+                    QMessageBox::warning(this, "Update Check", "Could not parse release info.");
+                    return;
+                }
+                const int maj = m.captured(1).toInt();
+                const int min = m.captured(2).toInt();
+                const int pat = m.captured(3).toInt();
+                const bool newer = (maj != UPLINK_VERSION_MAJOR) ? maj > UPLINK_VERSION_MAJOR
+                                 : (min != UPLINK_VERSION_MINOR) ? min > UPLINK_VERSION_MINOR
+                                 : pat > UPLINK_VERSION_PATCH;
+                if (newer) {
+                    QMessageBox::information(this, "Update Available",
+                        QString("Uplink v%1.%2.%3 is available.\nYou are running v" UPLINK_VERSION ".")
+                            .arg(maj).arg(min).arg(pat));
+                } else {
+                    QMessageBox::information(this, "Up to Date",
+                        "You are running the latest version (v" UPLINK_VERSION ").");
+                }
+            });
         });
 
         menu->addAction(MenuIcons::documentation(ic), "Documentation", this, [this]{
@@ -1303,6 +1344,68 @@ void MainWindow::connectModel()
 
         dcc->start();
         prog->show();
+    });
+
+    connect(m_model, &SessionModel::dccPassiveOfferReceived, this,
+            [this](const QString &server, const QString &fromNick,
+                   const QString &filename, quint32, qint64 filesize, const QString &token)
+    {
+        const QString sizeStr = filesize >= 1024*1024
+            ? QString::number(filesize / (1024*1024)) + " MB"
+            : QString::number(filesize / 1024) + " KB";
+
+        const int ret = QMessageBox::question(this, "Incoming DCC File (Passive)",
+            fromNick + " wants to send you:\n" + filename
+            + "  (" + sizeStr + ")\n\nAccept?",
+            QMessageBox::Yes | QMessageBox::No);
+        if (ret != QMessageBox::Yes) return;
+
+        const QString savePath = QFileDialog::getSaveFileName(this, "Save File", filename);
+        if (savePath.isEmpty()) return;
+
+        auto *dcc = new DccReceive(savePath, 0, 0, filesize, this);
+        if (!dcc->listenPassive()) { dcc->deleteLater(); return; }
+
+        IrcClient *client = m_model->clientFor(server);
+        const quint32 ourIp   = client ? client->localIpv4() : 0;
+        const quint16 ourPort = dcc->listenPort();
+        const QString fn      = QFileInfo(filename).fileName().replace(' ', '_');
+
+        m_model->sendRaw(server,
+            "PRIVMSG " + fromNick + " :\x01""DCC SEND "
+            + fn + " " + QString::number(ourIp)
+            + " " + QString::number(ourPort)
+            + " " + QString::number(filesize)
+            + " " + token + "\x01");
+
+        auto *prog = new QProgressDialog("Receiving " + filename + " from " + fromNick,
+                                          "Cancel", 0, filesize > INT_MAX ? INT_MAX : (int)filesize, this);
+        prog->setWindowModality(Qt::NonModal);
+        prog->setAttribute(Qt::WA_DeleteOnClose);
+
+        connect(dcc, &DccReceive::progress, prog, [prog, filesize](qint64 received, qint64){
+            prog->setValue((int)(filesize > INT_MAX ? received * INT_MAX / filesize : received));
+        });
+        connect(dcc, &DccReceive::finished, this, [this, prog, dcc](const QString &path){
+            prog->setValue(prog->maximum());
+            dcc->deleteLater();
+            QMessageBox::information(this, "DCC", "File received:\n" + path);
+        });
+        connect(dcc, &DccReceive::error, this, [this, prog, dcc](const QString &msg){
+            prog->close();
+            dcc->deleteLater();
+            QMessageBox::warning(this, "DCC Error", msg);
+        });
+        connect(prog, &QProgressDialog::canceled, dcc, [dcc]{ dcc->cancel(); dcc->deleteLater(); });
+        prog->show();
+    });
+
+    connect(m_model, &SessionModel::dccPassiveSendReply, this,
+            [this](const QString &, const QString &, const QString &,
+                   quint32 ip, quint16 port, qint64, const QString &token)
+    {
+        DccSend *dcc = m_pendingPassiveSends.take(token);
+        if (dcc) dcc->connectOut(ip, port);
     });
 
     connect(m_model, &SessionModel::pingRtt, this, [this](const QString &host, int ms){
@@ -3110,6 +3213,50 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
         });
         connect(prog, &QProgressDialog::canceled, dcc, [dcc]{ dcc->cancel(); dcc->deleteLater(); });
 
+        prog->show();
+    });
+
+    connect(menu.addAction("Send File (Passive)"), &QAction::triggered, this, [this, host, nick]{
+        const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick + " (Passive)");
+        if (path.isEmpty()) return;
+
+        auto *dcc = new DccSend(path, this);
+        const QString token = dcc->initPassive();
+        if (token.isEmpty()) { dcc->deleteLater(); return; }
+
+        const QString fn   = dcc->filename();
+        const qint64  size = dcc->filesize();
+
+        m_pendingPassiveSends.insert(token, dcc);
+        m_model->sendRaw(host,
+            "PRIVMSG " + nick + " :\x01""DCC SEND "
+            + fn + " 0 0"
+            + " " + QString::number(size)
+            + " " + token + "\x01");
+
+        auto *prog = new QProgressDialog("Waiting for " + nick + " to accept...",
+                                          "Cancel", 0, size > INT_MAX ? INT_MAX : (int)size, this);
+        prog->setWindowModality(Qt::NonModal);
+        prog->setAttribute(Qt::WA_DeleteOnClose);
+
+        connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
+            prog->setValue((int)(size > INT_MAX ? sent * INT_MAX / size : sent));
+        });
+        connect(dcc, &DccSend::finished, prog, [prog, dcc]{
+            prog->setValue(prog->maximum());
+            dcc->deleteLater();
+        });
+        connect(dcc, &DccSend::error, this, [this, prog, dcc, token](const QString &msg){
+            prog->close();
+            m_pendingPassiveSends.remove(token);
+            dcc->deleteLater();
+            QMessageBox::warning(this, "DCC Error", msg);
+        });
+        connect(prog, &QProgressDialog::canceled, dcc, [this, dcc, token]{
+            m_pendingPassiveSends.remove(token);
+            dcc->cancel();
+            dcc->deleteLater();
+        });
         prog->show();
     });
 

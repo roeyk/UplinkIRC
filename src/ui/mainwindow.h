@@ -4,6 +4,7 @@
 #include <QStringList>
 #include <QColor>
 #include <QHash>
+#include <QMap>
 #include <QSet>
 #include <QPair>
 #include "model/sessionmodel.h"
@@ -199,6 +200,7 @@ private:
     QString       m_hoveredUrl;
     QPoint        m_hoverGlobalPos;
     QHash<QString, QPair<QString,QString>> m_previewChannels; // url → {host, channel}
+    QMap<QString, DccSend*> m_pendingPassiveSends;
     Config        m_config;
     Theme         m_theme;
 

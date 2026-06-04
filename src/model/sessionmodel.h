@@ -98,6 +98,12 @@ signals:
     // DCC
     void dccSendReceived(const QString &server, const QString &fromNick,
                          const QString &filename, quint32 ip, quint16 port, qint64 filesize);
+    void dccPassiveOfferReceived(const QString &server, const QString &fromNick,
+                                  const QString &filename, quint32 ip,
+                                  qint64 filesize, const QString &token);
+    void dccPassiveSendReply(const QString &server, const QString &fromNick,
+                              const QString &filename, quint32 ip, quint16 port,
+                              qint64 filesize, const QString &token);
 
 private:
     void attachClient(IrcClient *client, const ServerConfig &cfg);

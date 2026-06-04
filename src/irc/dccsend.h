@@ -14,10 +14,13 @@ public:
     explicit DccSend(const QString &filepath, QObject *parent = nullptr);
 
     bool    listen(QHostAddress bindAddr = QHostAddress::Any);
+    QString initPassive();
+    void    connectOut(quint32 ip, quint16 port);
     void    cancel();
     quint16 port()     const;
     QString filename() const;
     qint64  filesize() const;
+    QString token()    const { return m_token; }
 
 signals:
     void progress(qint64 sent, qint64 total);
@@ -35,6 +38,7 @@ private:
     QTcpServer *m_server{nullptr};
     QTcpSocket *m_socket{nullptr};
     QFile       m_file;
+    QString     m_token;
     qint64      m_sent{0};
 
     static constexpr qint32 kChunk = 65536;

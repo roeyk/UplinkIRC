@@ -81,7 +81,7 @@
 | **TLS certificate verification** | Invalid or self-signed certificates disconnect immediately with an error. No silent bypass. |
 | **SASL PLAIN** | Set `sasl_user` + `sasl_password` in config. Full CAP flow: `AUTHENTICATE`, `903`/`904`/`906`. |
 | **SASL EXTERNAL** | Certificate-based auth. Set `sasl_external = true`, `client_cert`, and `client_key`. RSA and EC (ECDSA) PEM keys supported. The TLS client cert is presented during the handshake; the server derives your identity from it — no password sent. |
-| **DCC Send File** | Right-click any nick → **Send File**. Sender opens a TCP listener; standard 4-byte ACK protocol. Receiver gets an accept/reject dialog with filename and size. Both sides get a live progress dialog with cancel. |
+| **DCC Send File** | Right-click any nick → **Send File** (active) or **Send File (Passive)**. Active: sender opens a TCP listener — works when the sender has a reachable port. Passive: receiver opens the port instead — use this when the sender is behind NAT. Standard 4-byte ACK protocol. Both sides get a live progress dialog with cancel. |
 | **NickServ auto-identify** | Set `nickserv_password` to send `IDENTIFY` on `RPL_WELCOME`. |
 | **Credential redaction** | `PASS`, `AUTHENTICATE`, and `NickServ IDENTIFY` payloads are never echoed in the raw log or any visible panel. |
 | **OS keychain password storage** | Passwords (`password`, `sasl_password`, `nickserv_password`) are stored in the OS keychain (Secret Service / macOS Keychain / Windows Credential Manager). The config file holds `"<keychain>"` as a sentinel — no plaintext secrets on disk. Existing plaintext passwords migrate automatically on next save. |
@@ -110,7 +110,7 @@
 | **55 built-in themes** | Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and many more. Click the theme button in Preferences to expand a scrollable list — arrow keys browse, Enter or click applies. |
 | **Reworked Preferences** | Manage Servers and Documentation at the top. Theme as a collapsible list. App icon as radio buttons. Hanging indent toggle. |
 | **Hanging indent** | Wrapped messages align past the timestamp+nick column. Toggle from **Preferences → Hanging Indent** or `hanging_indent = true` in config. |
-| **Hamburger menu** | Click ☰ for About, Documentation, Preferences, Open Config (opens `config.toml` in your editor), and Reload Config (restarts the app to apply all config changes). |
+| **Hamburger menu** | Click ☰ for About, **Check for Updates** (fetches latest release from GitHub, shows version comparison), Documentation, Preferences, Open Config (opens `config.toml` in your editor), and Reload Config (restarts the app to apply all config changes). |
 | **Channel panes** | Right-click any `#channel` in the sidebar → **Open in Pane**. Up to 4 panes total. Each pane has its own chat history, nick list, topic bar (with toggle), and input bar. Auto-layout: 2 = side by side, 3 = primary left + two stacked right, 4 = 2×2 grid. |
 | **Native Windows style** | On Windows, the `windows11` Qt style is used by default. No alien dark theme on fresh installs. Custom themes still available. |
 | **Per-widget font sizes** | Independent size control for chat, sidebar, nick list, topic bar, input, and typing indicator. **Preferences → Font Config...** |
@@ -147,7 +147,7 @@
 | **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (randomly assigned per nick each session, stable across refreshes). |
 | **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from **☰ → Preferences**. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
-| **Right-click menu** | Full action menu on any nick: **Message**, **Send File**, **Whois**, **Invite**, **Give Op**, **Take Op**, **Give Voice**, **Take Voice**, **Version**, **Ping** (CTCP, shows RTT), **Copy Nick**, **Ignore / Unignore** — and for ops: **Kick** (with reason prompt), **Ban** (`nick!*@*`), **Kick & Ban**. |
+| **Right-click menu** | Full action menu on any nick: **Message**, **Send File**, **Send File (Passive)**, **Whois**, **Invite**, **Give Op**, **Take Op**, **Give Voice**, **Take Voice**, **Version**, **Ping** (CTCP, shows RTT), **Copy Nick**, **Ignore / Unignore** — and for ops: **Kick** (with reason prompt), **Ban** (`nick!*@*`), **Kick & Ban**. |
 | **Unread indicators** | `🔥 #channel` for new activity. `💡 #channel` in red when your nick is mentioned. Both clear on focus. Your nick is highlighted **red bold** inline in messages that mention you. |
 
 ### 🔌 Connectivity & Servers

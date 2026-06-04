@@ -1,6 +1,7 @@
 #include "dccreceive.h"
 
 #include <QHostAddress>
+#include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimer>
 #include <QtEndian>
@@ -32,8 +33,39 @@ void DccReceive::start()
     m_socket->connectToHost(QHostAddress(m_ip), m_port);
 }
 
+bool DccReceive::listenPassive()
+{
+    if (!m_file.open(QIODevice::WriteOnly)) {
+        emit error("Cannot create: " + m_file.fileName());
+        return false;
+    }
+    m_server = new QTcpServer(this);
+    if (!m_server->listen(QHostAddress::Any, 0)) {
+        emit error("Cannot bind listen port");
+        m_file.close();
+        return false;
+    }
+    connect(m_server, &QTcpServer::newConnection, this, [this]{
+        m_socket = m_server->nextPendingConnection();
+        m_server->close();
+        connect(m_socket, &QTcpSocket::readyRead,          this, &DccReceive::onReadyRead);
+        connect(m_socket, &QAbstractSocket::errorOccurred, this, &DccReceive::onSocketError);
+    });
+    QTimer::singleShot(60000, this, [this]{
+        if (!m_socket)
+            emit error("No connection received (timeout)");
+    });
+    return true;
+}
+
+quint16 DccReceive::listenPort() const
+{
+    return m_server ? m_server->serverPort() : 0;
+}
+
 void DccReceive::cancel()
 {
+    if (m_server) m_server->close();
     if (m_socket) m_socket->abort();
     if (m_file.isOpen()) {
         const QString path = m_file.fileName();

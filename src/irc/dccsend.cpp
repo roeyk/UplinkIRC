@@ -1,6 +1,7 @@
 #include "dccsend.h"
 
 #include <QFileInfo>
+#include <QRandomGenerator>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimer>
@@ -38,6 +39,34 @@ bool DccSend::listen(QHostAddress bindAddr)
             emit error("No connection received (timeout)");
     });
     return true;
+}
+
+QString DccSend::initPassive()
+{
+    if (!m_file.open(QIODevice::ReadOnly)) {
+        emit error("Cannot open: " + m_file.fileName());
+        return {};
+    }
+    const qint64 size = filesize();
+    if (size <= 0 || size > static_cast<qint64>(UINT32_MAX)) {
+        emit error(size <= 0 ? "File is empty" : "File too large for DCC (max 4 GiB)");
+        m_file.close();
+        return {};
+    }
+    m_token = QString::number(QRandomGenerator::global()->bounded(10000000u, 99999999u));
+    return m_token;
+}
+
+void DccSend::connectOut(quint32 ip, quint16 port)
+{
+    m_socket = new QTcpSocket(this);
+    connect(m_socket, &QTcpSocket::connected,          this, [this]{ sendNextChunk(); });
+    connect(m_socket, &QTcpSocket::readyRead,          this, &DccSend::onReadyRead);
+    connect(m_socket, &QTcpSocket::bytesWritten,       this, &DccSend::onBytesWritten);
+    connect(m_socket, &QAbstractSocket::errorOccurred, this, [this]{
+        emit error(m_socket->errorString());
+    });
+    m_socket->connectToHost(QHostAddress(ip), port);
 }
 
 void DccSend::cancel()

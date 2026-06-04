@@ -157,7 +157,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Link preview persistence — cards survive channel switches (stored in Channel struct)
 - [x] Link preview entity decoding — QTextDocument decodes &amp; &#39; &lt; etc. in og:title and &lt;title&gt; fallback paths
 - [x] DCC Send File — right-click nick → Send File; DccSend TCP listener + ACK protocol; DccReceive connect + ACK send; progress dialogs; 60s/30s timeouts. NAT limitation: local IP advertised; works on LAN, blocked by NAT on WAN.
-- [ ] DCC passive / NAT traversal — sender behind NAT cannot receive inbound connection; passive DCC or relay needed
+- [x] DCC passive / NAT traversal — passive DCC (port=0 + token); DccSend::initPassive/connectOut + DccReceive::listenPassive; new signals dccPassiveOfferReceived / dccPassiveSendReply routed through SessionModel; "Send File (Passive)" in nick right-click menu
 - [x] Detachable channel panes (v0.17.0) — right-click sidebar channel → Open in Pane; each pane has its own chat view, nick list, per-pane topic bar (toggle), and input bar; auto layout (2=side-by-side, 3=primary+two stacked, 4=2×2 grid); max 4 total; primary column header + close button when panes are open
 - [x] Pane drag-to-rearrange — drag header bar to swap any pane with another pane or the primary panel (v0.18.0)
 - [ ] Pane layout persistence — save/restore pane arrangement across sessions
@@ -191,7 +191,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Service shortcuts — /ns /cs /bs /ms aliases for NickServ/ChanServ/BotServ/MemoServ; /query opens PM without sending; /oper for IRC operator login (v0.15.0)
 - [x] Right-click copy in chat view — selecting text and right-clicking shows Copy (v0.14.0)
 - [x] Theme-aware icons — hamburger menu and gear buttons use m_theme.text; link preview card hardcoded dark (v0.14.0)
-- [ ] In-app update check UI — zsync metadata is embedded; appimageupdatetool works externally; no "Check for Updates" button inside the app yet
+- [x] In-app update check UI — "Check for Updates" in hamburger menu; fetches GitHub releases API, parses tag_name, compares UPLINK_VERSION_MAJOR/MINOR/PATCH; shows "Update Available" or "Up to Date" message box
 - [x] Event message visual polish — join/part/quit/nick lines render at 82% font size; part/quit/kick color softened to #e06b6b for dark backgrounds (v0.18.2)
 - [x] QSS visual polish overhaul — rounded inputs with focus rings, themed checkboxes/radio/tabs/tooltips, floating scrollbars, pill-shaped sidebar selection, menu border-radius and separators (v0.19.0)
 - [x] Sidebar fitted pill highlight — custom SidebarDelegate draws rounded rect sized to text width; no full-row highlight; hover shift eliminated; selected text always readable (v0.19.0)
@@ -232,4 +232,5 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 ## Known Issues
 
-- DCC over internet — local socket IP advertised in DCC SEND offer; NAT/firewall on sender side blocks inbound connection. Works on LAN only. Fix requires passive DCC or relay.
+- DCC over internet (active mode) — active DCC advertises your local IP; if both sides are behind NAT the connection still fails. Use **Send File (Passive)** so the receiver opens the port instead.
+- DCC passive receive over NAT — the receiver's port must be reachable from outside. If the receiver is also behind NAT, passive DCC will not work either (both sides blocked). No relay mechanism implemented.

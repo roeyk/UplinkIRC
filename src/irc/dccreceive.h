@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QObject>
 
+class QTcpServer;
 class QTcpSocket;
 
 class DccReceive : public QObject
@@ -12,8 +13,10 @@ public:
     DccReceive(const QString &savePath, quint32 ip, quint16 port, qint64 filesize,
                QObject *parent = nullptr);
 
-    void start();
-    void cancel();
+    void    start();
+    bool    listenPassive();
+    quint16 listenPort() const;
+    void    cancel();
 
 signals:
     void progress(qint64 received, qint64 total);
@@ -25,6 +28,7 @@ private slots:
     void onSocketError();
 
 private:
+    QTcpServer *m_server{nullptr};
     QTcpSocket *m_socket{nullptr};
     QFile       m_file;
     quint32     m_ip;

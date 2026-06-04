@@ -361,8 +361,10 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::ctcpTimeReply,   this, &SessionModel::onCtcpTimeReply);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
     connect(cl, &IrcClient::typingReceived,  this, &SessionModel::typingReceived);
-    connect(cl, &IrcClient::dccSendReceived,        this, &SessionModel::dccSendReceived);
-    connect(cl, &IrcClient::sslFingerprintPrompt,   this, &SessionModel::sslFingerprintPrompt);
+    connect(cl, &IrcClient::dccSendReceived,         this, &SessionModel::dccSendReceived);
+    connect(cl, &IrcClient::dccPassiveOfferReceived, this, &SessionModel::dccPassiveOfferReceived);
+    connect(cl, &IrcClient::dccPassiveSendReply,     this, &SessionModel::dccPassiveSendReply);
+    connect(cl, &IrcClient::sslFingerprintPrompt,    this, &SessionModel::sslFingerprintPrompt);
     connect(cl, &IrcClient::hostChanged,     this, &SessionModel::onHostChanged);
     connect(cl, &IrcClient::reactReceived,   this, &SessionModel::onReactReceived);
     connect(cl, &IrcClient::pingRtt,         this, &SessionModel::pingRtt);

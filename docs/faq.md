@@ -521,9 +521,24 @@ The right-click menu for selected text also shows a **Reply** option for the mes
 
 ### How do I send a file to someone (DCC)?
 
-Right-click the recipient's nick in the user list on the right side of the window, then choose **Send File**. Pick a file in the dialog — Uplink opens a local TCP port and sends a DCC SEND offer to the recipient. A progress dialog appears while the transfer runs.
+Right-click the recipient's nick in the user list, then choose either **Send File** or **Send File (Passive)** depending on your network situation.
 
-The recipient sees:
+**Which one should I use?**
+
+- **Send File** (active): Uplink opens a port on your machine and tells the recipient to connect in. This is the default and works when you have a direct internet connection or have port forwarding set up on your router.
+
+- **Send File (Passive)**: Uplink sends the offer with no port number. The recipient's client opens a port instead, and Uplink connects out to them. Use this if you are behind a home router or VPN and cannot accept incoming connections.
+
+A simple rule: **try Send File first. If the transfer never starts, use Send File (Passive) instead.**
+
+**Sending a file:**
+
+1. Right-click the recipient's nick in the user list on the right.
+2. Choose **Send File** or **Send File (Passive)**.
+3. Pick a file in the dialog.
+4. A progress dialog appears. The transfer starts as soon as they accept.
+
+**What the recipient sees:**
 
 ```
 alice wants to send you:
@@ -532,9 +547,18 @@ report.pdf  (2.1 MB)
 Accept?   [Yes]  [No]
 ```
 
-They click **Yes**, choose a save location, and the transfer starts.
+They click **Yes**, choose where to save it, and a progress dialog tracks the download. Either side can click **Cancel** to abort.
 
-> **Important:** DCC connects directly between clients over TCP. It works reliably on a LAN. Over the internet it requires the sender's port to be reachable from outside — a NAT router or firewall on the sender's side will block the connection. This is a DCC protocol limitation.
+> **If both sides are behind NAT:** neither active nor passive DCC will work — there is no reachable port on either machine. In that case, share the file through another channel (Matrix, email, a file hosting service, etc.).
+
+### How do I check for updates?
+
+Click **☰** (the hamburger button in the top-left) and choose **Check for Updates**. Uplink connects to the GitHub releases API, reads the latest version tag, and compares it to the version you have installed.
+
+- If a newer version is available, a dialog tells you the version number so you can download it from the releases page.
+- If you're already on the latest version, a dialog confirms that.
+
+The check requires an internet connection. It sends one small HTTPS request to `api.github.com` and nothing else.
 
 ### What do the signal bars mean? (lag / latency indicator)
 
@@ -568,7 +592,8 @@ Right-click any nick — in the user list or directly on a nick link in the chat
 | Action | Description |
 |---|---|
 | **Message** | Open a PM buffer for that nick |
-| **Send File** | Send a file via DCC |
+| **Send File** | Send a file via active DCC (you open the port) |
+| **Send File (Passive)** | Send via passive DCC (recipient opens the port — use behind NAT) |
 | **Whois** | Look up the user's info (result in server window) |
 | **Invite** | Invite the nick to a channel (dialog pre-fills current channel) |
 | **Give Op / Take Op** | Grant or remove `+o` (requires op) |

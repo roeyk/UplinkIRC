@@ -1105,7 +1105,7 @@ channels        = "#debian"</pre>
       <li><strong>Right side</strong> — shows the signal bars, current channel name, channel modes, and user count.</li>
     </ul>
 
-    <p><strong>☰ Hamburger</strong> — opens a menu with: About, Documentation, Preferences, Open Config, Reload Config, and a <strong>Close Menu</strong> button at the bottom for those who prefer an explicit dismiss.</p>
+    <p><strong>☰ Hamburger</strong> — opens a menu with: About Uplink, <strong>Check for Updates</strong> (fetches the latest release from GitHub and shows whether a newer version is available), Documentation, Preferences, Open Config, Reload Config, and Exit.</p>
     <p><strong>⚙ Gear (left)</strong> — collapses or expands the server/channel sidebar below it. The gear and hamburger stay pinned — only the list underneath disappears.</p>
   </section>
 
@@ -1216,7 +1216,8 @@ channels        = "#debian"</pre>
       <thead><tr><th>Action</th><th>What it does</th></tr></thead>
       <tbody>
         <tr><td><strong>Message</strong></td><td>Opens a private message buffer for that nick in the sidebar. Equivalent to <code>/msg nick</code>.</td></tr>
-        <tr><td><strong>Send File</strong></td><td>Opens a file picker and sends the chosen file via DCC SEND. A progress dialog tracks the transfer.</td></tr>
+        <tr><td><strong>Send File</strong></td><td>Opens a file picker and sends the file via active DCC — Uplink opens a port and the recipient connects in. Works when you have a reachable IP.</td></tr>
+        <tr><td><strong>Send File (Passive)</strong></td><td>Sends via passive DCC — the recipient opens the port and Uplink connects out to them. Use this when you are behind a home router or VPN.</td></tr>
         <tr><td><strong>Whois</strong></td><td>Sends a <code>WHOIS</code> request. The server response appears in the server window.</td></tr>
         <tr><td><strong>Invite</strong></td><td>Opens a dialog pre-filled with the current channel. Edit if needed and click OK to send <code>INVITE nick #channel</code>.</td></tr>
         <tr><td><strong>Give Op</strong></td><td>Sets <code>+o</code> on the nick in the current channel. Requires op.</td></tr>
@@ -1656,25 +1657,40 @@ link_previews = true</pre>
   <!-- DCC -->
   <section id="dcc">
     <h2>DCC file transfer</h2>
-    <p>DCC (Direct Client-to-Client) lets you send files directly to another user without going through the IRC server.</p>
+    <p>DCC (Direct Client-to-Client) lets you send files directly to another user without going through the IRC server. Uplink supports two modes — choose based on your network situation.</p>
 
-    <h3>Sending a file</h3>
+    <h3>Which mode should I use?</h3>
+    <table>
+      <tr><th>Mode</th><th>When to use</th></tr>
+      <tr><td><strong>Send File</strong> (active)</td><td>You have a reachable IP — direct broadband, a VPS, or port forwarding configured on your router. Uplink opens a port and the recipient connects in.</td></tr>
+      <tr><td><strong>Send File (Passive)</strong></td><td>You are behind a home router or VPN and cannot accept incoming connections. The recipient opens the port; Uplink connects out to them. Use this if active DCC never starts.</td></tr>
+    </table>
+    <p><strong>Quick guide:</strong> try <strong>Send File</strong> first. If the progress dialog sits at zero with no activity, cancel and try <strong>Send File (Passive)</strong> instead.</p>
+
+    <h3>Sending a file (active)</h3>
     <div class="step-row"><span class="step">1</span><div>Right-click the recipient's nick in the user list.</div></div>
     <div class="step-row"><span class="step">2</span><div>Choose <strong>Send File</strong>.</div></div>
-    <div class="step-row"><span class="step">3</span><div>Pick a file in the file picker. Uplink opens a TCP port and sends the offer.</div></div>
-    <div class="step-row"><span class="step">4</span><div>A progress dialog with a Cancel button appears. Transfer begins once the recipient accepts.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Pick a file in the file picker. Uplink opens a TCP port and sends the DCC SEND offer.</div></div>
+    <div class="step-row"><span class="step">4</span><div>A progress dialog appears. Transfer begins once the recipient accepts.</div></div>
+
+    <h3>Sending a file (passive — use behind NAT)</h3>
+    <div class="step-row"><span class="step">1</span><div>Right-click the recipient's nick in the user list.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Choose <strong>Send File (Passive)</strong>.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Pick a file. Uplink sends the offer with <code>port=0</code> — a signal that the recipient should open the port.</div></div>
+    <div class="step-row"><span class="step">4</span><div>The recipient's client opens a port and replies with its address. Uplink connects out automatically and the transfer begins.</div></div>
 
     <h3>Receiving a file</h3>
-    <p>When someone sends you a file, an accept/reject dialog appears showing the filename and size. If you accept, you're asked where to save it. A live progress dialog shows transfer status with a Cancel button.</p>
+    <p>When someone sends you a file (either mode), an accept/reject dialog appears showing the filename and size. Click <strong>Yes</strong>, choose where to save it, and a live progress dialog tracks the download. Either side can click <strong>Cancel</strong> to abort at any time.</p>
 
     <h3>Timeouts</h3>
     <ul>
-      <li><strong>Sender side:</strong> 60 seconds to receive an incoming connection before the offer is cancelled.</li>
-      <li><strong>Receiver side:</strong> 30 seconds to connect to the sender before giving up.</li>
+      <li><strong>Active sender:</strong> 60 seconds to receive an incoming connection before the offer is cancelled.</li>
+      <li><strong>Active receiver:</strong> 30 seconds to connect to the sender before giving up.</li>
+      <li><strong>Passive receiver (listening for sender):</strong> 60 seconds to receive an incoming connection.</li>
     </ul>
 
-    <div class="warn">
-      <strong>LAN only for now.</strong> DCC advertises your local IP address. If you or the other person is behind NAT (home router, VPN), the direct connection will fail. This is a standard DCC limitation — passive DCC / NAT traversal is planned for a future release.
+    <div class="tip">
+      <strong>If both sides are behind NAT,</strong> neither mode will work — there is no reachable port on either machine. Share the file through another service (Matrix, email, a file host) in that case.
     </div>
   </section>
 

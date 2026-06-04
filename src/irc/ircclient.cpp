@@ -580,9 +580,17 @@ void IrcClient::processLine(const QString &line)
                     const quint32 ip       = ctcp.section(' ', 3, 3).toUInt(&ok1);
                     const quint16 port     = ctcp.section(' ', 4, 4).toUShort(&ok2);
                     const qint64  filesize = ctcp.section(' ', 5, 5).toLongLong(&ok3);
-                    if (ok1 && ok2 && ok3 && !fn.isEmpty() && port != 0 && filesize > 0)
-                        emit dccSendReceived(m_host, msg.nick, fn, ip, port, filesize);
-                    else
+                    const QString token    = ctcp.section(' ', 6, 6);
+                    if (ok1 && ok2 && ok3 && !fn.isEmpty() && filesize > 0) {
+                        if (port == 0 && !token.isEmpty())
+                            emit dccPassiveOfferReceived(m_host, msg.nick, fn, ip, filesize, token);
+                        else if (port != 0 && !token.isEmpty())
+                            emit dccPassiveSendReply(m_host, msg.nick, fn, ip, port, filesize, token);
+                        else if (port != 0)
+                            emit dccSendReceived(m_host, msg.nick, fn, ip, port, filesize);
+                        else
+                            emit serverMessage(m_host, "DCC SEND from " + msg.nick + " (malformed)");
+                    } else
                         emit serverMessage(m_host, "DCC SEND from " + msg.nick + " (malformed)");
                 } else {
                     emit serverMessage(m_host, "DCC " + dccType + " from " + msg.nick + " (unsupported)");
