@@ -211,7 +211,9 @@ Config Config::load(const QString &path)
                 sc.proxyHost = QString::fromStdString((*s)["proxy_host"].value_or<std::string>(""));
                 sc.proxyPort = static_cast<quint16>((*s)["proxy_port"].value_or(1080));
                 sc.proxyUser = QString::fromStdString((*s)["proxy_user"].value_or<std::string>(""));
-                sc.proxyPass = QString::fromStdString((*s)["proxy_pass"].value_or<std::string>(""));
+                sc.proxyPass = resolvePassword(
+                    QString::fromStdString((*s)["proxy_pass"].value_or<std::string>("")),
+                    sc.name, "proxy_pass");
                 sc.pinnedFingerprint = QString::fromStdString((*s)["ssl_fingerprint"].value_or<std::string>(""));
 
                 if (auto chans = (*s)["channel"].as_array()) {
@@ -220,7 +222,9 @@ Config Config::load(const QString &path)
                         if (!c) continue;
                         ChannelConfig cc;
                         cc.name     = QString::fromStdString((*c)["name"].value_or<std::string>(""));
-                        cc.password = QString::fromStdString((*c)["key"].value_or<std::string>(""));
+                        cc.password = resolvePassword(
+                            QString::fromStdString((*c)["key"].value_or<std::string>("")),
+                            sc.name + ":channel:" + cc.name, "key");
                         if (!cc.name.isEmpty())
                             sc.channels.append(cc);
                     }
@@ -345,8 +349,9 @@ void Config::save(const Config &cfg, const QString &path)
             out << "proxy_port        = " << s.proxyPort << "\n";
             if (!s.proxyUser.isEmpty())
                 out << "proxy_user        = " << tomlQuote(s.proxyUser) << "\n";
-            if (!s.proxyPass.isEmpty())
-                out << "proxy_pass        = " << tomlQuote(s.proxyPass) << "\n";
+            const QString savedProxyPass = storePassword(s.proxyPass, s.name, "proxy_pass");
+            if (!savedProxyPass.isEmpty())
+                out << "proxy_pass        = " << tomlQuote(savedProxyPass) << "\n";
         }
         if (!s.pinnedFingerprint.isEmpty())
             out << "ssl_fingerprint   = " << tomlQuote(s.pinnedFingerprint) << "\n";
@@ -356,8 +361,10 @@ void Config::save(const Config &cfg, const QString &path)
             for (const auto &ch : s.channels) {
                 out << "\n[[server.channel]]\n";
                 out << "name = " << tomlQuote(ch.name) << "\n";
-                if (!ch.password.isEmpty())
-                    out << "key  = " << tomlQuote(ch.password) << "\n";
+                const QString savedKey = storePassword(ch.password,
+                    s.name + ":channel:" + ch.name, "key");
+                if (!savedKey.isEmpty())
+                    out << "key  = " << tomlQuote(savedKey) << "\n";
             }
         } else {
             QStringList names;
