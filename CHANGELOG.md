@@ -113,6 +113,34 @@ Next priorities:
   - DCC passive / NAT traversal
   - In-app update check UI
   - SVG light icon variants
+
+Session summary — 2026-06-03 (v0.20.2 cont. — UI polish + theme seeding fixes)
+
+What was built:
+  - Input field border-radius reduced from 20px (pill) to 8px (subtle) — chat
+    area separation preserved; QLineEdit background/structure unchanged.
+  - Theme seeding: added /../themes fallback path so dev builds running from
+    build/ find the project's themes/ directory and seed ~/.config/uplink/themes/
+    on first run.
+  - Theme seeding: replaced QStandardPaths::AppConfigLocation with hardcoded
+    ~/.config/uplink/themes — Qt resolves AppConfigLocation to ~/.config/Uplink/
+    (capital U) which mismatched the lowercase path used everywhere else.
+
+Bugs fixed:
+  - Broken [[server]] TOML key in user config.toml (missing closing ]]) caused
+    entire config to fail to parse — no servers loaded on startup.
+  - Themes directory never created: QStandardPaths path case mismatch silently
+    wrote to wrong directory; fixed to hardcoded lowercase path.
+  - Dev build theme seeding: binary at build/Uplink looked for build/themes (doesn't
+    exist); added build/../themes fallback pointing to project themes/ root.
+
+Known issues left open:
+  - About dialog Wayland centering drift (Qt limitation, deferred).
+  - DCC over internet blocked by NAT (passive DCC not yet implemented).
+
+Next priorities:
+  - DCC passive / NAT traversal
+  - In-app update check UI
 -->
 
 ## v0.20.2 — 2026-06-03
@@ -122,6 +150,9 @@ Next priorities:
 - **Fix:** `configuration.md` — `app_icon` option list corrected to `"dark"` / `"light"` only; malformed comment line in full example fixed
 - **Fix:** `faq.md` — orphaned documentation search paragraph given proper heading
 - **Assets:** All icon copies replaced with correctly exported transparent RGBA PNGs
+- **UI:** Input field border-radius reduced from pill shape (20px) to subtle rounding (8px)
+- **Fix:** Theme seeding now works in dev builds — `build/Uplink` finds `themes/` via `../themes` fallback
+- **Fix:** Theme directory path corrected — `QStandardPaths` resolved to `~/.config/Uplink/` (wrong case); now hardcoded to `~/.config/uplink/themes`
 
 ## v0.20.1 — 2026-06-03
 
