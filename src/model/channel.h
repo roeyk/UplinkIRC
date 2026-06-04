@@ -59,8 +59,8 @@ struct Channel {
     QSet<QString>    botNicks;  // lowercased nicks with +B channel user mode
     QHash<QString, QString> previews;  // url → persisted card HTML
     QSet<QString>           hiddenPreviews; // urls the user manually hid
-    // msgid → emoji → list of nicks who reacted
-    QHash<QString, QHash<QString, QStringList>> reactions;
+    // msgid → emoji → set of nicks who reacted (QSet deduplicates per nick)
+    QHash<QString, QHash<QString, QSet<QString>>> reactions;
     int              unread{0};
     int              mentions{0};
     bool             joined{false};
@@ -69,8 +69,12 @@ struct Channel {
     void addMessage(const Message &msg)
     {
         messages.append(msg);
-        if (messages.size() > kMessageBufferCap)
+        while (messages.size() > kMessageBufferCap) {
+            const QString oldId = messages.front().msgid;
             messages.removeFirst();
+            if (!oldId.isEmpty())
+                reactions.remove(oldId);
+        }
     }
 
     void setNicks(const QStringList &raw)

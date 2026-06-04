@@ -6,6 +6,23 @@
 #include <QTimer>
 #include <QtEndian>
 
+// Mirrors the SSRF helper in linkpreview.cpp — keep in sync if ranges change.
+static bool isPrivateDccAddress(const QHostAddress &a)
+{
+    if (a.isNull())      return true;
+    if (a.isLoopback())  return true;
+    if (a.isMulticast()) return true;
+    if (a.isInSubnet(QHostAddress("10.0.0.0"),    8))   return true;
+    if (a.isInSubnet(QHostAddress("172.16.0.0"),  12))  return true;
+    if (a.isInSubnet(QHostAddress("192.168.0.0"), 16))  return true;
+    if (a.isInSubnet(QHostAddress("169.254.0.0"), 16))  return true;
+    if (a.isInSubnet(QHostAddress("127.0.0.0"),   8))   return true;
+    if (a.isInSubnet(QHostAddress("::1"),         128)) return true;
+    if (a.isInSubnet(QHostAddress("fc00::"),      7))   return true;
+    if (a.isInSubnet(QHostAddress("fe80::"),      10))  return true;
+    return false;
+}
+
 DccReceive::DccReceive(const QString &savePath, quint32 ip, quint16 port, qint64 filesize,
                        QObject *parent)
     : QObject(parent)
@@ -17,6 +34,12 @@ DccReceive::DccReceive(const QString &savePath, quint32 ip, quint16 port, qint64
 
 void DccReceive::start()
 {
+    const QHostAddress peerAddr(m_ip);
+    if (isPrivateDccAddress(peerAddr)) {
+        emit error("DCC blocked: peer address " + peerAddr.toString() + " is private or reserved");
+        return;
+    }
+
     if (!m_file.open(QIODevice::WriteOnly)) {
         emit error("Cannot create: " + m_file.fileName());
         return;
@@ -30,10 +53,10 @@ void DccReceive::start()
             emit error("Connection timeout");
     });
 
-    m_socket->connectToHost(QHostAddress(m_ip), m_port);
+    m_socket->connectToHost(peerAddr, m_port);
 }
 
-bool DccReceive::listenPassive()
+bool DccReceive::listenPassive(quint32 expectedIp)
 {
     if (!m_file.open(QIODevice::WriteOnly)) {
         emit error("Cannot create: " + m_file.fileName());
@@ -45,8 +68,24 @@ bool DccReceive::listenPassive()
         m_file.close();
         return false;
     }
-    connect(m_server, &QTcpServer::newConnection, this, [this]{
-        m_socket = m_server->nextPendingConnection();
+
+    // Only validate peer IP when the expected address is a known global (non-private) address.
+    // With NAT/bouncers the advertised IP may differ from the real source, so skip validation
+    // for private addresses rather than blocking legitimate transfers.
+    const QHostAddress expected(expectedIp);
+    const bool validatePeer = expectedIp != 0 && !isPrivateDccAddress(expected);
+
+    connect(m_server, &QTcpServer::newConnection, this, [this, expected, validatePeer] {
+        QTcpSocket *incoming = m_server->nextPendingConnection();
+        if (validatePeer) {
+            // Reject connections from unexpected peers (race/injection protection).
+            if (incoming->peerAddress().toIPv4Address() != expected.toIPv4Address()) {
+                incoming->abort();
+                incoming->deleteLater();
+                return;
+            }
+        }
+        m_socket = incoming;
         m_server->close();
         connect(m_socket, &QTcpSocket::readyRead,          this, &DccReceive::onReadyRead);
         connect(m_socket, &QAbstractSocket::errorOccurred, this, &DccReceive::onSocketError);

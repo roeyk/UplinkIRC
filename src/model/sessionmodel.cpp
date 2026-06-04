@@ -880,7 +880,19 @@ void SessionModel::onReactReceived(const QString &host, const QString &target,
     const QString buf = isChannel ? target : nick;
     auto *ch = channel(host, buf);
     if (!ch) return;
-    ch->reactions[msgid][emoji].append(nick);
+
+    // Drop reactions for messages that have already rolled off the buffer.
+    bool known = false;
+    for (const Message &m : std::as_const(ch->messages))
+        if (m.msgid == msgid) { known = true; break; }
+    if (!known) return;
+
+    auto &perEmoji = ch->reactions[msgid];
+    static constexpr int kMaxEmojis = 16;
+    static constexpr int kMaxNicks  = 50;
+    if (!perEmoji.contains(emoji) && perEmoji.size() >= kMaxEmojis) return;
+    if (perEmoji[emoji].size() >= kMaxNicks) return;
+    perEmoji[emoji].insert(nick);
     emit reactionsChanged(host, buf);
 }
 

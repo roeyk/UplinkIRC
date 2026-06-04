@@ -14,7 +14,7 @@ public:
                QObject *parent = nullptr);
 
     void    start();
-    bool    listenPassive();
+    bool    listenPassive(quint32 expectedIp = 0);
     quint16 listenPort() const;
     void    cancel();
 

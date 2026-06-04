@@ -1310,10 +1310,15 @@ void MainWindow::connectModel()
         const QString sizeStr = filesize >= 1024*1024
             ? QString::number(filesize / (1024*1024)) + " MB"
             : QString::number(filesize / 1024) + " KB";
+        const QString ipStr = QHostAddress(ip).toString();
 
         const int ret = QMessageBox::question(this, "Incoming DCC File",
-            fromNick + " wants to send you:\n" + filename
-            + "  (" + sizeStr + ")\n\nAccept?",
+            "Sender: " + fromNick + "\n"
+            "File: " + filename + "\n"
+            "Size: " + sizeStr + "\n"
+            "Address: " + ipStr + ":" + QString::number(port) + "\n\n"
+            "DCC connects directly to the sender and may reveal your IP address.\n"
+            "Only accept files from people you trust.\n\nAccept?",
             QMessageBox::Yes | QMessageBox::No);
         if (ret != QMessageBox::Yes) return;
 
@@ -1348,15 +1353,20 @@ void MainWindow::connectModel()
 
     connect(m_model, &SessionModel::dccPassiveOfferReceived, this,
             [this](const QString &server, const QString &fromNick,
-                   const QString &filename, quint32, qint64 filesize, const QString &token)
+                   const QString &filename, quint32 senderIp, qint64 filesize, const QString &token)
     {
         const QString sizeStr = filesize >= 1024*1024
             ? QString::number(filesize / (1024*1024)) + " MB"
             : QString::number(filesize / 1024) + " KB";
+        const QString ipStr = QHostAddress(senderIp).toString();
 
         const int ret = QMessageBox::question(this, "Incoming DCC File (Passive)",
-            fromNick + " wants to send you:\n" + filename
-            + "  (" + sizeStr + ")\n\nAccept?",
+            "Sender: " + fromNick + "\n"
+            "File: " + filename + "\n"
+            "Size: " + sizeStr + "\n"
+            "Sender address: " + ipStr + "\n\n"
+            "DCC connects directly to the sender and may reveal your IP address.\n"
+            "Only accept files from people you trust.\n\nAccept?",
             QMessageBox::Yes | QMessageBox::No);
         if (ret != QMessageBox::Yes) return;
 
@@ -1364,7 +1374,7 @@ void MainWindow::connectModel()
         if (savePath.isEmpty()) return;
 
         auto *dcc = new DccReceive(savePath, 0, 0, filesize, this);
-        if (!dcc->listenPassive()) { dcc->deleteLater(); return; }
+        if (!dcc->listenPassive(senderIp)) { dcc->deleteLater(); return; }
 
         IrcClient *client = m_model->clientFor(server);
         const quint32 ourIp   = client ? client->localIpv4() : 0;
