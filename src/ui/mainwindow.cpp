@@ -2582,6 +2582,11 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
                 m_model->sendRaw(host, "PRIVMSG " + target + " :" + ctcp);
             }
         } else if (cmd == "/sysinfo") {
+            const int ret = QMessageBox::question(this, "Share System Info",
+                "This will post your OS, CPU, memory, GPU, and uptime to " + channel + ".\n\n"
+                "System details can identify you. Continue?",
+                QMessageBox::Yes | QMessageBox::No);
+            if (ret != QMessageBox::Yes) return;
             static QString sysinfoStaticCache;
             if (sysinfoStaticCache.isEmpty())
                 sysinfoStaticCache = QString("OS: %1 CPU: %2 MEM: %3 GPU: %4")
@@ -3435,6 +3440,15 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
         m_nickCountLabel->setText(QString::number(ch->nicks.size()) + " users");
 }
 
+// Escapes a server-controlled value for use inside a single-quoted HTML attribute.
+// toHtmlEscaped() covers &, <, >, " — we additionally encode ' to close that gap.
+static QString htmlAttr(const QString &s)
+{
+    QString out = s.toHtmlEscaped();
+    out.replace(QLatin1Char('\''), QLatin1String("&#39;"));
+    return out;
+}
+
 static QString linkifyTopic(const QString &text)
 {
     static const QRegularExpression urlRe(
@@ -3740,7 +3754,7 @@ QString MainWindow::formatMessage(const Message &msg) const
     const QString tsSpan = msg.msgid.isEmpty()
         ? QString("<span style='color:gray'>%1</span>").arg(ts)
         : QString("<a href='msgid:%1' style='color:gray;text-decoration:none'>%2</a>")
-            .arg(msg.msgid.toHtmlEscaped(), ts);
+            .arg(htmlAttr(msg.msgid), ts);
 
     if (msg.redacted) {
         html = tsSpan + " <span style='color:gray;font-style:italic'>[message deleted]</span>";
@@ -3768,9 +3782,9 @@ QString MainWindow::formatMessage(const Message &msg) const
         const QString nickDisplay = nickOpen + msg.nick.toHtmlEscaped() + nickClose;
         const QString titleAttr = msg.account.isEmpty()
             ? QString()
-            : " title='account: " + msg.account.toHtmlEscaped() + "'";
+            : " title='account: " + htmlAttr(msg.account) + "'";
         const QString nickAnchor  = QString("<a href='nick:%1'%2 style='color:%3; text-decoration:none; font-weight:bold'>%4</a>")
-            .arg(msg.nick.toHtmlEscaped(), titleAttr, color, nickDisplay);
+            .arg(htmlAttr(msg.nick), titleAttr, color, nickDisplay);
         QString textHtml = wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), m_config.ui.fontSizes.emoji);
         const QString sn = m_model->selfNick(m_model->activeHost());
         if (!sn.isEmpty()) {
@@ -3798,16 +3812,16 @@ QString MainWindow::formatMessage(const Message &msg) const
     case MessageType::Action: {
         const QString aTitleAttr = msg.account.isEmpty()
             ? QString()
-            : " title='account: " + msg.account.toHtmlEscaped() + "'";
+            : " title='account: " + htmlAttr(msg.account) + "'";
         const QString actionNick = QString("<a href='nick:%1'%2 style='color:inherit; text-decoration:none'>%1</a>")
-            .arg(msg.nick.toHtmlEscaped(), aTitleAttr);
+            .arg(htmlAttr(msg.nick), aTitleAttr);
         html = QString("%1 <i>* %2 %3</i>")
             .arg(tsSpan, actionNick, wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), m_config.ui.fontSizes.emoji));
         break;
     }
     case MessageType::Notice: {
         const QString noticeNick = QString("<a href='nick:%1' style='color:inherit; text-decoration:none'>%1</a>")
-            .arg(msg.nick.toHtmlEscaped());
+            .arg(htmlAttr(msg.nick));
         html = QString("%1 <span style='color:#cc8800'>-%2- %3</span>")
             .arg(tsSpan, noticeNick, wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), m_config.ui.fontSizes.emoji));
         break;
