@@ -13,8 +13,7 @@ if(NOT Qt6Keychain_FOUND)
     include(FetchContent)
     FetchContent_Declare(qtkeychain
         GIT_REPOSITORY https://github.com/frankosterfeld/qtkeychain.git
-        GIT_TAG        0.14.3
-        GIT_SHALLOW    TRUE
+        GIT_TAG        38ff50766c7e4ec490fecb2d9939b7cdc4b74b8e  # 0.14.3
     )
     set(BUILD_WITH_QT6 ON CACHE BOOL "" FORCE)
     set(QT_DEFAULT_MAJOR_VERSION 6 CACHE STRING "" FORCE)
@@ -46,8 +45,7 @@ if(NOT tomlplusplus_FOUND)
     include(FetchContent)
     FetchContent_Declare(tomlplusplus
         GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
-        GIT_TAG        v3.4.0
-        GIT_SHALLOW    TRUE
+        GIT_TAG        30172438cee64926dc41fdd9c11fb3ba5b2ba9de  # v3.4.0
     )
     FetchContent_MakeAvailable(tomlplusplus)
 endif()

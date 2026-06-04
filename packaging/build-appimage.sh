@@ -14,6 +14,43 @@ ARCH=$(uname -m)
 echo "==> Uplink $VERSION  ($ARCH)"
 
 # ---------------------------------------------------------------------------
+# Pinned tool versions
+# Bump version + checksums together when upgrading a tool.
+# appimagetool has no versioned releases upstream; pin by hash only.
+# ---------------------------------------------------------------------------
+LD_VERSION="1-alpha-20251107-1"
+LD_QT_VERSION="1-alpha-20250213-1"
+
+# Known SHA256 checksums keyed by filename.
+# Add an entry for each arch you build on; unknown arches skip verification
+# with a warning. Compute with: sha256sum <file>
+declare -A TOOL_SHA256
+TOOL_SHA256["linuxdeploy-x86_64.AppImage"]="c20cd71e3a4e3b80c3483cef793cda3f4e990aca14014d23c544ca3ce1270b4d"
+TOOL_SHA256["linuxdeploy-plugin-qt-x86_64.AppImage"]="15106be885c1c48a021198e7e1e9a48ce9d02a86dd0a1848f00bdbf3c1c92724"
+TOOL_SHA256["appimagetool-x86_64.AppImage"]="a6d71e2b6cd66f8e8d16c37ad164658985e0cf5fcaa950c90a482890cb9d13e0"
+
+verify_sha256() {
+    local file="$1"
+    local name
+    name="$(basename "$file")"
+    local expected="${TOOL_SHA256[$name]:-}"
+    if [[ -z "$expected" ]]; then
+        echo "WARNING: no known checksum for $name — skipping verification" >&2
+        return 0
+    fi
+    local actual
+    actual="$(sha256sum "$file" | awk '{print $1}')"
+    if [[ "$actual" != "$expected" ]]; then
+        echo "ERROR: checksum mismatch for $name" >&2
+        echo "  expected: $expected" >&2
+        echo "  got:      $actual" >&2
+        rm -f "$file"
+        exit 1
+    fi
+    echo "==> Verified $name"
+}
+
+# ---------------------------------------------------------------------------
 # Tools: linuxdeploy + Qt plugin
 # ---------------------------------------------------------------------------
 mkdir -p "$TOOLS_DIR"
@@ -22,16 +59,18 @@ LD="$TOOLS_DIR/linuxdeploy-$ARCH.AppImage"
 LD_QT="$TOOLS_DIR/linuxdeploy-plugin-qt-$ARCH.AppImage"
 
 if [[ ! -x "$LD" ]]; then
-    echo "==> Downloading linuxdeploy..."
-    curl -fL "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$ARCH.AppImage" -o "$LD"
+    echo "==> Downloading linuxdeploy ${LD_VERSION}..."
+    curl -fL "https://github.com/linuxdeploy/linuxdeploy/releases/download/${LD_VERSION}/linuxdeploy-$ARCH.AppImage" -o "$LD"
     chmod +x "$LD"
 fi
+verify_sha256 "$LD"
 
 if [[ ! -x "$LD_QT" ]]; then
-    echo "==> Downloading linuxdeploy-plugin-qt..."
-    curl -fL "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-$ARCH.AppImage" -o "$LD_QT"
+    echo "==> Downloading linuxdeploy-plugin-qt ${LD_QT_VERSION}..."
+    curl -fL "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/${LD_QT_VERSION}/linuxdeploy-plugin-qt-$ARCH.AppImage" -o "$LD_QT"
     chmod +x "$LD_QT"
 fi
+verify_sha256 "$LD_QT"
 
 # ---------------------------------------------------------------------------
 # Icon
@@ -93,11 +132,12 @@ OUTPUT_FILE="Uplink-$VERSION-$ARCH.AppImage"
 # ---------------------------------------------------------------------------
 APPIMAGETOOL="$TOOLS_DIR/appimagetool-$ARCH.AppImage"
 if [[ ! -x "$APPIMAGETOOL" ]]; then
-    echo "==> Downloading appimagetool..."
+    echo "==> Downloading appimagetool (continuous — no versioned releases upstream)..."
     curl -fL "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$ARCH.AppImage" \
          -o "$APPIMAGETOOL"
     chmod +x "$APPIMAGETOOL"
 fi
+verify_sha256 "$APPIMAGETOOL"
 
 # ---------------------------------------------------------------------------
 # Phase 1: extract linuxdeploy + its Qt plugin and patch BOTH bundled strips
