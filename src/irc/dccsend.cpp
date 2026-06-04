@@ -53,7 +53,13 @@ QString DccSend::initPassive()
         m_file.close();
         return {};
     }
-    m_token = QString::number(QRandomGenerator::global()->bounded(10000000u, 99999999u));
+    // 128-bit token (4 × 32-bit words → 32 hex chars) — replaces the prior 8-digit decimal.
+    auto *rng = QRandomGenerator::global();
+    m_token = QString("%1%2%3%4")
+        .arg(rng->generate(), 8, 16, QLatin1Char('0'))
+        .arg(rng->generate(), 8, 16, QLatin1Char('0'))
+        .arg(rng->generate(), 8, 16, QLatin1Char('0'))
+        .arg(rng->generate(), 8, 16, QLatin1Char('0'));
     return m_token;
 }
 
