@@ -1,6 +1,7 @@
 #include "stsstore.h"
 
 #include <QDateTime>
+#include <QFile>
 #include <QSettings>
 #include <QStandardPaths>
 
@@ -13,7 +14,7 @@ static QString stsPath()
 bool StsStore::lookup(const QString &host, Policy &out)
 {
     QSettings s(stsPath(), QSettings::IniFormat);
-    s.beginGroup(host);
+    s.beginGroup(host.toLower());
     if (!s.contains("expires")) {
         s.endGroup();
         return false;
@@ -33,15 +34,20 @@ bool StsStore::lookup(const QString &host, Policy &out)
 
 void StsStore::store(const QString &host, quint16 port, qint64 durationSecs)
 {
-    QSettings s(stsPath(), QSettings::IniFormat);
-    s.beginGroup(host);
-    s.setValue("port",    static_cast<uint>(port));
-    s.setValue("expires", QDateTime::currentSecsSinceEpoch() + durationSecs);
-    s.endGroup();
+    const QString path = stsPath();
+    {
+        QSettings s(path, QSettings::IniFormat);
+        s.beginGroup(host.toLower());
+        s.setValue("port",    static_cast<uint>(port));
+        s.setValue("expires", QDateTime::currentSecsSinceEpoch() + durationSecs);
+        s.endGroup();
+    }
+    // Restrict STS policy file to owner read/write — same hardening as config/log files.
+    QFile::setPermissions(path, QFileDevice::ReadOwner | QFileDevice::WriteOwner);
 }
 
 void StsStore::remove(const QString &host)
 {
     QSettings s(stsPath(), QSettings::IniFormat);
-    s.remove(host);
+    s.remove(host.toLower());
 }
