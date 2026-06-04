@@ -31,7 +31,9 @@ static QHash<QString,QString> parseTags(const QString &raw)
 IrcMessage IrcParser::parse(const QString &raw)
 {
     IrcMessage msg;
-    QString line = raw.trimmed();
+    QString line = raw;
+    line.remove('\r');
+    line.remove('\n');
     if (line.isEmpty()) return msg;
 
     int pos = 0;

@@ -112,10 +112,12 @@ static void logMessage(const QString &host, const QString &target, const Message
                             + "/.config/uplink/logs/"
                             + sanitizeFilename(host) + "/";
     QDir().mkpath(logsDir);
+    QFile::setPermissions(logsDir, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
 
     QFile f(logsDir + sanitizeFilename(target) + ".log");
     if (!f.open(QIODevice::Append | QIODevice::Text))
         return;
+    f.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
 
     QTextStream out(&f);
     const QString ts = msg.timestamp.toLocalTime().toString("yyyy-MM-dd hh:mm:ss");

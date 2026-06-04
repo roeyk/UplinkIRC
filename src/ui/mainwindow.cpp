@@ -2990,7 +2990,7 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
                 const int ept = m_config.ui.fontSizes.emoji;
                 QString rxHtml = QString("<span style='font-size:%1pt; color:#888;'>").arg(ept);
                 for (auto it = rxIt->constBegin(); it != rxIt->constEnd(); ++it) {
-                    rxHtml += it.key()
+                    rxHtml += it.key().toHtmlEscaped()
                               + QStringLiteral("<span style='font-size:8pt'>(")
                               + QString::number(it.value().size())
                               + QStringLiteral(")</span> ");
@@ -3231,7 +3231,7 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
                 const int ept = m_config.ui.fontSizes.emoji;
                 QString rxHtml = QString("<span style='font-size:%1pt; color:#888;'>").arg(ept);
                 for (auto it = rxIt->constBegin(); it != rxIt->constEnd(); ++it) {
-                    rxHtml += it.key()
+                    rxHtml += it.key().toHtmlEscaped()
                               + QStringLiteral("<span style='font-size:8pt'>(")
                               + QString::number(it.value().size())
                               + QStringLiteral(")</span> ");

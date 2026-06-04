@@ -267,8 +267,9 @@ static QString redactRawForLog(const QString &line)
 void IrcClient::sendRaw(const QString &line)
 {
     if (m_socket->state() != QAbstractSocket::ConnectedState) return;
-    emit rawReceived(">> " + redactRawForLog(line));
-    m_socket->write((line + "\r\n").toUtf8());
+    const QString clean = stripCrlf(line);
+    emit rawReceived(">> " + redactRawForLog(clean));
+    m_socket->write((clean + "\r\n").toUtf8());
 }
 
 // ---------------------------------------------------------------------------

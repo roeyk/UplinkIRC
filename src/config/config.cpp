@@ -32,8 +32,12 @@ static QString storePassword(const QString &value, const QString &serverName, co
         KeychainHelper::remove(kcKey(serverName, field));
         return {};
     }
-    KeychainHelper::write(kcKey(serverName, field), value);
-    return kKeychainSentinel;
+    if (KeychainHelper::write(kcKey(serverName, field), value))
+        return kKeychainSentinel;
+
+    qWarning() << "Uplink: keychain write failed for" << serverName << field
+               << "— storing in config";
+    return value;
 }
 
 static QString tomlQuote(QString s)
@@ -124,7 +128,7 @@ Config Config::load(const QString &path)
             cfg.ui.coloredNicks          = (*ui)["colored_nicks"].value_or(true);
             cfg.ui.typingIndicator       = (*ui)["typing_indicator"].value_or(true);
             cfg.ui.hangingIndent         = (*ui)["hanging_indent"].value_or(true);
-            cfg.ui.logMessages           = (*ui)["log_messages"].value_or(true);
+            cfg.ui.logMessages           = (*ui)["log_messages"].value_or(false);
             cfg.ui.appIcon               = QString::fromStdString((*ui)["app_icon"].value_or<std::string>("dark"));
             cfg.ui.nickBrackets          = QString::fromStdString((*ui)["nick_brackets"].value_or<std::string>("<>"));
             cfg.ui.notifications         = (*ui)["notifications"].value_or(true);
