@@ -79,7 +79,8 @@ struct UiConfig {
     bool      typingIndicator{true};
     bool      notifications{true};
     bool      hangingIndent{true};
-    bool      logMessages{true};
+    bool      logMessages{false};
+    bool      linkPreviews{false};
     QString   appIcon{"dark"};
     QString   nickBrackets{"<>"};
 };

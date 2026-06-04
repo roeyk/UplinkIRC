@@ -146,6 +146,10 @@ Config Config::load(const QString &path)
             cfg.ui.fontSizes.emoji        = (*ui)["font_emoji"].value_or(16);
         }
 
+        // [privacy]
+        if (auto priv = tbl["privacy"].as_table())
+            cfg.ui.linkPreviews = (*priv)["link_previews"].value_or(false);
+
         // [ignore]
         if (auto ign = tbl["ignore"].as_table()) {
             if (auto nicks = (*ign)["nicks"].as_array()) {
@@ -278,6 +282,9 @@ void Config::save(const Config &cfg, const QString &path)
     out << "font_input         = " << cfg.ui.fontSizes.input        << "\n";
     out << "font_typing        = " << cfg.ui.fontSizes.typing       << "\n";
     out << "font_emoji         = " << cfg.ui.fontSizes.emoji        << "\n\n";
+
+    out << "[privacy]\n";
+    out << "link_previews = " << (cfg.ui.linkPreviews ? "true" : "false") << "\n\n";
 
     if (!cfg.ignoredNicks.isEmpty()) {
         out << "[ignore]\nnicks = [";

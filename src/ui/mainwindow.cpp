@@ -1333,7 +1333,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     statusBar()->showMessage(url.host());
                     QToolTip::showText(m_hoverGlobalPos, url.host(),
                                        m_chatView->viewport());
-                    m_linkPreview->fetch(url);
+                    if (m_config.ui.linkPreviews)
+                        m_linkPreview->fetch(url);
                 }
             }
         } else if (event->type() == QEvent::ContextMenu) {
@@ -1915,7 +1916,7 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
     if (host == m_model->activeHost() &&
         channel.toLower() == m_model->activeChannel().toLower())
     {
-        appendMessage(msg, true);
+        appendMessage(msg, m_config.ui.linkPreviews);
     }
 
     const QString paneKey = host + "|" + channel.toLower();

@@ -39,4 +39,4 @@ Out of scope:
 
 - Config files (`config.toml`) may contain IRC server passwords, NickServ passwords, and SASL credentials stored in plaintext. Protect this file accordingly.
 - DCC file transfers connect directly to the peer's IP address. Only accept DCC offers from trusted users.
-- URL previews fetch metadata from linked sites, which receives your IP address. Disable with `previews_enabled = false` in `[behaviour]`.
+- URL previews fetch metadata from linked sites, which receives your IP address. Previews are disabled by default. Enable with `link_previews = true` in `[privacy]`.
