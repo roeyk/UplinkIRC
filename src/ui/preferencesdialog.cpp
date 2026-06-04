@@ -188,6 +188,11 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     connect(m_loggingCheck, &QCheckBox::toggled, this, [this](bool on){ emit loggingToggled(on); });
     vbox->addWidget(m_loggingCheck);
 
+    m_linkPreviewsCheck = new QCheckBox("Link Previews");
+    m_linkPreviewsCheck->setChecked(cfg.ui.linkPreviews);
+    connect(m_linkPreviewsCheck, &QCheckBox::toggled, this, [this](bool on){ emit linkPreviewsToggled(on); });
+    vbox->addWidget(m_linkPreviewsCheck);
+
     vbox->addSpacing(2);
     {
         auto *row = new QHBoxLayout;
