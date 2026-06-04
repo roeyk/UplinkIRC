@@ -62,6 +62,7 @@ public:
     void monitorClear (const QString &host);
     void monitorStatus(const QString &host);
     void pinCertificate(const QString &host, const QString &fingerprint);
+    void acceptCertificateOnce(const QString &host, const QString &fingerprint);
 
 signals:
     // Structural changes — sidebar needs a repaint

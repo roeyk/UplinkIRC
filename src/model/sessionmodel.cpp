@@ -969,6 +969,16 @@ void SessionModel::pinCertificate(const QString &host, const QString &fingerprin
             break;
         }
     }
-    if (auto *cl = clientFor(host))
+    if (auto *cl = clientFor(host)) {
         cl->setPinnedFingerprint(fingerprint);
+        cl->reconnect();
+    }
+}
+
+void SessionModel::acceptCertificateOnce(const QString &host, const QString &fingerprint)
+{
+    if (auto *cl = clientFor(host)) {
+        cl->setPinnedFingerprint(fingerprint);
+        cl->reconnect();
+    }
 }

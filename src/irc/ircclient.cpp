@@ -388,8 +388,10 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
         return;
     }
 
-    // No pin — allow the handshake, then ask the user
-    m_socket->ignoreSslErrors(errors);
+    // No pin — abort before any credentials are sent, then ask the user.
+    // The connection is re-established after the user accepts the fingerprint.
+    m_intentionalDisconnect = true;
+    m_socket->abort();
     emit sslFingerprintPrompt(m_host, fp);
 }
 
@@ -398,6 +400,11 @@ void IrcClient::abort()
     m_intentionalDisconnect = true;
     if (m_socket->state() != QAbstractSocket::UnconnectedState)
         m_socket->disconnectFromHost();
+}
+
+void IrcClient::reconnect()
+{
+    doReconnect();
 }
 
 void IrcClient::onErrorOccurred(QAbstractSocket::SocketError)
