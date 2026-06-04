@@ -3,6 +3,34 @@
 ---
 
 <!--
+Session summary — 2026-06-03 (v0.20.2 — documentation pass)
+
+What was built:
+  - Comprehensive documentation pass across all docs:
+    - keyboard-shortcuts.md: expanded from 41 to 90+ lines; added Tab completion
+      detail, emoji shortcode shortcuts, Shift+Tab, planned shortcuts table
+    - faq.md: fixed orphaned paragraph (missing heading); added FAQ entries for
+      self-signed cert pinning, cert mismatch recovery, app icon switching, and
+      custom theme creation
+    - configuration.md: fixed app_icon option list (removed stale light-default/
+      avatar values); fixed malformed proxy/ssl_fingerprint line in full example
+  - Corrected Uplink icon set: replaced all copies with properly transparent
+    RGBA PNG files (dark and light variants)
+
+Bugs fixed:
+  - configuration.md app_icon table listed 4 options; only 2 are valid (dark/light)
+  - configuration.md full example had literal \n in a comment line
+  - faq.md had an orphaned paragraph with no heading (documentation search section)
+
+Known issues left open:
+  - About dialog Wayland centering drift (Qt limitation, deferred)
+  - DCC over internet blocked by NAT (passive DCC not yet implemented)
+  - GitHub Pages needs enabling: Settings → Pages → /docs
+
+Next priorities:
+  - DCC passive / NAT traversal
+  - In-app update check UI
+
 Session summary — 2026-06-03 (v0.20.1 — UplinkIRC rename + new icons)
 
 What was built:
@@ -86,6 +114,14 @@ Next priorities:
   - In-app update check UI
   - SVG light icon variants
 -->
+
+## v0.20.2 — 2026-06-03
+
+- **Docs:** Expanded keyboard shortcuts guide — Tab/Shift+Tab completion detail, emoji shortcode keys, planned shortcuts table
+- **Docs:** New FAQ entries — self-signed cert pinning, cert mismatch recovery, app icon switching, custom themes
+- **Fix:** `configuration.md` — `app_icon` option list corrected to `"dark"` / `"light"` only; malformed comment line in full example fixed
+- **Fix:** `faq.md` — orphaned documentation search paragraph given proper heading
+- **Assets:** All icon copies replaced with correctly exported transparent RGBA PNGs
 
 ## v0.20.1 — 2026-06-03
 
