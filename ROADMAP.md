@@ -230,6 +230,32 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 ---
 
+## Performance & Maintainability Backlog
+
+Items from the lightweight code review (2026-06-04). Ordered roughly by value / effort.
+
+### Near term
+- [ ] `/sysinfo` async — run process collection off the UI thread; cache result for the session; add hard global timeout
+- [ ] DCC receive hardening — configurable max receive size; write to `.part` file and rename on success; delete partial on failure/cancel; check available disk space before starting
+- [ ] Link preview queue — replace abort-on-new-fetch with a small queue (max concurrency 1–2); cap `m_previewChannels`; add per-channel/per-minute throttling
+- [ ] Compiler warning cleanup — fix `-Wconversion` narrowing (qsizetype→int), `-Wshadow` locals, `-Wold-style-cast` casts flagged by the new warning flags
+
+### Medium term
+- [ ] Incremental nick-list updates — emit specific `nickAdded`/`nickRemoved`/`nickRenamed`/`nickModeChanged` signals; replace `clear()`/repopulate with targeted updates; batch during NAMES/netsplit bursts
+- [ ] Per-channel nick index — `QHash<QString, int> nickIndex` (lower nick → index) to replace O(n) scans in `onMessage`, `onNotice`, `onAction`, `onAccountChanged`
+- [ ] Batch chat/nick refreshes — debounce `refreshChatView()` and `refreshNickList()` with a short single-shot timer for burst updates
+- [ ] Split `ChatRenderer` out of `MainWindow` — `formatMessage`, `ircToHtml`, `linkifyHtml`, emoji rendering as a separate class
+- [ ] Split `CommandDispatcher` out of `MainWindow` — `/join`, `/msg`, `/dcc`, `/sysinfo`, etc. as a separate class
+- [ ] Parser and model unit tests — `IrcParserTest` (prefixes/tags/CTCP/malformed), `SessionModelTest` (joins/parts/caps), `ChatFormatTest` (HTML escaping/linkification)
+
+### Bigger / architectural
+- [ ] Keychain operations async — remove nested `QEventLoop` in `KeychainHelper`; load non-secret config first, then resolve secrets before connecting; avoids reentrancy hazard
+- [ ] Targeted chat block updates — store `msgid → block number` for visible messages; update only the affected block on reaction/redaction instead of full rebuild
+- [ ] IrcParser fuzz target — libFuzzer harness around `IrcParser::parseLine()` for parser regression coverage
+- [ ] `ServerId` / `BufferId` strong types — replace stringly-typed host/channel routing; prerequisite for robust multi-network and bouncer support
+
+---
+
 ## Known Issues
 
 - DCC over internet (active mode) — active DCC advertises your local IP; if both sides are behind NAT the connection still fails. Use **Send File (Passive)** so the receiver opens the port instead.

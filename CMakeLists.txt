@@ -120,6 +120,25 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
     target_link_options(Uplink PRIVATE -Wl,-z,nopack-relative-relocs)
 endif()
 
+# Compiler warnings
+option(UPLINK_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+option(UPLINK_ENABLE_SANITIZERS  "Enable ASan/UBSan"        OFF)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(Uplink PRIVATE
+        -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion
+        -Wshadow -Wnon-virtual-dtor -Wold-style-cast
+    )
+    if(UPLINK_WARNINGS_AS_ERRORS)
+        target_compile_options(Uplink PRIVATE -Werror)
+    endif()
+endif()
+
+if(UPLINK_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(Uplink PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+    target_link_options(Uplink PRIVATE -fsanitize=address,undefined)
+endif()
+
 # Copy themes next to binary for development
 add_custom_command(TARGET Uplink POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory

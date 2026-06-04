@@ -145,8 +145,10 @@ struct Channel {
 
     void addPreview(const QString &url, const QString &html)
     {
-        if (previews.size() >= kPreviewCap)
+        if (previews.size() >= kPreviewCap) {
+            hiddenPreviews.remove(previews.begin().key());
             previews.erase(previews.begin());
+        }
         previews.insert(url, html);
     }
 };

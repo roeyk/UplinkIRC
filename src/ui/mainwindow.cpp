@@ -961,7 +961,13 @@ void MainWindow::setupChatArea()
     m_topicText->setWordWrap(true);
     m_topicText->setTextFormat(Qt::RichText);
     m_topicText->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    m_topicText->setOpenExternalLinks(true);
+    m_topicText->setOpenExternalLinks(false);
+    connect(m_topicText, &QLabel::linkActivated, this, [](const QString &link){
+        const QUrl u(link);
+        const QString s = u.scheme().toLower();
+        if (s == "http" || s == "https")
+            QDesktopServices::openUrl(u);
+    });
     tdHbox->addWidget(m_topicText);
     m_topicDisplay->setObjectName("topicDisplay");
     m_topicDisplay->setVisible(m_showTopic);

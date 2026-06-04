@@ -35,8 +35,10 @@ bool DccSend::listen(QHostAddress bindAddr)
     connect(m_server, &QTcpServer::newConnection, this, &DccSend::onNewConnection);
 
     QTimer::singleShot(60000, this, [this]{
-        if (!m_socket)
+        if (!m_socket) {
+            cancel();
             emit error("No connection received (timeout)");
+        }
     });
     return true;
 }
