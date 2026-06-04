@@ -3,6 +3,42 @@
 ---
 
 <!--
+Session summary — 2026-06-04 (security audit — F-01 through F-12)
+
+All findings from the full security audit triaged and resolved.
+
+Fixed:
+  F-01 — Link preview SSRF: isBlockedBySchemeOrLiteral() for scheme/literal
+          private IPs; all fetches DNS-resolved via QHostInfo::lookupHost()
+          with loopback/private/link-local/multicast rejection
+  F-02 — DCC receive: private/reserved peer IP blocked before file open or
+          socket connect in DccReceive::start()
+  F-03 — DCC passive receive: listenPassive() accepts expectedIp; incoming
+          connections from unexpected peers rejected when sender is public
+  F-04 — Reactions: storage changed to QSet<QString> per (msgid, emoji) for
+          automatic nick dedup; reactions pruned on message rolloff
+  F-05 — Link preview redirects: ManualRedirectPolicy; each redirect
+          destination re-DNS-checked before following; image redirects blocked
+  F-06 — HTML attribute XSS: htmlAttr() helper encodes ' to &#39; in addition
+          to toHtmlEscaped(); applied to all href/title attributes
+  F-07 — Proxy passwords and channel keys now stored via keychain
+          (storePassword/resolvePassword path); plaintext fallback only when
+          keychain unavailable
+  F-08 — STS store: hostname lowercased before all lookup/store/remove ops;
+          sts.ini permissions restricted to owner read/write after each write
+  F-10 — /sysinfo: QMessageBox::question confirmation required before posting
+          system info to a channel
+  DCC  — Passive DCC token upgraded from 8-digit decimal (26-bit) to 32-char
+          lowercase hex (128-bit)
+
+Out of scope (deferred):
+  F-09 — CMake/CI build config change — build infrastructure concern, low risk
+  F-11 — Keychain async refactor — architectural change, low risk
+  F-12 — Test infrastructure
+
+-->
+
+<!--
 Session summary — 2026-06-04 (v0.22.0 — passive DCC + in-app update check)
 
 What was built:
