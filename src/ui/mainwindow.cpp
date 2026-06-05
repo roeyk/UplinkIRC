@@ -1398,7 +1398,8 @@ void MainWindow::connectModel()
         IrcClient *client = m_model->clientFor(server);
         const quint32 ourIp   = client ? client->localIpv4() : 0;
         const quint16 ourPort = dcc->listenPort();
-        const QString fn      = QFileInfo(filename).fileName().replace(' ', '_');
+        QString fn = QFileInfo(filename).fileName().replace(' ', '_');
+        fn.remove(QRegularExpression("[\\x00-\\x1f\\x7f]"));
 
         m_model->sendRaw(server,
             "PRIVMSG " + fromNick + " :\x01""DCC SEND "

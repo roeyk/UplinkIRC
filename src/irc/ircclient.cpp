@@ -258,6 +258,8 @@ static QString redactRawForLog(const QString &line)
         return "PASS :<redacted>";
     if (cmd == "AUTHENTICATE")
         return "AUTHENTICATE <redacted>";
+    if (cmd == "OPER")
+        return "OPER " + line.section(' ', 1, 1) + " :<redacted>";
     if (line.contains("NickServ", Qt::CaseInsensitive) &&
         line.contains("IDENTIFY", Qt::CaseInsensitive))
         return "<NickServ IDENTIFY redacted>";
