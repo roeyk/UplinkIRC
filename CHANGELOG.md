@@ -487,6 +487,14 @@ Next priorities:
   - FreeBSD port skeleton
 -->
 
+## v0.24.1 — 2026-06-05
+
+### Bug Fixes
+
+- **Fix:** Input bar background color lost after v0.24.0 `QPlainTextEdit` migration — QSS selector `QWidget#inputBar QLineEdit` did not match the new widget type. Selector updated to cover both `QLineEdit` and `QPlainTextEdit`. Placeholder text color also extended to `QPlainTextEdit`.
+
+---
+
 ## v0.24.0 — 2026-06-05
 
 ### Features
