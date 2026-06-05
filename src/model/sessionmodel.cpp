@@ -454,8 +454,10 @@ void SessionModel::onDisconnected(const QString &host)
     if (!sess) return;
     sess->connected = false;
     // Clear all nick lists
-    for (auto &ch : sess->channels)
+    for (auto &ch : sess->channels) {
         ch.nicks.clear();
+        ch.nickIndex.clear();
+    }
     emit serverDisconnected(host);
     postMessage(host, "(server)", Message::make(MessageType::Server, "", "Disconnected."));
 }
@@ -480,8 +482,9 @@ void SessionModel::onMessage(const QString &host, const QString &target,
     if (isPM && !isHistory) openPM(host, pmNick);
     QString account;
     if (auto *ch = sess ? sess->get(buf) : nullptr) {
-        for (const auto &e : std::as_const(ch->nicks))
-            if (e.nick.toLower() == nick.toLower()) { account = e.account; break; }
+        const auto it = ch->nickIndex.constFind(nick.toLower());
+        if (it != ch->nickIndex.constEnd())
+            account = ch->nicks[it.value()].account;
     }
     QString display = text;
     if (isSelf && isPM) {
@@ -512,8 +515,9 @@ void SessionModel::onNotice(const QString &host, const QString &target,
     }
     QString noticeAccount;
     if (auto *ch = sess2 ? sess2->get(dest) : nullptr) {
-        for (const auto &e : std::as_const(ch->nicks))
-            if (e.nick.toLower() == nick.toLower()) { noticeAccount = e.account; break; }
+        const auto it = ch->nickIndex.constFind(nick.toLower());
+        if (it != ch->nickIndex.constEnd())
+            noticeAccount = ch->nicks[it.value()].account;
     }
     postMessage(host, dest, Message::make(MessageType::Notice, nick, text, serverTime, isHistory, msgid, replyTo, noticeAccount));
 }
@@ -527,8 +531,9 @@ void SessionModel::onAction(const QString &host, const QString &target,
     auto *sessA = session(host);
     QString actionAccount;
     if (auto *ch = sessA ? sessA->get(target) : nullptr) {
-        for (const auto &e : std::as_const(ch->nicks))
-            if (e.nick.toLower() == nick.toLower()) { actionAccount = e.account; break; }
+        const auto it = ch->nickIndex.constFind(nick.toLower());
+        if (it != ch->nickIndex.constEnd())
+            actionAccount = ch->nicks[it.value()].account;
     }
     postMessage(host, target, Message::make(MessageType::Action, nick, text, serverTime, isHistory, msgid, {}, actionAccount));
 }
@@ -562,6 +567,7 @@ void SessionModel::onUserParted(const QString &host, const QString &channel,
     if (isSelf && ch) {
         ch->joined = false;
         ch->nicks.clear();
+        ch->nickIndex.clear();
         emit nickListChanged(host, channel);
     } else if (ch) {
         ch->removeNick(nick);
@@ -576,10 +582,7 @@ void SessionModel::onUserQuit(const QString &host, const QString &nick, const QS
     auto *sess = session(host);
     if (!sess) return;
     for (auto &ch : sess->channels) {
-        bool found = false;
-        for (const auto &e : std::as_const(ch.nicks))
-            if (QString::compare(e.nick, nick, Qt::CaseInsensitive) == 0) { found = true; break; }
-        if (!found) continue;
+        if (!ch.nickIndex.contains(nick.toLower())) continue;
         ch.removeNick(nick);
         emit nickListChanged(host, ch.name);
         postMessage(host, ch.name, Message::make(MessageType::Quit, nick,
@@ -594,10 +597,7 @@ void SessionModel::onNetsplitDetected(const QString &host, const QString &server
     for (auto &ch : sess->channels) {
         int lost = 0;
         for (const QString &nick : nicks) {
-            bool found = false;
-            for (const auto &e : std::as_const(ch.nicks))
-                if (QString::compare(e.nick, nick, Qt::CaseInsensitive) == 0) { found = true; break; }
-            if (!found) continue;
+            if (!ch.nickIndex.contains(nick.toLower())) continue;
             ch.removeNick(nick);
             ++lost;
         }
@@ -637,10 +637,7 @@ void SessionModel::onNickChanged(const QString &host, const QString &oldNick, co
     auto *sess = session(host);
     if (!sess) return;
     for (auto &ch : sess->channels) {
-        bool found = false;
-        for (const auto &e : std::as_const(ch.nicks))
-            if (QString::compare(e.nick, oldNick, Qt::CaseInsensitive) == 0) { found = true; break; }
-        if (!found) continue;
+        if (!ch.nickIndex.contains(oldNick.toLower())) continue;
         ch.renameNick(oldNick, newNick);
         emit nickListChanged(host, ch.name);
         postMessage(host, ch.name, Message::make(MessageType::Nick, oldNick,
@@ -738,20 +735,18 @@ void SessionModel::onModesReceived(const QString &host, const QString &channel, 
                 const QChar pre = modeToPrefix(c);
                 if (pre != ' ' && argIdx < parts.size()) {
                     const QString target = parts[argIdx];
-                    for (auto &e : ch->nicks) {
-                        if (e.nick.toLower() == target.toLower()) {
-                            if (adding)
-                                e.prefixes.insert(pre);
-                            else
-                                e.prefixes.remove(pre);
-                            e.recomputePrefix();
-                            break;
-                        }
+                    const auto it = ch->nickIndex.constFind(target.toLower());
+                    if (it != ch->nickIndex.constEnd()) {
+                        auto &e = ch->nicks[it.value()];
+                        if (adding) e.prefixes.insert(pre);
+                        else        e.prefixes.remove(pre);
+                        e.recomputePrefix();
                     }
                 }
                 if (argModes.contains(c)) ++argIdx;
             }
             std::sort(ch->nicks.begin(), ch->nicks.end());
+            ch->rebuildNickIndex();
             emit nickListChanged(host, channel);
         }
         postMessage(host, channel, Message::make(MessageType::Server, "", "Mode " + channel + " " + modes));
@@ -863,10 +858,7 @@ void SessionModel::onHostChanged(const QString &host, const QString &nick,
     if (!sess) return;
     const QString text = nick + " changed host (" + newUser + "@" + newHost + ")";
     for (auto &ch : sess->channels) {
-        bool present = false;
-        for (const auto &e : std::as_const(ch.nicks))
-            if (QString::compare(e.nick, nick, Qt::CaseInsensitive) == 0) { present = true; break; }
-        if (!present) continue;
+        if (!ch.nickIndex.contains(nick.toLower())) continue;
         postMessage(host, ch.name, Message::make(MessageType::Server, "", text));
     }
 }
@@ -903,10 +895,7 @@ void SessionModel::onAccountChanged(const QString &host, const QString &nick,
     if (!sess) return;
     for (auto &ch : sess->channels) {
         ch.setNickAccount(nick, account);
-        bool present = false;
-        for (const auto &e : std::as_const(ch.nicks))
-            if (e.nick.toLower() == nick.toLower()) { present = true; break; }
-        if (present)
+        if (ch.nickIndex.contains(nick.toLower()))
             emit nickListChanged(host, ch.name);
     }
 }
@@ -954,10 +943,7 @@ void SessionModel::onSetNameReceived(const QString &host, const QString &nick,
     if (!sess) return;
     const QString text = nick + " changed their realname to \"" + realname + "\"";
     for (auto &ch : sess->channels) {
-        bool present = false;
-        for (const auto &e : std::as_const(ch.nicks))
-            if (e.nick.toLower() == nick.toLower()) { present = true; break; }
-        if (!present) continue;
+        if (!ch.nickIndex.contains(nick.toLower())) continue;
         postMessage(host, ch.name, Message::make(MessageType::Server, "", text));
     }
 }

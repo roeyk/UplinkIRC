@@ -54,7 +54,8 @@ struct Channel {
     QString          name;
     QString          topic;
     QString          modes;
-    QList<NickEntry> nicks;
+    QList<NickEntry>          nicks;
+    QHash<QString, qsizetype> nickIndex; // lowercase nick → index in nicks
     QList<Message>   messages;
     QSet<QString>    botNicks;  // lowercased nicks with +B channel user mode
     QHash<QString, QString> previews;  // url → persisted card HTML
@@ -77,6 +78,14 @@ struct Channel {
         }
     }
 
+    void rebuildNickIndex()
+    {
+        nickIndex.clear();
+        nickIndex.reserve(nicks.size());
+        for (qsizetype i = 0; i < nicks.size(); ++i)
+            nickIndex[nicks[i].nick.toLower()] = i;
+    }
+
     void setNicks(const QStringList &raw)
     {
         nicks.clear();
@@ -97,15 +106,15 @@ struct Channel {
             nicks.append(e);
         }
         std::sort(nicks.begin(), nicks.end());
+        rebuildNickIndex();
     }
 
     void setNickAccount(const QString &nick, const QString &account)
     {
-        for (auto &e : nicks)
-            if (e.nick.toLower() == nick.toLower()) {
-                e.account = (account == "*") ? QString() : account;
-                return;
-            }
+        const auto it = nickIndex.constFind(nick.toLower());
+        if (it == nickIndex.constEnd()) return;
+        auto &e = nicks[it.value()];
+        e.account = (account == "*") ? QString() : account;
     }
 
     void addNick(const QString &raw)
@@ -118,11 +127,10 @@ struct Channel {
         }
         e.recomputePrefix();
         e.nick = raw.mid(i);
-        // avoid duplicates
-        for (const auto &n : std::as_const(nicks))
-            if (QString::compare(n.nick, e.nick, Qt::CaseInsensitive) == 0) return;
+        if (nickIndex.contains(e.nick.toLower())) return;
         nicks.append(e);
         std::sort(nicks.begin(), nicks.end());
+        rebuildNickIndex();
     }
 
     void removeNick(const QString &nick)
@@ -130,15 +138,16 @@ struct Channel {
         nicks.removeIf([&](const NickEntry &e){
             return QString::compare(e.nick, nick, Qt::CaseInsensitive) == 0;
         });
+        rebuildNickIndex();
     }
 
     void renameNick(const QString &oldNick, const QString &newNick)
     {
-        for (auto &e : nicks)
-            if (QString::compare(e.nick, oldNick, Qt::CaseInsensitive) == 0) {
-                e.nick = newNick; break;
-            }
+        const auto it = nickIndex.constFind(oldNick.toLower());
+        if (it == nickIndex.constEnd()) return;
+        nicks[it.value()].nick = newNick;
         std::sort(nicks.begin(), nicks.end());
+        rebuildNickIndex();
     }
 
     static constexpr int kPreviewCap = 100;
