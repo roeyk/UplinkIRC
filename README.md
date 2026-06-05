@@ -77,7 +77,7 @@
 
 | Feature | Details |
 |---|---|
-| **TLS/SSL only** | All connections via `QSslSocket`. Plaintext IRC is not supported. |
+| **TLS by default** | All connections via `QSslSocket`. TLS is the default and strongly recommended; plaintext is available via `ssl = false` in config for local/test servers but is not supported or recommended for production use. |
 | **TLS certificate verification** | Invalid or self-signed certificates disconnect immediately with an error. No silent bypass. |
 | **SASL PLAIN** | Set `sasl_user` + `sasl_password` in config. Full CAP flow: `AUTHENTICATE`, `903`/`904`/`906`. |
 | **SASL EXTERNAL** | Certificate-based auth. Set `sasl_external = true`, `client_cert`, and `client_key`. RSA and EC (ECDSA) PEM keys supported. The TLS client cert is presented during the handshake; the server derives your identity from it — no password sent. |

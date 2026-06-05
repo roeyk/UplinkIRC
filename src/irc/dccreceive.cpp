@@ -168,11 +168,17 @@ void DccReceive::onReadyRead()
         emit error("Write failed");
         return;
     }
+    const qint64 prevAck = m_received;
     m_received += data.size();
 
-    // Send cumulative ACK (4 bytes, big-endian)
-    const quint32 ack = qToBigEndian(static_cast<quint32>(m_received));
-    m_socket->write(reinterpret_cast<const char *>(&ack), 4);
+    // Send cumulative ACK every 64 KB boundary and always on completion.
+    // Coalescing avoids a 4-byte write syscall for every readyRead on fast links.
+    static constexpr qint64 kAckInterval = 65536;
+    const bool crossedBoundary = (m_received / kAckInterval) > (prevAck / kAckInterval);
+    if (crossedBoundary || m_received >= m_total) {
+        const quint32 ack = qToBigEndian(static_cast<quint32>(m_received));
+        m_socket->write(reinterpret_cast<const char *>(&ack), 4);
+    }
 
     emit progress(m_received, m_total);
 

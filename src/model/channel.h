@@ -155,7 +155,8 @@ struct Channel {
         rebuildNickIndex();
     }
 
-    static constexpr int kPreviewCap = 100;
+    static constexpr int kPreviewCap     = 100;
+    static constexpr int kPreviewHtmlCap = 8192;
 
     void addPreview(const QString &url, const QString &html)
     {
@@ -163,6 +164,6 @@ struct Channel {
             hiddenPreviews.remove(previews.begin().key());
             previews.erase(previews.begin());
         }
-        previews.insert(url, html);
+        previews.insert(url, html.left(kPreviewHtmlCap));
     }
 };

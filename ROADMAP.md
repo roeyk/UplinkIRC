@@ -238,8 +238,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] DCC send filename: normal send path only replaces spaces, not control chars — create shared `safeDccFilename()` helper used by all DCC SEND paths (`dccsend.cpp:92-95` vs `mainwindow.cpp:1469-1477`)
 - [x] Unknown slash commands sent as raw IRC by default — change to "unknown command" message; keep `/raw` and `/quote` for power users; add opt-in `advanced_raw_passthrough` config key (`commanddispatcher.cpp:572-575`)
 - [x] `linkpreview`: apply `isBlockedBySchemeOrLiteral` in `extractImageUrl` before returning URL — defense-in-depth; currently only checked by the caller (`linkpreview.cpp`)
-- [ ] `Channel::previews`: cap stored HTML string length per entry — `kPreviewCap=100` limits count but not per-entry size (`channel.h`)
-- [ ] README vs code: README says "plaintext not supported" but `connectToHost()` is reachable when `ssl=false` — enforce TLS-only in code or update README (`ircclient.cpp:103-107`)
+- [x] `Channel::previews`: cap stored HTML string length per entry — `kPreviewCap=100` limits count but not per-entry size (`channel.h`)
+- [x] README vs code: README says "plaintext not supported" but `connectToHost()` is reachable when `ssl=false` — enforce TLS-only in code or update README (`ircclient.cpp:103-107`)
 
 ---
 
@@ -270,9 +270,9 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] Targeted chat block updates — `BlockMsgid` userData tags each QTextBlock; onReactionsChanged and onMessageRedacted do targeted insert/replace/remove instead of full rebuild (v0.23.3)
 - [ ] IrcParser fuzz target — libFuzzer harness around `IrcParser::parseLine()` for parser regression coverage
 - [ ] `ServerId` / `BufferId` strong types — replace stringly-typed host/channel routing; prerequisite for robust multi-network and bouncer support
-- [ ] `selfNickRe` (`QRegularExpression`): verify compiled once per nick change at call site, not reconstructed per `formatMessage` call (`chatrenderer.cpp`)
-- [ ] DCC ACK coalescing: send ACK every 64 KB and on completion, not every `readyRead` — reduces write syscalls on fast links (`dccreceive.cpp`)
-- [ ] CI: add Linux ASan/UBSan sanitizer job (`-DUPLINK_ENABLE_SANITIZERS=ON` Debug build); add `clang-tidy` or CodeQL static analysis (`.github/workflows/ci.yml`, `CMakeLists.txt:145-149`)
+- [x] `selfNickRe` (`QRegularExpression`): verify compiled once per nick change at call site, not reconstructed per `formatMessage` call (`chatrenderer.cpp`) — already correct
+- [x] DCC ACK coalescing: send ACK every 64 KB and on completion, not every `readyRead` — reduces write syscalls on fast links (`dccreceive.cpp`)
+- [x] CI: add Linux ASan/UBSan sanitizer job (`-DUPLINK_ENABLE_SANITIZERS=ON` Debug build); add `clang-tidy` or CodeQL static analysis (`.github/workflows/ci.yml`, `CMakeLists.txt:145-149`)
 
 ---
 
