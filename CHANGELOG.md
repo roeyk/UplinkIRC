@@ -3,6 +3,25 @@
 ---
 
 <!--
+Session summary — 2026-06-05 (bug fixes: scroll position, mention detection)
+
+Two bugs fixed:
+
+1. Chat view didn't scroll to bottom on channel switch:
+   - refreshChatView cleared and rebuilt the document but never scrolled to bottom
+   - appendMessage already had scroll-to-bottom; refreshChatView was missing it
+   - Fix: QTimer::singleShot(0) deferred scroll-to-bottom at end of refreshChatView
+     (deferred to let Qt finish document layout before setting scrollbar maximum)
+
+2. 💡 lightbulb icon shown on all channel activity instead of only name mentions:
+   - mentionRe is set to QRegularExpression{} (empty pattern) when nick is unknown
+   - Empty pattern is syntactically valid so isValid() returns true
+   - QRegularExpression("").match(any_text).hasMatch() returns true for every string
+   - Every incoming message was counted as a mention
+   - Fix: changed guard from isValid() to !pattern().isEmpty() in sessionmodel.cpp
+-->
+
+<!--
 Session summary — 2026-06-05 (40-finding code audit — batches 1–4)
 
 Released v0.23.3 — perf/stability patch on top of v0.23.2.

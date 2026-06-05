@@ -3136,6 +3136,11 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
             }
         }
     }
+
+    QTimer::singleShot(0, this, [this]{
+        auto *sb = m_chatView->verticalScrollBar();
+        sb->setValue(sb->maximum());
+    });
 }
 
 QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
