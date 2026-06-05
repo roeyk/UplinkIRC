@@ -4,6 +4,7 @@
 
 class QCheckBox;
 class QComboBox;
+class QSlider;
 
 class PreferencesDialog : public QDialog
 {
@@ -25,6 +26,7 @@ signals:
     void loggingToggled(bool on);
     void linkPreviewsToggled(bool on);
     void nickBracketsChanged(const QString &brackets);
+    void opacityChanged(int percent);
     void manageServersRequested();
     void aboutRequested();
     void docsRequested();
@@ -40,6 +42,7 @@ private:
     QCheckBox *m_loggingCheck{nullptr};
     QCheckBox *m_linkPreviewsCheck{nullptr};
     QComboBox *m_bracketsCombo{nullptr};
+    QSlider   *m_opacitySlider{nullptr};
 
     static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;

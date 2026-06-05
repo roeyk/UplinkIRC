@@ -5,6 +5,7 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QSlider>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QPushButton>
@@ -142,6 +143,24 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     fontBtn->setAutoDefault(false);
     connect(fontBtn, &QPushButton::clicked, this, [this]{ emit fontConfigRequested(); });
     vbox->addWidget(fontBtn);
+
+    vbox->addSpacing(4);
+    {
+        m_opacitySlider = new QSlider(Qt::Horizontal);
+        m_opacitySlider->setRange(20, 100);
+        m_opacitySlider->setValue(cfg.ui.opacity);
+        m_opacitySlider->setTickInterval(10);
+        m_opacitySlider->setTickPosition(QSlider::TicksBelow);
+        auto *opacityLabel = new QLabel(QString("Opacity: %1%").arg(cfg.ui.opacity));
+        connect(m_opacitySlider, &QSlider::valueChanged, this, [this, opacityLabel](int v){
+            opacityLabel->setText(QString("Opacity: %1%").arg(v));
+            emit opacityChanged(v);
+        });
+        auto *row = new QHBoxLayout;
+        row->addWidget(opacityLabel);
+        row->addWidget(m_opacitySlider, 1);
+        vbox->addLayout(row);
+    }
 
     // ── Interface ─────────────────────────────────────────────────────────────
     vbox->addSpacing(2);

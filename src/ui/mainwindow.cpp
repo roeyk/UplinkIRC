@@ -323,6 +323,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     setupInputBar();
     connectModel();
     applyFontSizes();
+    if (cfg.ui.opacity < 100)
+        setWindowOpacity(cfg.ui.opacity / 100.0);
 
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
         m_tray = new TrayIcon(model, this);
@@ -626,6 +628,12 @@ void MainWindow::connectPreferences()
 
     connect(m_prefsDialog, &PreferencesDialog::nickBracketsChanged, this, [this](const QString &br){
         m_config.ui.nickBrackets = br;
+        Config::save(m_config, Config::defaultPath());
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::opacityChanged, this, [this](int v){
+        m_config.ui.opacity = v;
+        setWindowOpacity(v / 100.0);
         Config::save(m_config, Config::defaultPath());
     });
 
