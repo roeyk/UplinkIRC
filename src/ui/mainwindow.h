@@ -12,6 +12,7 @@
 #include "config/config.h"
 #include "ui/themeloader.h"
 
+class CommandDispatcher;
 class SidebarDelegate;
 class TrayIcon;
 class SignalBars;
@@ -223,7 +224,6 @@ private:
     bool    m_showEmojiBtn{false};
     bool    m_showTopic{true};
 
-    QString m_sysinfoCache;
-    bool    m_sysinfoLoading{false};
+    CommandDispatcher *m_dispatcher{nullptr};
 
 };

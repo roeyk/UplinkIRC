@@ -1,0 +1,575 @@
+#include "commanddispatcher.h"
+#include "model/sessionmodel.h"
+#include "irc/ircclient.h"
+#include "config/config.h"
+
+#include <QDateTime>
+#include <QFile>
+#include <QMessageBox>
+#include <QMetaObject>
+#include <QProcess>
+#include <QSettings>
+#include <QStringList>
+#include <QSysInfo>
+#include <QTextStream>
+#include <QThread>
+#include <QTimer>
+
+#if defined(Q_OS_WIN)
+#  include <windows.h>
+#endif
+
+// ---------------------------------------------------------------------------
+// Sysinfo helpers
+// ---------------------------------------------------------------------------
+
+static QString sysinfoKernel()
+{
+    QProcess p;
+    p.start("uname", {"-r"});
+    p.waitForFinished(2000);
+    const QString out = QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed();
+    return out.isEmpty() ? "Unknown" : out;
+}
+
+static QString sysinfoOS()
+{
+#if defined(Q_OS_LINUX)
+    QString name, buildId, versionId;
+    QFile f("/etc/os-release");
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&f);
+        const auto strip = [](QString s) {
+            if (s.startsWith('"') && s.endsWith('"'))
+                s = s.mid(1, s.length() - 2);
+            return s;
+        };
+        while (!in.atEnd()) {
+            const QString line = in.readLine();
+            if (line.startsWith("NAME=") && name.isEmpty())
+                name = strip(line.mid(5));
+            else if (line.startsWith("BUILD_ID=") && buildId.isEmpty())
+                buildId = strip(line.mid(9));
+            else if (line.startsWith("VERSION_ID=") && versionId.isEmpty())
+                versionId = strip(line.mid(11));
+        }
+    }
+    if (name.isEmpty()) name = "Linux";
+    const QString ver = !buildId.isEmpty() ? buildId : versionId;
+    const QString distro = ver.isEmpty() ? name : name + " " + ver;
+    return QString("Linux (%1) (%2)").arg(distro, sysinfoKernel());
+#elif defined(Q_OS_FREEBSD)
+    QProcess p;
+    p.start("uname", {"-s"});
+    p.waitForFinished(2000);
+    return QString("%1 (%2)").arg(QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed(),
+                                  sysinfoKernel());
+#else
+    return QSysInfo::prettyProductName();
+#endif
+}
+
+static QString sysinfoCPU()
+{
+#if defined(Q_OS_LINUX)
+    QFile f("/proc/cpuinfo");
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&f);
+        while (!in.atEnd()) {
+            const QString line = in.readLine();
+            if (line.startsWith("model name")) {
+                const qsizetype colon = line.indexOf(':');
+                if (colon != -1)
+                    return line.mid(colon + 1).trimmed();
+            }
+        }
+    }
+    return QSysInfo::currentCpuArchitecture();
+#elif defined(Q_OS_FREEBSD) || defined(Q_OS_DARWIN)
+    QProcess p;
+    p.start("sysctl", {"-n", "hw.model"});
+    p.waitForFinished(2000);
+    const QString model = QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed();
+    return model.isEmpty() ? "Unknown" : model;
+#elif defined(Q_OS_WIN)
+    QSettings reg(
+        "HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+        QSettings::NativeFormat);
+    const QString name = reg.value("ProcessorNameString").toString().trimmed();
+    return name.isEmpty() ? QSysInfo::currentCpuArchitecture() : name;
+#else
+    return QSysInfo::currentCpuArchitecture();
+#endif
+}
+
+static QString sysinfoMEM()
+{
+#if defined(Q_OS_LINUX)
+    QFile f("/proc/meminfo");
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&f);
+        while (!in.atEnd()) {
+            const QStringList parts = in.readLine().split(' ', Qt::SkipEmptyParts);
+            if (parts.size() >= 2 && parts[0] == "MemTotal:") {
+                const quint64 kb = parts[1].toULongLong();
+                return QString("%1 GB").arg((kb + 512 * 1024) / (1024 * 1024));
+            }
+        }
+    }
+    return "Unknown";
+#elif defined(Q_OS_FREEBSD)
+    QProcess p;
+    p.start("sysctl", {"-n", "hw.physmem"});
+    p.waitForFinished(2000);
+    const quint64 total = QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed().toULongLong();
+    if (total > 0)
+        return QString("%1 GB").arg((total + 512ULL*1024*1024) / (1024ULL*1024*1024));
+    return "Unknown";
+#elif defined(Q_OS_WIN)
+    MEMORYSTATUSEX ms{};
+    ms.dwLength = sizeof(ms);
+    if (GlobalMemoryStatusEx(&ms))
+        return QString("%1 GB").arg((ms.ullTotalPhys + 512ULL*1024*1024) / (1024ULL*1024*1024));
+    return "Unknown";
+#else
+    return "Unknown";
+#endif
+}
+
+static QString sysinfoGPU()
+{
+#if defined(Q_OS_LINUX)
+    QProcess vk;
+    vk.start("vulkaninfo", {"--summary"});
+    if (vk.waitForFinished(3000) && vk.exitCode() == 0) {
+        const QString out = QString::fromLocal8Bit(vk.readAllStandardOutput());
+        QString deviceName, driverInfo;
+        for (const QString &line : out.split('\n')) {
+            const QString t = line.trimmed();
+            if (t.startsWith("deviceName") && deviceName.isEmpty())
+                deviceName = t.section('=', 1).trimmed();
+            else if (t.startsWith("driverInfo") && driverInfo.isEmpty())
+                driverInfo = t.section('=', 1).trimmed();
+        }
+        if (!deviceName.isEmpty()) {
+            const qsizetype lp = driverInfo.lastIndexOf('(');
+            const qsizetype rp = driverInfo.lastIndexOf(')');
+            if (lp != -1 && rp > lp)
+                return QString("%1 (%2) (Vulkan)").arg(deviceName, driverInfo.mid(lp + 1, rp - lp - 1));
+            return deviceName + " (Vulkan)";
+        }
+    }
+    QProcess lp;
+    lp.start("lspci", {});
+    if (lp.waitForFinished(2000)) {
+        const QString out = QString::fromLocal8Bit(lp.readAllStandardOutput());
+        for (const QString &line : out.split('\n')) {
+            if (line.contains("VGA", Qt::CaseInsensitive) ||
+                line.contains("3D controller", Qt::CaseInsensitive) ||
+                line.contains("Display controller", Qt::CaseInsensitive)) {
+                const qsizetype c2 = line.indexOf(':', line.indexOf(':') + 1);
+                if (c2 != -1)
+                    return line.mid(c2 + 1).section('(', 0, 0).trimmed();
+            }
+        }
+    }
+    return "Unknown";
+#elif defined(Q_OS_WIN)
+    QProcess p;
+    p.start("powershell", {"-NoProfile", "-Command",
+        "(Get-CimInstance Win32_VideoController | Select-Object -First 1).Name"});
+    if (p.waitForFinished(5000)) {
+        const QString out = QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed();
+        if (!out.isEmpty()) return out;
+    }
+    return "Unknown";
+#else
+    return "Unknown";
+#endif
+}
+
+static QString sysinfoUptime()
+{
+#if defined(Q_OS_LINUX)
+    QFile f("/proc/uptime");
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        const quint64 s = static_cast<quint64>(
+            QString::fromLocal8Bit(f.readLine()).section(' ', 0, 0).toDouble());
+        const quint64 days    = s / 86400;
+        const quint64 hours   = (s % 86400) / 3600;
+        const quint64 minutes = (s % 3600) / 60;
+        const quint64 seconds = s % 60;
+        QStringList parts;
+        if (days > 0)    parts << QString("%1 day%2").arg(days).arg(days != 1 ? "s" : "");
+        if (hours > 0)   parts << QString("%1 hour%2").arg(hours).arg(hours != 1 ? "s" : "");
+        if (minutes > 0) parts << QString("%1 minute%2").arg(minutes).arg(minutes != 1 ? "s" : "");
+        parts << QString("%1 second%2").arg(seconds).arg(seconds != 1 ? "s" : "");
+        return parts.join(' ') + " ago";
+    }
+    return "Unknown";
+#elif defined(Q_OS_FREEBSD) || defined(Q_OS_DARWIN)
+    QProcess p;
+    p.start("sysctl", {"-n", "kern.boottime"});
+    p.waitForFinished(2000);
+    const QString out = QString::fromLocal8Bit(p.readAllStandardOutput());
+    const int eq = out.indexOf("sec = ");
+    const int cm = out.indexOf(',', eq);
+    if (eq != -1 && cm != -1) {
+        const quint64 bootSec = out.mid(eq + 6, cm - eq - 6).trimmed().toULongLong();
+        const quint64 now = QDateTime::currentSecsSinceEpoch();
+        const quint64 s   = now > bootSec ? now - bootSec : 0;
+        const quint64 days    = s / 86400;
+        const quint64 hours   = (s % 86400) / 3600;
+        const quint64 minutes = (s % 3600) / 60;
+        const quint64 seconds = s % 60;
+        QStringList parts;
+        if (days > 0)    parts << QString("%1 day%2").arg(days).arg(days != 1 ? "s" : "");
+        if (hours > 0)   parts << QString("%1 hour%2").arg(hours).arg(hours != 1 ? "s" : "");
+        if (minutes > 0) parts << QString("%1 minute%2").arg(minutes).arg(minutes != 1 ? "s" : "");
+        parts << QString("%1 second%2").arg(seconds).arg(seconds != 1 ? "s" : "");
+        return parts.join(' ') + " ago";
+    }
+    return "Unknown";
+#elif defined(Q_OS_WIN)
+    const quint64 s = GetTickCount64() / 1000;
+    const quint64 days    = s / 86400;
+    const quint64 hours   = (s % 86400) / 3600;
+    const quint64 minutes = (s % 3600) / 60;
+    const quint64 seconds = s % 60;
+    QStringList parts;
+    if (days > 0)    parts << QString("%1 day%2").arg(days).arg(days != 1 ? "s" : "");
+    if (hours > 0)   parts << QString("%1 hour%2").arg(hours).arg(hours != 1 ? "s" : "");
+    if (minutes > 0) parts << QString("%1 minute%2").arg(minutes).arg(minutes != 1 ? "s" : "");
+    parts << QString("%1 second%2").arg(seconds).arg(seconds != 1 ? "s" : "");
+    return parts.join(' ') + " ago";
+#else
+    return "Unknown";
+#endif
+}
+
+// ---------------------------------------------------------------------------
+
+CommandDispatcher::CommandDispatcher(SessionModel *model, Config *config,
+                                     QWidget *dialogParent, QObject *parent)
+    : QObject(parent)
+    , m_model(model)
+    , m_config(config)
+    , m_dialogParent(dialogParent)
+{}
+
+bool CommandDispatcher::dispatch(const QString &text, const QString &host,
+                                  const QString &channel, const QString &replyMsgid)
+{
+    if (!text.startsWith('/')) return false;
+
+    const QString trimmed = text.trimmed();
+    const QString cmd  = trimmed.section(' ', 0, 0).toLower();
+    const QString args = trimmed.section(' ', 1);
+
+    if (cmd == "/join" || cmd == "/j") {
+        m_model->sendJoin(host, args.section(' ', 0, 0), args.section(' ', 1, 1));
+    } else if (cmd == "/part" || cmd == "/leave" || cmd == "/close") {
+        const bool isChannel = channel.startsWith('#') || channel.startsWith('&');
+        if (isChannel)
+            m_model->sendPart(host, channel, args);
+        else
+            m_model->closeBuffer(host, channel);
+    } else if (cmd == "/nick") {
+        m_model->sendNick(host, args.trimmed());
+    } else if (cmd == "/me") {
+        m_model->sendAction(host, channel, args);
+    } else if (cmd == "/msg") {
+        const QString target = args.section(' ', 0, 0);
+        const QString body   = args.section(' ', 1);
+        m_model->sendMessage(host, target, body);
+        if (!target.startsWith('#') && !target.startsWith('&'))
+            emit switchChannel(host, target);
+    } else if (cmd == "/query") {
+        const QString target = args.trimmed().section(' ', 0, 0);
+        if (!target.isEmpty()) {
+            m_model->openPM(host, target);
+            emit switchChannel(host, target);
+            emit focusInput();
+        }
+    } else if (cmd == "/ns") {
+        if (!args.isEmpty()) m_model->sendMessage(host, "NickServ", args);
+    } else if (cmd == "/cs") {
+        if (!args.isEmpty()) m_model->sendMessage(host, "ChanServ", args);
+    } else if (cmd == "/bs") {
+        if (!args.isEmpty()) m_model->sendMessage(host, "BotServ", args);
+    } else if (cmd == "/ms") {
+        if (!args.isEmpty()) m_model->sendMessage(host, "MemoServ", args);
+    } else if (cmd == "/oper") {
+        const QString user = args.section(' ', 0, 0);
+        const QString pass = args.section(' ', 1);
+        if (!user.isEmpty() && !pass.isEmpty())
+            m_model->sendRaw(host, "OPER " + user + " :" + pass);
+    } else if (cmd == "/notice") {
+        const QString target = args.section(' ', 0, 0);
+        const QString msg    = args.section(' ', 1);
+        if (!target.isEmpty() && !msg.isEmpty())
+            m_model->sendRaw(host, "NOTICE " + target + " :" + msg);
+    } else if (cmd == "/quote" || cmd == "/raw") {
+        m_model->sendRaw(host, args);
+    } else if (cmd == "/quit") {
+        if (auto *cl = m_model->clientFor(host)) cl->quit(args.isEmpty() ? "Uplink" : args);
+    } else if (cmd == "/away") {
+        m_model->sendRaw(host, args.isEmpty() ? "AWAY" : "AWAY :" + args);
+    } else if (cmd == "/back") {
+        m_model->sendRaw(host, "AWAY");
+    } else if (cmd == "/motd") {
+        m_model->sendRaw(host, args.isEmpty() ? "MOTD" : "MOTD " + args.trimmed());
+    } else if (cmd == "/whois") {
+        m_model->sendRaw(host, "WHOIS " + args.trimmed());
+    } else if (cmd == "/topic") {
+        QString topicTarget = channel;
+        QString topicText   = args;
+        if (args.startsWith('#') || args.startsWith('&')) {
+            topicTarget = args.section(' ', 0, 0);
+            topicText   = args.section(' ', 1);
+        }
+        if (topicText.isEmpty())
+            m_model->sendRaw(host, "TOPIC " + topicTarget);
+        else
+            m_model->sendRaw(host, "TOPIC " + topicTarget + " :" + topicText);
+    } else if (cmd == "/kick") {
+        const QString target = args.section(' ', 0, 0);
+        const QString reason = args.section(' ', 1);
+        if (!target.isEmpty())
+            m_model->sendRaw(host, "KICK " + channel + " " + target
+                             + (reason.isEmpty() ? "" : " :" + reason));
+    } else if (cmd == "/caps") {
+        auto *cl = m_model->clientFor(host);
+        if (cl) {
+            const QStringList caps = cl->ackedCaps();
+            m_model->localMessage(host, channel,
+                caps.isEmpty() ? "No caps negotiated."
+                               : "Active caps: " + caps.join("  "));
+        }
+    } else if (cmd == "/version") {
+        if (args.isEmpty())
+            m_model->sendRaw(host, "VERSION");
+        else
+            m_model->sendRaw(host, "PRIVMSG " + args.trimmed() + " :\x01VERSION\x01");
+    } else if (cmd == "/ctcp") {
+        const QString target   = args.section(' ', 0, 0);
+        const QString ctcpcmd  = args.section(' ', 1, 1).toUpper();
+        const QString ctcpargs = args.section(' ', 2);
+        if (!target.isEmpty() && !ctcpcmd.isEmpty()) {
+            const QString ctcp = ctcpargs.isEmpty()
+                ? "\x01" + ctcpcmd + "\x01"
+                : "\x01" + ctcpcmd + " " + ctcpargs + "\x01";
+            m_model->sendRaw(host, "PRIVMSG " + target + " :" + ctcp);
+        }
+    } else if (cmd == "/sysinfo") {
+        const int ret = QMessageBox::question(m_dialogParent, "Share System Info",
+            "This will post your OS, CPU, memory, GPU, and uptime to " + channel + ".\n\n"
+            "System details can identify you. Continue?",
+            QMessageBox::Yes | QMessageBox::No);
+        if (ret != QMessageBox::Yes) return true;
+        if (!m_sysinfoCache.isEmpty()) {
+            m_model->sendMessage(host, channel,
+                m_sysinfoCache + " UP: " + sysinfoUptime());
+        } else if (m_sysinfoLoading) {
+            m_model->localMessage(host, channel,
+                "System info is still being collected, please wait.");
+        } else {
+            m_sysinfoLoading = true;
+            m_model->localMessage(host, channel, "Collecting system info...");
+
+            auto *thread = QThread::create([this, host, channel]() {
+                const QString result =
+                    QString("OS: %1 CPU: %2 MEM: %3 GPU: %4")
+                        .arg(sysinfoOS(), sysinfoCPU(), sysinfoMEM(), sysinfoGPU());
+                QMetaObject::invokeMethod(this, [this, host, channel, result]() {
+                    m_sysinfoCache   = result;
+                    m_sysinfoLoading = false;
+                    m_model->sendMessage(host, channel,
+                        result + " UP: " + sysinfoUptime());
+                }, Qt::QueuedConnection);
+            });
+            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+
+            auto *timer = new QTimer(this);
+            timer->setSingleShot(true);
+            connect(timer, &QTimer::timeout, this, [this, host, channel, thread, timer]() {
+                timer->deleteLater();
+                if (!m_sysinfoLoading) return;
+                m_sysinfoLoading = false;
+                thread->terminate();
+                m_model->localMessage(host, channel,
+                    "System info collection timed out.");
+            });
+            connect(thread, &QThread::finished, timer, [timer]() {
+                timer->stop();
+                timer->deleteLater();
+            });
+            timer->start(12000);
+            thread->start();
+        }
+    } else if (cmd == "/ping") {
+        const QString nick = args.trimmed().section(' ', 0, 0);
+        if (!nick.isEmpty()) {
+            const QString ts = QString::number(QDateTime::currentMSecsSinceEpoch());
+            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01PING " + ts + "\x01");
+            m_model->localMessage(host, channel, "Pinged " + nick);
+        }
+    } else if (cmd == "/time") {
+        const QString nick = args.trimmed().section(' ', 0, 0);
+        if (!nick.isEmpty()) {
+            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01TIME\x01");
+            m_model->localMessage(host, channel, "Querying time for " + nick);
+        }
+    } else if (cmd == "/invite") {
+        const QString nick = args.section(' ', 0, 0);
+        const QString chan = args.section(' ', 1, 1);
+        if (!nick.isEmpty())
+            m_model->sendRaw(host, "INVITE " + nick + " " + (chan.isEmpty() ? channel : chan));
+    } else if (cmd == "/mode") {
+        if (!args.isEmpty())
+            m_model->sendRaw(host, "MODE " + args);
+    } else if (cmd == "/op") {
+        const QString nick = args.trimmed().section(' ', 0, 0);
+        if (!nick.isEmpty())
+            m_model->sendRaw(host, "MODE " + channel + " +o " + nick);
+    } else if (cmd == "/deop") {
+        const QString nick = args.trimmed().section(' ', 0, 0);
+        if (!nick.isEmpty())
+            m_model->sendRaw(host, "MODE " + channel + " -o " + nick);
+    } else if (cmd == "/voice") {
+        const QString nick = args.trimmed().section(' ', 0, 0);
+        if (!nick.isEmpty())
+            m_model->sendRaw(host, "MODE " + channel + " +v " + nick);
+    } else if (cmd == "/devoice") {
+        const QString nick = args.trimmed().section(' ', 0, 0);
+        if (!nick.isEmpty())
+            m_model->sendRaw(host, "MODE " + channel + " -v " + nick);
+    } else if (cmd == "/ban") {
+        const QString mask = args.trimmed().section(' ', 0, 0);
+        if (!mask.isEmpty())
+            m_model->sendRaw(host, "MODE " + channel + " +b " + mask);
+    } else if (cmd == "/unban") {
+        const QString mask = args.trimmed().section(' ', 0, 0);
+        if (!mask.isEmpty())
+            m_model->sendRaw(host, "MODE " + channel + " -b " + mask);
+    } else if (cmd == "/react") {
+        const QString emoji = args.trimmed();
+        if (!emoji.isEmpty() && !replyMsgid.isEmpty()) {
+            m_model->sendReact(host, channel, replyMsgid, emoji);
+            emit replyBarCleared();
+        } else if (emoji.isEmpty()) {
+            m_model->localMessage(host, channel, "Usage: /react <emoji> (set a reply target first)");
+        } else {
+            m_model->localMessage(host, channel, "No message selected — right-click a timestamp to reply first");
+        }
+    } else if (cmd == "/ignore") {
+        const QString nick = args.trimmed().toLower();
+        if (!nick.isEmpty()) {
+            m_model->ignoreNick(nick);
+            if (!m_config->ignoredNicks.contains(nick))
+                m_config->ignoredNicks.append(nick);
+            Config::save(*m_config, Config::defaultPath());
+            m_model->localMessage(host, channel, "Now ignoring " + nick);
+        }
+    } else if (cmd == "/unignore") {
+        const QString nick = args.trimmed().toLower();
+        if (!nick.isEmpty()) {
+            m_model->unignoreNick(nick);
+            m_config->ignoredNicks.removeAll(nick);
+            Config::save(*m_config, Config::defaultPath());
+            m_model->localMessage(host, channel, "No longer ignoring " + nick);
+        }
+    } else if (cmd == "/ignored") {
+        if (m_config->ignoredNicks.isEmpty()) {
+            m_model->localMessage(host, channel, "Ignore list is empty.");
+        } else {
+            m_model->localMessage(host, channel,
+                "Ignored nicks: " + m_config->ignoredNicks.join(", "));
+        }
+    } else if (cmd == "/monitor") {
+        const QString sub  = args.section(' ', 0, 0).toLower();
+        const QString nick = args.section(' ', 1, 1).trimmed();
+        if (sub == "add" && !nick.isEmpty()) {
+            if (!m_config->monitorList.contains(nick, Qt::CaseInsensitive))
+                m_config->monitorList.append(nick);
+            Config::save(*m_config, Config::defaultPath());
+            m_model->monitorAdd(host, nick);
+            m_model->localMessage(host, channel, "Added " + nick + " to monitor list");
+        } else if ((sub == "del" || sub == "remove") && !nick.isEmpty()) {
+            m_config->monitorList.removeIf([&](const QString &n){
+                return n.compare(nick, Qt::CaseInsensitive) == 0;
+            });
+            Config::save(*m_config, Config::defaultPath());
+            m_model->monitorRemove(host, nick);
+            m_model->localMessage(host, channel, "Removed " + nick + " from monitor list");
+        } else if (sub == "list") {
+            m_model->localMessage(host, channel,
+                m_config->monitorList.isEmpty()
+                    ? "Monitor list is empty"
+                    : "Monitor list: " + m_config->monitorList.join(", "));
+        } else if (sub == "clear") {
+            m_config->monitorList.clear();
+            Config::save(*m_config, Config::defaultPath());
+            m_model->monitorClear(host);
+            m_model->localMessage(host, channel, "Monitor list cleared");
+        } else if (sub == "status") {
+            m_model->monitorStatus(host);
+        } else {
+            m_model->localMessage(host, channel,
+                "Usage: /monitor add|del|list|clear|status [nick]");
+        }
+    } else if (cmd == "/clear") {
+        emit clearChat();
+    } else if (cmd == "/help") {
+        const QStringList lines = {
+            "Available commands:",
+            "  /join <channel> [key]       — join a channel",
+            "  /j <channel> [key]          — alias for /join",
+            "  /part [message]             — leave the current channel",
+            "  /nick <newnick>             — change your nick",
+            "  /me <action>                — send an action (/me waves)",
+            "  /msg <target> <message>     — send a private message",
+            "  /query <nick>               — open a PM buffer without sending",
+            "  /ns <text>                  — message NickServ",
+            "  /cs <text>                  — message ChanServ",
+            "  /bs <text>                  — message BotServ",
+            "  /ms <text>                  — message MemoServ",
+            "  /oper <user> <pass>         — IRC operator login",
+            "  /notice <target> <message>  — send a NOTICE",
+            "  /topic [text]               — show or set the channel topic",
+            "  /kick <nick> [reason]       — kick a user",
+            "  /invite <nick> [#channel]   — invite a user to a channel",
+            "  /mode <target> <flags>      — set channel or user modes",
+            "  /op <nick>                  — give op (+o)",
+            "  /deop <nick>                — remove op (-o)",
+            "  /voice <nick>               — give voice (+v)",
+            "  /devoice <nick>             — remove voice (-v)",
+            "  /ban <mask>                 — ban a mask (+b)",
+            "  /unban <mask>               — remove a ban (-b)",
+            "  /ping <nick>                — CTCP PING a user",
+            "  /time <nick>                — query a user's local time",
+            "  /away [message]             — set away status",
+            "  /back                       — clear away status",
+            "  /whois <nick>               — request WHOIS info",
+            "  /motd [server]              — request the MOTD",
+            "  /version [nick]             — request VERSION (nick optional)",
+            "  /ctcp <target> <cmd> [args] — send a CTCP request",
+            "  /sysinfo                    — post client/system info to channel",
+            "  /react <emoji>              — react to the currently selected message",
+            "  /ignore <nick>              — suppress messages from nick",
+            "  /unignore <nick>            — stop ignoring nick",
+            "  /ignored                    — list ignored nicks",
+            "  /monitor add|del|list|clear|status [nick]  — watch list (MONITOR)",
+            "  /clear                      — clear the chat buffer",
+            "  /quote <raw>  /raw <raw>    — send a raw IRC line",
+            "  /quit [message]             — disconnect from server",
+        };
+        for (const QString &line : lines)
+            m_model->localMessage(host, channel, line);
+    } else {
+        // Pass unknown /CMD args directly as raw IRC (e.g. /REHASH, /SAMODE)
+        m_model->sendRaw(host, text.mid(1));
+    }
+
+    return true;
+}
