@@ -1461,6 +1461,9 @@ void MainWindow::connectModel()
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+    if (!m_chatView)
+        return QMainWindow::eventFilter(obj, event);
+
     if (obj == m_chatView->viewport()) {
         if (event->type() == QEvent::MouseMove) {
             auto *me = static_cast<QMouseEvent *>(event);
@@ -1713,11 +1716,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             menu.exec(gp);
             return true;
         }
-        return false;
-    }
-
-    if (obj == m_chatView && event->type() == QEvent::Resize) {
-        repositionTypingLabel();
         return false;
     }
 
@@ -2191,8 +2189,12 @@ void MainWindow::onReactionsChanged(const QString &host, const QString &channel)
 
 void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
 {
-    if (host == m_model->activeHost())
+    if (host == m_model->activeHost()) {
         m_nickPrefix->setText(nick);
+        m_selfNickRe = nick.isEmpty() ? QRegularExpression{}
+            : QRegularExpression("(\\b" + QRegularExpression::escape(nick) + "\\b)",
+                                 QRegularExpression::CaseInsensitiveOption);
+    }
 
     for (auto *pane : std::as_const(m_panes))
         if (pane->host() == host)
@@ -2245,10 +2247,6 @@ void MainWindow::onTypingReceived(const QString &host, const QString &channel,
     updateTypingLabel();
 }
 
-void MainWindow::repositionTypingLabel()
-{
-    // no-op: typing label is now a layout row, not an overlay
-}
 
 void MainWindow::updateTypingLabel()
 {
@@ -2382,8 +2380,12 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
     refreshNickList(host, channel);
     refreshTopicBar(host, channel);
 
-    if (auto *sess = m_model->session(host))
+    if (auto *sess = m_model->session(host)) {
         m_nickPrefix->setText(sess->nick);
+        m_selfNickRe = sess->nick.isEmpty() ? QRegularExpression{}
+            : QRegularExpression("(\\b" + QRegularExpression::escape(sess->nick) + "\\b)",
+                                 QRegularExpression::CaseInsensitiveOption);
+    }
 
     if (m_signalBars) {
         auto *sess = m_model->session(host);
@@ -3232,7 +3234,7 @@ QString MainWindow::formatMessage(const Message &msg) const
     ctx.chatPt       = m_config.ui.fontSizes.chat;
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
-    ctx.selfNick     = m_model->selfNick(m_model->activeHost());
+    ctx.selfNickRe   = m_selfNickRe;
     ctx.channel      = m_model->channel(m_model->activeHost(), m_model->activeChannel());
     return ChatRenderer::formatMessage(msg, ctx);
 }

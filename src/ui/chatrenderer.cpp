@@ -241,11 +241,8 @@ QString formatMessage(const Message &msg, const Context &ctx)
         const QString nickAnchor = QString("<a href='nick:%1'%2 style='color:%3; text-decoration:none; font-weight:bold'>%4</a>")
             .arg(htmlAttr(msg.nick), titleAttr, color, nickDisplay);
         QString textHtml = wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), ctx.emojiPt);
-        if (!ctx.selfNick.isEmpty()) {
-            QRegularExpression snRe("(\\b" + QRegularExpression::escape(ctx.selfNick) + "\\b)",
-                                    QRegularExpression::CaseInsensitiveOption);
-            textHtml.replace(snRe, "<span style='color:red;font-weight:bold'>\\1</span>");
-        }
+        if (ctx.selfNickRe.isValid())
+            textHtml.replace(ctx.selfNickRe, "<span style='color:red;font-weight:bold'>\\1</span>");
         QString replySpan;
         if (!msg.replyTo.isEmpty() && ctx.channel) {
             QString origNick;

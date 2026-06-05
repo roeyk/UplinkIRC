@@ -3,6 +3,7 @@
 #include "config/keychainhelper.h"
 
 #include <memory>
+#include <QPointer>
 #include <QDir>
 #include <QFile>
 #include <QRegularExpression>
@@ -23,15 +24,17 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
 
     auto shared    = std::make_shared<ServerConfig>(std::move(sc));
     auto remaining = std::make_shared<int>(0);
+    QPointer<IrcClient> guard(client);
 
     auto maybeRead = [&](FP field, const QString &key) {
         if (shared.get()->*field != kSentinel)
             return;
         ++(*remaining);
-        KeychainHelper::readAsync(key, [shared, remaining, field, client](const QString &val) {
+        KeychainHelper::readAsync(key, [shared, remaining, field, guard](const QString &val) {
+            if (!guard) return;
             shared.get()->*field = val;
             if (--(*remaining) == 0)
-                client->connectToServer(*shared);
+                guard->connectToServer(*shared);
         });
     };
 
@@ -45,10 +48,11 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
             continue;
         ++(*remaining);
         const QString key = shared->name + ":channel:" + shared->channels[i].name + ":key";
-        KeychainHelper::readAsync(key, [shared, remaining, i, client](const QString &val) {
+        KeychainHelper::readAsync(key, [shared, remaining, i, guard](const QString &val) {
+            if (!guard) return;
             shared->channels[i].password = val;
             if (--(*remaining) == 0)
-                client->connectToServer(*shared);
+                guard->connectToServer(*shared);
         });
     }
 

@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <QQueue>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QColor>
 #include <QHash>
@@ -127,7 +128,6 @@ private:
     void checkEmojiAutocomplete(const QString &text);
     void commitEmojiAutocomplete(int row);
     void hideEmojiAutocomplete();
-    void repositionTypingLabel();
     QListWidget *m_emojiCompleter{nullptr};
     int          m_emojiTriggerPos{-1};
 
@@ -203,6 +203,8 @@ private:
     QHash<QString, QSet<QString>> m_typingNicks;       // "host|channel" → nicks
     QHash<QString, QTimer*>       m_typingNickTimers;  // "host|channel|nick" → timeout
     QHash<QString, QString>       m_botIcons;          // lowercased nick → cached bot icon
+
+    QRegularExpression m_selfNickRe; // pre-compiled highlight regex for active host's nick
 
     SessionModel *m_model;
     TrayIcon     *m_tray{nullptr};

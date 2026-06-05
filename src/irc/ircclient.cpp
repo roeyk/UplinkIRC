@@ -556,7 +556,7 @@ void IrcClient::processLine(const QString &line)
             const QString ctcp    = text.mid(1, text.size() - 2);
             const QString ctcpCmd = ctcp.section(' ', 0, 0).toUpper();
             if (ctcpCmd == "ACTION") {
-                emit actionReceived(m_host, isSelf ? target : target,
+                emit actionReceived(m_host, target,
                                     msg.nick, ctcp.mid(7), serverTime, false, msgid);
             } else if (ctcpCmd == "VERSION") {
                 const QString rkey = msg.nick + ":VERSION";

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QColor>
+#include <QRegularExpression>
 #include <QString>
 #include "model/message.h"
 
@@ -9,14 +10,14 @@ struct Channel;
 namespace ChatRenderer {
 
 struct Context {
-    bool    coloredNicks{false};
-    QString nickBrackets;
-    int     emojiPt{10};
-    int     chatPt{10};
-    bool    validTheme{false};
-    QString themeText;
-    QString selfNick;
-    const Channel *channel{nullptr}; // for reply-reference lookup
+    bool              coloredNicks{false};
+    QString           nickBrackets;
+    int               emojiPt{10};
+    int               chatPt{10};
+    bool              validTheme{false};
+    QString           themeText;
+    QRegularExpression selfNickRe; // pre-compiled; invalid = no highlight
+    const Channel    *channel{nullptr}; // for reply-reference lookup
 };
 
 QString formatMessage (const Message &msg, const Context &ctx);
