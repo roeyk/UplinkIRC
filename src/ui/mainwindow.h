@@ -110,7 +110,6 @@ private:
 
     QString    formatMessage(const Message &msg) const;
     void       showNickContextMenu(const QString &nick, const QPoint &globalPos);
-    static QColor nickColor(const QString &nick);
     QString    msgidAtViewPos(const QPoint &viewPos) const;
     void       doSearch(bool backward);
     void       showSearchBar();
