@@ -64,8 +64,8 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow("Username:",  m_user);
     form->addRow("Real Name:", m_realname);
 
-    auto makeBrowseRow = [](QLineEdit *edit, const QString &filter, QWidget *parent) {
-        auto *row    = new QWidget(parent);
+    auto makeBrowseRow = [](QLineEdit *edit, const QString &filter, QWidget *pw) {
+        auto *row    = new QWidget(pw);
         auto *hbox   = new QHBoxLayout(row);
         hbox->setContentsMargins(0, 0, 0, 0);
         hbox->addWidget(edit);

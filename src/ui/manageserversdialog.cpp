@@ -65,7 +65,7 @@ void ManageServersDialog::addServer()
     if (sc.host.isEmpty()) return;
     m_servers.append(sc);
     refreshList();
-    m_list->setCurrentRow(m_servers.size() - 1);
+    m_list->setCurrentRow(static_cast<int>(m_servers.size()) - 1);
 }
 
 void ManageServersDialog::editServer()

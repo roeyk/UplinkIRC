@@ -91,7 +91,7 @@ struct Channel {
             e.recomputePrefix();
             e.nick = n.mid(i);
             // userhost-in-names: strip !user@host suffix if present
-            const int bang = e.nick.indexOf('!');
+            const qsizetype bang = e.nick.indexOf('!');
             if (bang != -1)
                 e.nick = e.nick.left(bang);
             nicks.append(e);

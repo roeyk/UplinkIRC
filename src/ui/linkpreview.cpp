@@ -153,7 +153,7 @@ void LinkPreview::doPageFetch(const QUrl &url)
 
     connect(reply, &QNetworkReply::readyRead, this, [this, reply] {
         if (m_reply != reply) return;
-        const int rem = kMaxBytes - m_buf.size();
+        const qsizetype rem = kMaxBytes - m_buf.size();
         if (rem <= 0) { reply->abort(); return; }
         m_buf.append(reply->read(rem));
         if (m_buf.size() >= kMaxBytes) reply->abort();
@@ -234,7 +234,7 @@ void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const 
     auto  imgBuf   = std::make_shared<QByteArray>();
 
     connect(imgReply, &QNetworkReply::readyRead, this, [imgReply, imgBuf] {
-        const int rem = kMaxImgBytes - imgBuf->size();
+        const qsizetype rem = kMaxImgBytes - imgBuf->size();
         if (rem <= 0) { imgReply->abort(); return; }
         imgBuf->append(imgReply->read(rem));
         if (imgBuf->size() >= kMaxImgBytes) imgReply->abort();

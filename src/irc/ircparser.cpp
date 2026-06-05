@@ -4,7 +4,7 @@ static QHash<QString,QString> parseTags(const QString &raw)
 {
     QHash<QString,QString> out;
     for (const QString &part : raw.split(';', Qt::SkipEmptyParts)) {
-        const int eq = part.indexOf('=');
+        const qsizetype eq = part.indexOf('=');
         if (eq == -1) { out.insert(part, {}); continue; }
         QString val = part.mid(eq + 1);
         // IRCv3 tag value unescaping
@@ -36,11 +36,11 @@ IrcMessage IrcParser::parse(const QString &raw)
     line.remove('\n');
     if (line.isEmpty()) return msg;
 
-    int pos = 0;
+    qsizetype pos = 0;
 
     // IRCv3 tags
     if (line.startsWith('@')) {
-        int space = line.indexOf(' ');
+        qsizetype space = line.indexOf(' ');
         if (space == -1) return msg;
         msg.tags = parseTags(line.mid(1, space - 1));
         pos = space + 1;
@@ -52,14 +52,14 @@ IrcMessage IrcParser::parse(const QString &raw)
 
     // prefix
     if (pos < line.size() && line[pos] == ':') {
-        int space = line.indexOf(' ', pos);
+        qsizetype space = line.indexOf(' ', pos);
         if (space == -1) return msg;
         msg.prefix = line.mid(pos + 1, space - pos - 1);
         pos = space + 1;
 
         // parse nick!user@host
-        int bang = msg.prefix.indexOf('!');
-        int at   = msg.prefix.indexOf('@');
+        qsizetype bang = msg.prefix.indexOf('!');
+        qsizetype at   = msg.prefix.indexOf('@');
         if (bang != -1 && at != -1) {
             msg.nick = msg.prefix.left(bang);
             msg.user = msg.prefix.mid(bang + 1, at - bang - 1);
@@ -71,7 +71,7 @@ IrcMessage IrcParser::parse(const QString &raw)
 
     // command
     {
-        int space = line.indexOf(' ', pos);
+        qsizetype space = line.indexOf(' ', pos);
         if (space == -1) {
             msg.command = line.mid(pos).toUpper();
             return msg;
@@ -87,7 +87,7 @@ IrcMessage IrcParser::parse(const QString &raw)
             msg.params.append(msg.trailing);
             break;
         }
-        int space = line.indexOf(' ', pos);
+        qsizetype space = line.indexOf(' ', pos);
         if (space == -1) {
             msg.params.append(line.mid(pos));
             break;

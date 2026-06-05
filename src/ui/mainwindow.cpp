@@ -196,7 +196,7 @@ protected:
         if (type == QTextDocument::ImageResource) {
             const QString s = name.toString();
             if (s.startsWith("data:image/")) {
-                const int comma = s.indexOf(',');
+                const qsizetype comma = s.indexOf(',');
                 if (comma >= 0) {
                     QImage img;
                     img.loadFromData(QByteArray::fromBase64(s.mid(comma + 1).toLatin1()));
@@ -301,11 +301,11 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     if (!savedPanes.isEmpty()) {
         QTimer::singleShot(0, this, [this, savedPanes, savedPrimarySlot]{
             for (const QString &k : savedPanes) {
-                const int sep = k.indexOf('|');
+                const qsizetype sep = k.indexOf('|');
                 if (sep < 0) continue;
                 openChannelPane(k.left(sep), k.mid(sep + 1));
             }
-            m_primarySlot = qBound(0, savedPrimarySlot, (int)m_orderedPanes.size());
+            m_primarySlot = qBound(0, savedPrimarySlot, static_cast<int>(m_orderedPanes.size()));
             rebuildPaneLayout();
         });
     }
@@ -1142,9 +1142,9 @@ void MainWindow::setupInputBar()
     m_searchBar = new QWidget;
     m_searchBar->setObjectName("searchBar");
     {
-        auto *hbox = new QHBoxLayout(m_searchBar);
-        hbox->setContentsMargins(4, 2, 4, 2);
-        hbox->setSpacing(4);
+        auto *shbox = new QHBoxLayout(m_searchBar);
+        shbox->setContentsMargins(4, 2, 4, 2);
+        shbox->setSpacing(4);
         m_searchInput = new QLineEdit;
         m_searchInput->setPlaceholderText("Search in buffer…");
         m_searchInput->installEventFilter(this);
@@ -1167,8 +1167,8 @@ void MainWindow::setupInputBar()
             m_chatView->setTextCursor(QTextCursor(m_chatView->document()));
             m_input->setFocus();
         });
-        hbox->addWidget(m_searchInput, 1);
-        hbox->addWidget(closeBtn);
+        shbox->addWidget(m_searchInput, 1);
+        shbox->addWidget(closeBtn);
     }
     m_searchBar->hide();
 
@@ -1176,9 +1176,9 @@ void MainWindow::setupInputBar()
     m_replyBar = new QWidget;
     m_replyBar->setObjectName("replyBar");
     {
-        auto *hbox = new QHBoxLayout(m_replyBar);
-        hbox->setContentsMargins(8, 2, 4, 2);
-        hbox->setSpacing(4);
+        auto *rhbox = new QHBoxLayout(m_replyBar);
+        rhbox->setContentsMargins(8, 2, 4, 2);
+        rhbox->setSpacing(4);
         m_replyLabel = new QLabel;
         m_replyLabel->setObjectName("replyLabel");
         auto *closeBtn = new QToolButton;
@@ -1186,8 +1186,8 @@ void MainWindow::setupInputBar()
         closeBtn->setFixedSize(18, 18);
         closeBtn->setAutoRaise(true);
         connect(closeBtn, &QToolButton::clicked, this, &MainWindow::clearReplyBar);
-        hbox->addWidget(m_replyLabel, 1);
-        hbox->addWidget(closeBtn);
+        rhbox->addWidget(m_replyLabel, 1);
+        rhbox->addWidget(closeBtn);
     }
     m_replyBar->hide();
 
@@ -1211,7 +1211,7 @@ void MainWindow::setupInputBar()
         const int pos = m_input->cursorPosition();
         const QString text = m_input->text();
         m_input->setText(text.left(pos) + emoji + text.mid(pos));
-        m_input->setCursorPosition(pos + emoji.length());
+        m_input->setCursorPosition(pos + static_cast<int>(emoji.length()));
         m_input->setFocus();
     });
     connect(m_emojiBtn, &QPushButton::clicked, this, [this]{
@@ -1310,7 +1310,7 @@ void MainWindow::connectModel()
     });
 
     connect(m_model, &SessionModel::dccSendReceived, this,
-            [this](const QString &server, const QString &fromNick,
+            [this](const QString &, const QString &fromNick,
                    const QString &filename, quint32 ip, quint16 port, qint64 filesize)
     {
         const QString sizeStr = filesize >= 1024*1024
@@ -1333,12 +1333,12 @@ void MainWindow::connectModel()
 
         auto *dcc  = new DccReceive(savePath, ip, port, filesize, this);
         auto *prog = new QProgressDialog("Receiving " + filename + " from " + fromNick,
-                                          "Cancel", 0, filesize > INT_MAX ? INT_MAX : (int)filesize, this);
+                                          "Cancel", 0, filesize > INT_MAX ? INT_MAX : static_cast<int>(filesize), this);
         prog->setWindowModality(Qt::NonModal);
         prog->setAttribute(Qt::WA_DeleteOnClose);
 
         connect(dcc, &DccReceive::progress, prog, [prog, filesize](qint64 received, qint64){
-            prog->setValue((int)(filesize > INT_MAX
+            prog->setValue(static_cast<int>(filesize > INT_MAX
                 ? received * INT_MAX / filesize : received));
         });
         connect(dcc, &DccReceive::finished, this, [this, prog, dcc](const QString &path){
@@ -1395,12 +1395,12 @@ void MainWindow::connectModel()
             + " " + token + "\x01");
 
         auto *prog = new QProgressDialog("Receiving " + filename + " from " + fromNick,
-                                          "Cancel", 0, filesize > INT_MAX ? INT_MAX : (int)filesize, this);
+                                          "Cancel", 0, filesize > INT_MAX ? INT_MAX : static_cast<int>(filesize), this);
         prog->setWindowModality(Qt::NonModal);
         prog->setAttribute(Qt::WA_DeleteOnClose);
 
         connect(dcc, &DccReceive::progress, prog, [prog, filesize](qint64 received, qint64){
-            prog->setValue((int)(filesize > INT_MAX ? received * INT_MAX / filesize : received));
+            prog->setValue(static_cast<int>(filesize > INT_MAX ? received * INT_MAX / filesize : received));
         });
         connect(dcc, &DccReceive::finished, this, [this, prog, dcc](const QString &path){
             prog->setValue(prog->maximum());
@@ -1538,16 +1538,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 if (isHidden) {
                     auto *showAction = menu.addAction("Show Preview");
                     connect(showAction, &QAction::triggered, this, [this, anchor, host, channel]{
-                        auto *ch = m_model->channel(host, channel);
-                        if (ch) ch->hiddenPreviews.remove(anchor);
+                        auto *inner = m_model->channel(host, channel);
+                        if (inner) inner->hiddenPreviews.remove(anchor);
                         refreshChatView(host, channel);
                     });
                 } else {
                     auto *hideAction = menu.addAction("Hide Preview");
                     hideAction->setEnabled(hasPreview);
                     connect(hideAction, &QAction::triggered, this, [this, anchor, host, channel]{
-                        auto *ch = m_model->channel(host, channel);
-                        if (ch) ch->hiddenPreviews.insert(anchor);
+                        auto *inner = m_model->channel(host, channel);
+                        if (inner) inner->hiddenPreviews.insert(anchor);
                         refreshChatView(host, channel);
                     });
                 }
@@ -1768,7 +1768,7 @@ void MainWindow::handleTabComplete()
     const int pos = m_input->cursorPosition();
 
     // Find start of word before cursor
-    const int wordStart = text.lastIndexOf(' ', pos - 1) + 1;
+    const qsizetype wordStart = text.lastIndexOf(' ', pos - 1) + 1;
     const QString prefix = text.mid(wordStart, pos - wordStart);
 
     if (prefix.isEmpty()) return;
@@ -1805,7 +1805,7 @@ void MainWindow::handleTabComplete()
     if (m_tabCandidates.isEmpty()) return;
 
     const QString completed = m_tabCandidates[m_tabCandidateIndex];
-    m_tabCandidateIndex = (m_tabCandidateIndex + 1) % m_tabCandidates.size();
+    m_tabCandidateIndex = static_cast<int>((m_tabCandidateIndex + 1) % m_tabCandidates.size());
 
     // Commands always get a space suffix; nicks get ": " at line start, " " otherwise
     QString suffix;
@@ -1814,7 +1814,7 @@ void MainWindow::handleTabComplete()
             ? QStringLiteral(": ") : QStringLiteral(" ");
 
     m_input->setText(text.left(wordStart) + completed + suffix + text.mid(pos));
-    m_input->setCursorPosition(wordStart + completed.length() + suffix.length());
+    m_input->setCursorPosition(static_cast<int>(wordStart + completed.length() + suffix.length()));
 }
 
 void MainWindow::handleHistoryUp()
@@ -1822,7 +1822,7 @@ void MainWindow::handleHistoryUp()
     if (m_inputHistory.isEmpty()) return;
     if (m_historyIndex == -1)
         m_historyDraft = m_input->text();
-    m_historyIndex = qMin(m_historyIndex + 1, m_inputHistory.size() - 1);
+    m_historyIndex = qMin(m_historyIndex + 1, static_cast<int>(m_inputHistory.size()) - 1);
     m_input->setText(m_inputHistory[m_historyIndex]);
     m_input->end(false);
 }
@@ -1852,7 +1852,7 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
     // Auto-substitute a completed :shortcode: when the closing colon is just typed
     if (cursorPos > 0 && text[cursorPos - 1] == ':') {
         const QString beforeColon = before.chopped(1);  // drop the closing ':'
-        const int openColon = beforeColon.lastIndexOf(':');
+        const qsizetype openColon = beforeColon.lastIndexOf(':');
         if (openColon >= 0) {
             const QString code = beforeColon.mid(openColon + 1);
             static const QRegularExpression wordOnly(R"(^\w+$)");
@@ -1861,7 +1861,7 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
                 if (!emoji.isEmpty()) {
                     const QString newText = text.left(openColon) + emoji + text.mid(cursorPos);
                     m_input->setText(newText);
-                    m_input->setCursorPosition(openColon + emoji.length());
+                    m_input->setCursorPosition(static_cast<int>(openColon + emoji.length()));
                     hideEmojiAutocomplete();
                     return;
                 }
@@ -1870,7 +1870,7 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
     }
 
     // Find a bare :word pattern ending at cursor — minimum 1 char after colon
-    const int colon = before.lastIndexOf(':');
+    const qsizetype colon = before.lastIndexOf(':');
     if (colon < 0) { hideEmojiAutocomplete(); return; }
 
     const QString word = before.mid(colon + 1);
@@ -1884,10 +1884,10 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
     const auto matches = emojiMatching(word);
     if (matches.isEmpty()) { hideEmojiAutocomplete(); return; }
 
-    m_emojiTriggerPos = colon;
+    m_emojiTriggerPos = static_cast<int>(colon);
 
     m_emojiCompleter->clear();
-    const int shown = qMin(matches.size(), 8);
+    const int shown = static_cast<int>(qMin(matches.size(), qsizetype(8)));
     for (int i = 0; i < shown; ++i) {
         const auto &e = matches[i];
         auto *item = new QListWidgetItem(e.ch + "  " + e.shortcode);
@@ -1906,7 +1906,7 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
 
     // Align left edge with colon position approximation using font metrics
     const int charW  = m_input->fontMetrics().averageCharWidth();
-    const int colonX = m_input->contentsMargins().left() + colon * charW;
+    const int colonX = m_input->contentsMargins().left() + static_cast<int>(colon) * charW;
     const QPoint colonLocal = m_input->mapTo(this, QPoint(colonX, 0));
 
     int px = qMax(inputTL.x(), colonLocal.x());
@@ -1933,7 +1933,7 @@ void MainWindow::commitEmojiAutocomplete(int row)
     const int start = m_emojiTriggerPos;          // position of ':'
     const int end   = m_input->cursorPosition();  // current cursor
     m_input->setText(text.left(start) + emoji + text.mid(end));
-    m_input->setCursorPosition(start + emoji.length());
+    m_input->setCursorPosition(start + static_cast<int>(emoji.length()));
     m_input->setFocus();
 }
 
@@ -2278,7 +2278,7 @@ static QString sysinfoCPU()
         while (!in.atEnd()) {
             const QString line = in.readLine();
             if (line.startsWith("model name")) {
-                const int colon = line.indexOf(':');
+                const qsizetype colon = line.indexOf(':');
                 if (colon != -1)
                     return line.mid(colon + 1).trimmed();
             }
@@ -2354,8 +2354,8 @@ static QString sysinfoGPU()
         }
         if (!deviceName.isEmpty()) {
             // driverInfo e.g. "Mesa 24.3.4 (RADV STRIX1)" → extract last parens
-            const int lp = driverInfo.lastIndexOf('(');
-            const int rp = driverInfo.lastIndexOf(')');
+            const qsizetype lp = driverInfo.lastIndexOf('(');
+            const qsizetype rp = driverInfo.lastIndexOf(')');
             if (lp != -1 && rp > lp)
                 return QString("%1 (%2) (Vulkan)").arg(deviceName, driverInfo.mid(lp + 1, rp - lp - 1));
             return deviceName + " (Vulkan)";
@@ -2371,7 +2371,7 @@ static QString sysinfoGPU()
                 line.contains("3D controller", Qt::CaseInsensitive) ||
                 line.contains("Display controller", Qt::CaseInsensitive)) {
                 // "06:00.0 VGA compatible controller: AMD ... [Radeon 890M] (rev c8)"
-                const int c2 = line.indexOf(':', line.indexOf(':') + 1);
+                const qsizetype c2 = line.indexOf(':', line.indexOf(':') + 1);
                 if (c2 != -1)
                     return line.mid(c2 + 1).section('(', 0, 0).trimmed();
             }
@@ -2506,8 +2506,8 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
             m_model->sendAction(host, channel, args);
         } else if (cmd == "/msg") {
             const QString target = args.section(' ', 0, 0);
-            const QString text   = args.section(' ', 1);
-            m_model->sendMessage(host, target, text);
+            const QString body   = args.section(' ', 1);
+            m_model->sendMessage(host, target, body);
             if (!target.startsWith('#') && !target.startsWith('&'))
                 switchToChannel(host, target);
         } else if (cmd == "/query") {
@@ -2772,7 +2772,7 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
     // Substitute any remaining :shortcode: patterns before sending
     static const QRegularExpression shortcodeRe(R"(:(\w+):)");
     QString outText = trimmed;
-    int offset = 0;
+    qsizetype offset = 0;
     auto it = shortcodeRe.globalMatch(trimmed);
     while (it.hasNext()) {
         const auto m = it.next();
@@ -2955,18 +2955,18 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
         ChannelPane *target = paneAt(gp);
         if (target && target != source) {
             // pane ↔ pane swap
-            const int fromIdx = m_orderedPanes.indexOf(source);
-            const int toIdx   = m_orderedPanes.indexOf(target);
+            const qsizetype fromIdx = m_orderedPanes.indexOf(source);
+            const qsizetype toIdx   = m_orderedPanes.indexOf(target);
             if (fromIdx >= 0 && toIdx >= 0) {
                 m_orderedPanes.swapItemsAt(fromIdx, toIdx);
                 rebuildPaneLayout();
             }
         } else if (!target && isOverPrimary(gp)) {
             // pane ↔ primary swap: move primary to source's old slot
-            const int srcIdx  = m_orderedPanes.indexOf(source);
+            const qsizetype srcIdx  = m_orderedPanes.indexOf(source);
             if (srcIdx >= 0) {
                 // combined slot of source (accounts for primary's current position)
-                const int paneSlot = srcIdx < m_primarySlot ? srcIdx : srcIdx + 1;
+                const int paneSlot = static_cast<int>(srcIdx < m_primarySlot ? srcIdx : srcIdx + 1);
                 m_primarySlot = paneSlot;
                 rebuildPaneLayout();
             }
@@ -3016,7 +3016,7 @@ void MainWindow::closeChannelPane(const QString &host, const QString &channel)
     if (!pane) return;
 
     m_orderedPanes.removeOne(pane);
-    m_primarySlot = qMin(m_primarySlot, (int)m_orderedPanes.size());
+    m_primarySlot = qMin(m_primarySlot, static_cast<int>(m_orderedPanes.size()));
     pane->setParent(nullptr); // detach before rebuild
     pane->deleteLater();
 
@@ -3033,7 +3033,7 @@ void MainWindow::rebuildPaneLayout()
     // Collect widgets in display order, inserting primary at m_primarySlot.
     QList<QWidget*> widgets;
     int pi = 0;
-    const int nSlots = 1 + m_orderedPanes.size();
+    const qsizetype nSlots = 1 + m_orderedPanes.size();
     for (int i = 0; i < nSlots; i++) {
         if (i == m_primarySlot)
             widgets.append(m_primaryPanel);
@@ -3060,7 +3060,7 @@ void MainWindow::rebuildPaneLayout()
         return s;
     };
 
-    const int n = widgets.size();
+    const qsizetype n = widgets.size();
     if (n <= 2) {
         // 1 or 2 panes: flat horizontal
         for (auto *w : std::as_const(widgets)) {
@@ -3216,12 +3216,12 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             + " " + QString::number(size) + "\x01");
 
         auto *prog = new QProgressDialog("Sending " + fn + " to " + nick,
-                                          "Cancel", 0, size > INT_MAX ? INT_MAX : (int)size, this);
+                                          "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
         prog->setWindowModality(Qt::NonModal);
         prog->setAttribute(Qt::WA_DeleteOnClose);
 
         connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
-            prog->setValue((int)(size > INT_MAX ? sent * INT_MAX / size : sent));
+            prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
         });
         connect(dcc, &DccSend::finished, prog, [prog, dcc]{
             prog->setValue(prog->maximum());
@@ -3256,12 +3256,12 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             + " " + token + "\x01");
 
         auto *prog = new QProgressDialog("Waiting for " + nick + " to accept...",
-                                          "Cancel", 0, size > INT_MAX ? INT_MAX : (int)size, this);
+                                          "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
         prog->setWindowModality(Qt::NonModal);
         prog->setAttribute(Qt::WA_DeleteOnClose);
 
         connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
-            prog->setValue((int)(size > INT_MAX ? sent * INT_MAX / size : sent));
+            prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
         });
         connect(dcc, &DccSend::finished, prog, [prog, dcc]{
             prog->setValue(prog->maximum());
@@ -3494,7 +3494,7 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
         const QString modeStr = modes.isEmpty() ? QString() : " (" + modes + ")";
         m_topicLabel->setText(channel + modeStr);
 
-        const int    userCount = ch ? ch->nicks.size() : 0;
+        const qsizetype userCount = ch ? ch->nicks.size() : 0;
         m_userInfoLabel->setText(
             QString("* %1 — %2 user%3").arg(serverName).arg(userCount).arg(userCount != 1 ? "s" : ""));
 
@@ -3640,7 +3640,7 @@ static QString ircToHtml(const QString &raw)
     };
 
     int i = 0;
-    const int len = raw.size();
+    const qsizetype len = raw.size();
     while (i < len) {
         const ushort c = raw[i].unicode();
         if (c == 0x02) {                          // bold
@@ -3653,7 +3653,7 @@ static QString ircToHtml(const QString &raw)
             Fmt n = cur; n.strike = !cur.strike; applyFmt(n); ++i;
         } else if (c == 0x16) {                   // reverse fg/bg
             Fmt n = cur; std::swap(n.fg, n.bg); applyFmt(n); ++i;
-        } else if (c == 0x0F || c == 0x03 && i+1 < len && !raw[i+1].isDigit() && raw[i+1] != ',') {
+        } else if (c == 0x0F || (c == 0x03 && i+1 < len && !raw[i+1].isDigit() && raw[i+1] != ',')) {
             // reset all (\x0F) or bare \x03
             applyFmt({}); ++i;
         } else if (c == 0x03) {                   // color \x03[fg[,bg]]
@@ -3696,10 +3696,10 @@ static QString wrapEmojiHtml(const QString &html, int ptSize)
     QString result;
     result.reserve(html.size() * 2);
 
-    int i = 0;
+    qsizetype i = 0;
     while (i < html.size()) {
         if (html[i] == '<') {
-            int end = html.indexOf('>', i);
+            qsizetype end = html.indexOf('>', i);
             if (end == -1) { result += html.mid(i); break; }
             result += html.mid(i, end - i + 1);
             i = end + 1;

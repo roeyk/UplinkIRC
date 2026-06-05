@@ -331,7 +331,7 @@ void IrcClient::onReadyRead()
         return;
     }
 
-    int idx;
+    qsizetype idx;
     while ((idx = m_buffer.indexOf('\n')) != -1) {
         QString line = m_buffer.left(idx);
         m_buffer.remove(0, idx + 1);
@@ -835,7 +835,7 @@ void IrcClient::handleBouncer(const QStringList &params, const QString &trailing
         // Parse key=value pairs from params[1]
         QHash<QString,QString> attrs;
         for (const QString &part : params[1].split(';', Qt::SkipEmptyParts)) {
-            const int eq = part.indexOf('=');
+            const qsizetype eq = part.indexOf('=');
             if (eq != -1) attrs.insert(part.left(eq), part.mid(eq+1));
         }
         const QString id    = attrs.value("id");

@@ -16,20 +16,20 @@ struct ServerSession {
     // key = channel name lowercased
     QHash<QString, Channel> channels;
 
-    Channel &getOrCreate(const QString &name)
+    Channel &getOrCreate(const QString &chanName)
     {
-        const QString key = name.toLower();
+        const QString key = chanName.toLower();
         if (!channels.contains(key)) {
             Channel ch;
-            ch.name = name;
+            ch.name = chanName;
             channels.insert(key, ch);
         }
         return channels[key];
     }
 
-    Channel *get(const QString &name)
+    Channel *get(const QString &chanName)
     {
-        const QString key = name.toLower();
+        const QString key = chanName.toLower();
         auto it = channels.find(key);
         return it == channels.end() ? nullptr : &it.value();
     }

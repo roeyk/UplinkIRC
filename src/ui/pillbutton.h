@@ -51,7 +51,7 @@ protected:
             p.drawText(QRect(startX + iconW + gap, 0, textW + 2, height()),
                        Qt::AlignVCenter | Qt::AlignLeft, text());
         } else {
-            const int flags = Qt::AlignVCenter | (m_leftAlign ? Qt::AlignLeft : Qt::AlignHCenter);
+            const int flags = static_cast<int>(Qt::AlignVCenter | (m_leftAlign ? Qt::AlignLeft : Qt::AlignHCenter));
             p.drawText(rect().adjusted(10, 0, -10, 0), flags, text());
         }
     }
