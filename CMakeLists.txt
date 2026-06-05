@@ -159,3 +159,9 @@ install(FILES packaging/Uplink.desktop DESTINATION share/applications)
 install(FILES resources/icons/uplink-dark.png
         DESTINATION share/icons/hicolor/256x256/apps
         RENAME uplink.png)
+
+option(UPLINK_BUILD_TESTS "Build unit tests" ON)
+if(UPLINK_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

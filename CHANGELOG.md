@@ -3,6 +3,21 @@
 ---
 
 <!--
+Session summary — 2026-06-05 (unit tests + keychain async fix)
+
+Added Qt Test suite (tests/):
+  - tst_ircparser: 14 cases covering prefix parsing, nick!user@host split,
+    IRCv3 tag parsing, tag value unescaping, server-time, numerics,
+    CRLF stripping, empty/malformed input
+  - tst_chatformat: 16 cases covering HTML escaping, bold/italic/underline
+    IRC formatting codes, IRC color codes (fg and fg+bg), reset (\x0F),
+    linkifyHtml (http/https wrapped, ftp skipped), htmlAttr quoting
+  - CMakeLists.txt wired via UPLINK_BUILD_TESTS option (on by default);
+    run with: cmake --build build --target tst_ircparser tst_chatformat
+    or: ctest --test-dir build
+-->
+
+<!--
 Session summary — 2026-06-05 (keychain async fix)
 
 Removed nested QEventLoop from the startup path:

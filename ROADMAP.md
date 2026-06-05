@@ -249,7 +249,7 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] Batch chat/nick refreshes — debounce `refreshChatView()` and `refreshNickList()` with a short single-shot timer for burst updates
 - [x] Split `ChatRenderer` out of `MainWindow` — `formatMessage`, `ircToHtml`, `linkifyHtml`, emoji rendering as a separate class
 - [x] Split `CommandDispatcher` out of `MainWindow` — `/join`, `/msg`, `/dcc`, `/sysinfo`, etc. as a separate class
-- [ ] Parser and model unit tests — `IrcParserTest` (prefixes/tags/CTCP/malformed), `SessionModelTest` (joins/parts/caps), `ChatFormatTest` (HTML escaping/linkification)
+- [x] Parser and model unit tests — `IrcParserTest` (prefixes/tags/CTCP/malformed), `ChatFormatTest` (HTML escaping/linkification); `SessionModelTest` deferred (needs mock IrcClient)
 
 ### Bigger / architectural
 - [x] Keychain operations async — remove nested `QEventLoop` in `KeychainHelper`; load non-secret config first, then resolve secrets before connecting; avoids reentrancy hazard
