@@ -262,6 +262,29 @@ Next priorities:
   - In-app update check UI
 -->
 
+<!--
+Session summary — 2026-06-05 (doc fix — version string bump)
+
+What was done:
+  - Verified all CIs passed for v0.23.1 (both CI and Release workflows: success)
+  - Found stale version strings in README.md and docs/index.html:
+      README.md: 4 download badge links were hardcoded to v0.23.0 filenames
+      docs/index.html: nav brand, hero button, section title showed v0.16.3/v0.20.0;
+        download card hrefs pointed to v0.20.0 artifacts; footer version tag was v0.16.3
+  - Bumped all occurrences to v0.23.1 and pushed
+
+Root cause: download URLs use releases/latest/download/ but filenames include
+the version number — so every release breaks the links unless they are manually
+bumped. Suggested adding an auto-bump step to release.yml to prevent recurrence.
+
+No bugs fixed, no regressions, no code changes.
+
+Next priorities:
+  - Add release.yml step to auto-update version strings on tag push
+  - DCC passive / NAT traversal
+  - In-app update check UI
+-->
+
 ## v0.23.1 — 2026-06-04
 
 ### Fixes
