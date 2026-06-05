@@ -163,6 +163,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Pane layout persistence — save/restore pane arrangement across sessions
 - [x] Message reactions — IRCv3 draft/react; receive + store per-msgid; render inline below messages; right-click timestamp → React; /react command; IrcClient::sendReact (v0.15.0)
 - [x] Multiline messages — IRCv3 draft/multiline; compose and render multi-line message blocks
+- [ ] /list dialog — QDialog channel browser; streams RPL_LIST (322) results into a sortable QTableWidget (channel, users, topic); live filter box; double-click to join; batched UI inserts to stay responsive on large networks; guard against concurrent LIST requests
 - [ ] IRCv3 WebSocket transport — connect to servers over wss:// in addition to plain TCP+TLS
 - [ ] User metadata — IRCv3 metadata keys: display-name, avatar, pronouns; show in nick list and tooltips
 
