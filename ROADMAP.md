@@ -186,7 +186,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Nick panel redesign — replaced detachable QDockWidget with embedded panel in QSplitter; gear button (⚙) in header animates a full spin before toggling the user list; gear and user count remain visible when collapsed; panel background matches chat buffer color across all themes
 - [x] Sidebar gear toggle — ⚙ button in the topic bar collapses the server/channel list; hamburger and gear stay pinned in the topic bar at all times (kBtnZoneMinW=48px floor); only the list collapses beneath them
 - [x] Native Windows style — windows11 Qt style by default; no alien dark theme on fresh installs
-- [ ] FreeBSD port skeleton
+- [x] FreeBSD port skeleton — `packaging/freebsd/`: Makefile, pkg-descr, pkg-plist; uses GH source tarball; needs `make makesum` + qt6-keychain port verification before submission
 - [x] AppImage packaging for Linux — build-appimage.sh; linuxdeploy + Qt plugin; zsync metadata embedded; release.yml uploads .AppImage + .AppImage.zsync; plugin strip patched for .relr.dyn (v0.15.0)
 - [x] Auto-bump release docs — update-docs job in release.yml replaces all version strings in README.md and docs/index.html after each successful tag build; no manual bump needed on future releases
 - [x] Service shortcuts — /ns /cs /bs /ms aliases for NickServ/ChanServ/BotServ/MemoServ; /query opens PM without sending; /oper for IRC operator login (v0.15.0)

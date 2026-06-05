@@ -1,0 +1,14 @@
+Uplink is a fast, secure IRC client targeting LinuxDojo.org and general
+use. It speaks IRCv3 and connects with TLS by default.
+
+Features:
+ - IRCv3: message IDs, server-time, echo-message, batch, SASL PLAIN and
+   EXTERNAL, reply threading, reactions, message redaction, typing
+   indicators, account-tag, MONITOR, STS, chathistory
+ - DCC send/receive with passive mode and transfer progress
+ - SOCKS5 proxy per server
+ - 55 colour themes (TOML format)
+ - OS keychain for password storage
+ - Desktop notifications and system tray icon
+
+WWW: https://github.com/noderelay/UplinkIRC
