@@ -262,6 +262,48 @@ Next priorities:
   - In-app update check UI
 -->
 
+## v0.23.0 — 2026-06-04
+
+### Features
+
+- **Feat:** Link preview cards are now right-clickable — context menu with **Open URL** and **Hide Preview**. Left-clicking a card also opens the URL.
+- **Feat:** `/sysinfo` collection runs in a background thread — UI stays responsive while `vulkaninfo`, `lspci`, and other slow commands run. Posts "Collecting system info…" immediately; result follows when ready. Hard 12-second global timeout. Cache is now per-session.
+
+### Quality
+
+- **Fix:** Link preview queue — hovering a URL no longer aborts an in-flight card fetch. Hover uses a dedicated fetch path (`fetchHover`) with its own reply and DNS slots. Card fetches are queued (max 10) and processed sequentially. A 20-second watchdog advances the queue if a fetch hangs. `m_previewChannels` capped at 100 entries.
+- **Fix:** All compiler warnings eliminated — `-Wconversion` narrowing (`qsizetype`→`int`), `-Wshadow` locals, `-Wold-style-cast` C-style casts, and a missing `-Wparentheses` parenthesisation in the IRC colour renderer. Build is now clean under `-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wnon-virtual-dtor -Wold-style-cast`.
+
+---
+
+## v0.22.0 — 2026-06-04
+
+### Features
+
+- **Feat:** DCC passive / NAT traversal — "Send File (Passive)" in nick right-click menu. Receiver opens the port; works through sender-side NAT. 60-second timeout before cancellation. Passive token upgraded from 8-digit decimal (26-bit) to 32-char lowercase hex (128-bit).
+- **Feat:** In-app update check — **Hamburger → Check for Updates** fetches the GitHub releases API, compares `MAJOR.MINOR.PATCH`, and shows "Update Available" or "Up to Date".
+
+### Security
+
+- **Fix (F-01):** Link preview SSRF — `isBlockedBySchemeOrLiteral()` for scheme/literal private IPs; all fetches DNS-resolved via `QHostInfo::lookupHost()` with loopback/private/link-local/multicast rejection.
+- **Fix (F-02):** DCC receive — private/reserved peer IP blocked before file open or socket connect.
+- **Fix (F-03):** DCC passive receive — `listenPassive()` accepts `expectedIp`; incoming connections from unexpected peers rejected when sender is public.
+- **Fix (F-04):** Reactions — storage changed to `QSet<QString>` per `(msgid, emoji)` for automatic nick dedup; reactions pruned on message rolloff.
+- **Fix (F-05):** Link preview redirects — `ManualRedirectPolicy`; each redirect destination re-DNS-checked before following; image redirects blocked.
+- **Fix (F-06):** HTML attribute XSS — `htmlAttr()` helper encodes `'` to `&#39;` in addition to `toHtmlEscaped()`; applied to all `href`/`title` attributes.
+- **Fix (F-07):** Proxy passwords and channel keys now stored via OS keychain; plaintext fallback only when keychain unavailable.
+- **Fix (F-08):** STS store — hostname lowercased before all lookup/store/remove ops; `sts.ini` permissions restricted to owner read/write after each write.
+- **Fix (F-10):** `/sysinfo` — `QMessageBox::question` confirmation required before posting system info to a channel.
+
+### Quality
+
+- **Fix:** Topic link gate — `setOpenExternalLinks(false)` + `linkActivated` → http/https scheme check in topic labels.
+- **Fix:** DCC timeout cleanup — all three timeout handlers call `cancel()` before emitting error; sockets and file handles closed on timeout.
+- **Fix:** `hiddenPreviews` pruning — `addPreview()` removes the evicted URL from `hiddenPreviews` when the preview cache rolls over.
+- **Build:** `-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow -Wnon-virtual-dtor -Wold-style-cast` added to `CMakeLists.txt`; `UPLINK_WARNINGS_AS_ERRORS` and `UPLINK_ENABLE_SANITIZERS` options added (both off by default).
+
+---
+
 ## v0.21.0 — 2026-06-04
 
 ### Security
