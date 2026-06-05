@@ -285,6 +285,27 @@ Next priorities:
   - In-app update check UI
 -->
 
+<!--
+Session summary — 2026-06-05 (CI: auto-bump release docs)
+
+What was done:
+  - Added update-docs job to release.yml that runs after all platform builds succeed
+  - On each release tag, the job checks out main, applies targeted sed replacements
+    to bump every version-bearing string in README.md and docs/index.html, then
+    commits and pushes only if anything changed
+  - Covers: README download badge hrefs (AppImage, tar.gz, zip, dmg); docs/index.html
+    download card hrefs; nav brand span, hero button text, section title, footer
+    version-tag div
+  - Root cause of recurring stale links permanently addressed — no manual bump needed
+    on future releases
+
+No bugs, no regressions. CI/workflow-only change.
+
+Next priorities:
+  - DCC passive / NAT traversal
+  - FreeBSD port skeleton
+-->
+
 ## v0.23.1 — 2026-06-04
 
 ### Fixes

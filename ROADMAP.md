@@ -188,6 +188,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Native Windows style — windows11 Qt style by default; no alien dark theme on fresh installs
 - [ ] FreeBSD port skeleton
 - [x] AppImage packaging for Linux — build-appimage.sh; linuxdeploy + Qt plugin; zsync metadata embedded; release.yml uploads .AppImage + .AppImage.zsync; plugin strip patched for .relr.dyn (v0.15.0)
+- [x] Auto-bump release docs — update-docs job in release.yml replaces all version strings in README.md and docs/index.html after each successful tag build; no manual bump needed on future releases
 - [x] Service shortcuts — /ns /cs /bs /ms aliases for NickServ/ChanServ/BotServ/MemoServ; /query opens PM without sending; /oper for IRC operator login (v0.15.0)
 - [x] Right-click copy in chat view — selecting text and right-clicking shows Copy (v0.14.0)
 - [x] Theme-aware icons — hamburger menu and gear buttons use m_theme.text; link preview card hardcoded dark (v0.14.0)
