@@ -204,7 +204,8 @@ private:
     };
     QHash<QString, BatchInfo> m_batches;
 
-    QStringList m_monitorList;
+    QStringList   m_monitorList;
+    QSet<QString> m_monitorSet; // lowercase mirror for O(1) membership check
 
     // CTCP reply rate-limit: key = "nick:cmd", value = last-reply ms timestamp
     QHash<QString, qint64> m_ctcpTimestamps;

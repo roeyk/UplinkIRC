@@ -2084,6 +2084,27 @@ void MainWindow::onServerDisconnected(const QString &host)
         item->setIcon(0, QIcon());
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Disconnected);
+
+    // Prune typing state for all channels on this host
+    const QString prefix = host + "|";
+    for (auto it = m_typingNickTimers.begin(); it != m_typingNickTimers.end(); ) {
+        if (it.key().startsWith(prefix)) {
+            it.value()->stop();
+            it.value()->deleteLater();
+            it = m_typingNickTimers.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    for (auto it = m_typingNicks.begin(); it != m_typingNicks.end(); )
+        it = it.key().startsWith(prefix) ? m_typingNicks.erase(it) : ++it;
+
+    // Prune bot icon cache for nicks that only existed on this server
+    if (auto *sess = m_model->session(host)) {
+        for (auto chIt = sess->channels.cbegin(); chIt != sess->channels.cend(); ++chIt)
+            for (const QString &bn : chIt.value().botNicks)
+                m_botIcons.remove(bn);
+    }
 }
 
 void MainWindow::onChannelAdded(const QString &host, const QString &channel)
@@ -2971,12 +2992,26 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
         R"(https?://[^\s<>"]+)",
         QRegularExpression::CaseInsensitiveOption);
 
+    ChatRenderer::Context ctx;
+    ctx.coloredNicks = m_config.ui.coloredNicks;
+    ctx.nickBrackets = m_config.ui.nickBrackets;
+    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
+    ctx.chatPt       = m_config.ui.fontSizes.chat;
+    ctx.validTheme   = m_theme.valid;
+    ctx.themeText    = m_theme.text;
+    ctx.selfNickRe   = m_selfNickRe;
+    ctx.channel      = ch;
+
+    const bool hangIndent = m_config.ui.hangingIndent;
+    const int  emojiPt    = m_config.ui.fontSizes.emoji;
+
     for (const auto &msg : std::as_const(ch->messages)) {
-        appendMessage(msg);
-        if (!ch->previews.isEmpty() &&
-            (msg.type == MessageType::Privmsg ||
-             msg.type == MessageType::Action  ||
-             msg.type == MessageType::Notice)) {
+        const bool isText = (msg.type == MessageType::Privmsg ||
+                             msg.type == MessageType::Action  ||
+                             msg.type == MessageType::Notice);
+        insertHtmlBlock(m_chatView, ChatRenderer::formatMessage(msg, ctx),
+                        isText && hangIndent);
+        if (isText && !ch->previews.isEmpty()) {
             auto it = urlRe.globalMatch(msg.text);
             while (it.hasNext()) {
                 const QString urlStr = QUrl(it.next().captured(0)).toString();
@@ -2988,7 +3023,7 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
         if (!msg.msgid.isEmpty()) {
             auto rxIt = ch->reactions.constFind(msg.msgid);
             if (rxIt != ch->reactions.constEnd())
-                insertHtmlBlock(m_chatView, buildReactionHtml(*rxIt, m_config.ui.fontSizes.emoji));
+                insertHtmlBlock(m_chatView, buildReactionHtml(*rxIt, emojiPt));
         }
     }
 }

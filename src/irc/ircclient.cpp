@@ -224,18 +224,24 @@ void IrcClient::sendRedact(const QString &target, const QString &msgid, const QS
 void IrcClient::setMonitorList(const QStringList &nicks)
 {
     m_monitorList = nicks;
+    m_monitorSet.clear();
+    for (const QString &n : nicks)
+        m_monitorSet.insert(n.toLower());
 }
 
 void IrcClient::monitorAdd(const QString &nick)
 {
     if (nick.isEmpty()) return;
-    if (!m_monitorList.contains(nick, Qt::CaseInsensitive))
+    if (!m_monitorSet.contains(nick.toLower())) {
         m_monitorList.append(nick);
+        m_monitorSet.insert(nick.toLower());
+    }
     sendRaw("MONITOR + " + stripCrlf(nick));
 }
 
 void IrcClient::monitorRemove(const QString &nick)
 {
+    m_monitorSet.remove(nick.toLower());
     m_monitorList.removeIf([&](const QString &n){ return n.compare(nick, Qt::CaseInsensitive) == 0; });
     sendRaw("MONITOR - " + stripCrlf(nick));
 }
@@ -243,6 +249,7 @@ void IrcClient::monitorRemove(const QString &nick)
 void IrcClient::monitorClear()
 {
     m_monitorList.clear();
+    m_monitorSet.clear();
     sendRaw("MONITOR C");
 }
 

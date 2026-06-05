@@ -1,4 +1,5 @@
 #include "linkpreview.h"
+#include "net/addresscheck.h"
 
 #include <QBuffer>
 #include <QHostAddress>
@@ -17,24 +18,6 @@ static constexpr int kMaxCache     = 50;
 static constexpr int kTimeoutMs    = 6000;
 static constexpr int kMaxRedirects = 3;
 
-// ── SSRF helpers ──────────────────────────────────────────────────────────────
-
-static bool isForbiddenAddress(const QHostAddress &a)
-{
-    if (a.isNull())      return true;
-    if (a.isLoopback())  return true;
-    if (a.isMulticast()) return true;
-    if (a.isInSubnet(QHostAddress("10.0.0.0"),    8))   return true;
-    if (a.isInSubnet(QHostAddress("172.16.0.0"),  12))  return true;
-    if (a.isInSubnet(QHostAddress("192.168.0.0"), 16))  return true;
-    if (a.isInSubnet(QHostAddress("169.254.0.0"), 16))  return true;
-    if (a.isInSubnet(QHostAddress("127.0.0.0"),   8))   return true;
-    if (a.isInSubnet(QHostAddress("::1"),         128)) return true;
-    if (a.isInSubnet(QHostAddress("fc00::"),      7))   return true;
-    if (a.isInSubnet(QHostAddress("fe80::"),      10))  return true;
-    return false;
-}
-
 // Returns true if the URL should be blocked without a DNS lookup.
 // Handles scheme enforcement, literal private IPs, and well-known private hostnames.
 static bool isBlockedBySchemeOrLiteral(const QUrl &url)
@@ -48,7 +31,7 @@ static bool isBlockedBySchemeOrLiteral(const QUrl &url)
 
     QHostAddress addr(host);
     if (!addr.isNull())
-        return isForbiddenAddress(addr);
+        return isPrivateAddress(addr);
 
     return false;
 }
@@ -129,7 +112,7 @@ void LinkPreview::resolveAndFetchHover(const QUrl &url)
             if (info.error() != QHostInfo::NoError) return;
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
-                if (isForbiddenAddress(a)) return;
+                if (isPrivateAddress(a)) return;
 
             QNetworkRequest req(url);
             req.setRawHeader("User-Agent", "WhatsApp/2");
@@ -187,7 +170,7 @@ void LinkPreview::resolveAndFetch(const QUrl &url)
             if (info.error() != QHostInfo::NoError) return;
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
-                if (isForbiddenAddress(a)) return;
+                if (isPrivateAddress(a)) return;
             doPageFetch(url);
         });
 }
@@ -275,7 +258,7 @@ void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QU
             if (info.error() != QHostInfo::NoError) return;
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
-                if (isForbiddenAddress(a)) return;
+                if (isPrivateAddress(a)) return;
             doImageFetch(pageUrl, title, imageUrl);
         });
 }

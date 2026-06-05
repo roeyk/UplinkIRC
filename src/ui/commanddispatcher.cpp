@@ -3,6 +3,7 @@
 #include "irc/ircclient.h"
 #include "config/config.h"
 
+#include <memory>
 #include <QDateTime>
 #include <QFile>
 #include <QMessageBox>
@@ -377,11 +378,13 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
             m_sysinfoLoading = true;
             m_model->localMessage(host, channel, "Collecting system info...");
 
-            auto *thread = QThread::create([this, host, channel]() {
+            auto aborted = std::make_shared<bool>(false);
+            auto *thread = QThread::create([this, host, channel, aborted]() {
                 const QString result =
                     QString("OS: %1 CPU: %2 MEM: %3 GPU: %4")
                         .arg(sysinfoOS(), sysinfoCPU(), sysinfoMEM(), sysinfoGPU());
-                QMetaObject::invokeMethod(this, [this, host, channel, result]() {
+                QMetaObject::invokeMethod(this, [this, host, channel, result, aborted]() {
+                    if (*aborted) return;
                     m_sysinfoCache   = result;
                     m_sysinfoLoading = false;
                     m_model->sendMessage(host, channel,
@@ -392,11 +395,11 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
 
             auto *timer = new QTimer(this);
             timer->setSingleShot(true);
-            connect(timer, &QTimer::timeout, this, [this, host, channel, thread, timer]() {
+            connect(timer, &QTimer::timeout, this, [this, host, channel, timer, aborted]() {
                 timer->deleteLater();
                 if (!m_sysinfoLoading) return;
+                *aborted = true;
                 m_sysinfoLoading = false;
-                thread->terminate();
                 m_model->localMessage(host, channel,
                     "System info collection timed out.");
             });

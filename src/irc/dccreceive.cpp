@@ -1,4 +1,5 @@
 #include "dccreceive.h"
+#include "net/addresscheck.h"
 
 #include <QFileInfo>
 #include <QHostAddress>
@@ -10,23 +11,6 @@
 
 // Maximum file size accepted via DCC receive (2 GiB).
 static constexpr qint64 kMaxDccReceiveBytes = 2LL * 1024 * 1024 * 1024;
-
-// Mirrors the SSRF helper in linkpreview.cpp — keep in sync if ranges change.
-static bool isPrivateDccAddress(const QHostAddress &a)
-{
-    if (a.isNull())      return true;
-    if (a.isLoopback())  return true;
-    if (a.isMulticast()) return true;
-    if (a.isInSubnet(QHostAddress("10.0.0.0"),    8))   return true;
-    if (a.isInSubnet(QHostAddress("172.16.0.0"),  12))  return true;
-    if (a.isInSubnet(QHostAddress("192.168.0.0"), 16))  return true;
-    if (a.isInSubnet(QHostAddress("169.254.0.0"), 16))  return true;
-    if (a.isInSubnet(QHostAddress("127.0.0.0"),   8))   return true;
-    if (a.isInSubnet(QHostAddress("::1"),         128)) return true;
-    if (a.isInSubnet(QHostAddress("fc00::"),      7))   return true;
-    if (a.isInSubnet(QHostAddress("fe80::"),      10))  return true;
-    return false;
-}
 
 DccReceive::DccReceive(const QString &savePath, quint32 ip, quint16 port, qint64 filesize,
                        QObject *parent)
@@ -69,7 +53,7 @@ static bool checkTransferPrecon(qint64 total, const QString &savePath, DccReceiv
 void DccReceive::start()
 {
     const QHostAddress peerAddr(m_ip);
-    if (isPrivateDccAddress(peerAddr)) {
+    if (isPrivateAddress(peerAddr)) {
         emit error("DCC blocked: peer address " + peerAddr.toString() + " is private or reserved");
         return;
     }
@@ -115,7 +99,7 @@ bool DccReceive::listenPassive(quint32 expectedIp)
     // With NAT/bouncers the advertised IP may differ from the real source, so skip validation
     // for private addresses rather than blocking legitimate transfers.
     const QHostAddress expected(expectedIp);
-    const bool validatePeer = expectedIp != 0 && !isPrivateDccAddress(expected);
+    const bool validatePeer = expectedIp != 0 && !isPrivateAddress(expected);
 
     connect(m_server, &QTcpServer::newConnection, this, [this, expected, validatePeer] {
         QTcpSocket *incoming = m_server->nextPendingConnection();
