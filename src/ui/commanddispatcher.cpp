@@ -213,11 +213,11 @@ static QString sysinfoUptime()
     p.start("sysctl", {"-n", "kern.boottime"});
     p.waitForFinished(2000);
     const QString out = QString::fromLocal8Bit(p.readAllStandardOutput());
-    const int eq = out.indexOf("sec = ");
-    const int cm = out.indexOf(',', eq);
+    const qsizetype eq = out.indexOf("sec = ");
+    const qsizetype cm = out.indexOf(',', eq);
     if (eq != -1 && cm != -1) {
         const quint64 bootSec = out.mid(eq + 6, cm - eq - 6).trimmed().toULongLong();
-        const quint64 now = QDateTime::currentSecsSinceEpoch();
+        const quint64 now = static_cast<quint64>(QDateTime::currentSecsSinceEpoch());
         const quint64 s   = now > bootSec ? now - bootSec : 0;
         const quint64 days    = s / 86400;
         const quint64 hours   = (s % 86400) / 3600;

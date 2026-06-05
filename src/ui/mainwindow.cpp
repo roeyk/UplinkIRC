@@ -483,7 +483,7 @@ void MainWindow::setupToolbar()
 
         menu->addSeparator();
 
-        menu->addAction(MenuIcons::servers(ic), "Open Config", this, [this]{
+        menu->addAction(MenuIcons::servers(ic), "Open Config", this, []{
             QDesktopServices::openUrl(QUrl::fromLocalFile(Config::defaultPath()));
         });
 
@@ -2809,7 +2809,7 @@ void MainWindow::rebuildPaneLayout()
             delete s;
     }
 
-    auto makeVert = [this]() -> QSplitter * {
+    auto makeVert = []() -> QSplitter * {
         auto *s = new QSplitter(Qt::Vertical);
         s->setHandleWidth(2);
         return s;

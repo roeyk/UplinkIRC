@@ -53,7 +53,7 @@ void ManageServersDialog::refreshList()
     }
     if (cur >= 0 && cur < m_list->count())
         m_list->setCurrentRow(cur);
-    else if (!m_list->count() == 0)
+    else if (m_list->count() > 0)
         m_list->setCurrentRow(0);
 }
 
