@@ -159,6 +159,11 @@ void ChannelPane::setInputFont(const QFont &nickFont, const QFont &inputFont)
     if (m_input)      m_input->setFont(inputFont);
 }
 
+void ChannelPane::setTopicFont(const QFont &f)
+{
+    if (m_topicText) m_topicText->setFont(f);
+}
+
 void ChannelPane::setTopic(const QString &html)
 {
     if (m_topicText) m_topicText->setText(html);

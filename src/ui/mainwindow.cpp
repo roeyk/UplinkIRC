@@ -696,8 +696,11 @@ void MainWindow::applyFontSizes()
     if (m_nickPrefix)   m_nickPrefix->setFont(makeFont(fs.inputNick));
     if (m_input)        m_input->setFont(makeFont(fs.input));
     for (auto *p : std::as_const(m_orderedPanes)) {
-        p->chatView()->setFont(makeFont(fs.chat));
+        const QFont chatFont = makeFont(fs.chat);
+        p->chatView()->setFont(chatFont);
+        p->chatView()->document()->setDefaultFont(chatFont);
         p->nickList()->setFont(makeFont(fs.nickList));
+        p->setTopicFont(makeFont(fs.topicBar));
         p->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
     }
     if (m_typingLabel) {
@@ -3002,8 +3005,12 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
         const FontSizes &fs = m_config.ui.fontSizes;
         const QString   &fam = m_config.ui.fontFamily;
         auto makeFont = [&](int pt){ QFont f(fam,pt); f.setStyleHint(QFont::Monospace); return f; };
-        pane->chatView()->setFont(makeFont(fs.chat));
+        const QFont chatFont = makeFont(fs.chat);
+        pane->chatView()->setFont(chatFont);
+        pane->chatView()->document()->setDefaultFont(chatFont);
         pane->nickList()->setFont(makeFont(fs.nickList));
+        pane->nickList()->setItemDelegate(new FixedRowDelegate(16, pane->nickList()));
+        pane->setTopicFont(makeFont(fs.topicBar));
         pane->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
     }
 

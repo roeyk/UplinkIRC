@@ -22,6 +22,7 @@ public:
     void setNick(const QString &nick);
     void setNickVisible(bool visible);
     void setInputFont(const QFont &nickFont, const QFont &inputFont);
+    void setTopicFont(const QFont &f);
     void setTopic(const QString &html);
     void setTopicIcon(const QIcon &collapsed, const QIcon &expanded);
     void setDragHighlight(bool on);
