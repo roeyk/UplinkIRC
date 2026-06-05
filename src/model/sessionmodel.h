@@ -82,8 +82,8 @@ signals:
     void nickRenamed    (const QString &host, const QString &channel,
                          const QString &oldNick, const QString &newNick);
     void unreadChanged   (const QString &host, const QString &channel, int count);
-    void reactionsChanged(const QString &host, const QString &channel);
-    void messageRedacted (const QString &host, const QString &channel);
+    void reactionsChanged(const QString &host, const QString &channel, const QString &msgid);
+    void messageRedacted (const QString &host, const QString &channel, const QString &msgid);
 
     // Self
     void selfNickChanged(const QString &host, const QString &nick);

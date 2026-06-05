@@ -1,9 +1,11 @@
 #pragma once
 
-#include <QObject>
+#include <QByteArray>
 #include <QHash>
-#include <QUrl>
+#include <QList>
+#include <QObject>
 #include <QPixmap>
+#include <QUrl>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -22,8 +24,8 @@ signals:
 
 private:
     struct CachedCard {
-        QString title;
-        QPixmap thumbnail;
+        QString    title;
+        QByteArray pngData; // compressed PNG thumbnail; empty if no image
     };
 
     void resolveAndFetch(const QUrl &url);
@@ -31,6 +33,7 @@ private:
     void fetchImage(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl);
     void doImageFetch(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl);
     void resolveAndFetchHover(const QUrl &url);
+    void insertCache(const QString &key, CachedCard &&card);
 
     QString extractTitle(const QByteArray &data) const;
     QUrl    extractImageUrl(const QByteArray &data) const;
@@ -52,4 +55,5 @@ private:
     quint64                   m_hoverGen{0};
 
     QHash<QString, CachedCard> m_cache;
+    QList<QString>             m_cacheOrder; // insertion order for FIFO eviction
 };

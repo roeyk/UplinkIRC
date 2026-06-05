@@ -154,7 +154,10 @@ void LinkPreview::resolveAndFetch(const QUrl &url)
         if (m_cache.contains(key)) {
             const CachedCard &c = m_cache[key];
             emit titleReady(url, c.title);
-            emit cardReady(url, c.title, c.thumbnail);
+            QPixmap pm;
+            if (!c.pngData.isEmpty())
+                pm.loadFromData(c.pngData, "PNG");
+            emit cardReady(url, c.title, pm);
             return;
         }
     }
@@ -235,8 +238,7 @@ void LinkPreview::doPageFetch(const QUrl &url)
         if (imgUrl.isValid())
             fetchImage(pageUrl, title, imgUrl);
         else {
-            if (m_cache.size() >= kMaxCache) m_cache.erase(m_cache.begin());
-            m_cache.insert(pageUrl.toString(), {title, {}});
+            insertCache(pageUrl.toString(), {title, {}});
             emit cardReady(pageUrl, title, {});
         }
     });
@@ -292,8 +294,7 @@ void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const 
                 imgReply->attribute(QNetworkRequest::RedirectionTargetAttribute);
             imgReply->deleteLater();
             if (redir.isValid()) {
-                if (m_cache.size() >= kMaxCache) m_cache.erase(m_cache.begin());
-                m_cache.insert(pageUrl.toString(), {title, {}});
+                insertCache(pageUrl.toString(), {title, {}});
                 emit cardReady(pageUrl, title, {});
                 return;
             }
@@ -312,10 +313,30 @@ void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const 
                 }
             }
 
-            if (m_cache.size() >= kMaxCache) m_cache.erase(m_cache.begin());
-            m_cache.insert(pageUrl.toString(), {title, pm});
+            // Store compressed PNG bytes; the QPixmap lifetime is just the signal call
+            QByteArray pngData;
+            if (!pm.isNull()) {
+                QBuffer pngBuf(&pngData);
+                pngBuf.open(QIODevice::WriteOnly);
+                pm.save(&pngBuf, "PNG");
+            }
+            insertCache(pageUrl.toString(), {title, pngData});
             emit cardReady(pageUrl, title, pm);
         });
+}
+
+void LinkPreview::insertCache(const QString &key, CachedCard &&card)
+{
+    if (m_cache.contains(key)) {
+        m_cache[key] = std::move(card);
+        return;
+    }
+    if (m_cache.size() >= kMaxCache) {
+        m_cache.remove(m_cacheOrder.front());
+        m_cacheOrder.removeFirst();
+    }
+    m_cache.insert(key, std::move(card));
+    m_cacheOrder.append(key);
 }
 
 QString LinkPreview::extractTitle(const QByteArray &data) const

@@ -934,7 +934,7 @@ void SessionModel::onReactReceived(const QString &host, const QString &target,
     if (!perEmoji.contains(emoji) && perEmoji.size() >= kMaxEmojis) return;
     if (perEmoji[emoji].size() >= kMaxNicks) return;
     perEmoji[emoji].insert(nick);
-    emit reactionsChanged(host, buf);
+    emit reactionsChanged(host, buf, msgid);
 }
 
 void SessionModel::onAccountChanged(const QString &host, const QString &nick,
@@ -966,7 +966,7 @@ void SessionModel::onMessageRedacted(const QString &host, const QString &senderN
             break;
         }
     }
-    emit messageRedacted(host, bufName);
+    emit messageRedacted(host, bufName, msgid);
 }
 
 void SessionModel::onInviteNotify(const QString &host, const QString &inviter,

@@ -244,6 +244,55 @@ static void insertHtmlBlock(QTextBrowser *view, const QString &html, bool hangIn
 }
 
 
+class BlockMsgid : public QTextBlockUserData {
+public:
+    explicit BlockMsgid(const QString &i) : id(i) {}
+    QString id;
+};
+
+static QTextBlock findBlock(QTextBrowser *view, const QString &id)
+{
+    QTextBlock b = view->document()->begin();
+    while (b.isValid()) {
+        if (auto *d = static_cast<BlockMsgid*>(b.userData()))
+            if (d->id == id) return b;
+        b = b.next();
+    }
+    return {};
+}
+
+static void replaceBlockHtml(QTextBrowser *view, const QTextBlock &block, const QString &html)
+{
+    Q_UNUSED(view)
+    QTextCursor c(view->document());
+    c.setPosition(block.position());
+    c.setPosition(block.position() + block.length() - 1, QTextCursor::KeepAnchor);
+    c.insertHtml(html);
+}
+
+static void removeBlock(QTextBrowser *view, const QTextBlock &block)
+{
+    Q_UNUSED(view)
+    if (!block.isValid()) return;
+    QTextCursor c(view->document());
+    c.setPosition(block.position());
+    c.setPosition(block.position() + block.length(), QTextCursor::KeepAnchor);
+    c.removeSelectedText();
+}
+
+static void insertBlockAfter(QTextBrowser *view, const QTextBlock &anchor,
+                              const QString &html, QTextBlockUserData *data = nullptr)
+{
+    Q_UNUSED(view)
+    QTextCursor c(view->document());
+    c.setPosition(anchor.position());
+    c.movePosition(QTextCursor::EndOfBlock);
+    c.insertBlock();
+    c.insertHtml(html);
+    if (data)
+        c.block().setUserData(data);
+}
+
 // ---------------------------------------------------------------------------
 // Construction
 // ---------------------------------------------------------------------------
@@ -2213,11 +2262,41 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
     }
 }
 
-void MainWindow::onReactionsChanged(const QString &host, const QString &channel)
+void MainWindow::onReactionsChanged(const QString &host, const QString &channel, const QString &msgid)
 {
     if (host == m_model->activeHost() &&
-        channel.toLower() == m_model->activeChannel().toLower())
-        refreshChatView(host, channel);
+        channel.toLower() == m_model->activeChannel().toLower()) {
+        auto *ch = m_model->channel(host, channel);
+        if (!ch) return;
+
+        QTextBlock msgBlock = findBlock(m_chatView, msgid);
+        if (!msgBlock.isValid()) return;
+
+        const QTextBlock nextBlock = msgBlock.next();
+        auto *nextData = nextBlock.isValid()
+            ? static_cast<BlockMsgid*>(nextBlock.userData()) : nullptr;
+        const bool rxBlockExists = nextData && nextData->id == "rx:" + msgid;
+
+        auto rxIt = ch->reactions.constFind(msgid);
+        const bool hasReactions = rxIt != ch->reactions.constEnd() && !rxIt->isEmpty();
+
+        if (!hasReactions) {
+            if (rxBlockExists)
+                removeBlock(m_chatView, nextBlock);
+            return;
+        }
+
+        const QString rxHtml = buildReactionHtml(*rxIt, m_config.ui.fontSizes.emoji);
+        if (rxBlockExists)
+            replaceBlockHtml(m_chatView, nextBlock, rxHtml);
+        else
+            insertBlockAfter(m_chatView, msgBlock, rxHtml, new BlockMsgid("rx:" + msgid));
+    }
+
+    for (auto *pane : std::as_const(m_panes)) {
+        if (pane->host() == host && pane->channel().toLower() == channel.toLower())
+            refreshPaneChatView(pane);
+    }
 }
 
 void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
@@ -2234,11 +2313,38 @@ void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
             pane->setNick(nick);
 }
 
-void MainWindow::onMessageRedacted(const QString &host, const QString &channel)
+void MainWindow::onMessageRedacted(const QString &host, const QString &channel, const QString &msgid)
 {
     if (host == m_model->activeHost() &&
-        channel.toLower() == m_model->activeChannel().toLower())
-        refreshChatView(host, channel);
+        channel.toLower() == m_model->activeChannel().toLower()) {
+        auto *ch = m_model->channel(host, channel);
+        if (!ch) return;
+
+        const Message *redacted = nullptr;
+        for (const auto &msg : std::as_const(ch->messages))
+            if (msg.msgid == msgid) { redacted = &msg; break; }
+        if (!redacted) return;
+
+        QTextBlock msgBlock = findBlock(m_chatView, msgid);
+        if (!msgBlock.isValid()) return;
+
+        ChatRenderer::Context ctx;
+        ctx.coloredNicks = m_config.ui.coloredNicks;
+        ctx.nickBrackets = m_config.ui.nickBrackets;
+        ctx.emojiPt      = m_config.ui.fontSizes.emoji;
+        ctx.chatPt       = m_config.ui.fontSizes.chat;
+        ctx.validTheme   = m_theme.valid;
+        ctx.themeText    = m_theme.text;
+        ctx.selfNickRe   = m_selfNickRe;
+        ctx.channel      = ch;
+
+        replaceBlockHtml(m_chatView, msgBlock, ChatRenderer::formatMessage(*redacted, ctx));
+    }
+
+    for (auto *pane : std::as_const(m_panes)) {
+        if (pane->host() == host && pane->channel().toLower() == channel.toLower())
+            refreshPaneChatView(pane);
+    }
 }
 
 void MainWindow::onTypingReceived(const QString &host, const QString &channel,
@@ -3011,6 +3117,8 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
                              msg.type == MessageType::Notice);
         insertHtmlBlock(m_chatView, ChatRenderer::formatMessage(msg, ctx),
                         isText && hangIndent);
+        if (!msg.msgid.isEmpty())
+            m_chatView->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
         if (isText && !ch->previews.isEmpty()) {
             auto it = urlRe.globalMatch(msg.text);
             while (it.hasNext()) {
@@ -3022,8 +3130,10 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
         }
         if (!msg.msgid.isEmpty()) {
             auto rxIt = ch->reactions.constFind(msg.msgid);
-            if (rxIt != ch->reactions.constEnd())
+            if (rxIt != ch->reactions.constEnd()) {
                 insertHtmlBlock(m_chatView, buildReactionHtml(*rxIt, emojiPt));
+                m_chatView->document()->lastBlock().setUserData(new BlockMsgid("rx:" + msg.msgid));
+            }
         }
     }
 }
@@ -3215,6 +3325,8 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
                          msg.type == MessageType::Action  ||
                          msg.type == MessageType::Notice);
     insertHtmlBlock(m_chatView, formatMessage(msg), isText && m_config.ui.hangingIndent);
+    if (!msg.msgid.isEmpty())
+        m_chatView->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
 
     if (autoPreview &&
         (msg.type == MessageType::Privmsg ||
