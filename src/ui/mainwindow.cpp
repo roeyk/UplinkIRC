@@ -35,6 +35,7 @@
 #include <QTextBrowser>
 #include <QDesktopServices>
 #include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -1198,8 +1199,13 @@ void MainWindow::setupInputBar()
     m_nickPrefix->setStyleSheet("font-weight: bold; padding-right: 4px;");
     m_nickPrefix->setVisible(m_showNickPrefix);
 
-    m_input = new QLineEdit;
+    m_input = new QPlainTextEdit;
     m_input->setPlaceholderText("Type a message...");
+    m_input->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    m_input->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_input->document()->setDocumentMargin(2);
+    m_input->setFixedHeight(m_input->fontMetrics().lineSpacing() + 10);
     m_input->installEventFilter(this);
 
     m_emojiBtn = new QPushButton("😊");
@@ -1289,10 +1295,9 @@ void MainWindow::setupInputBar()
             m_pendingReactChannel.clear();
             return;
         }
-        const int pos = m_input->cursorPosition();
-        const QString text = m_input->text();
-        m_input->setText(text.left(pos) + emoji + text.mid(pos));
-        m_input->setCursorPosition(pos + static_cast<int>(emoji.length()));
+        QTextCursor tc = m_input->textCursor();
+        tc.insertText(emoji);
+        m_input->setTextCursor(tc);
         m_input->setFocus();
     });
     connect(m_emojiBtn, &QPushButton::clicked, this, [this]{
@@ -1325,8 +1330,14 @@ void MainWindow::setupInputBar()
         m_model->sendTyping(host, ch, "paused");
     });
 
-    connect(m_input, &QLineEdit::textChanged, this, [this](const QString &text){
+    connect(m_input, &QPlainTextEdit::textChanged, this, [this]{
+        const QString text = m_input->toPlainText();
         checkEmojiAutocomplete(text);
+        // Auto-resize: 1 to 4 lines
+        const int lineH = m_input->fontMetrics().lineSpacing();
+        const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
+        const int lines = qMin(4, static_cast<int>(text.count('\n')) + 1);
+        m_input->setFixedHeight(lines * lineH + margins);
         if (!m_config.ui.typingIndicator) return;
         const QString host = m_model->activeHost();
         const QString ch   = m_model->activeChannel();
@@ -1345,8 +1356,6 @@ void MainWindow::setupInputBar()
             }
         }
     });
-
-    connect(m_input, &QLineEdit::returnPressed, this, &MainWindow::onInputSubmit);
 }
 
 void MainWindow::connectModel()
@@ -1874,21 +1883,33 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     m_tabCandidates.clear();
 
     if (ke->key() == Qt::Key_Up && !m_emojiCompleter->isVisible()) {
-        handleHistoryUp();
-        return true;
+        if (m_input->textCursor().blockNumber() == 0) {
+            handleHistoryUp();
+            return true;
+        }
     }
     if (ke->key() == Qt::Key_Down && !m_emojiCompleter->isVisible()) {
-        handleHistoryDown();
+        if (m_input->textCursor().blockNumber() == m_input->document()->blockCount() - 1) {
+            handleHistoryDown();
+            return true;
+        }
+    }
+
+    if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {
+        if (ke->modifiers() & Qt::ShiftModifier)
+            return false; // let QPlainTextEdit insert newline
+        onInputSubmit();
         return true;
     }
 
     return QMainWindow::eventFilter(obj, event);
 }
 
-void MainWindow::handleTabComplete(QLineEdit *input, const QString &host, const QString &channel)
+void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, const QString &channel)
 {
-    const QString text = input->text();
-    const int pos = input->cursorPosition();
+    const QTextCursor tc = input->textCursor();
+    const QString text = tc.block().text();   // current line only
+    const int pos = tc.positionInBlock();
 
     // Find start of word before cursor
     const qsizetype wordStart = text.lastIndexOf(' ', pos - 1) + 1;
@@ -1932,22 +1953,26 @@ void MainWindow::handleTabComplete(QLineEdit *input, const QString &host, const 
 
     // Commands always get a space suffix; nicks get ": " at line start, " " otherwise
     QString suffix;
-    if (pos == text.length())
+    if (pos == static_cast<int>(text.length()))
         suffix = (wordStart == 0 && !completed.startsWith('/'))
             ? QStringLiteral(": ") : QStringLiteral(" ");
 
-    input->setText(text.left(wordStart) + completed + suffix + text.mid(pos));
-    input->setCursorPosition(static_cast<int>(wordStart + completed.length() + suffix.length()));
+    const int blockStart = tc.block().position();
+    QTextCursor editCursor = input->textCursor();
+    editCursor.setPosition(blockStart + static_cast<int>(wordStart));
+    editCursor.setPosition(blockStart + pos, QTextCursor::KeepAnchor);
+    editCursor.insertText(completed + suffix);
+    input->setTextCursor(editCursor);
 }
 
 void MainWindow::handleHistoryUp()
 {
     if (m_inputHistory.isEmpty()) return;
     if (m_historyIndex == -1)
-        m_historyDraft = m_input->text();
+        m_historyDraft = m_input->toPlainText();
     m_historyIndex = qMin(m_historyIndex + 1, static_cast<int>(m_inputHistory.size()) - 1);
-    m_input->setText(m_inputHistory[m_historyIndex]);
-    m_input->end(false);
+    m_input->setPlainText(m_inputHistory[m_historyIndex]);
+    m_input->moveCursor(QTextCursor::End);
 }
 
 void MainWindow::handleHistoryDown()
@@ -1956,11 +1981,11 @@ void MainWindow::handleHistoryDown()
     m_historyIndex--;
     if (m_historyIndex < 0) {
         m_historyIndex = -1;
-        m_input->setText(m_historyDraft);
+        m_input->setPlainText(m_historyDraft);
     } else {
-        m_input->setText(m_inputHistory[m_historyIndex]);
+        m_input->setPlainText(m_inputHistory[m_historyIndex]);
     }
-    m_input->end(false);
+    m_input->moveCursor(QTextCursor::End);
 }
 
 // ---------------------------------------------------------------------------
@@ -1969,7 +1994,7 @@ void MainWindow::handleHistoryDown()
 
 void MainWindow::checkEmojiAutocomplete(const QString &text)
 {
-    const int cursorPos = m_input->cursorPosition();
+    const int cursorPos = m_input->textCursor().position();
     const QString before = text.left(cursorPos);
 
     // Auto-substitute a completed :shortcode: when the closing colon is just typed
@@ -1982,9 +2007,11 @@ void MainWindow::checkEmojiAutocomplete(const QString &text)
             if (wordOnly.match(code).hasMatch()) {
                 const QString emoji = emojiByCode().value(code);
                 if (!emoji.isEmpty()) {
-                    const QString newText = text.left(openColon) + emoji + text.mid(cursorPos);
-                    m_input->setText(newText);
-                    m_input->setCursorPosition(static_cast<int>(openColon + emoji.length()));
+                    QTextCursor tc = m_input->textCursor();
+                    tc.setPosition(static_cast<int>(openColon));
+                    tc.setPosition(cursorPos, QTextCursor::KeepAnchor);
+                    tc.insertText(emoji);
+                    m_input->setTextCursor(tc);
                     hideEmojiAutocomplete();
                     return;
                 }
@@ -2052,11 +2079,12 @@ void MainWindow::commitEmojiAutocomplete(int row)
     hideEmojiAutocomplete();
 
     // Replace :word (from trigger pos to cursor) with the emoji
-    QString text    = m_input->text();
-    const int start = m_emojiTriggerPos;          // position of ':'
-    const int end   = m_input->cursorPosition();  // current cursor
-    m_input->setText(text.left(start) + emoji + text.mid(end));
-    m_input->setCursorPosition(start + static_cast<int>(emoji.length()));
+    const int end = m_input->textCursor().position();
+    QTextCursor tc = m_input->textCursor();
+    tc.setPosition(m_emojiTriggerPos);
+    tc.setPosition(end, QTextCursor::KeepAnchor);
+    tc.insertText(emoji);
+    m_input->setTextCursor(tc);
     m_input->setFocus();
 }
 
@@ -2436,7 +2464,7 @@ void MainWindow::onSidebarSelectionChanged()
 
 void MainWindow::onInputSubmit()
 {
-    const QString raw  = m_input->text();
+    const QString raw  = m_input->toPlainText();
     const QString text = raw.trimmed();
     if (text.isEmpty()) return;
 

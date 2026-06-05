@@ -241,6 +241,7 @@ QString formatMessage(const Message &msg, const Context &ctx)
         const QString nickAnchor = QString("<a href='nick:%1'%2 style='color:%3; text-decoration:none; font-weight:bold'>%4</a>")
             .arg(htmlAttr(msg.nick), titleAttr, color, nickDisplay);
         QString textHtml = wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), ctx.emojiPt);
+        textHtml.replace('\n', QLatin1String("<br>"));
         if (ctx.selfNickRe.isValid())
             textHtml.replace(ctx.selfNickRe, "<span style='color:red;font-weight:bold'>\\1</span>");
         QString replySpan;

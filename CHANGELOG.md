@@ -442,6 +442,44 @@ Next priorities:
   - FreeBSD port skeleton
 -->
 
+## v0.24.0 — 2026-06-05
+
+### Features
+
+- **Multi-line messages (`draft/multiline`):** Press **Shift+Enter** to insert a line break in the compose box; press **Enter** to send. The input box grows automatically up to 4 lines. On servers that advertise `draft/multiline`, the message is delivered as a proper IRCv3 batch. On servers without the capability, each line is sent as a separate PRIVMSG — no functionality is lost.
+- **Multi-line compose:** The message input is now a `QPlainTextEdit`. Pasted or typed multi-line content is preserved and the box auto-resizes from 1 to 4 lines as you type.
+- **Up/Down history in multi-line input:** Arrow-key history navigation activates only when the cursor is on the first or last line, so arrow keys move within multi-line text naturally.
+
+### Security / Hardening
+
+- **DCC send:** Incoming connections are now validated against the expected peer IP; mismatched connections are rejected.
+- **DCC receive:** Write failures cancel the transfer immediately. A 30-second stall timeout fires when a passive-mode connection forms but no data arrives.
+- **DCC ACK coalescing:** ACKs sent once per 64 KB boundary and at completion instead of after every `readyRead` event.
+- **IRC line cap:** `sendRaw` enforces the RFC 1459 512-byte limit; oversized lines are truncated before reaching the socket.
+- **Ping watchdog:** No PING response within 90 seconds triggers abort and reconnect.
+- **NICK/USER sanitization:** Leading/trailing spaces and null bytes are stripped before send.
+- **Unknown slash commands:** Unrecognized `/command` input posts a local error instead of being sent as raw IRC.
+- **CTCP flood table:** `m_ctcpTimestamps` capped at 500 entries.
+- **Link preview HTML cap:** Preview HTML content limited to 8 192 bytes in cache.
+- **Address check:** `isPrivateAddress()` extended — CG-NAT (100.64/10), TEST-NETs, unspecified, IETF protocol, benchmarking, IPv4-mapped, IPv6 translation, and documentation ranges.
+
+### Performance
+
+- **IRC receive buffer:** `IrcClient` uses `QByteArray` as receive buffer; UTF-16 conversion deferred to per-line processing.
+- **Nick index:** `Channel::removeNick` does an in-place O(n) index patch instead of O(n²) full rebuild — critical during netsplit QUIT storms.
+- **Log file handles:** `SessionModel::logMessage` caches open `QFile*` handles per channel.
+
+### Bug Fixes
+
+- **Fix:** Chat view scrolls to bottom on channel switch (was missing the deferred scroll in `refreshChatView`).
+- **Fix:** Mention detection false positives — empty nick regex no longer matches every incoming message, fixing spurious 💡 unread badges.
+
+### CI
+
+- ASan / UBSan sanitizer job added on ubuntu-24.04.
+
+---
+
 ## v0.23.3 — 2026-06-05
 
 ### Performance

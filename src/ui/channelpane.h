@@ -7,7 +7,7 @@
 
 class QTextBrowser;
 class QListWidget;
-class QLineEdit;
+class QPlainTextEdit;
 class QLabel;
 class QToolButton;
 
@@ -20,7 +20,7 @@ public:
     QString        key()     const { return m_host + "|" + m_channel.toLower(); }
     QTextBrowser *chatView() const { return m_chatView; }
     QListWidget  *nickList() const { return m_nickList; }
-    QLineEdit    *input()    const { return m_input; }
+    QPlainTextEdit *input()  const { return m_input; }
     void setNick(const QString &nick);
     void setNickVisible(bool visible);
     void setInputFont(const QFont &nickFont, const QFont &inputFont);
@@ -45,7 +45,7 @@ private:
     bool          m_dragging{false};
     QTextBrowser *m_chatView{nullptr};
     QListWidget  *m_nickList{nullptr};
-    QLineEdit    *m_input{nullptr};
+    QPlainTextEdit *m_input{nullptr};
     QLabel       *m_nickPrefix{nullptr};
     QWidget      *m_topicBar{nullptr};
     QLabel       *m_topicText{nullptr};

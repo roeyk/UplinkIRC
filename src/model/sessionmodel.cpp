@@ -281,7 +281,10 @@ void SessionModel::sendMessage(const QString &host, const QString &target, const
 {
     auto *cl = clientFor(host);
     if (!cl) return;
-    cl->privmsg(target, text, replyToMsgid);
+    if (text.contains('\n'))
+        cl->sendMultiline(target, text, replyToMsgid);
+    else
+        cl->privmsg(target, text, replyToMsgid);
     // Open a PM tab for outgoing private messages
     const bool isPM = !target.startsWith('#') && !target.startsWith('&')
                       && !target.startsWith('!') && target != "(server)";

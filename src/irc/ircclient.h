@@ -29,7 +29,8 @@ public:
 
     void join(const QString &channel, const QString &key = {});
     void part(const QString &channel, const QString &reason = {});
-    void privmsg(const QString &target, const QString &text, const QString &replyToMsgid = {});
+    void privmsg      (const QString &target, const QString &text, const QString &replyToMsgid = {});
+    void sendMultiline(const QString &target, const QString &text, const QString &replyToMsgid = {});
     void notice(const QString &target, const QString &text);
     void setNick(const QString &nick);
     void sendTyping(const QString &channel, const QString &state);
@@ -199,6 +200,7 @@ private:
             QDateTime   serverTime;
             QString     msgid;
             QString     replyTo;
+            bool        concat{false}; // draft/multiline-concat: append without newline
         };
         QList<Msg> msgs;
     };

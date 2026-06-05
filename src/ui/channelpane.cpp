@@ -3,7 +3,9 @@
 
 #include <QTextBrowser>
 #include <QListWidget>
-#include <QLineEdit>
+#include <QPlainTextEdit>
+#include <QKeyEvent>
+#include <QTextCursor>
 #include <QLabel>
 #include <QToolButton>
 #include <QSplitter>
@@ -131,17 +133,24 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     ibox->setSpacing(4);
     m_nickPrefix = new QLabel;
     m_nickPrefix->setStyleSheet("font-weight: bold; padding-right: 4px;");
-    m_input = new QLineEdit;
+    m_input = new QPlainTextEdit;
     m_input->setPlaceholderText("Type a message...");
+    m_input->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    m_input->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_input->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_input->document()->setDocumentMargin(2);
+    m_input->setFixedHeight(m_input->fontMetrics().lineSpacing() + 10);
+    m_input->installEventFilter(this);
     ibox->addWidget(m_nickPrefix);
     ibox->addWidget(m_input, 1);
     vbox->addWidget(inputBar);
 
-    connect(m_input, &QLineEdit::returnPressed, this, [this]{
-        const QString raw = m_input->text();
-        if (raw.trimmed().isEmpty()) return;
-        m_input->clear();
-        emit inputSubmitted(raw);
+    connect(m_input, &QPlainTextEdit::textChanged, this, [this]{
+        const QString text = m_input->toPlainText();
+        const int lineH = m_input->fontMetrics().lineSpacing();
+        const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
+        const int lines = qMin(4, static_cast<int>(text.count('\n')) + 1);
+        m_input->setFixedHeight(lines * lineH + margins);
     });
 }
 
@@ -198,6 +207,20 @@ void ChannelPane::setDragHighlight(bool on)
 
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
 {
+    if (obj == m_input && event->type() == QEvent::KeyPress) {
+        auto *ke = static_cast<QKeyEvent*>(event);
+        if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {
+            if (ke->modifiers() & Qt::ShiftModifier)
+                return false;
+            const QString raw = m_input->toPlainText();
+            if (!raw.trimmed().isEmpty()) {
+                m_input->clear();
+                emit inputSubmitted(raw);
+            }
+            return true;
+        }
+    }
+
     bool isHeaderArea = (obj == m_header);
     if (!isHeaderArea)
         for (auto *w : m_header->findChildren<QWidget*>(Qt::FindDirectChildrenOnly))

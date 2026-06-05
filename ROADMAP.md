@@ -162,7 +162,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Pane drag-to-rearrange — drag header bar to swap any pane with another pane or the primary panel (v0.18.0)
 - [x] Pane layout persistence — save/restore pane arrangement across sessions
 - [x] Message reactions — IRCv3 draft/react; receive + store per-msgid; render inline below messages; right-click timestamp → React; /react command; IrcClient::sendReact (v0.15.0)
-- [ ] Multiline messages — IRCv3 draft/multiline; compose and render multi-line message blocks
+- [x] Multiline messages — IRCv3 draft/multiline; compose and render multi-line message blocks
 - [ ] IRCv3 WebSocket transport — connect to servers over wss:// in addition to plain TCP+TLS
 - [ ] User metadata — IRCv3 metadata keys: display-name, avatar, pronouns; show in nick list and tooltips
 

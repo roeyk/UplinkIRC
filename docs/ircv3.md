@@ -218,6 +218,18 @@ The `[FAIL]` / `[WARN]` / `[NOTE]` prefix lets you tell them apart at a glance.
 
 An ISUPPORT token (not a CAP) that signals the server only accepts UTF-8 encoded traffic. Uplink detects it in the `005 RPL_ISUPPORT` parameters, sets an internal flag, and posts a status line to the server buffer: `UTF8ONLY: server enforces UTF-8 encoding`. Non-UTF-8 input is not blocked client-side, but the server will reject it.
 
+### `draft/multiline`
+
+Allows composing and sending messages that span multiple lines as a single logical unit, delivered using a `BATCH` of type `draft/multiline`.
+
+**Composing:** Press **Shift+Enter** in the message input to insert a line break. The input box grows up to 4 lines automatically. Press **Enter** to send.
+
+**Protocol flow:** When the server has acknowledged `draft/multiline`, Uplink opens a batch with `BATCH +ref draft/multiline <target>`, sends each line as `@batch=ref PRIVMSG <target> :<line>` (with the `draft/multiline-concat` tag on lines that should be joined without a newline), then closes it with `BATCH -ref`.
+
+**Receiving:** Incoming `draft/multiline` batches are assembled into a single message with embedded newlines and rendered with `<br>` breaks in the chat view.
+
+**Fallback:** On servers that do not advertise `draft/multiline`, each line is sent as a separate `PRIVMSG`. Recipients see the same lines in sequence — no content is lost.
+
 ---
 
 ## Bouncer capabilities
@@ -259,10 +271,6 @@ Tells soju not to send a NAMES list automatically on JOIN. This prevents duplica
 ### `cap-notify`
 
 Notifies the client if the server gains or loses capabilities after the initial handshake. Lets the client adapt to capability changes dynamically.
-
-### `draft/multiline`
-
-Allows composing and sending messages that span multiple lines, delivered to clients as a `batch` of type `draft/multiline`. Useful for pastes and structured content.
 
 ### WebSocket transport
 

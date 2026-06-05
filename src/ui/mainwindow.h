@@ -31,6 +31,7 @@ class QTreeWidget;
 class QTreeWidgetItem;
 class QTextBrowser;
 class QLineEdit;
+class QPlainTextEdit;
 class QLabel;
 class QPushButton;
 class QListWidget;
@@ -118,7 +119,7 @@ private:
     void       clearReplyBar();
 
     // Tab completion
-    void handleTabComplete(QLineEdit *input, const QString &host, const QString &channel);
+    void handleTabComplete(QPlainTextEdit *input, const QString &host, const QString &channel);
     QStringList m_tabCandidates;
     int         m_tabCandidateIndex{0};
     QString     m_tabPrefix;
@@ -145,7 +146,7 @@ private:
     QTreeWidget      *m_sidebar;
     SidebarDelegate  *m_sidebarDelegate{nullptr};
     QTextBrowser *m_chatView;
-    QLineEdit    *m_input;
+    QPlainTextEdit *m_input;
     QLabel       *m_nickPrefix;
     QPushButton  *m_emojiBtn;
     QWidget      *m_sidebarPanel{nullptr};

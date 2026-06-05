@@ -433,6 +433,7 @@
     <li><a href="#pm">Private messages</a></li>
     <li><a href="#formatting">IRC formatting</a></li>
     <li><a href="#emoji">Emoji &amp; shortcodes</a></li>
+    <li><a href="#multiline">Multi-line messages</a></li>
     <li><a href="#tab">Tab completion</a></li>
     <li><a href="#history">Input history</a></li>
     <li><a href="#search">Message search</a></li>
@@ -1461,6 +1462,25 @@ show_emoji_button = true</pre>
     <h3>Emoji size</h3>
     <p>Emoji in chat are rendered at their own independent font size so they stay readable even if you use a small chat font. The default is 16 pt. Change it in <strong>Preferences → Font Config… → Chat Emoji</strong>, or set it directly in config:</p>
     <pre>font_emoji = 16   # pt, independent of font_chat</pre>
+  </section>
+
+  <!-- MULTI-LINE MESSAGES -->
+  <section id="multiline">
+    <h2>Multi-line messages</h2>
+    <p>The message input box supports multiple lines — useful for pastes, code snippets, or structured replies.</p>
+
+    <h3>Composing</h3>
+    <p>Press <kbd>Shift+Enter</kbd> to insert a line break. The box grows automatically from 1 to 4 lines as you type. Press <kbd>Enter</kbd> (without Shift) to send the whole message.</p>
+
+    <h3>How it reaches the server</h3>
+    <p>When the server supports IRCv3 <code>draft/multiline</code>, Uplink sends the message as a proper multi-line batch — all lines arrive as a single logical message. On servers without the capability, each line is sent as a separate <code>PRIVMSG</code> in sequence — no content is lost, though recipients without multi-line support see individual lines.</p>
+
+    <h3>Receiving multi-line messages</h3>
+    <p>Incoming <code>draft/multiline</code> batches are assembled and displayed as a single message with line breaks in the chat view.</p>
+
+    <div class="note">
+      <strong>Tip:</strong> to paste multi-line content, paste directly into the input box — line breaks are preserved and the box resizes to show all lines before you send.
+    </div>
   </section>
 
   <!-- TAB COMPLETION -->

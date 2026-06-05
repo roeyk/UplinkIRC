@@ -469,6 +469,14 @@ You can also use slash commands:
 
 The ignore list is saved in `config.toml` under `[ignore] nicks = [...]` and persists across sessions.
 
+### Can I send a message that spans multiple lines?
+
+Yes. Press **Shift+Enter** in the input box to insert a line break. The box grows up to 4 lines automatically. Press **Enter** (without Shift) to send the whole thing.
+
+On servers that support IRCv3 `draft/multiline`, the message arrives as a single multi-line unit. On servers without it, each line is sent as a separate PRIVMSG — other users still see all the lines in order.
+
+You can also paste multi-line text directly into the input — line breaks are preserved.
+
 ### How do I react to a message?
 
 Right-click the **timestamp** (the `hh:mm` at the left of the message) and choose **React**. The emoji picker opens — search by name (`thumbs`, `fire`) or shortcode (`:poop:`), then click the emoji or press Enter to send it.

@@ -5,6 +5,7 @@
 #include "version.h"
 
 #include <QCryptographicHash>
+#include <QRandomGenerator>
 #include <QFile>
 #include <QNetworkProxy>
 #include <QSslCertificate>
@@ -176,6 +177,40 @@ void IrcClient::privmsg(const QString &target, const QString &text, const QStrin
         sendRaw("PRIVMSG " + target + " :" + stripCrlf(text));
     else
         sendRaw("@+draft/reply=" + ircv3TagEscape(replyToMsgid) + " PRIVMSG " + target + " :" + stripCrlf(text));
+}
+
+void IrcClient::sendMultiline(const QString &target, const QString &text,
+                               const QString &replyToMsgid)
+{
+    if (!validIrcToken(target)) return;
+    if (m_socket->state() != QAbstractSocket::ConnectedState) {
+        emit errorMessage(m_host, "Not connected — message not sent");
+        return;
+    }
+
+    const QStringList lines = text.split('\n', Qt::KeepEmptyParts);
+
+    if (!m_ackedCaps.contains("draft/multiline") || lines.size() <= 1) {
+        // Fall back to separate PRIVMSGs
+        for (const QString &line : lines)
+            if (!line.isEmpty())
+                privmsg(target, line, replyToMsgid);
+        return;
+    }
+
+    const QString ref = QStringLiteral("ml%1")
+        .arg(QRandomGenerator::global()->generate(), 8, 16, QLatin1Char('0'));
+
+    sendRaw("BATCH +" + ref + " draft/multiline " + target);
+    bool first = true;
+    for (const QString &line : lines) {
+        QString tags = "@batch=" + ref;
+        if (first && !replyToMsgid.isEmpty())
+            tags += ";+draft/reply=" + ircv3TagEscape(replyToMsgid);
+        sendRaw(tags + " PRIVMSG " + target + " :" + stripCrlf(line));
+        first = false;
+    }
+    sendRaw("BATCH -" + ref);
 }
 
 void IrcClient::notice(const QString &target, const QString &text)
@@ -556,6 +591,7 @@ void IrcClient::processLine(const QString &line)
         bm.serverTime = msg.serverTime;
         bm.msgid      = msg.tags.value("msgid");
         bm.replyTo    = msg.tags.value("+draft/reply");
+        bm.concat     = msg.tags.contains("draft/multiline-concat");
         batch.msgs.append(bm);
         return;
     }
@@ -804,6 +840,32 @@ void IrcClient::deliverBatch(const QString &ref)
     if (!m_batches.contains(ref)) return;
     const BatchInfo batch = m_batches.take(ref);
 
+    if (batch.type == "draft/multiline") {
+        // Assemble lines into a single multi-line message.
+        // Lines tagged draft/multiline-concat are appended without a newline prefix.
+        const QString target = batch.param;
+        QString assembled;
+        QString nick;
+        QDateTime serverTime;
+        QString msgid;
+        QString replyTo;
+        for (const BatchInfo::Msg &bm : batch.msgs) {
+            if (bm.command != "PRIVMSG") continue;
+            if (nick.isEmpty()) {
+                nick       = bm.nick;
+                serverTime = bm.serverTime;
+                msgid      = bm.msgid;
+                replyTo    = bm.replyTo;
+            }
+            if (!assembled.isEmpty())
+                assembled += bm.concat ? QString{} : QStringLiteral("\n");
+            assembled += bm.trailing;
+        }
+        if (!assembled.isEmpty())
+            emit messageReceived(m_host, target, nick, assembled, serverTime, false, msgid, replyTo);
+        return;
+    }
+
     if (batch.type == "netsplit") {
         QStringList nicks;
         for (const auto &bm : batch.msgs)
@@ -943,7 +1005,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             "message-tags", "batch", "labeled-response", "draft/typing",
             "chathistory", "echo-message", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
-            "userhost-in-names", "draft/message-redaction",
+            "userhost-in-names", "draft/message-redaction", "draft/multiline",
         };
 
         // ZNC-specific caps

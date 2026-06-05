@@ -7,8 +7,9 @@
 | Shortcut | Action |
 |---|---|
 | **Enter** | Send the message |
-| **Up Arrow** | Cycle back through previously sent messages (message history) |
-| **Down Arrow** | Cycle forward through message history |
+| **Shift+Enter** | Insert a newline — compose a multi-line message; press **Enter** to send when done |
+| **Up Arrow** | Cycle back through previously sent messages (message history). When composing a multi-line message, moves the cursor up within the text; history navigation activates only from the first line. |
+| **Down Arrow** | Cycle forward through message history. When composing multi-line, moves cursor down within the text; history navigation activates only from the last line. |
 | **Tab** | Nick completion at the cursor — press repeatedly to cycle through all matches in alphabetical order. Also completes slash commands: typing `/pi` and pressing Tab expands to `/ping`. |
 | **Shift+Tab** | Cycle backwards through nick completions |
 | **Escape** | Cancel a pending reply (when the `↩ nick` reply bar is showing above the input) |
