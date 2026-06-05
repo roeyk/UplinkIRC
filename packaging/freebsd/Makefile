@@ -1,5 +1,5 @@
 PORTNAME=	uplink
-DISTVERSION=	0.23.1
+DISTVERSION=	0.24.0
 CATEGORIES=	irc net
 
 MAINTAINER=	your@email.com
