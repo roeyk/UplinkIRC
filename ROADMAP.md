@@ -228,6 +228,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] NickServ credential redaction complete — echo-message server echo path also redacted (v0.16.8)
 - [x] Self-signed cert option — per-server accept/reject + fingerprint-pin UI (v0.20.0)
 - [x] SOCKS5 proxy support — per-server proxy_host/port/user/pass; GUI in server dialog (v0.16.8)
+- [x] OPER password redaction — `redactRawForLog` now covers OPER credentials same as PASS (2026-06-05)
+- [x] DCC passive filename sanitization — strip all control chars from remote-supplied DCC filenames to prevent CTCP envelope injection (2026-06-05)
 
 ---
 
@@ -245,8 +247,8 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] Incremental nick-list updates — emit specific `nickAdded`/`nickRemoved`/`nickRenamed`/`nickModeChanged` signals; replace `clear()`/repopulate with targeted updates; batch during NAMES/netsplit bursts
 - [x] Per-channel nick index — `QHash<QString, int> nickIndex` (lower nick → index) to replace O(n) scans in `onMessage`, `onNotice`, `onAction`, `onAccountChanged`
 - [x] Batch chat/nick refreshes — debounce `refreshChatView()` and `refreshNickList()` with a short single-shot timer for burst updates
-- [ ] Split `ChatRenderer` out of `MainWindow` — `formatMessage`, `ircToHtml`, `linkifyHtml`, emoji rendering as a separate class
-- [ ] Split `CommandDispatcher` out of `MainWindow` — `/join`, `/msg`, `/dcc`, `/sysinfo`, etc. as a separate class
+- [x] Split `ChatRenderer` out of `MainWindow` — `formatMessage`, `ircToHtml`, `linkifyHtml`, emoji rendering as a separate class
+- [x] Split `CommandDispatcher` out of `MainWindow` — `/join`, `/msg`, `/dcc`, `/sysinfo`, etc. as a separate class
 - [ ] Parser and model unit tests — `IrcParserTest` (prefixes/tags/CTCP/malformed), `SessionModelTest` (joins/parts/caps), `ChatFormatTest` (HTML escaping/linkification)
 
 ### Bigger / architectural
