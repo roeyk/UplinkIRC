@@ -120,3 +120,43 @@ jobs:
             Uplink-*.AppImage
             Uplink-*.AppImage.zsync
           generate_release_notes: true
+
+  update-docs:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump version strings in README and docs
+        run: |
+          TAG="${{ github.ref_name }}"   # v0.23.1
+          VER="${TAG#v}"                 # 0.23.1
+
+          # README.md — download badge hrefs
+          sed -i -E "s|Uplink-[0-9]+\.[0-9]+\.[0-9]+-x86_64\.AppImage|Uplink-${VER}-x86_64.AppImage|g" README.md
+          sed -i -E "s|Uplink-v[0-9]+\.[0-9]+\.[0-9]+-linux-x86_64\.tar\.gz|Uplink-${TAG}-linux-x86_64.tar.gz|g" README.md
+          sed -i -E "s|Uplink-v[0-9]+\.[0-9]+\.[0-9]+-windows-x64\.zip|Uplink-${TAG}-windows-x64.zip|g" README.md
+          sed -i -E "s|Uplink-v[0-9]+\.[0-9]+\.[0-9]+-macos-arm64\.dmg|Uplink-${TAG}-macos-arm64.dmg|g" README.md
+
+          # docs/index.html — download card hrefs
+          sed -i -E "s|Uplink-[0-9]+\.[0-9]+\.[0-9]+-x86_64\.AppImage|Uplink-${VER}-x86_64.AppImage|g" docs/index.html
+          sed -i -E "s|Uplink-v[0-9]+\.[0-9]+\.[0-9]+-windows-x64\.zip|Uplink-${TAG}-windows-x64.zip|g" docs/index.html
+          sed -i -E "s|Uplink-v[0-9]+\.[0-9]+\.[0-9]+-macos-arm64\.dmg|Uplink-${TAG}-macos-arm64.dmg|g" docs/index.html
+
+          # docs/index.html — display version strings (nav, hero, section title, footer)
+          sed -i -E "s|(Uplink <span>)v[0-9]+\.[0-9]+\.[0-9]+(</span>)|\1${TAG}\2|" docs/index.html
+          sed -i -E "s|(Download )v[0-9]+\.[0-9]+\.[0-9]+|\1${TAG}|g" docs/index.html
+          sed -i -E "s|v[0-9]+\.[0-9]+\.[0-9]+ — Latest release|${TAG} — Latest release|" docs/index.html
+          sed -i -E "s|(class=\"version-tag\">)v[0-9]+\.[0-9]+\.[0-9]+(</div>)|\1${TAG}\2|" docs/index.html
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet && exit 0
+          git add README.md docs/index.html
+          git commit -m "docs: bump download links to ${{ github.ref_name }}"
+          git push origin main
