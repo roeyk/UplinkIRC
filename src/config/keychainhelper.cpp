@@ -45,4 +45,17 @@ void remove(const QString &key)
     loop.exec();
 }
 
+void readAsync(const QString &key, std::function<void(const QString &)> callback)
+{
+    auto *job = new QKeychain::ReadPasswordJob(kService);
+    job->setAutoDelete(false);
+    job->setKey(key);
+    QObject::connect(job, &QKeychain::Job::finished, job,
+        [job, cb = std::move(callback)]() {
+            cb(job->error() == QKeychain::NoError ? job->textData() : QString{});
+            job->deleteLater();
+        });
+    job->start();
+}
+
 } // namespace KeychainHelper

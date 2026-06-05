@@ -16,15 +16,6 @@ static QString kcKey(const QString &serverName, const char *field)
     return serverName + QLatin1Char(':') + QLatin1String(field);
 }
 
-// Resolve a password field: if it's the sentinel, fetch from keychain.
-// If it's plaintext (legacy), return as-is — it will be migrated on next save.
-static QString resolvePassword(const QString &value, const QString &serverName, const char *field)
-{
-    if (value == kKeychainSentinel)
-        return KeychainHelper::read(kcKey(serverName, field));
-    return value;
-}
-
 // Write a password to keychain and return the sentinel, or return empty.
 static QString storePassword(const QString &value, const QString &serverName, const char *field)
 {
@@ -190,19 +181,13 @@ Config Config::load(const QString &path)
                 sc.nick     = QString::fromStdString((*s)["nick"].value_or<std::string>(""));
                 sc.user     = QString::fromStdString((*s)["user"].value_or<std::string>("uplink"));
                 sc.realname = QString::fromStdString((*s)["realname"].value_or<std::string>("Uplink User"));
-                sc.password     = resolvePassword(
-                    QString::fromStdString((*s)["password"].value_or<std::string>("")),
-                    sc.name, "password");
+                sc.password     = QString::fromStdString((*s)["password"].value_or<std::string>(""));
                 sc.saslUser         = QString::fromStdString((*s)["sasl_user"].value_or<std::string>(""));
-                sc.saslPassword     = resolvePassword(
-                    QString::fromStdString((*s)["sasl_password"].value_or<std::string>("")),
-                    sc.name, "sasl_password");
+                sc.saslPassword     = QString::fromStdString((*s)["sasl_password"].value_or<std::string>(""));
                 sc.saslExternal     = (*s)["sasl_external"].value_or(false);
                 sc.clientCertFile   = QString::fromStdString((*s)["client_cert"].value_or<std::string>(""));
                 sc.clientKeyFile    = QString::fromStdString((*s)["client_key"].value_or<std::string>(""));
-                sc.nickservPassword = resolvePassword(
-                    QString::fromStdString((*s)["nickserv_password"].value_or<std::string>("")),
-                    sc.name, "nickserv_password");
+                sc.nickservPassword = QString::fromStdString((*s)["nickserv_password"].value_or<std::string>(""));
                 const std::string bt = (*s)["bouncer"].value_or<std::string>("none");
                 if      (bt == "znc")  sc.bouncerType = BouncerType::ZNC;
                 else if (bt == "soju") sc.bouncerType = BouncerType::Soju;
@@ -211,9 +196,7 @@ Config Config::load(const QString &path)
                 sc.proxyHost = QString::fromStdString((*s)["proxy_host"].value_or<std::string>(""));
                 sc.proxyPort = static_cast<quint16>((*s)["proxy_port"].value_or(1080));
                 sc.proxyUser = QString::fromStdString((*s)["proxy_user"].value_or<std::string>(""));
-                sc.proxyPass = resolvePassword(
-                    QString::fromStdString((*s)["proxy_pass"].value_or<std::string>("")),
-                    sc.name, "proxy_pass");
+                sc.proxyPass = QString::fromStdString((*s)["proxy_pass"].value_or<std::string>(""));
                 sc.pinnedFingerprint = QString::fromStdString((*s)["ssl_fingerprint"].value_or<std::string>(""));
 
                 if (auto chans = (*s)["channel"].as_array()) {
@@ -222,9 +205,7 @@ Config Config::load(const QString &path)
                         if (!c) continue;
                         ChannelConfig cc;
                         cc.name     = QString::fromStdString((*c)["name"].value_or<std::string>(""));
-                        cc.password = resolvePassword(
-                            QString::fromStdString((*c)["key"].value_or<std::string>("")),
-                            sc.name + ":channel:" + cc.name, "key");
+                        cc.password = QString::fromStdString((*c)["key"].value_or<std::string>(""));
                         if (!cc.name.isEmpty())
                             sc.channels.append(cc);
                     }

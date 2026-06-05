@@ -1,6 +1,8 @@
 #include "sessionmodel.h"
 #include "irc/ircclient.h"
+#include "config/keychainhelper.h"
 
+#include <memory>
 #include <QDir>
 #include <QFile>
 #include <QRegularExpression>
@@ -11,6 +13,48 @@
 SessionModel::SessionModel(QObject *parent)
     : QObject(parent)
 {}
+
+// Resolve any "<keychain>" sentinel fields asynchronously, then connect.
+// If no sentinels are present the connection is started immediately.
+static void resolveAndConnect(IrcClient *client, ServerConfig sc)
+{
+    static const QLatin1String kSentinel("<keychain>");
+    using FP = QString ServerConfig::*;
+
+    auto shared    = std::make_shared<ServerConfig>(std::move(sc));
+    auto remaining = std::make_shared<int>(0);
+
+    auto maybeRead = [&](FP field, const QString &key) {
+        if (shared.get()->*field != kSentinel)
+            return;
+        ++(*remaining);
+        KeychainHelper::readAsync(key, [shared, remaining, field, client](const QString &val) {
+            shared.get()->*field = val;
+            if (--(*remaining) == 0)
+                client->connectToServer(*shared);
+        });
+    };
+
+    maybeRead(&ServerConfig::password,         shared->name + ":password");
+    maybeRead(&ServerConfig::saslPassword,     shared->name + ":sasl_password");
+    maybeRead(&ServerConfig::nickservPassword, shared->name + ":nickserv_password");
+    maybeRead(&ServerConfig::proxyPass,        shared->name + ":proxy_pass");
+
+    for (int i = 0; i < shared->channels.size(); ++i) {
+        if (shared->channels[i].password != kSentinel)
+            continue;
+        ++(*remaining);
+        const QString key = shared->name + ":channel:" + shared->channels[i].name + ":key";
+        KeychainHelper::readAsync(key, [shared, remaining, i, client](const QString &val) {
+            shared->channels[i].password = val;
+            if (--(*remaining) == 0)
+                client->connectToServer(*shared);
+        });
+    }
+
+    if (*remaining == 0)
+        client->connectToServer(*shared);
+}
 
 void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
 {
@@ -27,7 +71,7 @@ void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
     auto *client = new IrcClient(this);
     attachClient(client, sc);
     m_clients.append(client);
-    client->connectToServer(sc);
+    resolveAndConnect(client, sc);
 }
 
 void SessionModel::loadConfig(const Config &cfg)

@@ -3,6 +3,27 @@
 ---
 
 <!--
+Session summary — 2026-06-05 (keychain async fix)
+
+Removed nested QEventLoop from the startup path:
+  - Config::load() no longer calls resolvePassword(); sentinel "<keychain>"
+    values are left in place and flow through to spawnSession.
+  - Added KeychainHelper::readAsync() — fires a ReadPasswordJob and calls
+    back on the main thread with no blocking loop.
+  - Added resolveAndConnect() in sessionmodel.cpp — resolves all sentinel
+    fields (password, saslPassword, nickservPassword, proxyPass, channel
+    keys) in parallel via readAsync, then calls connectToServer once all
+    reads complete. Plain-text or empty fields connect immediately.
+  - spawnSession now calls resolveAndConnect() instead of connectToServer()
+    directly; sidebar and signal wiring still happen synchronously.
+  - Removed dead resolvePassword() helper from config.cpp.
+
+Result: startup no longer spins a nested event loop per sentinel field,
+eliminating the reentrancy hazard when the keychain backend needs to show
+a dialog or dispatch events before the main window is fully ready.
+-->
+
+<!--
 Session summary — 2026-06-04 (lightweight code review — small patches)
 
 What was fixed:
