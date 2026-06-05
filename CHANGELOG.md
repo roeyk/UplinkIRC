@@ -3,6 +3,22 @@
 ---
 
 <!--
+Session summary — 2026-06-05 (compiler warning cleanup)
+
+Fixed all compiler warnings — no functional changes:
+
+- manageserversdialog.cpp: !x == 0 logical-not precedence bug → x > 0
+- commanddispatcher.cpp: indexOf results stored as qsizetype (was int, 64→32 truncation);
+  currentSecsSinceEpoch() cast to quint64 (sign-conversion)
+- mainwindow.cpp: dropped unused [this] captures in two lambdas
+
+Also explored adding a window opacity slider (Preferences → Appearance).
+Implemented and reverted — Qt's setWindowOpacity works fine for transparency,
+but background blur requires compositor-specific platform code (KWin, DWM, NSVisualEffectView)
+with no clean cross-platform path, so deferred indefinitely.
+-->
+
+<!--
 Session summary — 2026-06-05 (v0.24.0 — draft/multiline + full audit backlog)
 
 Released v0.24.0.
