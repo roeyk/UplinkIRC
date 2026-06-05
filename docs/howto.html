@@ -1164,6 +1164,9 @@ channels        = "#debian"</pre>
       <li>A <code>✕</code> button — only visible when extra panes are open. Collapses the primary column so the panes fill the screen. Click any channel in the sidebar to bring it back.</li>
     </ul>
 
+    <h3>Pane layout persistence</h3>
+    <p>Uplink saves the pane layout automatically when you quit — which channels are open in which pane slots, and the position of the primary column. On the next launch everything is restored exactly as you left it. No configuration required.</p>
+
     <h3>Limits and notes</h3>
     <ul>
       <li>Maximum 4 panes total (1 primary + 3 extras).</li>
@@ -1371,7 +1374,7 @@ channels        = "#debian"</pre>
       <tr><td><code>/quote line</code></td><td>Alias for <code>/raw</code></td><td><code>/quote INVITE alice #uplink</code></td></tr>
       <tr><td><code>/ANYTHING</code></td><td>Any unrecognized command is sent as-is — no prefix needed</td><td><code>/REHASH</code>, <code>/SAMODE #uplink +o alice</code></td></tr>
       <tr><td><code>/quit [message]</code></td><td>Disconnect</td><td><code>/quit see ya</code></td></tr>
-      <tr><td><code>/sysinfo</code></td><td>Post OS/CPU/RAM info to channel</td><td><code>/sysinfo</code></td></tr>
+      <tr><td><code>/sysinfo</code></td><td>Collect OS/CPU/RAM/GPU/uptime info and post to channel — confirms before posting; collection runs async with 12s timeout</td><td><code>/sysinfo</code></td></tr>
       <tr><td><code>/help</code></td><td>List all commands</td><td><code>/help</code></td></tr>
     </table>
 
@@ -1647,7 +1650,15 @@ link_previews = true</pre>
       <li><strong>Direct image links</strong> — <code>.png .jpg .jpeg .gif .webp</code> URLs are detected and shown as a thumbnail without any HTML parsing.</li>
     </ul>
 
-    <p>Previews are lightweight — HTML is capped at 32 KB, images at 200 KB, results are cached for the session. Private/LAN addresses are never fetched.</p>
+    <p>Previews are lightweight — HTML is capped at 32 KB, images at 200 KB, results are cached for the session. Private/LAN addresses are never fetched. When multiple URLs arrive at once, preview cards are fetched sequentially (up to 10 queued) so they do not compete with each other.</p>
+
+    <h3>Interacting with preview cards</h3>
+    <ul>
+      <li><strong>Left-click</strong> a preview card → opens the URL in your default browser.</li>
+      <li><strong>Right-click</strong> a preview card → context menu: <strong>Open URL</strong> / <strong>Hide Preview</strong>.</li>
+      <li><strong>Right-click</strong> the URL text in chat → context menu: <strong>Copy URL</strong> / <strong>Open URL</strong> / <strong>Hide Preview</strong> / <strong>Show Preview</strong> (if hidden).</li>
+      <li><strong>Hover</strong> any URL → tooltip shows the domain, then updates to the page title once fetched.</li>
+    </ul>
 
     <div class="tip">
       <strong>Privacy:</strong> when link previews are on, every URL posted in chat triggers a background HTTP request from your machine. The target site sees your IP address. Disable if you want no outgoing requests triggered by chat content.
@@ -1681,6 +1692,12 @@ link_previews = true</pre>
 
     <h3>Receiving a file</h3>
     <p>When someone sends you a file (either mode), an accept/reject dialog appears showing the filename and size. Click <strong>Yes</strong>, choose where to save it, and a live progress dialog tracks the download. Either side can click <strong>Cancel</strong> to abort at any time.</p>
+    <p>The file is saved to a <code>.part</code> file during the transfer and renamed to the final filename only when the download completes successfully. If the transfer fails or is cancelled, the partial file is deleted automatically.</p>
+    <p><strong>Receive limits</strong> are enforced before any data is written:</p>
+    <ul>
+      <li><strong>Maximum file size: 2 GiB.</strong> Offers larger than this are rejected before the dialog appears.</li>
+      <li><strong>Disk space check.</strong> Available space on the destination drive must exceed the advertised file size, or the transfer is rejected with an error.</li>
+    </ul>
 
     <h3>Timeouts</h3>
     <ul>

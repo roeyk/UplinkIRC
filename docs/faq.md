@@ -288,6 +288,8 @@ You can have up to **4 panes** open at once (the primary view plus 3 extras). Th
 
 Click the `✕` in a pane's header to close it. Closing a pane does not leave the channel — it just removes the split view.
 
+**Pane layout is saved automatically.** The channels open in each pane, and the position of the primary column, are written to your preferences on quit and restored on the next launch — so your multi-channel layout persists across restarts without any configuration.
+
 See [Channel panes](howto.html#channel-panes) in the how-to guide for a full walkthrough.
 
 ### Where is the Preferences button?
@@ -549,6 +551,13 @@ Accept?   [Yes]  [No]
 
 They click **Yes**, choose where to save it, and a progress dialog tracks the download. Either side can click **Cancel** to abort.
 
+The file is written to a `.part` file while downloading and renamed to the final name only when the transfer completes. If the transfer fails or is cancelled, the partial file is deleted automatically.
+
+Uplink enforces two receive limits before accepting a transfer:
+
+- **Maximum file size: 2 GiB.** Files advertised as larger than this are rejected immediately.
+- **Disk space check.** Available space on the destination drive is checked against the advertised file size. The transfer is rejected with an error if there is not enough room.
+
 > **If both sides are behind NAT:** neither active nor passive DCC will work — there is no reachable port on either machine. In that case, share the file through another channel (Matrix, email, a file hosting service, etc.).
 
 ### How do I check for updates?
@@ -617,6 +626,18 @@ Right-clicking the **timestamp** at the left of any chat message opens a message
 | **Copy** | Appears when you have text selected — copies the selection to the clipboard. |
 
 You do not have to click the timestamp exactly to get Reply. If you right-click anywhere in the message body while text is selected, the menu shows both **Copy** and **Reply** for the message you are in.
+
+### How do I post my system info to a channel?
+
+Type `/sysinfo` in the input box. Uplink shows a confirmation dialog before posting — click **Yes** to send the info to the current channel, or **No** to cancel.
+
+The collection runs in the background (GPU detection via `vulkaninfo` or `lspci` can take a moment). Uplink posts "Collecting system info…" immediately and replaces it with the result once ready. A 12-second timeout applies in case a subprocess hangs.
+
+The output includes: OS name and version, CPU model, RAM, GPU name, and system uptime. Example:
+
+```
+OS: Arch Linux x86_64 | CPU: AMD Ryzen AI 9 HX PRO 370 | RAM: 15.5 GB / 23.2 GB | GPU: AMD Radeon 890M | UP: 3d 14h 22m
+```
 
 ### How do I check another user's IRC client version?
 
@@ -694,15 +715,21 @@ When enabled, any live message containing an `http://` or `https://` URL causes 
 
 **Direct image links** — URLs ending in `.png`, `.jpg`, `.jpeg`, `.gif`, or `.webp` are shown as a thumbnail card directly without HTML parsing. The filename is used as the card label.
 
-**Mouse interaction:**
-- **Left-click** a link → opens in your default browser
-- **Right-click** a link → shows a menu:
+**Mouse interaction — URL text in chat:**
+- **Left-click** → opens in your default browser
+- **Right-click** → context menu:
   - **Copy URL** — copies the full URL to clipboard
   - **Open URL** — opens in the default browser
-  - **Hide Preview** — hides the preview card for that link (grayed if no card exists)
-  - **Show Preview** — restores a previously hidden card (appears in place of Hide Preview when the preview is hidden)
+  - **Hide Preview** — hides the preview card for that link
+  - **Show Preview** — restores a previously hidden card (replaces Hide Preview when the card is hidden)
 
-Hovering over any URL shows the domain in the status bar and tooltip, updating to the full page title once the fetch completes.
+**Mouse interaction — preview card below the message:**
+- **Left-click** the card → opens the URL in your default browser
+- **Right-click** the card → same context menu as right-clicking the URL text (Open URL / Hide Preview)
+
+Hovering over any URL shows the domain in the tooltip, updating to the full page title once the fetch completes.
+
+**Preview queue:** when multiple URLs arrive at once, Uplink fetches their cards sequentially (up to 10 queued at a time) so fetches do not compete with each other. A URL hovered in chat triggers a lightweight title-only fetch that does not interfere with the card queue.
 
 Preview fetches are lightweight and automatic — HTML is capped at 32 KB, images at 200 KB, and results are cached in memory for the session.
 

@@ -153,9 +153,11 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/time <nick>` | Ask a user for their local time — reply appears in the active channel |
 | `/version [nick]` | Request server version, or CTCP VERSION from a nick |
 | `/ctcp <nick> <command> [args]` | Send a raw CTCP request to a user |
-| `/sysinfo` | Post OS, CPU, RAM, GPU, and uptime info to the current channel |
+| `/sysinfo` | Collect OS, CPU, RAM, GPU, and uptime info and post it to the current channel — asks for confirmation before posting |
 
 Incoming CTCP VERSION and PING requests are answered automatically.
+
+> **Note:** `/sysinfo` collects info in the background (GPU detection via `vulkaninfo`/`lspci` can take a moment). Uplink posts "Collecting system info…" immediately, then replaces it with the result when ready. A 12-second timeout applies — if collection hangs, an error is posted instead.
 
 > **Note:** `/time` and `/ping` only work if the target client supports those CTCP commands. Most IRC clients do, but bots often do not respond. If you see no reply, the other side simply does not support it.
 
@@ -211,6 +213,15 @@ Accept?   [Yes]  [No]
 
 Click **Yes**, choose a save location, and a progress dialog tracks the download. Click **Cancel** at any time to abort.
 
+The file is written to a `.part` file while downloading and renamed to the final filename only when the transfer completes successfully. If the transfer is cancelled or fails, the partial file is deleted automatically.
+
+**Receive limits:**
+
+| Limit | Value |
+|---|---|
+| Maximum file size | 2 GiB |
+| Disk space | Checked against available space before starting — transfer is rejected if there is not enough room |
+
 > **NAT and firewalls:** Active DCC requires the sender's port to be reachable from the internet. If the sender is behind a home router, use **Send File (Passive)** — this flips who opens the port. If *both* sides are behind NAT, neither mode will work without a relay.
 
 ---
@@ -221,7 +232,7 @@ Right-clicking a **channel** in the sidebar opens a context menu:
 
 | Action | What it does |
 |---|---|
-| **Open in Pane** | Opens the channel as a side-by-side pane with its own chat view, nick list, topic bar, and input bar. Appears when the channel is not already open in a pane. |
+| **Open in Pane** | Opens the channel as a side-by-side pane with its own chat view, nick list, topic bar, and input bar. Appears when the channel is not already open in a pane. Pane layout is saved automatically and restored on the next launch. |
 | **Close Pane** | Closes the side-by-side pane for this channel. Appears when a pane is already open. |
 | **Rejoin** | Parts the channel and immediately rejoins it. |
 | **Leave** | Parts the channel (`PART`). |
