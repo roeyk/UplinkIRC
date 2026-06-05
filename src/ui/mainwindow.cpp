@@ -996,6 +996,13 @@ void MainWindow::setupChatArea()
 
     m_linkPreview = new LinkPreview(this);
 
+    m_previewWatchdog = new QTimer(this);
+    m_previewWatchdog->setSingleShot(true);
+    connect(m_previewWatchdog, &QTimer::timeout, this, [this]{
+        m_previewFetchBusy = false;
+        processPreviewQueue();
+    });
+
     m_chatView->viewport()->setMouseTracking(true);
     m_chatView->viewport()->installEventFilter(this);
     m_chatView->installEventFilter(this);
@@ -1010,11 +1017,18 @@ void MainWindow::setupChatArea()
     connect(m_linkPreview, &LinkPreview::cardReady, this,
             [this](const QUrl &pageUrl, const QString &title, const QPixmap &thumbnail){
         const QString urlStr = pageUrl.toString();
+        m_previewWatchdog->stop();
+        m_previewFetchBusy = false;
+
         auto it = m_previewChannels.find(urlStr);
-        if (it == m_previewChannels.end()) return;
+        if (it == m_previewChannels.end()) {
+            processPreviewQueue();
+            return;
+        }
         const QString host    = it->first;
         const QString channel = it->second;
         m_previewChannels.erase(it);
+        processPreviewQueue();
 
         auto *ch = m_model->channel(host, channel);
         if (!ch) return;
@@ -1463,7 +1477,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     QToolTip::showText(m_hoverGlobalPos, url.host(),
                                        m_chatView->viewport());
                     if (m_config.ui.linkPreviews)
-                        m_linkPreview->fetch(url);
+                        m_linkPreview->fetchHover(url);
                 }
             }
         } else if (event->type() == QEvent::ContextMenu) {
@@ -3439,6 +3453,26 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     menu.exec(globalPos);
 }
 
+void MainWindow::enqueuePreview(const QUrl &url, const QString &host, const QString &channel)
+{
+    const QString key = url.toString();
+    if (key.isEmpty()) return;
+    if (m_previewChannels.contains(key)) return;
+    if (m_previewQueue.size() >= 10) return;
+    if (m_previewChannels.size() >= 100) return;
+    m_previewChannels.insert(key, {host, channel});
+    m_previewQueue.enqueue(url);
+    processPreviewQueue();
+}
+
+void MainWindow::processPreviewQueue()
+{
+    if (m_previewFetchBusy || m_previewQueue.isEmpty()) return;
+    m_previewFetchBusy = true;
+    m_previewWatchdog->start(20000);
+    m_linkPreview->fetch(m_previewQueue.dequeue());
+}
+
 void MainWindow::refreshChatView(const QString &host, const QString &channel)
 {
     m_chatView->clear();
@@ -3629,9 +3663,8 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
         while (it.hasNext()) {
             const QString urlStr = QUrl(it.next().captured(0)).toString();
             if (urlStr.isEmpty() || m_previewChannels.contains(urlStr)) continue;
-            m_previewChannels.insert(urlStr,
-                {m_model->activeHost(), m_model->activeChannel()});
-            m_linkPreview->fetch(QUrl(urlStr));
+            enqueuePreview(QUrl(urlStr),
+                m_model->activeHost(), m_model->activeChannel());
         }
     }
 

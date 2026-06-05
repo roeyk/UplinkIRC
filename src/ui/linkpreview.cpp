@@ -98,6 +98,68 @@ void LinkPreview::fetch(const QUrl &url)
     resolveAndFetch(url);
 }
 
+void LinkPreview::fetchHover(const QUrl &url)
+{
+    if (m_hoverDnsId) { QHostInfo::abortHostLookup(m_hoverDnsId); m_hoverDnsId = 0; }
+    if (m_hoverReply) {
+        m_hoverReply->disconnect(this);
+        m_hoverReply->abort();
+        m_hoverReply->deleteLater();
+        m_hoverReply = nullptr;
+    }
+    ++m_hoverGen;
+    resolveAndFetchHover(url);
+}
+
+void LinkPreview::resolveAndFetchHover(const QUrl &url)
+{
+    if (isBlockedBySchemeOrLiteral(url)) return;
+
+    const QString key = url.toString();
+    if (m_cache.contains(key)) {
+        emit titleReady(url, m_cache[key].title);
+        return;
+    }
+
+    const quint64 gen = m_hoverGen;
+    m_hoverDnsId = QHostInfo::lookupHost(url.host(), this,
+        [this, url, gen](const QHostInfo &info) {
+            m_hoverDnsId = 0;
+            if (gen != m_hoverGen) return;
+            if (info.error() != QHostInfo::NoError) return;
+            if (info.addresses().isEmpty()) return;
+            for (const QHostAddress &a : info.addresses())
+                if (isForbiddenAddress(a)) return;
+
+            QNetworkRequest req(url);
+            req.setRawHeader("User-Agent", "WhatsApp/2");
+            req.setRawHeader("Accept", "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8");
+            req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                             QNetworkRequest::ManualRedirectPolicy);
+            req.setTransferTimeout(kTimeoutMs);
+
+            m_hoverReply = m_nam->get(req);
+            QNetworkReply *reply = m_hoverReply;
+            auto buf = std::make_shared<QByteArray>();
+
+            connect(reply, &QNetworkReply::readyRead, this, [reply, buf] {
+                const qsizetype rem = kMaxBytes - buf->size();
+                if (rem <= 0) { reply->abort(); return; }
+                buf->append(reply->read(rem));
+                if (buf->size() >= kMaxBytes) reply->abort();
+            });
+
+            connect(reply, &QNetworkReply::finished, this, [this, reply, buf, url, gen] {
+                if (m_hoverReply == reply) m_hoverReply = nullptr;
+                reply->deleteLater();
+                if (gen != m_hoverGen) return;
+                const QString title = extractTitle(*buf);
+                if (!title.isEmpty())
+                    emit titleReady(url, title);
+            });
+        });
+}
+
 // Resolves the hostname via DNS, verifies every returned address is non-private,
 // then calls doPageFetch. Used for both initial fetches and redirect follow-ups.
 void LinkPreview::resolveAndFetch(const QUrl &url)
