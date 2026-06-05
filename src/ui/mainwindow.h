@@ -32,6 +32,7 @@ class QLineEdit;
 class QLabel;
 class QPushButton;
 class QListWidget;
+class QListWidgetItem;
 class QToolButton;
 class QSplitter;
 class QAction;
@@ -59,6 +60,10 @@ private slots:
     void onMessageAdded     (const QString &host, const QString &channel, const Message &msg);
     void onTopicChanged     (const QString &host, const QString &channel, const QString &topic);
     void onNickListChanged     (const QString &host, const QString &channel);
+    void onNickAdded           (const QString &host, const QString &channel, const QString &nick);
+    void onNickRemoved         (const QString &host, const QString &channel, const QString &nick);
+    void onNickRenamed         (const QString &host, const QString &channel,
+                                const QString &oldNick, const QString &newNick);
     void onNickListContextMenu  (const QPoint &pos);
     void onSidebarContextMenu   (const QPoint &pos);
     void onUnreadChanged    (const QString &host, const QString &channel, int count);
@@ -99,6 +104,9 @@ private:
     void refreshPaneChatView(ChannelPane *pane);
     void refreshPaneNickList(ChannelPane *pane);
     void rebuildPaneLayout();
+
+    QListWidgetItem *makeNickItem(const NickEntry &e, const Channel *ch, const ServerSession *sess);
+    static int       findNickRow (QListWidget *list, const QString &nick);
 
     QString    formatMessage(const Message &msg) const;
     void       showNickContextMenu(const QString &nick, const QPoint &globalPos);

@@ -1310,6 +1310,9 @@ void MainWindow::connectModel()
             refreshTopicBar(host, channel);
     });
     connect(m_model, &SessionModel::nickListChanged,   this, &MainWindow::onNickListChanged);
+    connect(m_model, &SessionModel::nickAdded,         this, &MainWindow::onNickAdded);
+    connect(m_model, &SessionModel::nickRemoved,       this, &MainWindow::onNickRemoved);
+    connect(m_model, &SessionModel::nickRenamed,       this, &MainWindow::onNickRenamed);
     connect(m_model, &SessionModel::unreadChanged,     this, &MainWindow::onUnreadChanged);
     connect(m_model, &SessionModel::reactionsChanged,  this, &MainWindow::onReactionsChanged);
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
@@ -3260,23 +3263,8 @@ void MainWindow::refreshPaneNickList(ChannelPane *pane)
     if (!ch) return;
     auto *sess = m_model->session(pane->host());
 
-    for (const auto &e : std::as_const(ch->nicks)) {
-        const bool isBot = ch->botNicks.contains(e.nick.toLower())
-                        || (sess && sess->botNicks.contains(e.nick.toLower()));
-        if (isBot && !m_botIcons.contains(e.nick.toLower()))
-            m_botIcons[e.nick.toLower()] = QRandomGenerator::global()->bounded(2)
-                                           ? QStringLiteral("🤖") : QStringLiteral("👾");
-        const QString label = isBot
-            ? e.display() + " " + m_botIcons[e.nick.toLower()]
-            : e.display();
-        auto *item = new QListWidgetItem(label);
-        item->setData(Qt::UserRole, e.nick);
-        if (!e.account.isEmpty())
-            item->setToolTip("Account: " + e.account);
-        if (m_config.ui.coloredNicks)
-            item->setForeground(nickColor(e.nick));
-        pane->nickList()->addItem(item);
-    }
+    for (const auto &e : std::as_const(ch->nicks))
+        pane->nickList()->addItem(makeNickItem(e, ch, sess));
 }
 
 void MainWindow::onNickListContextMenu(const QPoint &pos)
@@ -3555,6 +3543,100 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
     }
 }
 
+QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
+                                           const ServerSession *sess)
+{
+    const bool isBot = ch->botNicks.contains(e.nick.toLower())
+                    || (sess && sess->botNicks.contains(e.nick.toLower()));
+    if (isBot && !m_botIcons.contains(e.nick.toLower()))
+        m_botIcons[e.nick.toLower()] = QRandomGenerator::global()->bounded(2)
+                                       ? QStringLiteral("🤖") : QStringLiteral("👾");
+    const QString label = isBot ? e.display() + " " + m_botIcons[e.nick.toLower()] : e.display();
+    auto *item = new QListWidgetItem(label);
+    item->setData(Qt::UserRole, e.nick);
+    if (!e.account.isEmpty())
+        item->setToolTip("Account: " + e.account);
+    if (m_config.ui.coloredNicks)
+        item->setForeground(nickColor(e.nick));
+    return item;
+}
+
+int MainWindow::findNickRow(QListWidget *list, const QString &nick)
+{
+    const QString lower = nick.toLower();
+    for (int i = 0; i < list->count(); ++i)
+        if (list->item(i)->data(Qt::UserRole).toString().toLower() == lower)
+            return i;
+    return -1;
+}
+
+void MainWindow::onNickAdded(const QString &host, const QString &channel, const QString &nick)
+{
+    auto *ch   = m_model->channel(host, channel);
+    auto *sess = m_model->session(host);
+    if (!ch) return;
+    const qsizetype row = ch->nickIndex.value(nick.toLower(), -1);
+    if (row < 0) return;
+    const NickEntry &e = ch->nicks[row];
+
+    const bool isActive = (host == m_model->activeHost() &&
+                           channel.toLower() == m_model->activeChannel().toLower());
+    if (isActive) {
+        m_nickList->insertItem(static_cast<int>(row), makeNickItem(e, ch, sess));
+        if (m_nickCountLabel)
+            m_nickCountLabel->setText(QString::number(ch->nicks.size()) + " users");
+    }
+
+    const QString key = host + "|" + channel.toLower();
+    if (auto *pane = m_panes.value(key))
+        pane->nickList()->insertItem(static_cast<int>(row), makeNickItem(e, ch, sess));
+}
+
+void MainWindow::onNickRemoved(const QString &host, const QString &channel, const QString &nick)
+{
+    auto *ch = m_model->channel(host, channel);
+
+    const bool isActive = (host == m_model->activeHost() &&
+                           channel.toLower() == m_model->activeChannel().toLower());
+    if (isActive) {
+        const int row = findNickRow(m_nickList, nick);
+        if (row >= 0) delete m_nickList->takeItem(row);
+        if (m_nickCountLabel && ch)
+            m_nickCountLabel->setText(QString::number(ch->nicks.size()) + " users");
+    }
+
+    const QString key = host + "|" + channel.toLower();
+    if (auto *pane = m_panes.value(key)) {
+        const int row = findNickRow(pane->nickList(), nick);
+        if (row >= 0) delete pane->nickList()->takeItem(row);
+    }
+}
+
+void MainWindow::onNickRenamed(const QString &host, const QString &channel,
+                                const QString &oldNick, const QString &newNick)
+{
+    auto *ch   = m_model->channel(host, channel);
+    auto *sess = m_model->session(host);
+    if (!ch) return;
+    const qsizetype newRow = ch->nickIndex.value(newNick.toLower(), -1);
+    if (newRow < 0) return;
+    const NickEntry &e = ch->nicks[newRow];
+
+    auto apply = [&](QListWidget *list) {
+        const int oldRow = findNickRow(list, oldNick);
+        if (oldRow < 0) return;
+        delete list->takeItem(oldRow);
+        list->insertItem(static_cast<int>(newRow), makeNickItem(e, ch, sess));
+    };
+
+    const bool isActive = (host == m_model->activeHost() &&
+                           channel.toLower() == m_model->activeChannel().toLower());
+    if (isActive) apply(m_nickList);
+
+    const QString key = host + "|" + channel.toLower();
+    if (auto *pane = m_panes.value(key)) apply(pane->nickList());
+}
+
 void MainWindow::refreshNickList(const QString &host, const QString &channel)
 {
     m_nickList->clear();
@@ -3562,23 +3644,8 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
     if (!ch) return;
     auto *sess = m_model->session(host);
 
-    for (const auto &e : std::as_const(ch->nicks)) {
-        const bool isBot = (ch->botNicks.contains(e.nick.toLower()))
-                        || (sess && sess->botNicks.contains(e.nick.toLower()));
-        if (isBot && !m_botIcons.contains(e.nick.toLower()))
-            m_botIcons[e.nick.toLower()] = QRandomGenerator::global()->bounded(2)
-                                           ? QStringLiteral("🤖") : QStringLiteral("👾");
-        const QString label = isBot
-            ? e.display() + " " + m_botIcons[e.nick.toLower()]
-            : e.display();
-        auto *item = new QListWidgetItem(label);
-        item->setData(Qt::UserRole, e.nick);
-        if (!e.account.isEmpty())
-            item->setToolTip("Account: " + e.account);
-        if (m_config.ui.coloredNicks)
-            item->setForeground(nickColor(e.nick));
-        m_nickList->addItem(item);
-    }
+    for (const auto &e : std::as_const(ch->nicks))
+        m_nickList->addItem(makeNickItem(e, ch, sess));
 
     if (m_nickCountLabel)
         m_nickCountLabel->setText(QString::number(ch->nicks.size()) + " users");

@@ -241,8 +241,8 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] Compiler warning cleanup — fix `-Wconversion` narrowing (qsizetype→int), `-Wshadow` locals, `-Wold-style-cast` casts flagged by the new warning flags
 
 ### Medium term
-- [ ] Incremental nick-list updates — emit specific `nickAdded`/`nickRemoved`/`nickRenamed`/`nickModeChanged` signals; replace `clear()`/repopulate with targeted updates; batch during NAMES/netsplit bursts
-- [ ] Per-channel nick index — `QHash<QString, int> nickIndex` (lower nick → index) to replace O(n) scans in `onMessage`, `onNotice`, `onAction`, `onAccountChanged`
+- [x] Incremental nick-list updates — emit specific `nickAdded`/`nickRemoved`/`nickRenamed`/`nickModeChanged` signals; replace `clear()`/repopulate with targeted updates; batch during NAMES/netsplit bursts
+- [x] Per-channel nick index — `QHash<QString, int> nickIndex` (lower nick → index) to replace O(n) scans in `onMessage`, `onNotice`, `onAction`, `onAccountChanged`
 - [x] Batch chat/nick refreshes — debounce `refreshChatView()` and `refreshNickList()` with a short single-shot timer for burst updates
 - [ ] Split `ChatRenderer` out of `MainWindow` — `formatMessage`, `ircToHtml`, `linkifyHtml`, emoji rendering as a separate class
 - [ ] Split `CommandDispatcher` out of `MainWindow` — `/join`, `/msg`, `/dcc`, `/sysinfo`, etc. as a separate class

@@ -77,6 +77,10 @@ signals:
     void topicChanged  (const QString &host, const QString &channel, const QString &topic);
     void modesChanged  (const QString &host, const QString &channel);
     void nickListChanged(const QString &host, const QString &channel);
+    void nickAdded      (const QString &host, const QString &channel, const QString &nick);
+    void nickRemoved    (const QString &host, const QString &channel, const QString &nick);
+    void nickRenamed    (const QString &host, const QString &channel,
+                         const QString &oldNick, const QString &newNick);
     void unreadChanged   (const QString &host, const QString &channel, int count);
     void reactionsChanged(const QString &host, const QString &channel);
     void messageRedacted (const QString &host, const QString &channel);

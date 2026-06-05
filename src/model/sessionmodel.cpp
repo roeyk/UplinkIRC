@@ -551,7 +551,7 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
         emit channelAdded(host, channel);
     }
     ch.addNick(nick);
-    emit nickListChanged(host, channel);
+    emit nickAdded(host, channel, nick);
     postMessage(host, channel, Message::make(MessageType::Join, nick,
         isSelf ? "You joined " + channel : nick + " joined"));
 }
@@ -571,7 +571,7 @@ void SessionModel::onUserParted(const QString &host, const QString &channel,
         emit nickListChanged(host, channel);
     } else if (ch) {
         ch->removeNick(nick);
-        emit nickListChanged(host, channel);
+        emit nickRemoved(host, channel, nick);
     }
     postMessage(host, channel, Message::make(MessageType::Part, nick,
         reason.isEmpty() ? nick + " left" : nick + " left (" + reason + ")"));
@@ -584,7 +584,7 @@ void SessionModel::onUserQuit(const QString &host, const QString &nick, const QS
     for (auto &ch : sess->channels) {
         if (!ch.nickIndex.contains(nick.toLower())) continue;
         ch.removeNick(nick);
-        emit nickListChanged(host, ch.name);
+        emit nickRemoved(host, ch.name, nick);
         postMessage(host, ch.name, Message::make(MessageType::Quit, nick,
             reason.isEmpty() ? nick + " quit" : nick + " quit (" + reason + ")"));
     }
@@ -639,7 +639,7 @@ void SessionModel::onNickChanged(const QString &host, const QString &oldNick, co
     for (auto &ch : sess->channels) {
         if (!ch.nickIndex.contains(oldNick.toLower())) continue;
         ch.renameNick(oldNick, newNick);
-        emit nickListChanged(host, ch.name);
+        emit nickRenamed(host, ch.name, oldNick, newNick);
         postMessage(host, ch.name, Message::make(MessageType::Nick, oldNick,
             oldNick + " is now known as " + newNick));
     }
@@ -653,7 +653,7 @@ void SessionModel::onKicked(const QString &host, const QString &channel,
     auto *ch = sess->get(channel);
     if (ch) {
         ch->removeNick(nick);
-        emit nickListChanged(host, channel);
+        emit nickRemoved(host, channel, nick);
     }
     postMessage(host, channel, Message::make(MessageType::Kick, by,
         nick + " was kicked by " + by + " (" + reason + ")"));
