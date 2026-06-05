@@ -249,6 +249,8 @@ name     = "LinuxDojo"
 nickserv_password = "<keychain>"   # the actual value is in the OS keychain
 ```
 
+**Startup is non-blocking.** Keychain reads happen in the background after the main window appears. Each server's connection is established as soon as its passwords are resolved — you do not need to wait for all servers before the first one connects.
+
 **If the keychain is unavailable** (e.g. no secret service daemon running on a headless Linux server), Uplink falls back gracefully — the password field simply reads as empty. In that case, enter your password in the server dialog and it will be stored once a keychain becomes available.
 
 ---

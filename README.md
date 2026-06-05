@@ -81,9 +81,9 @@
 | **TLS certificate verification** | Invalid or self-signed certificates disconnect immediately with an error. No silent bypass. |
 | **SASL PLAIN** | Set `sasl_user` + `sasl_password` in config. Full CAP flow: `AUTHENTICATE`, `903`/`904`/`906`. |
 | **SASL EXTERNAL** | Certificate-based auth. Set `sasl_external = true`, `client_cert`, and `client_key`. RSA and EC (ECDSA) PEM keys supported. The TLS client cert is presented during the handshake; the server derives your identity from it — no password sent. |
-| **DCC Send File** | Right-click any nick → **Send File** (active) or **Send File (Passive)**. Active: sender opens a TCP listener — works when the sender has a reachable port. Passive: receiver opens the port instead — use this when the sender is behind NAT. Standard 4-byte ACK protocol. Both sides get a live progress dialog with cancel. |
+| **DCC Send File** | Right-click any nick → **Send File** (active) or **Send File (Passive)**. Active: sender opens a TCP listener — works when the sender has a reachable port. Passive: receiver opens the port instead — use this when the sender is behind NAT. Standard 4-byte ACK protocol. Both sides get a live progress dialog with cancel. Outgoing filenames are sanitized: control characters are stripped before the filename is embedded in the CTCP message, preventing CTCP injection. |
 | **NickServ auto-identify** | Set `nickserv_password` to send `IDENTIFY` on `RPL_WELCOME`. |
-| **Credential redaction** | `PASS`, `AUTHENTICATE`, and `NickServ IDENTIFY` payloads are never echoed in the raw log or any visible panel. |
+| **Credential redaction** | `PASS`, `OPER`, `AUTHENTICATE`, and `NickServ IDENTIFY` payloads are never echoed in the raw log or any visible panel. |
 | **OS keychain password storage** | Passwords (`password`, `sasl_password`, `nickserv_password`) are stored in the OS keychain (Secret Service / macOS Keychain / Windows Credential Manager). The config file holds `"<keychain>"` as a sentinel — no plaintext secrets on disk. Existing plaintext passwords migrate automatically on next save. |
 | **Config file hardening** | `config.toml` is written with owner-only permissions (mode `0600`). Saves are atomic via `QSaveFile` — a crash mid-save cannot corrupt the file. |
 | **Link preview privacy** | Auto-previews skip loopback, RFC 1918 private ranges, link-local, and `.local` addresses. A malicious user cannot cause the client to probe your LAN. |
@@ -174,6 +174,16 @@ cmake --build build
 ```
 
 On first launch Uplink creates `~/.config/uplink/themes/` and seeds it with all bundled themes automatically.
+
+### Running tests
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --target tst_ircparser tst_chatformat
+ctest --test-dir build
+```
+
+Tests cover the IRC message parser (prefix parsing, IRCv3 tags, tag value unescaping, numerics, malformed input) and the chat formatter (HTML escaping, IRC formatting codes, color codes, linkification). Pass `-DUPLINK_BUILD_TESTS=OFF` to CMake to skip them if Qt6 Test is not installed.
 
 ### Install dependencies first
 

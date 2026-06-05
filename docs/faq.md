@@ -845,7 +845,30 @@ The theme format uses named `{{key}}` placeholders for colors. Look at any of th
 - A C++17 compiler (GCC, Clang, or MSVC)
 - tomlplusplus (header-only, available via most package managers)
 
-See [Building](building.md) for full platform-specific instructions.
+See the [Quick Start](https://github.com/noderelay/UplinkIRC#quick-start) and platform-specific install steps in the README.
+
+### How do I run the unit tests?
+
+Tests are built automatically by default. After configuring with CMake:
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --target tst_ircparser tst_chatformat
+ctest --test-dir build
+```
+
+To run a single test binary directly (useful for verbose output):
+
+```bash
+./build/tests/tst_ircparser -v1
+./build/tests/tst_chatformat -v1
+```
+
+Pass `-DUPLINK_BUILD_TESTS=OFF` to CMake to skip the tests entirely (e.g. if Qt6 Test is not installed):
+
+```bash
+cmake -B build -DUPLINK_BUILD_TESTS=OFF
+```
 
 ### Build fails: "tomlplusplus not found"
 
