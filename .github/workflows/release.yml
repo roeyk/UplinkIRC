@@ -159,4 +159,4 @@ jobs:
           git diff --quiet && exit 0
           git add README.md docs/index.html
           git commit -m "docs: bump download links to ${{ github.ref_name }}"
-          git push origin main
+          git push origin main || echo "Push blocked by branch protection — apply doc bump manually via the release process."
