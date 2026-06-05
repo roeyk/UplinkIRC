@@ -3,6 +3,63 @@
 ---
 
 <!--
+Session summary — 2026-06-05 (40-finding code audit — batches 1–4)
+
+Released v0.23.3 — perf/stability patch on top of v0.23.2.
+
+Changes committed across four batches:
+
+Batch 1 — safety & correctness:
+  - QPointer guard in keychain lambda (sessionmodel.cpp) — prevents
+    use-after-free when IrcClient is destroyed before async read completes
+  - selfNick highlight regex pre-compiled into m_selfNickRe (MainWindow
+    member); ChatRenderer::Context carries QRegularExpression instead of
+    QString — regex no longer rebuilt on every message render
+  - Dead ternary in actionReceived emit fixed (target was always `target`)
+  - Null guard at top of eventFilter prevents crash when m_chatView is null
+  - QTextBrowser block count capped at kMessageBufferCap + 300 to bound RAM
+
+Batch 2 — performance:
+  - Mention regex (mentionRe) pre-compiled per nick-change; per-message
+    regex build in postMessage eliminated
+  - Channel::addNick rewritten with std::lower_bound O(log n) sorted
+    insert; partial nickIndex update instead of full rebuild
+  - DCC timeout fixed — fires even when transfer has partially started
+    (removed the m_received == 0 guard)
+  - setTopicIcon: wildcard disconnect replaced with tracked
+    QMetaObject::Connection m_topicIconConn
+  - Duplicate reaction HTML builder and duplicate textChanged lambda both
+    consolidated; magic numbers replaced with named constants
+
+Batch 3 — code quality:
+  - src/net/addresscheck.h added — shared isPrivateAddress() used by both
+    linkpreview.cpp and dccreceive.cpp (duplicate local functions removed)
+  - Monitor nick membership now tracked in m_monitorSet (QSet<QString>);
+    monitorAdd O(1) check replaces O(n) scan
+  - QThread::terminate() replaced with shared abort flag — safe cooperative
+    cancellation for /sysinfo background thread
+  - onServerDisconnected: m_typingNickTimers, m_typingNicks, and m_botIcons
+    cleaned up by host on disconnect
+  - refreshChatView: ChatRenderer::Context built once before the message
+    loop (was rebuilt on every message via appendMessage)
+
+Batch 4 — RAM + targeted UI updates:
+  - LinkPreview::CachedCard changed from QPixmap to QByteArray pngData;
+    compressed PNG stored (~10x smaller per entry); QPixmap reconstructed
+    only on cache hit for signal delivery
+  - FIFO eviction via m_cacheOrder (QList<QString>); cache bounded at 50
+    entries (previously could grow unbounded)
+  - reactionsChanged / messageRedacted signals extended with msgid parameter;
+    QTextBlocks tagged with BlockMsgid userData (QTextBlockUserData subclass)
+    in refreshChatView and appendMessage; onReactionsChanged does targeted
+    insert/replace/remove of just the reaction block; onMessageRedacted
+    replaces only the affected block — full refreshChatView no longer called
+    for either event
+
+Docs: version bumped to v0.23.3; download links updated; ROADMAP ticked
+-->
+
+<!--
 Session summary — 2026-06-05 (release v0.23.2 + docs pass)
 
 Released v0.23.2 — patch bump from v0.23.1 (fixes and refactors only,
@@ -365,6 +422,54 @@ Next priorities:
   - DCC passive / NAT traversal
   - FreeBSD port skeleton
 -->
+
+## v0.23.3 — 2026-06-05
+
+### Performance
+
+- **Perf:** Reactions and message deletions now update in-place — only the affected `QTextBlock` is rewritten instead of rebuilding the entire chat view. On active channels this eliminates a visible repaint on every incoming reaction or redaction event.
+- **Perf:** Link preview thumbnail cache is now bounded at 50 entries with FIFO eviction. Previously the cache could grow without limit across a long session. Thumbnails are stored as compressed PNG bytes (~10x smaller than a decoded `QPixmap`); a `QPixmap` is reconstructed only at the moment the preview card is displayed.
+- **Perf:** Nick mention highlight regex (`m_selfNickRe`) is pre-compiled once when the nick changes. The previous code compiled a fresh `QRegularExpression` on every single message render.
+- **Perf:** Chat context object (`ChatRenderer::Context`) is built once before the message loop in `refreshChatView`, not once per message.
+
+### Stability
+
+- **Fix:** `QPointer` guard added to keychain async lambda — if the `IrcClient` is destroyed before an async secret read completes, the lambda now exits safely instead of accessing freed memory.
+- **Fix:** DCC receive timeout now fires correctly even when a transfer has partially started. Previously the `m_received == 0` guard suppressed the timeout once any bytes had arrived, leaving stalled transfers stuck indefinitely.
+- **Fix:** `/sysinfo` background thread now uses a cooperative abort flag instead of `QThread::terminate()`. Forced termination is unsafe in Qt — the new approach lets the thread exit cleanly on timeout.
+- **Fix:** Disconnecting from a server now correctly prunes typing-indicator state and bot-icon entries for that host, preventing stale data from appearing after a reconnect.
+
+### Internals
+
+- `src/net/addresscheck.h` — shared `isPrivateAddress()` helper used by both the link preview SSRF guard and the DCC receive IP check (duplicate local functions removed).
+- `Channel::addNick` uses `std::lower_bound` for O(log n) sorted insert with a partial nick-index update instead of a full rebuild.
+- Monitor nick membership tracked in `m_monitorSet` (`QSet<QString>`) — `monitorAdd` check is now O(1) instead of O(n).
+
+---
+
+## v0.23.2 — 2026-06-05
+
+### Stability
+
+- **Fix:** Keychain reads at startup are now fully non-blocking. Uplink no longer spins a nested `QEventLoop` per sentinel field — all secret fields resolve in parallel via `KeychainHelper::readAsync()`, and `connectToServer` is called only once all reads complete. Eliminates the reentrancy hazard when the keychain backend needs to show a dialog before the main window is ready.
+
+### Testing
+
+- **New:** Qt Test suite — two test executables ship with the project:
+  - `tst_ircparser` — 14 cases covering prefix parsing, `nick!user@host` splitting, IRCv3 tag parsing, tag value unescaping, `server-time`, numerics, CRLF stripping, and malformed input.
+  - `tst_chatformat` — 16 cases covering HTML escaping, bold/italic/underline IRC formatting codes, IRC color codes (fg and fg+bg), reset (`\x0F`), `linkifyHtml`, and `htmlAttr` quoting.
+  - Build: `cmake --build build --target tst_ircparser tst_chatformat && ctest --test-dir build`. Pass `-DUPLINK_BUILD_TESTS=OFF` to skip.
+
+### Security
+
+- **Fix:** `OPER` password is now redacted in the raw log alongside `PASS` and `AUTHENTICATE`.
+- **Fix:** Remote-supplied DCC filenames are sanitized — all control characters stripped before the name is embedded in the CTCP envelope, preventing CTCP injection.
+
+### Build
+
+- **CI:** `release.yml` now auto-bumps all version strings in `README.md` and `docs/index.html` on every release tag. No manual version bump needed on future releases.
+
+---
 
 ## v0.23.1 — 2026-06-04
 
