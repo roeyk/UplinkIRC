@@ -43,6 +43,7 @@
 #include <QScrollBar>
 #include <QInputDialog>
 #include <QSysInfo>
+#include <QThread>
 #include <QTimer>
 #include <QSettings>
 #include <QDateTime>
@@ -2593,12 +2594,47 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
                 "System details can identify you. Continue?",
                 QMessageBox::Yes | QMessageBox::No);
             if (ret != QMessageBox::Yes) return;
-            static QString sysinfoStaticCache;
-            if (sysinfoStaticCache.isEmpty())
-                sysinfoStaticCache = QString("OS: %1 CPU: %2 MEM: %3 GPU: %4")
-                    .arg(sysinfoOS(), sysinfoCPU(), sysinfoMEM(), sysinfoGPU());
-            const QString info = sysinfoStaticCache + " UP: " + sysinfoUptime();
-            m_model->sendMessage(host, channel, info);
+            if (!m_sysinfoCache.isEmpty()) {
+                m_model->sendMessage(host, channel,
+                    m_sysinfoCache + " UP: " + sysinfoUptime());
+            } else if (m_sysinfoLoading) {
+                m_model->localMessage(host, channel,
+                    "System info is still being collected, please wait.");
+            } else {
+                m_sysinfoLoading = true;
+                m_model->localMessage(host, channel, "Collecting system info...");
+
+                auto *thread = QThread::create([this, host, channel]() {
+                    const QString result =
+                        QString("OS: %1 CPU: %2 MEM: %3 GPU: %4")
+                            .arg(sysinfoOS(), sysinfoCPU(), sysinfoMEM(), sysinfoGPU());
+                    QMetaObject::invokeMethod(this, [this, host, channel, result]() {
+                        m_sysinfoCache   = result;
+                        m_sysinfoLoading = false;
+                        m_model->sendMessage(host, channel,
+                            result + " UP: " + sysinfoUptime());
+                    }, Qt::QueuedConnection);
+                });
+                connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+
+                // Hard 12 s global timeout
+                auto *timer = new QTimer(this);
+                timer->setSingleShot(true);
+                connect(timer, &QTimer::timeout, this, [this, host, channel, thread, timer]() {
+                    timer->deleteLater();
+                    if (!m_sysinfoLoading) return;
+                    m_sysinfoLoading = false;
+                    thread->terminate();
+                    m_model->localMessage(host, channel,
+                        "System info collection timed out.");
+                });
+                connect(thread, &QThread::finished, timer, [timer]() {
+                    timer->stop();
+                    timer->deleteLater();
+                });
+                timer->start(12000);
+                thread->start();
+            }
         } else if (cmd == "/j") {
             m_model->sendJoin(host, args.section(' ', 0, 0), args.section(' ', 1, 1));
         } else if (cmd == "/ping") {

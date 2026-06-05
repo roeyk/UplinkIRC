@@ -204,8 +204,11 @@ private:
     Config        m_config;
     Theme         m_theme;
 
-    bool m_showNickPrefix{true};
-    bool m_showEmojiBtn{false};
-    bool m_showTopic{true};
+    bool    m_showNickPrefix{true};
+    bool    m_showEmojiBtn{false};
+    bool    m_showTopic{true};
+
+    QString m_sysinfoCache;
+    bool    m_sysinfoLoading{false};
 
 };

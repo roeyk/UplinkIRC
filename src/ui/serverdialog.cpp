@@ -72,8 +72,8 @@ ServerDialog::ServerDialog(QWidget *parent)
         auto *btn = new QPushButton("Browse…", row);
         btn->setFixedWidth(90);
         hbox->addWidget(btn);
-        QObject::connect(btn, &QPushButton::clicked, edit, [edit, filter, parent]{
-            const QString p = QFileDialog::getOpenFileName(parent, "Select File", {}, filter);
+        QObject::connect(btn, &QPushButton::clicked, edit, [edit, filter, pw]{
+            const QString p = QFileDialog::getOpenFileName(pw, "Select File", {}, filter);
             if (!p.isEmpty()) edit->setText(p);
         });
         return row;
