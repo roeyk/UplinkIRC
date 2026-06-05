@@ -984,9 +984,14 @@ void MainWindow::setupChatArea()
         m_chatView->document()->setDefaultStyleSheet(
             QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
     connect(m_chatView, &QTextBrowser::anchorClicked, this, [](const QUrl &url){
-        const QString s = url.scheme().toLower();
+        QString s = url.scheme().toLower();
+        QUrl target = url;
+        if (s == "preview") {
+            target = QUrl(url.toString().mid(8));
+            s = target.scheme().toLower();
+        }
         if (s == "http" || s == "https")
-            QDesktopServices::openUrl(url);
+            QDesktopServices::openUrl(target);
     });
 
     m_linkPreview = new LinkPreview(this);
@@ -1038,20 +1043,19 @@ void MainWindow::setupChatArea()
             ? QFontMetrics(m_chatView->font()).horizontalAdvance("00:00  ")
             : 20;
 
-        const QString cardHtml = QString(
-            "<table cellpadding=\"5\" cellspacing=\"0\" "
-            "style=\"margin:1px 0 3px %1px;"
-            "border-left:3px solid %2;"
-            "background-color:%3\">"
-            "<tr><td>"
-            "<span style=\"color:%4;font-weight:bold\">%5</span><br/>"
-            "<span style=\"color:%6;font-size:8pt\">%7</span>"
-            "%8"
-            "</td></tr></table>")
-            .arg(cardLeft)
-            .arg(border.name(), bg.name(),
-                 fg.name(), titleEsc, sub.name(), domainEsc,
-                 imgHtml);
+        const QString cardHtml =
+            QString("<table cellpadding=\"5\" cellspacing=\"0\" "
+                    "style=\"margin:1px 0 3px %1px;"
+                    "border-left:3px solid %2;"
+                    "background-color:%3\"><tr><td>")
+                .arg(cardLeft).arg(border.name(), bg.name())
+            + "<a href=\"preview:" + urlStr.toHtmlEscaped()
+            + "\" style=\"text-decoration:none\">"
+            + QString("<span style=\"color:%1;font-weight:bold\">%2</span><br/>"
+                      "<span style=\"color:%3;font-size:8pt\">%4</span>")
+                .arg(fg.name(), titleEsc, sub.name(), domainEsc)
+            + imgHtml
+            + "</a></td></tr></table>";
 
         ch->addPreview(urlStr, cardHtml);
 
@@ -1515,6 +1519,30 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 if (m_chatView->textCursor().hasSelection())
                     connect(menu.addAction("Copy"), &QAction::triggered,
                             this, [this]{ m_chatView->copy(); });
+                menu.exec(globalPos);
+                return true;
+            }
+
+            if (anchor.startsWith("preview:")) {
+                const QString url     = anchor.mid(8);
+                const QString host    = m_model->activeHost();
+                const QString channel = m_model->activeChannel();
+                QMenu menu(m_chatView->viewport());
+                connect(menu.addAction("Open URL"), &QAction::triggered, this, [url]{
+                    const QUrl u(url);
+                    const QString s = u.scheme().toLower();
+                    if (s == "http" || s == "https")
+                        QDesktopServices::openUrl(u);
+                });
+                auto *ch = m_model->channel(host, channel);
+                if (ch && ch->previews.contains(url)) {
+                    connect(menu.addAction("Hide Preview"), &QAction::triggered, this,
+                            [this, url, host, channel]{
+                        auto *inner = m_model->channel(host, channel);
+                        if (inner) inner->hiddenPreviews.insert(url);
+                        refreshChatView(host, channel);
+                    });
+                }
                 menu.exec(globalPos);
                 return true;
             }
