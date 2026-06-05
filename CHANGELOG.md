@@ -487,6 +487,18 @@ Next priorities:
   - FreeBSD port skeleton
 -->
 
+<!--
+Session summary — 2026-06-05 (v0.24.1 — input bar bg fix)
+
+Noticed after v0.24.0 shipped that the input bar lost its background color.
+Root cause: themeloader.cpp QSS selector was `QWidget#inputBar QLineEdit`
+which stopped matching after the QLineEdit → QPlainTextEdit migration.
+Fix: combined selector covering both widget types; also extended
+`::placeholder-text` to cover QPlainTextEdit.
+
+Lesson recorded: "commit and push" ≠ permission to cut a release.
+-->
+
 ## v0.24.1 — 2026-06-05
 
 ### Bug Fixes
