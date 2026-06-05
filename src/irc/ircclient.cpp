@@ -165,6 +165,10 @@ void IrcClient::part(const QString &channel, const QString &reason)
 void IrcClient::privmsg(const QString &target, const QString &text, const QString &replyToMsgid)
 {
     if (!validIrcToken(target)) return;
+    if (m_socket->state() != QAbstractSocket::ConnectedState) {
+        emit errorMessage(m_host, "Not connected — message not sent");
+        return;
+    }
     if (m_utf8Only && text.contains(QChar::ReplacementCharacter))
         emit serverMessage(m_host,
             "Warning: message contains invalid UTF-8 characters — server requires UTF-8 (UTF8ONLY)");
@@ -177,6 +181,10 @@ void IrcClient::privmsg(const QString &target, const QString &text, const QStrin
 void IrcClient::notice(const QString &target, const QString &text)
 {
     if (!validIrcToken(target)) return;
+    if (m_socket->state() != QAbstractSocket::ConnectedState) {
+        emit errorMessage(m_host, "Not connected — message not sent");
+        return;
+    }
     sendRaw("NOTICE " + target + " :" + stripCrlf(text));
 }
 
@@ -276,7 +284,7 @@ static QString redactRawForLog(const QString &line)
 void IrcClient::sendRaw(const QString &line)
 {
     if (m_socket->state() != QAbstractSocket::ConnectedState) return;
-    const QString clean = stripCrlf(line);
+    const QString clean = stripCrlf(line).left(510); // 510 + CRLF = 512 (RFC 1459)
     emit rawReceived(">> " + redactRawForLog(clean));
     m_socket->write((clean + "\r\n").toUtf8());
 }
@@ -298,8 +306,10 @@ void IrcClient::onConnected()
     if (!m_password.isEmpty())
         sendRaw("PASS :" + stripCrlf(m_password));
 
-    sendRaw("NICK " + stripCrlf(m_nick));
-    sendRaw("USER " + stripCrlf(m_user) + " 0 * :" + stripCrlf(m_realname));
+    const QString safeNick = stripCrlf(m_nick).remove(' ').remove('\0');
+    const QString safeUser = stripCrlf(m_user).remove(' ').remove('\0');
+    sendRaw("NICK " + safeNick);
+    sendRaw("USER " + safeUser + " 0 * :" + stripCrlf(m_realname));
 }
 
 void IrcClient::onDisconnected()
@@ -331,7 +341,7 @@ void IrcClient::onReadyRead()
         // Cheap non-UTF-8 sniff: 0xFF never appears in valid UTF-8
         emit serverMessage(m_host, "Warning: server sent non-UTF-8 data (UTF8ONLY is set)");
     }
-    m_buffer += QString::fromUtf8(raw);
+    m_buffer += raw;
 
     if (m_buffer.size() > kMaxPendingBuffer) {
         emit socketError(m_host, "Server sent oversized unterminated data; disconnecting");
@@ -342,15 +352,16 @@ void IrcClient::onReadyRead()
 
     qsizetype idx;
     while ((idx = m_buffer.indexOf('\n')) != -1) {
-        QString line = m_buffer.left(idx);
-        m_buffer.remove(0, idx + 1);
-        if (line.endsWith('\r'))
-            line.chop(1);
-        if (line.isEmpty()) continue;
-        if (line.size() > kMaxIrcLine) {
+        QByteArray lineBytes = m_buffer.left(idx);
+        m_buffer.remove(0, static_cast<int>(idx + 1));
+        if (!lineBytes.isEmpty() && lineBytes.back() == '\r')
+            lineBytes.chop(1);
+        if (lineBytes.isEmpty()) continue;
+        if (lineBytes.size() > kMaxIrcLine) {
             emit socketError(m_host, "Dropped oversized IRC line from server");
             continue;
         }
+        const QString line = QString::fromUtf8(lineBytes);
         emit rawReceived(line);
         processLine(line);
     }
@@ -433,7 +444,13 @@ void IrcClient::scheduleReconnect()
 
 void IrcClient::sendPing()
 {
-    if (m_pingPending) return;
+    if (m_pingPending) {
+        if (m_pingClock.elapsed() > 90000) {
+            emit socketError(m_host, "Ping timeout");
+            m_socket->abort();
+        }
+        return;
+    }
     m_pingPending = true;
     m_pingClock.start();
     sendRaw("PING :uplink_rtt");
@@ -565,6 +582,8 @@ void IrcClient::processLine(const QString &line)
                 const QString rkey = msg.nick + ":VERSION";
                 const qint64  now  = QDateTime::currentMSecsSinceEpoch();
                 if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {
+                    if (m_ctcpTimestamps.size() >= 500)
+                        m_ctcpTimestamps.clear();
                     m_ctcpTimestamps.insert(rkey, now);
                     sendRaw("NOTICE " + msg.nick + " :\x01VERSION Uplink " UPLINK_VERSION "\x01");
                     emit serverMessage(m_host, "CTCP VERSION from " + msg.nick);
@@ -573,6 +592,8 @@ void IrcClient::processLine(const QString &line)
                 const QString rkey = msg.nick + ":PING";
                 const qint64  now  = QDateTime::currentMSecsSinceEpoch();
                 if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {
+                    if (m_ctcpTimestamps.size() >= 500)
+                        m_ctcpTimestamps.clear();
                     m_ctcpTimestamps.insert(rkey, now);
                     const QString payload = stripCrlf(ctcp.section(' ', 1).left(32));
                     sendRaw("NOTICE " + msg.nick + " :\x01PING " + payload + "\x01");
@@ -899,6 +920,11 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
                     StsStore::store(m_host, stsPort, stsDuration);
                     m_ssl  = true;
                     m_port = stsPort;
+                    // m_stsUpgrade must be set BEFORE abort() — abort() may call
+                    // onDisconnected() synchronously on some platforms, and that slot
+                    // checks m_stsUpgrade to suppress the normal reconnect schedule.
+                    // The singleShot lambda fires after onDisconnected() clears the flag,
+                    // so connectToHostEncrypted() always runs in UnconnectedState.
                     m_stsUpgrade = true;
                     emit serverMessage(m_host, QString("STS: upgrading to TLS on port %1").arg(stsPort));
                     QTimer::singleShot(0, this, [this]() {

@@ -230,6 +230,16 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] SOCKS5 proxy support — per-server proxy_host/port/user/pass; GUI in server dialog (v0.16.8)
 - [x] OPER password redaction — `redactRawForLog` now covers OPER credentials same as PASS (2026-06-05)
 - [x] DCC passive filename sanitization — strip all control chars from remote-supplied DCC filenames to prevent CTCP envelope injection (2026-06-05)
+- [x] DCC passive receive: peer validation skipped when expectedIP is private/zero — first inbound TCP connection accepted without identity check; add per-transfer write timeout and document the limitation (`dccreceive.cpp:98-103`)
+- [x] DCC send: no receiver IP validation — first peer to connect gets the file; add expected-peer check to `DccSend::listen()`, reject others (`dccsend.cpp:102-111`)
+- [x] Link preview SSRF: DNS rebinding gap — QNAM re-resolves after pre-check; extend `addresscheck.h` to cover CG-NAT (`100.64.0.0/10`), documentation ranges (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`), unspecified (`0.0.0.0/8`), IPv4-mapped private (`::ffff:0:0/96`) (`linkpreview.cpp:169-200`)
+- [x] `sendRaw`: no 512-byte IRC line cap — add `.left(510)` before write; oversized lines are partially delivered or rejected by server (`ircclient.cpp`)
+- [x] `onConnected`: `NICK`/`USER` only call `stripCrlf`, not `validIrcToken` — malformed nick from bad config produces a broken `USER` line (`ircclient.cpp`)
+- [x] DCC send filename: normal send path only replaces spaces, not control chars — create shared `safeDccFilename()` helper used by all DCC SEND paths (`dccsend.cpp:92-95` vs `mainwindow.cpp:1469-1477`)
+- [x] Unknown slash commands sent as raw IRC by default — change to "unknown command" message; keep `/raw` and `/quote` for power users; add opt-in `advanced_raw_passthrough` config key (`commanddispatcher.cpp:572-575`)
+- [x] `linkpreview`: apply `isBlockedBySchemeOrLiteral` in `extractImageUrl` before returning URL — defense-in-depth; currently only checked by the caller (`linkpreview.cpp`)
+- [ ] `Channel::previews`: cap stored HTML string length per entry — `kPreviewCap=100` limits count but not per-entry size (`channel.h`)
+- [ ] README vs code: README says "plaintext not supported" but `connectToHost()` is reachable when `ssl=false` — enforce TLS-only in code or update README (`ircclient.cpp:103-107`)
 
 ---
 
@@ -242,6 +252,10 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] DCC receive hardening — configurable max receive size; write to `.part` file and rename on success; delete partial on failure/cancel; check available disk space before starting
 - [x] Link preview queue — replace abort-on-new-fetch with a small queue (max concurrency 1–2); cap `m_previewChannels`; add per-channel/per-minute throttling
 - [x] Compiler warning cleanup — fix `-Wconversion` narrowing (qsizetype→int), `-Wshadow` locals, `-Wold-style-cast` casts flagged by the new warning flags
+- [x] `m_buffer` in `onReadyRead`: keep as `QByteArray` through line-split; call `QString::fromUtf8` per-line only — eliminates per-event UTF-16 conversion and O(n) string shift (`ircclient.cpp`)
+- [x] `logMessage`: cache one `QFile*` per active log target in a `QHash`; flush periodically — open/close per message is the dominant bottleneck during history replay (`sessionmodel.cpp:156-180`)
+- [x] `m_ctcpTimestamps`: grows unbounded on long sessions with many unique nicks — cap at ~500 entries or evict on insert (`ircclient.cpp`)
+- [x] `removeNick`: patch `nickIndex` in-place (decrement indices > removed position) instead of full `rebuildNickIndex()` — O(n²) during netsplit QUIT storms (`channel.h`)
 
 ### Medium term
 - [x] Incremental nick-list updates — emit specific `nickAdded`/`nickRemoved`/`nickRenamed`/`nickModeChanged` signals; replace `clear()`/repopulate with targeted updates; batch during NAMES/netsplit bursts
@@ -256,6 +270,21 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] Targeted chat block updates — `BlockMsgid` userData tags each QTextBlock; onReactionsChanged and onMessageRedacted do targeted insert/replace/remove instead of full rebuild (v0.23.3)
 - [ ] IrcParser fuzz target — libFuzzer harness around `IrcParser::parseLine()` for parser regression coverage
 - [ ] `ServerId` / `BufferId` strong types — replace stringly-typed host/channel routing; prerequisite for robust multi-network and bouncer support
+- [ ] `selfNickRe` (`QRegularExpression`): verify compiled once per nick change at call site, not reconstructed per `formatMessage` call (`chatrenderer.cpp`)
+- [ ] DCC ACK coalescing: send ACK every 64 KB and on completion, not every `readyRead` — reduces write syscalls on fast links (`dccreceive.cpp`)
+- [ ] CI: add Linux ASan/UBSan sanitizer job (`-DUPLINK_ENABLE_SANITIZERS=ON` Debug build); add `clang-tidy` or CodeQL static analysis (`.github/workflows/ci.yml`, `CMakeLists.txt:145-149`)
+
+---
+
+## Stability Backlog
+
+- [x] Ping watchdog timeout: `sendPing` ignores stale pending pings indefinitely — abort + reconnect after ~90s; improves recovery from dead Wi-Fi, VPN changes, NAT timeouts (`ircclient.cpp:431-437`)
+- [x] `sendRaw` disconnected: silently drops messages during reconnect — show local "Not connected; message not sent" error for user-visible commands (`ircclient.cpp:276-281`)
+- [x] DCC write failure: `onReadyRead` emits error but doesn't call `cancel()` — call cancel directly on write failure; guard against multiple error/finished emissions with `m_done` flag (`dccreceive.cpp:151-154`)
+- [x] DCC progress divide-by-zero: `checkTransferPrecon` does not reject `total <= 0` — malformed DCC offer with size=0 can divide-by-zero in UI progress callback (`dccreceive.cpp:21-47`, `mainwindow.cpp:1484-1485`)
+- [x] `DccSend::sendNextChunk`: no socket state check after `cancel()` — `m_socket` non-null in `ClosingState` is currently safe but fragile; check state explicitly or null `m_socket` in `cancel()` (`dccsend.cpp`)
+- [x] `IrcParser::isValid()`: add explicit `!command.isEmpty()` check — empty-command lines fall through to numeric default handler silently (`ircparser.cpp`) — already implemented
+- [x] STS upgrade race: add comment explaining ordering assumption between `abort()`, synchronous `onDisconnected`, and the `singleShot` lambda (`ircclient.cpp`)
 
 ---
 

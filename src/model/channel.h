@@ -137,10 +137,13 @@ struct Channel {
 
     void removeNick(const QString &nick)
     {
-        nicks.removeIf([&](const NickEntry &e){
-            return QString::compare(e.nick, nick, Qt::CaseInsensitive) == 0;
-        });
-        rebuildNickIndex();
+        const auto it = nickIndex.find(nick.toLower());
+        if (it == nickIndex.end()) return;
+        const qsizetype idx = it.value();
+        nickIndex.erase(it);
+        nicks.removeAt(idx);
+        for (auto &v : nickIndex)
+            if (v > idx) --v;
     }
 
     void renameNick(const QString &oldNick, const QString &newNick)

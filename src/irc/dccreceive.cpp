@@ -34,6 +34,10 @@ DccReceive::~DccReceive()
 
 static bool checkTransferPrecon(qint64 total, const QString &savePath, DccReceive *dcc)
 {
+    if (total <= 0) {
+        emit dcc->error("Invalid file size");
+        return false;
+    }
     if (total > kMaxDccReceiveBytes) {
         emit dcc->error(QString("File too large (%1 MB); max is %2 MB")
             .arg(total / (1024 * 1024))
@@ -115,6 +119,15 @@ bool DccReceive::listenPassive(quint32 expectedIp)
         m_server->close();
         connect(m_socket, &QTcpSocket::readyRead,          this, &DccReceive::onReadyRead);
         connect(m_socket, &QAbstractSocket::errorOccurred, this, &DccReceive::onSocketError);
+        // Stall guard: if no data arrives within 30s of the peer connecting, abort.
+        // Matters when expectedIp is private and peer validation was skipped (NAT case).
+        QTimer::singleShot(30000, this, [this]{
+            if (m_socket && m_received == 0) {
+                m_socket->disconnect(this);
+                cancel();
+                emit error("Transfer stalled: no data received after connect");
+            }
+        });
     });
     QTimer::singleShot(60000, this, [this]{
         if (!m_socket) {
@@ -150,6 +163,8 @@ void DccReceive::onReadyRead()
     }
     const QByteArray data = m_socket->read(qMin(m_socket->bytesAvailable(), remaining));
     if (m_file.write(data) != data.size()) {
+        if (m_socket) m_socket->disconnect(this);
+        cancel();
         emit error("Write failed");
         return;
     }

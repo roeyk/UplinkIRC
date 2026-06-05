@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QHostAddress>
 #include <QObject>
+#include <optional>
 
 class QTcpServer;
 class QTcpSocket;
@@ -13,7 +14,8 @@ class DccSend : public QObject
 public:
     explicit DccSend(const QString &filepath, QObject *parent = nullptr);
 
-    bool    listen(QHostAddress bindAddr = QHostAddress::Any);
+    bool    listen(QHostAddress bindAddr = QHostAddress::Any,
+                   std::optional<QHostAddress> expectedPeer = std::nullopt);
     QString initPassive();
     void    connectOut(quint32 ip, quint16 port);
     void    cancel();
@@ -40,6 +42,7 @@ private:
     QFile       m_file;
     QString     m_token;
     qint64      m_sent{0};
+    std::optional<QHostAddress> m_expectedPeer;
 
     static constexpr qint32 kChunk = 65536;
 };

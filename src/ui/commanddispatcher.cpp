@@ -570,8 +570,8 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         for (const QString &line : lines)
             m_model->localMessage(host, channel, line);
     } else {
-        // Pass unknown /CMD args directly as raw IRC (e.g. /REHASH, /SAMODE)
-        m_model->sendRaw(host, text.mid(1));
+        m_model->localMessage(host, channel,
+            "Unknown command: " + cmd + "  (use /raw or /quote to send raw IRC)");
     }
 
     return true;

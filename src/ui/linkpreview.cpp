@@ -377,7 +377,7 @@ QUrl LinkPreview::extractImageUrl(const QByteArray &data) const
     auto m = ogPropFirst.match(html);
     if (m.hasMatch()) {
         const QUrl u(m.captured(1).trimmed());
-        if (u.isValid() && u.scheme().startsWith("http")) return u;
+        if (u.isValid() && !isBlockedBySchemeOrLiteral(u)) return u;
     }
 
     static const QRegularExpression ogContentFirst(
@@ -386,7 +386,7 @@ QUrl LinkPreview::extractImageUrl(const QByteArray &data) const
     m = ogContentFirst.match(html);
     if (m.hasMatch()) {
         const QUrl u(m.captured(1).trimmed());
-        if (u.isValid() && u.scheme().startsWith("http")) return u;
+        if (u.isValid() && !isBlockedBySchemeOrLiteral(u)) return u;
     }
 
     return {};

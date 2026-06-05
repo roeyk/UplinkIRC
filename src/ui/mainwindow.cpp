@@ -1468,6 +1468,8 @@ void MainWindow::connectModel()
         const quint16 ourPort = dcc->listenPort();
         QString fn = QFileInfo(filename).fileName().replace(' ', '_');
         fn.remove(QRegularExpression("[\\x00-\\x1f\\x7f]"));
+        if (fn.isEmpty()) fn = QStringLiteral("file");
+        fn = fn.left(180);
 
         m_model->sendRaw(server,
             "PRIVMSG " + fromNick + " :\x01""DCC SEND "

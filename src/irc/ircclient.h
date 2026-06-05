@@ -163,7 +163,7 @@ private:
     bool         m_saslExternal{false};
     bool         m_saslPending{false};
     QString      m_nickservPassword;
-    QString      m_buffer;
+    QByteArray   m_buffer;
 
     BouncerType  m_bouncerType{BouncerType::None};
     QString      m_bouncerNetwork;

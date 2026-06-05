@@ -2,6 +2,7 @@
 
 #include <QFileInfo>
 #include <QRandomGenerator>
+#include <QRegularExpression>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimer>
@@ -12,8 +13,9 @@ DccSend::DccSend(const QString &filepath, QObject *parent)
     , m_file(filepath)
 {}
 
-bool DccSend::listen(QHostAddress bindAddr)
+bool DccSend::listen(QHostAddress bindAddr, std::optional<QHostAddress> expectedPeer)
 {
+    m_expectedPeer = expectedPeer;
     if (!m_file.open(QIODevice::ReadOnly)) {
         emit error("Cannot open: " + m_file.fileName());
         return false;
@@ -91,7 +93,11 @@ quint16 DccSend::port() const
 
 QString DccSend::filename() const
 {
-    return QFileInfo(m_file).fileName().replace(' ', '_');
+    QString name = QFileInfo(m_file).fileName();
+    name.replace(' ', '_');
+    name.remove(QRegularExpression(QStringLiteral("[\\x00-\\x1f\\x7f]")));
+    if (name.isEmpty()) name = QStringLiteral("file");
+    return name.left(180);
 }
 
 qint64 DccSend::filesize() const
@@ -101,7 +107,13 @@ qint64 DccSend::filesize() const
 
 void DccSend::onNewConnection()
 {
-    m_socket = m_server->nextPendingConnection();
+    QTcpSocket *incoming = m_server->nextPendingConnection();
+    if (m_expectedPeer && incoming->peerAddress() != *m_expectedPeer) {
+        incoming->abort();
+        incoming->deleteLater();
+        return;
+    }
+    m_socket = incoming;
     m_server->close();
     connect(m_socket, &QTcpSocket::readyRead,     this, &DccSend::onReadyRead);
     connect(m_socket, &QTcpSocket::bytesWritten,  this, &DccSend::onBytesWritten);
@@ -131,7 +143,8 @@ void DccSend::onBytesWritten(qint64)
 
 void DccSend::sendNextChunk()
 {
-    if (!m_socket || m_socket->bytesToWrite() > kChunk * 4) return;
+    if (!m_socket || m_socket->state() != QAbstractSocket::ConnectedState) return;
+    if (m_socket->bytesToWrite() > kChunk * 4) return;
     const QByteArray chunk = m_file.read(kChunk);
     if (chunk.isEmpty()) return;  // EOF — wait for final ACK
     m_socket->write(chunk);

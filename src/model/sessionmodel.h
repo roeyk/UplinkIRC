@@ -3,6 +3,8 @@
 #include "serversession.h"
 #include "config/config.h"
 #include <QDateTime>
+#include <QFile>
+#include <QHash>
 #include <QObject>
 #include <QList>
 
@@ -166,11 +168,13 @@ private:
     void onMonitorOffline (const QString &host, const QStringList &nicks);
 
     void postMessage(const QString &host, const QString &target, const Message &msg);
+    void logMessage (const QString &host, const QString &target, const Message &msg);
 
     QList<ServerSession> m_sessions;
     QList<IrcClient *>   m_clients;
     Config               m_config;
     QSet<QString>        m_ignoredNicks;
+    QHash<QString, QFile*> m_logFiles;
 
     QString m_activeHost;
     QString m_activeChannel;
