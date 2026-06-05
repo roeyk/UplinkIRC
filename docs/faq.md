@@ -292,6 +292,10 @@ Click the `✕` in a pane's header to close it. Closing a pane does not leave th
 
 See [Channel panes](howto.html#channel-panes) in the how-to guide for a full walkthrough.
 
+### Does Tab completion work in channel panes?
+
+Yes. Pressing <kbd>Tab</kbd> in any pane input bar completes nicks and slash commands exactly like the primary input. Completion candidates come from that pane's own channel, so you get the right nick list regardless of which pane has focus. The colon-suffix convention (`alice:` at the start of a line) also applies in panes.
+
 ### Where is the Preferences button?
 
 The `☰` button is in the **info bar** at the top of the chat area. Click it to open the **Preferences** dialog — it stays open while you browse themes, toggle options, and try settings.

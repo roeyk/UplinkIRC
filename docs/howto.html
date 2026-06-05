@@ -1173,6 +1173,8 @@ channels        = "#debian"</pre>
       <li>The same channel cannot appear in both the primary view and a pane simultaneously. If you open a channel that is already shown in the primary, the primary shifts to the server buffer automatically.</li>
       <li>Left-clicking a channel that is open in a pane navigates the primary to it and closes the pane.</li>
       <li>All slash commands work in pane input bars — <code>/join</code>, <code>/nick</code>, <code>/me</code>, and every other command behave the same as in the primary input bar.</li>
+      <li><strong>Tab completion works in pane input bars.</strong> Pressing <kbd>Tab</kbd> completes nicks from that pane's own channel, not the primary channel — so you always get the right suggestions regardless of which input is focused.</li>
+      <li>Font sizes set in <strong>Preferences → Font Config</strong> apply consistently to all panes — chat text, nick list, topic bar, and input label all inherit the same configured sizes whether the pane is opened at launch or mid-session.</li>
       <li>Right-clicking a message timestamp in a pane gives the same context menu as the primary view — Reply, React, Delete (your own messages), and Copy.</li>
     </ul>
   </section>
@@ -1464,16 +1466,21 @@ show_emoji_button = true</pre>
   <!-- TAB COMPLETION -->
   <section id="tab">
     <h2>Tab completion</h2>
-    <p>Press <kbd>Tab</kbd> to complete nicknames and slash commands.</p>
+    <p>Press <kbd>Tab</kbd> to complete nicknames and slash commands. Completion works in <strong>every input bar</strong> — the primary channel input and any open channel pane inputs.</p>
 
     <ul>
-      <li>Type the first few letters of a nick and press <kbd>Tab</kbd>. If there's one match, it fills in immediately. If there are several, pressing <kbd>Tab</kbd> again cycles through them.</li>
-      <li>Works for commands too — type <code>/jo</code> and press <kbd>Tab</kbd> to get <code>/join</code>.</li>
-      <li>At the start of a line, the completed nick gets a colon appended: <code>alice:</code> (the IRC convention for addressing someone).</li>
+      <li>Type the first few letters of a nick and press <kbd>Tab</kbd>. If there is one match, it fills in immediately. If there are several, pressing <kbd>Tab</kbd> again cycles through them in alphabetical order.</li>
+      <li>Works for commands too — type <code>/jo</code> and press <kbd>Tab</kbd> to get <code>/join</code>. Cycles through all matching commands on repeated presses.</li>
+      <li>At the start of a line, the completed nick gets a colon appended: <code>alice:</code> — the standard IRC convention for addressing someone directly.</li>
+      <li>Tab completion in a channel pane uses the nick list for <em>that pane's channel</em>, not the primary channel. You always get the right nicks regardless of which input is focused.</li>
+      <li>Pressing any other key after a completion resets the cycle, so you can start a new completion at any point.</li>
     </ul>
 
-    <pre>al[Tab]   →  alice:  (if alice is in the channel)
-/p[Tab]   →  /part  (or cycles /part → /ping → /privmsg)</pre>
+    <pre>al[Tab]        →  alice:           (start of line — colon appended)
+thanks al[Tab] →  thanks alice     (mid-line — no colon)
+/p[Tab]        →  /part
+/p[Tab][Tab]   →  /ping
+/p[Tab][Tab][Tab] →  /privmsg</pre>
   </section>
 
   <!-- HISTORY -->

@@ -262,6 +262,25 @@ Next priorities:
   - In-app update check UI
 -->
 
+## v0.23.1 — 2026-06-04
+
+### Fixes
+
+- **Fix:** Tab completion (<kbd>Tab</kbd>) now works in channel pane input bars. Previously pressing Tab in a detached pane did nothing — it silently moved keyboard focus instead of completing the nick or command. Nick and command completion in panes is now identical to the primary input bar, including the colon-suffix convention at the start of a line.
+- **Fix:** Fonts configured in **Font Config** (chat size, nick list size, topic font) are now applied consistently when a channel pane is opened mid-session. Previously panes opened after the initial launch inherited system defaults instead of the configured sizes, making the topic font visibly larger than the primary panel and the nick list row spacing inconsistent.
+
+### Performance
+
+- **Perf:** Nick list updates are now incremental. When a user joins, parts, quits, is kicked, or changes their nick, only the affected list entry is inserted or removed — the entire nick list is no longer cleared and rebuilt on every event. Full rebuild is retained for NAMES bursts, netsplit/netjoin, and mode changes. This eliminates visible flicker on busy channels and reduces CPU load proportionally to the join/part/quit event rate.
+- **Perf:** Per-channel nick index — `Channel` now maintains a `QHash<QString, qsizetype>` mapping lowercased nicks to their position in the sorted list. All O(n) linear scans for nick lookups across `onMessage`, `onNotice`, `onAction`, `onNickChanged`, `onUserQuit`, `onModesReceived`, `onAccountChanged`, `onHostChanged`, `onSetNameReceived`, and `onNetsplitDetected` are replaced with O(1) hash lookups. The index is rebuilt after each sort operation (`addNick`, `renameNick`, `setNicks`, mode prefix changes).
+- **Perf:** Nick list rebuilds are debounced — a short 50 ms timer collapses burst updates (e.g. NAMES on join, netsplit/netjoin) into a single repaint rather than rebuilding the widget once per event.
+
+### Internals
+
+- **Refactor:** Chat rendering logic extracted from `MainWindow` into `src/ui/chatrenderer.h` / `chatrenderer.cpp` as a `ChatRenderer` namespace. `ircToHtml`, `linkifyHtml`, `linkifyTopic`, `wrapEmojiHtml`, `htmlAttr`, `nickColor`, and `formatMessage` are now standalone functions with no widget dependencies. `MainWindow::formatMessage` is a 10-line wrapper that assembles a `ChatRenderer::Context` and delegates. `mainwindow.cpp` reduced from 4 063 to 3 768 lines.
+
+---
+
 ## v0.23.0 — 2026-06-04
 
 ### Features
