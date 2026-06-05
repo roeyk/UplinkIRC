@@ -1,15 +1,17 @@
 #pragma once
 
 #include "channel.h"
-#include <QString>
 #include <QHash>
+#include <QRegularExpression>
 #include <QSet>
+#include <QString>
 
 struct ServerSession {
     QString  name;        // display name from config
     QString  host;
     QString  nick;
     bool     connected{false};
+    QRegularExpression mentionRe; // pre-compiled; rebuilt when nick changes
 
     QSet<QString> botNicks;     // lowercased nicks with +B user mode (global)
 

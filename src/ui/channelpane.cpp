@@ -180,10 +180,9 @@ void ChannelPane::setTopicIcon(const QIcon &collapsed, const QIcon &expanded)
 {
     if (!m_topicToggle) return;
     m_topicToggle->setIcon(m_topicToggle->isChecked() ? expanded : collapsed);
-    // Reconnect toggled to swap icon
-    disconnect(m_topicToggle, &QToolButton::toggled, nullptr, nullptr);
-    connect(m_topicToggle, &QToolButton::toggled, this, [this, collapsed, expanded](bool on){
-        m_topicBar->setVisible(on);
+    disconnect(m_topicIconConn);
+    m_topicIconConn = connect(m_topicToggle, &QToolButton::toggled, this,
+                              [this, collapsed, expanded](bool on){
         m_topicToggle->setIcon(on ? expanded : collapsed);
     });
 }

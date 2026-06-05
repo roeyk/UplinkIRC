@@ -169,7 +169,11 @@ public:
 
 // Minimum width of the topic bar left zone — wide enough to always show the
 // hamburger (22) + gear (22) + right margin (4) even when the sidebar is closed.
-static constexpr int kBtnZoneMinW = 60;
+static constexpr int kBtnZoneMinW    = 60;
+static constexpr int kDefaultWindowW  = 1100;
+static constexpr int kDefaultWindowH  = 700;
+static constexpr int kInputHistoryCap = 100;
+static constexpr int kMaxExtraPanes   = 3;
 
 
 // Clips all child widgets to a rounded rect via a bitmap mask.
@@ -211,6 +215,17 @@ protected:
     }
 };
 
+static QString buildReactionHtml(const QHash<QString, QSet<QString>> &rx, int emojiPt)
+{
+    QString html = QString("<span style='font-size:%1pt; color:#888;'>").arg(emojiPt);
+    for (auto it = rx.constBegin(); it != rx.constEnd(); ++it)
+        html += it.key().toHtmlEscaped()
+                + QStringLiteral("<span style='font-size:8pt'>(")
+                + QString::number(it.value().size())
+                + QStringLiteral(")</span> ");
+    return html + QStringLiteral("</span>");
+}
+
 static void insertHtmlBlock(QTextBrowser *view, const QString &html, bool hangIndent = false)
 {
     QTextCursor cursor(view->document());
@@ -245,7 +260,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     setWindowTitle("Uplink");
     setWindowIcon(AppIcons::appIcon(m_config.ui.appIcon));
-    resize(1100, 700);
+    resize(kDefaultWindowW, kDefaultWindowH);
 
     ThemeLoader::apply(m_config.ui.theme);
     m_theme = ThemeLoader::load(m_config.ui.theme);
@@ -1263,9 +1278,6 @@ void MainWindow::setupInputBar()
 
     connect(m_input, &QLineEdit::textChanged, this, [this](const QString &text){
         checkEmojiAutocomplete(text);
-    });
-
-    connect(m_input, &QLineEdit::textChanged, this, [this](const QString &text){
         if (!m_config.ui.typingIndicator) return;
         const QString host = m_model->activeHost();
         const QString ch   = m_model->activeChannel();
@@ -2302,7 +2314,7 @@ void MainWindow::onInputSubmit()
     // Push to history (newest first, skip consecutive duplicates)
     if (m_inputHistory.isEmpty() || m_inputHistory.first() != text) {
         m_inputHistory.prepend(text);
-        if (m_inputHistory.size() > 100)
+        if (m_inputHistory.size() > kInputHistoryCap)
             m_inputHistory.removeLast();
     }
     m_historyIndex = -1;
@@ -2476,7 +2488,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
 {
     const QString key = host + "|" + channel.toLower();
     if (m_panes.contains(key)) return;
-    if (m_orderedPanes.size() >= 3) return; // max 4 total (primary + 3)
+    if (m_orderedPanes.size() >= kMaxExtraPanes) return;
 
     auto *pane = new ChannelPane(host, channel, this);
     if (m_theme.valid)
@@ -2694,18 +2706,9 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
 
         if (!msg.msgid.isEmpty()) {
             auto rxIt = ch->reactions.constFind(msg.msgid);
-            if (rxIt != ch->reactions.constEnd()) {
-                const int ept = m_config.ui.fontSizes.emoji;
-                QString rxHtml = QString("<span style='font-size:%1pt; color:#888;'>").arg(ept);
-                for (auto it = rxIt->constBegin(); it != rxIt->constEnd(); ++it) {
-                    rxHtml += it.key().toHtmlEscaped()
-                              + QStringLiteral("<span style='font-size:8pt'>(")
-                              + QString::number(it.value().size())
-                              + QStringLiteral(")</span> ");
-                }
-                rxHtml += QStringLiteral("</span>");
-                insertHtmlBlock(pane->chatView(), rxHtml);
-            }
+            if (rxIt != ch->reactions.constEnd())
+                insertHtmlBlock(pane->chatView(),
+                                buildReactionHtml(*rxIt, m_config.ui.fontSizes.emoji));
         }
     }
 
@@ -2984,18 +2987,8 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
         }
         if (!msg.msgid.isEmpty()) {
             auto rxIt = ch->reactions.constFind(msg.msgid);
-            if (rxIt != ch->reactions.constEnd()) {
-                const int ept = m_config.ui.fontSizes.emoji;
-                QString rxHtml = QString("<span style='font-size:%1pt; color:#888;'>").arg(ept);
-                for (auto it = rxIt->constBegin(); it != rxIt->constEnd(); ++it) {
-                    rxHtml += it.key().toHtmlEscaped()
-                              + QStringLiteral("<span style='font-size:8pt'>(")
-                              + QString::number(it.value().size())
-                              + QStringLiteral(")</span> ");
-                }
-                rxHtml += QStringLiteral("</span>");
-                insertHtmlBlock(m_chatView, rxHtml);
-            }
+            if (rxIt != ch->reactions.constEnd())
+                insertHtmlBlock(m_chatView, buildReactionHtml(*rxIt, m_config.ui.fontSizes.emoji));
         }
     }
 }

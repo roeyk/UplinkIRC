@@ -86,7 +86,7 @@ void DccReceive::start()
     connect(m_socket, &QAbstractSocket::errorOccurred, this, &DccReceive::onSocketError);
 
     QTimer::singleShot(30000, this, [this]{
-        if (m_received == 0 && m_socket->state() != QAbstractSocket::ConnectedState) {
+        if (m_socket && m_socket->state() != QAbstractSocket::ConnectedState) {
             cancel();
             emit error("Connection timeout");
         }

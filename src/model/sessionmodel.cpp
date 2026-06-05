@@ -458,12 +458,8 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
         || (msg.type == MessageType::Notice && target == "(server)");
     if (!isActive && !msg.isHistory && countsAsUnread) {
         ++ch.unread;
-        if (!sess->nick.isEmpty()) {
-            QRegularExpression re("\\b" + QRegularExpression::escape(sess->nick) + "\\b",
-                                  QRegularExpression::CaseInsensitiveOption);
-            if (re.match(msg.text).hasMatch())
-                ++ch.mentions;
-        }
+        if (sess->mentionRe.isValid() && sess->mentionRe.match(msg.text).hasMatch())
+            ++ch.mentions;
     }
 
     emit messageAdded(host, target, msg);
@@ -895,7 +891,12 @@ void SessionModel::onCtcpTimeReply(const QString &host, const QString &nick, con
 void SessionModel::onSelfNickChanged(const QString &host, const QString &nick)
 {
     auto *sess = session(host);
-    if (sess) sess->nick = nick;
+    if (sess) {
+        sess->nick = nick;
+        sess->mentionRe = nick.isEmpty() ? QRegularExpression{}
+            : QRegularExpression("\\b" + QRegularExpression::escape(nick) + "\\b",
+                                 QRegularExpression::CaseInsensitiveOption);
+    }
     emit selfNickChanged(host, nick);
 }
 
@@ -952,7 +953,7 @@ void SessionModel::onMessageRedacted(const QString &host, const QString &senderN
                                       const QString &target, const QString &msgid,
                                       const QString &reason)
 {
-    Q_UNUSED(reason)
+    Q_UNUSED(reason) // reason is not surfaced in the UI; keep parameter for signal compat
     auto *sess = session(host);
     if (!sess) return;
     const bool isChannel = target.startsWith('#') || target.startsWith('&');

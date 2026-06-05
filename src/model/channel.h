@@ -128,9 +128,11 @@ struct Channel {
         e.recomputePrefix();
         e.nick = raw.mid(i);
         if (nickIndex.contains(e.nick.toLower())) return;
-        nicks.append(e);
-        std::sort(nicks.begin(), nicks.end());
-        rebuildNickIndex();
+        const qsizetype idx = std::lower_bound(nicks.cbegin(), nicks.cend(), e) - nicks.cbegin();
+        nicks.insert(idx, e);
+        for (auto &v : nickIndex)
+            if (v >= idx) ++v;
+        nickIndex[e.nick.toLower()] = idx;
     }
 
     void removeNick(const QString &nick)

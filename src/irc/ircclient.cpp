@@ -309,7 +309,7 @@ void IrcClient::onDisconnected()
     if (!m_stsUpgrade)
         scheduleReconnect();
     m_stsUpgrade = false;
-    m_intentionalDisconnect = false;
+    // m_intentionalDisconnect is reset by connectToServer() on next connection
 }
 
 static constexpr qsizetype kMaxPendingBuffer = 64 * 1024;
@@ -542,10 +542,6 @@ void IrcClient::processLine(const QString &line)
     if (cmd == "PRIVMSG" && msg.params.size() >= 1) {
         const QString target = msg.params[0];
         const QString text   = msg.trailing;
-
-        // ZNC self-message echo
-        const bool isSelf = (msg.nick == m_nick) ||
-                            msg.tags.contains("znc.in/self-message");
 
         const QString msgid   = msg.tags.value("msgid");
         const QString replyTo = msg.tags.value("+draft/reply");

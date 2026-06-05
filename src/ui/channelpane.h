@@ -1,4 +1,5 @@
 #pragma once
+#include <QMetaObject>
 #include <QWidget>
 #include <QString>
 #include <QPoint>
@@ -35,8 +36,9 @@ signals:
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 private:
-    QString       m_host;
-    QString       m_channel;
+    QString               m_host;
+    QString               m_channel;
+    QMetaObject::Connection m_topicIconConn;
     QWidget      *m_header{nullptr};
     QPoint        m_dragStartPos;   // global coords
     bool          m_dragPending{false};
