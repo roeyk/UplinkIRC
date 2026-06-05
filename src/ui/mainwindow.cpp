@@ -695,8 +695,11 @@ void MainWindow::applyFontSizes()
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
     if (m_nickPrefix)   m_nickPrefix->setFont(makeFont(fs.inputNick));
     if (m_input)        m_input->setFont(makeFont(fs.input));
-    for (auto *p : std::as_const(m_orderedPanes))
+    for (auto *p : std::as_const(m_orderedPanes)) {
+        p->chatView()->setFont(makeFont(fs.chat));
+        p->nickList()->setFont(makeFont(fs.nickList));
         p->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
+    }
     if (m_typingLabel) {
         QFont f = makeFont(fs.typing);
         f.setItalic(true);
@@ -2999,6 +3002,8 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
         const FontSizes &fs = m_config.ui.fontSizes;
         const QString   &fam = m_config.ui.fontFamily;
         auto makeFont = [&](int pt){ QFont f(fam,pt); f.setStyleHint(QFont::Monospace); return f; };
+        pane->chatView()->setFont(makeFont(fs.chat));
+        pane->nickList()->setFont(makeFont(fs.nickList));
         pane->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
     }
 
