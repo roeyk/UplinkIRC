@@ -12,6 +12,7 @@ class DccReceive : public QObject
 public:
     DccReceive(const QString &savePath, quint32 ip, quint16 port, qint64 filesize,
                QObject *parent = nullptr);
+    ~DccReceive();
 
     void    start();
     bool    listenPassive(quint32 expectedIp = 0);
@@ -28,6 +29,7 @@ private slots:
     void onSocketError();
 
 private:
+    QString     m_savePath;
     QTcpServer *m_server{nullptr};
     QTcpSocket *m_socket{nullptr};
     QFile       m_file;

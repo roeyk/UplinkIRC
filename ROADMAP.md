@@ -236,7 +236,7 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 
 ### Near term
 - [x] `/sysinfo` async — run process collection off the UI thread; cache result for the session; add hard global timeout
-- [ ] DCC receive hardening — configurable max receive size; write to `.part` file and rename on success; delete partial on failure/cancel; check available disk space before starting
+- [x] DCC receive hardening — configurable max receive size; write to `.part` file and rename on success; delete partial on failure/cancel; check available disk space before starting
 - [x] Link preview queue — replace abort-on-new-fetch with a small queue (max concurrency 1–2); cap `m_previewChannels`; add per-channel/per-minute throttling
 - [x] Compiler warning cleanup — fix `-Wconversion` narrowing (qsizetype→int), `-Wshadow` locals, `-Wold-style-cast` casts flagged by the new warning flags
 

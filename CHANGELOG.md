@@ -269,6 +269,10 @@ Next priorities:
 - **Feat:** Link preview cards are now right-clickable — context menu with **Open URL** and **Hide Preview**. Left-clicking a card also opens the URL.
 - **Feat:** `/sysinfo` collection runs in a background thread — UI stays responsive while `vulkaninfo`, `lspci`, and other slow commands run. Posts "Collecting system info…" immediately; result follows when ready. Hard 12-second global timeout. Cache is now per-session.
 
+### Security
+
+- **Fix:** DCC receive hardening — transfers are written to a `.part` file during download and renamed to the final name only on success. Partial files are deleted on failure, cancel, or unexpected destruction. Available disk space is checked against the advertised file size before the transfer begins. Files larger than 2 GiB are rejected.
+
 ### Quality
 
 - **Fix:** Link preview queue — hovering a URL no longer aborts an in-flight card fetch. Hover uses a dedicated fetch path (`fetchHover`) with its own reply and DNS slots. Card fetches are queued (max 10) and processed sequentially. A 20-second watchdog advances the queue if a fetch hangs. `m_previewChannels` capped at 100 entries.

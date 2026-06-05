@@ -1,10 +1,15 @@
 #include "dccreceive.h"
 
+#include <QFileInfo>
 #include <QHostAddress>
+#include <QStorageInfo>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimer>
 #include <QtEndian>
+
+// Maximum file size accepted via DCC receive (2 GiB).
+static constexpr qint64 kMaxDccReceiveBytes = 2LL * 1024 * 1024 * 1024;
 
 // Mirrors the SSRF helper in linkpreview.cpp — keep in sync if ranges change.
 static bool isPrivateDccAddress(const QHostAddress &a)
@@ -26,11 +31,40 @@ static bool isPrivateDccAddress(const QHostAddress &a)
 DccReceive::DccReceive(const QString &savePath, quint32 ip, quint16 port, qint64 filesize,
                        QObject *parent)
     : QObject(parent)
-    , m_file(savePath)
+    , m_savePath(savePath)
+    , m_file(savePath + ".part")
     , m_ip(ip)
     , m_port(port)
     , m_total(filesize)
 {}
+
+DccReceive::~DccReceive()
+{
+    // Remove any partial file that was never renamed to the final path.
+    if (m_file.isOpen()) {
+        const QString path = m_file.fileName();
+        m_file.close();
+        QFile::remove(path);
+    }
+}
+
+static bool checkTransferPrecon(qint64 total, const QString &savePath, DccReceive *dcc)
+{
+    if (total > kMaxDccReceiveBytes) {
+        emit dcc->error(QString("File too large (%1 MB); max is %2 MB")
+            .arg(total / (1024 * 1024))
+            .arg(kMaxDccReceiveBytes / (1024 * 1024)));
+        return false;
+    }
+    const QStorageInfo storage(QFileInfo(savePath).absolutePath());
+    if (storage.isValid() && storage.bytesAvailable() < total) {
+        emit dcc->error(QString("Not enough disk space (need %1 MB, have %2 MB)")
+            .arg(total / (1024 * 1024))
+            .arg(storage.bytesAvailable() / (1024 * 1024)));
+        return false;
+    }
+    return true;
+}
 
 void DccReceive::start()
 {
@@ -39,6 +73,9 @@ void DccReceive::start()
         emit error("DCC blocked: peer address " + peerAddr.toString() + " is private or reserved");
         return;
     }
+
+    if (!checkTransferPrecon(m_total, m_savePath, this))
+        return;
 
     if (!m_file.open(QIODevice::WriteOnly)) {
         emit error("Cannot create: " + m_file.fileName());
@@ -60,6 +97,9 @@ void DccReceive::start()
 
 bool DccReceive::listenPassive(quint32 expectedIp)
 {
+    if (!checkTransferPrecon(m_total, m_savePath, this))
+        return false;
+
     if (!m_file.open(QIODevice::WriteOnly)) {
         emit error("Cannot create: " + m_file.fileName());
         return false;
@@ -138,13 +178,21 @@ void DccReceive::onReadyRead()
     emit progress(m_received, m_total);
 
     if (m_received >= m_total) {
+        const QString partPath = m_file.fileName();
         m_file.close();
         m_socket->disconnectFromHost();
-        emit finished(m_file.fileName());
+        if (QFile::rename(partPath, m_savePath))
+            emit finished(m_savePath);
+        else
+            emit error("Download complete but rename failed: " + m_savePath);
     }
 }
 
 void DccReceive::onSocketError()
 {
-    emit error(m_socket->errorString());
+    const QString msg = m_socket ? m_socket->errorString() : QString("Unknown socket error");
+    if (m_socket)
+        m_socket->disconnect(this);  // prevent re-entry from abort() in cancel()
+    cancel();
+    emit error(msg);
 }
