@@ -290,7 +290,8 @@ QWidget#inputBar QLabel {
     color: {{inputNick}};
     border: none;
 }
-QWidget#inputBar QLineEdit {
+QWidget#inputBar QLineEdit,
+QWidget#inputBar QPlainTextEdit {
     background-color: {{inputBg}};
     color: {{inputText}};
     border: none;
@@ -311,7 +312,8 @@ QLineEdit {
 QLineEdit:focus {
     border-color: {{accent}};
 }
-QLineEdit::placeholder-text {
+QLineEdit::placeholder-text,
+QPlainTextEdit::placeholder-text {
     color: {{placeholder}};
 }
 
