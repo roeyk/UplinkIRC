@@ -3,6 +3,51 @@
 ---
 
 <!--
+Session summary — 2026-06-05 (v0.24.0 — draft/multiline + full audit backlog)
+
+Released v0.24.0.
+
+IRCv3 draft/multiline support:
+- IrcClient: CAP negotiation, batch buffering with concat flag, sendMultiline()
+  with per-line PRIVMSG fallback when server lacks the CAP
+- ChatRenderer: \n → <br> in formatMessage for multiline rendering
+- SessionModel: sendMessage routes to sendMultiline when text contains \n
+- mainwindow.cpp / channelpane.cpp: QLineEdit → QPlainTextEdit
+  - Shift+Enter = newline, Enter = send
+  - Auto-resize 1–4 lines on textChanged
+  - Up/Down history nav activates only at first/last block
+  - Tab complete uses block-level cursor ops (current line only)
+  - Emoji autocomplete, history, picker all ported to QTextCursor API
+
+Security/hardening (from post-v0.23.3 commits):
+  - DCC peer validation (m_expectedPeer in DccSend)
+  - DCC receive: write-failure cancel, 30s passive stall timeout
+  - DCC ACK coalescing: every 64 KB + completion
+  - sendRaw: 512-byte RFC 1459 line cap
+  - Ping watchdog: abort+reconnect after 90s
+  - NICK/USER: strip spaces/nulls
+  - Unknown /commands → local error echo
+  - m_ctcpTimestamps capped at 500
+  - Link preview HTML capped at 8192 bytes
+  - addresscheck.h extended: CG-NAT, TEST-NETs, IPv4-mapped, etc.
+
+Performance:
+  - IrcClient: QByteArray receive buffer, UTF-16 deferred to per-line
+  - Channel::removeNick: O(n) in-place index patch
+  - logMessage: cached QFile* handles
+
+Bug fixes:
+  - refreshChatView: deferred scroll-to-bottom on channel switch
+  - Mention detection: empty regex guard fixed
+
+Docs updated:
+  - ircv3.md: draft/multiline moved from Planned → Active
+  - keyboard-shortcuts.md: Shift+Enter documented
+  - howto.html: multi-line messages section + nav entry
+  - faq.md: multi-line Q&A added
+-->
+
+<!--
 Session summary — 2026-06-05 (bug fixes: scroll position, mention detection)
 
 Two bugs fixed:
