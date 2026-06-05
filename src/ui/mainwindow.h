@@ -108,7 +108,7 @@ private:
     void       clearReplyBar();
 
     // Tab completion
-    void handleTabComplete();
+    void handleTabComplete(QLineEdit *input, const QString &host, const QString &channel);
     QStringList m_tabCandidates;
     int         m_tabCandidateIndex{0};
     QString     m_tabPrefix;

@@ -1748,6 +1748,23 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
+    // Check if obj is a pane input bar
+    if (event->type() == QEvent::KeyPress) {
+        for (auto *pane : std::as_const(m_orderedPanes)) {
+            if (obj == pane->input()) {
+                auto *ke = static_cast<QKeyEvent *>(event);
+                if (ke->key() == Qt::Key_Tab) {
+                    handleTabComplete(pane->input(), pane->host(), pane->channel());
+                    return true;
+                }
+                // Non-Tab resets the completion cycle
+                m_tabActive = false;
+                m_tabCandidates.clear();
+                break;
+            }
+        }
+    }
+
     if (obj != m_input || event->type() != QEvent::KeyPress)
         return QMainWindow::eventFilter(obj, event);
 
@@ -1791,7 +1808,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 
     if (ke->key() == Qt::Key_Tab) {
-        handleTabComplete();
+        handleTabComplete(m_input, m_model->activeHost(), m_model->activeChannel());
         return true;
     }
 
@@ -1811,10 +1828,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     return QMainWindow::eventFilter(obj, event);
 }
 
-void MainWindow::handleTabComplete()
+void MainWindow::handleTabComplete(QLineEdit *input, const QString &host, const QString &channel)
 {
-    const QString text = m_input->text();
-    const int pos = m_input->cursorPosition();
+    const QString text = input->text();
+    const int pos = input->cursorPosition();
 
     // Find start of word before cursor
     const qsizetype wordStart = text.lastIndexOf(' ', pos - 1) + 1;
@@ -1842,7 +1859,7 @@ void MainWindow::handleTabComplete()
                 if (cmd.startsWith(prefix, Qt::CaseInsensitive))
                     m_tabCandidates << cmd;
         } else {
-            auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
+            auto *ch = m_model->channel(host, channel);
             if (ch) {
                 for (const auto &e : std::as_const(ch->nicks))
                     if (e.nick.startsWith(prefix, Qt::CaseInsensitive))
@@ -1862,8 +1879,8 @@ void MainWindow::handleTabComplete()
         suffix = (wordStart == 0 && !completed.startsWith('/'))
             ? QStringLiteral(": ") : QStringLiteral(" ");
 
-    m_input->setText(text.left(wordStart) + completed + suffix + text.mid(pos));
-    m_input->setCursorPosition(static_cast<int>(wordStart + completed.length() + suffix.length()));
+    input->setText(text.left(wordStart) + completed + suffix + text.mid(pos));
+    input->setCursorPosition(static_cast<int>(wordStart + completed.length() + suffix.length()));
 }
 
 void MainWindow::handleHistoryUp()
@@ -2997,6 +3014,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
             QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
 
     pane->chatView()->viewport()->installEventFilter(this);
+    pane->input()->installEventFilter(this);
 
     if (auto *sess = m_model->session(host))
         pane->setNick(sess->nick);

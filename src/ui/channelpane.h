@@ -19,6 +19,7 @@ public:
     QString        key()     const { return m_host + "|" + m_channel.toLower(); }
     QTextBrowser *chatView() const { return m_chatView; }
     QListWidget  *nickList() const { return m_nickList; }
+    QLineEdit    *input()    const { return m_input; }
     void setNick(const QString &nick);
     void setNickVisible(bool visible);
     void setInputFont(const QFont &nickFont, const QFont &inputFont);
