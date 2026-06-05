@@ -87,6 +87,7 @@ private:
     void switchToChannel(const QString &host, const QString &channel);
     void refreshChatView(const QString &host, const QString &channel);
     void refreshNickList(const QString &host, const QString &channel);
+    void scheduleNickRefresh(const QString &host, const QString &channel);
     void refreshTopicBar(const QString &host, const QString &channel);
     void appendMessage  (const Message &msg, bool autoPreview = false);
     void applyFontSizes();
@@ -160,6 +161,7 @@ private:
     QSplitter    *m_panesSplitter{nullptr};
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
     QList<ChannelPane*>          m_orderedPanes; // insertion order for layout
+    QSet<QString>                m_nickRefreshPending; // channels with a debounced refresh queued
     ChannelPane                 *m_dragHighlighted{nullptr};
     int                          m_primarySlot{0}; // position of primary panel in layout order
     QTimer       *m_gearTimer{nullptr};

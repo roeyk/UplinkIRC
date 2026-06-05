@@ -2145,15 +2145,25 @@ void MainWindow::onTopicChanged(const QString &host, const QString &channel, con
 
 void MainWindow::onNickListChanged(const QString &host, const QString &channel)
 {
-    if (host == m_model->activeHost() &&
-        channel.toLower() == m_model->activeChannel().toLower()) {
-        refreshNickList(host, channel);
-        refreshTopicBar(host, channel);
-    }
+    scheduleNickRefresh(host, channel);
+}
 
-    const QString paneKey = host + "|" + channel.toLower();
-    if (auto *pane = m_panes.value(paneKey))
-        refreshPaneNickList(pane);
+void MainWindow::scheduleNickRefresh(const QString &host, const QString &channel)
+{
+    const QString key = host + "|" + channel.toLower();
+    if (m_nickRefreshPending.contains(key)) return;
+    m_nickRefreshPending.insert(key);
+    QTimer::singleShot(50, this, [this, host, channel, key] {
+        m_nickRefreshPending.remove(key);
+        const bool isActive = (host == m_model->activeHost() &&
+                               channel.toLower() == m_model->activeChannel().toLower());
+        if (isActive) {
+            refreshNickList(host, channel);
+            refreshTopicBar(host, channel);
+        }
+        if (auto *pane = m_panes.value(key))
+            refreshPaneNickList(pane);
+    });
 }
 
 void MainWindow::onUnreadChanged(const QString &host, const QString &channel, int count)
