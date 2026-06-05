@@ -123,7 +123,6 @@ Config Config::load(const QString &path)
             cfg.ui.appIcon               = QString::fromStdString((*ui)["app_icon"].value_or<std::string>("dark"));
             cfg.ui.nickBrackets          = QString::fromStdString((*ui)["nick_brackets"].value_or<std::string>("<>"));
             cfg.ui.notifications         = (*ui)["notifications"].value_or(true);
-            cfg.ui.opacity               = (*ui)["opacity"].value_or(100);
             cfg.ui.fontFamily            = QString::fromStdString((*ui)["font_family"].value_or<std::string>(kDefaultFontFamily));
             cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10);
             cfg.ui.fontSizes.serverHeader = (*ui)["font_server_header"].value_or(9);
@@ -256,7 +255,6 @@ void Config::save(const Config &cfg, const QString &path)
     out << "app_icon          = " << tomlQuote(cfg.ui.appIcon)     << "\n";
     out << "nick_brackets     = " << tomlQuote(cfg.ui.nickBrackets) << "\n";
     out << "notifications     = " << (cfg.ui.notifications    ? "true" : "false") << "\n";
-    out << "opacity           = " << cfg.ui.opacity           << "\n";
     out << "font_family       = " << tomlQuote(cfg.ui.fontFamily)  << "\n";
     out << "font_toolbar       = " << cfg.ui.fontSizes.toolbar      << "\n";
     out << "font_server_header = " << cfg.ui.fontSizes.serverHeader << "\n";

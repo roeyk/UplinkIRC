@@ -83,7 +83,6 @@ struct UiConfig {
     bool      linkPreviews{false};
     QString   appIcon{"dark"};
     QString   nickBrackets{"<>"};
-    int       opacity{100};
 };
 
 struct Config {
