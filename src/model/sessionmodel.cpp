@@ -30,8 +30,12 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
         if (shared.get()->*field != kSentinel)
             return;
         ++(*remaining);
-        KeychainHelper::readAsync(key, [shared, remaining, field, guard](const QString &val) {
+        KeychainHelper::readAsync(key, [shared, remaining, field, guard, key](const QString &val) {
             if (!guard) return;
+            if (val.isEmpty())
+                emit guard->socketError(shared->host,
+                    "Keychain: no password stored for \"" + key +
+                    "\" — open Edit Server and re-enter your password");
             shared.get()->*field = val;
             if (--(*remaining) == 0)
                 guard->connectToServer(*shared);
