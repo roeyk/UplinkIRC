@@ -68,6 +68,8 @@ Open it in any text editor and restart Uplink to apply changes.
 
 When you open Edit Server for a server with a stored password, the field shows a placeholder (*Stored in keychain — type to change, clear to remove*) so you know the value is there. Leaving the field empty and saving preserves the entry. All password fields also have a show/hide eye toggle on the right edge.
 
+If Uplink shows a red **"Keychain: no password stored for…"** error in the server buffer on connect, your config has `<keychain>` as a sentinel but no matching entry in the OS keychain (the entry was never written or was cleared). Fix: open Edit Server, type your password in the affected field, and save. Uplink will store it and authenticate normally going forward.
+
 Beyond that:
 
 - `config.toml` is written with **owner-only permissions** (mode `0600` on Linux/macOS) so other users on the machine cannot read it at all.

@@ -577,12 +577,34 @@ update-docs CI job ran and confirmed version strings correct across README/docs.
 Next: icons (waiting on user design).
 -->
 
+<!--
+Session summary — 2026-06-07 (keychain missing-entry warning)
+
+Single fix: when config.toml has <keychain> as a password sentinel but no
+corresponding entry exists in the OS keychain, Uplink previously failed SASL
+silently with no indication of why. Now emits a red !! error in the server
+buffer: "Keychain: no password stored for "LinuxDojo:sasl_password" — open
+Edit Server and re-enter your password". This gives the user a clear,
+actionable error instead of a confusing SASL failure.
+
+Root cause of empty keychain in existing configs: the sentinel was written at
+some point without the keychain write succeeding (or the entry was manually
+cleared). Fix for the user: open Edit Server, type the password once, save.
+
+Change: sessionmodel.cpp resolveAndConnect() — lambda captures key, emits
+socketError on empty val.
+
+Next: no pending items; app is at v0.24.2 with all known bugs resolved.
+Icons are done. No new features planned this session.
+-->
+
 ## v0.24.2 — 2026-06-06
 
 ### Bug Fixes
 
 - **Fix:** Client ping-timed-out and reconnected every ~2 minutes on Libera.Chat and other solanum-based servers. Root cause: a 2-second one-shot timer fired `PING :uplink_rtt` during SASL negotiation before the client was registered. Solanum ignores PINGs from unregistered clients, leaving `m_pingPending` stuck `true`. The 30-second watchdog then fired three more times until the 90-second elapsed threshold killed the connection (2 + 4×30 ≈ 120 s). Fix: removed `QTimer::singleShot(2000, this, &IrcClient::sendPing)` from `onConnected()`; the regular 30 s timer handles keepalive after registration.
 - **Fix:** Keychain-stored password fields in Edit Server showed the `<keychain>` sentinel as masked dots, making it unclear whether a password was stored. Leaving the field empty and saving silently deleted the keychain entry. Fields with keychain-stored values now show placeholder text instead, and saving with an empty field preserves the sentinel.
+- **Fix:** When config contains `<keychain>` as a password sentinel but no matching entry exists in the OS keychain, SASL authentication failed silently with no indication of why. Uplink now emits a visible red error in the server buffer — "Keychain: no password stored for … — open Edit Server and re-enter your password" — directing the user to the exact fix.
 
 ### Features
 

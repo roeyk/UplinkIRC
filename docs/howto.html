@@ -773,6 +773,9 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
     <div class="callout callout-note">
       <strong>Headless / no keychain daemon?</strong> If the OS keychain is unavailable (e.g. a server without a running secret service), the password field will read back as empty. Enter your password in the server dialog when a keychain becomes available and it will be stored then. Check your terminal output for <code>qWarning</code> messages from Uplink if authentication is failing unexpectedly.
     </div>
+    <div class="callout callout-warning">
+      <strong>Seeing a red "Keychain: no password stored for…" error in the server buffer?</strong> This means your config file has <code>&lt;keychain&gt;</code> as a sentinel, but no matching entry exists in the OS keychain — the password was never written there (or the entry was cleared). Fix: open <strong>Edit Server</strong>, type your password in the affected field, and save. Uplink will write it to the keychain and authenticate normally from that point on.
+    </div>
   </section>
 
   <hr />

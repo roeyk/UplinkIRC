@@ -221,6 +221,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Password field encryption — don't store plaintext passwords (OS keychain integration) (v0.16.6)
 - [x] Password field show/hide toggle — eye icon (Material Symbols) inside each password field in Add/Edit Server dialog; toggles echo mode (v0.24.2)
 - [x] Keychain sentinel UX — fields with keychain-stored passwords show placeholder text instead of sentinel as dots; empty-on-save preserves the keychain entry instead of deleting it (v0.24.2)
+- [x] Keychain missing-entry warning — if config has `<keychain>` but no OS keychain entry exists, a red error in the server buffer directs the user to re-enter the password in Edit Server (v0.24.2+)
 - [x] Memory optimizations — message buffer cap 2000→500, link preview cap 100→20, emoji picker lazy-loaded, QTextDocument block count aligned to buffer cap (v0.24.2)
 - [x] Qt6Keychain CI integration — FetchContent fallback in CMakeLists.txt; all three platform CI + release builds passing (v0.16.6 follow-up)
 - [x] Theme-aware link preview cards — bg/border/text/timestamp colours from active theme (v0.16.7)
