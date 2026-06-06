@@ -572,6 +572,13 @@ Next: icons (waiting on user design).
 - **Show/hide toggle on password fields** — a clickable eye icon (Material Symbols) appears inside every password field in the Add/Edit Server dialog (server password, SASL, NickServ, proxy). Click to reveal; click again to hide.
 - **Keychain read error logging** — failed OS keychain reads now emit `qWarning` with the key name and error string, visible in terminal output.
 
+### Performance
+
+- **Message buffer reduced** — per-channel scrollback cap lowered from 2,000 to 500 messages. Reduces RAM on sessions with many open channels. Older messages scroll out of the buffer as new ones arrive.
+- **Link preview cap reduced** — stored link preview HTML per channel reduced from 100 to 20 entries.
+- **Emoji picker lazy-loaded** — the emoji picker widget is now created on first use instead of at startup, reducing launch-time RAM.
+- **Chat view block count aligned** — `QTextDocument::setMaximumBlockCount` now matches the buffer cap exactly (was over-allocated by 300 blocks).
+
 ---
 
 ## v0.24.1 — 2026-06-05

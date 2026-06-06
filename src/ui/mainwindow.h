@@ -89,6 +89,7 @@ private:
     void setupChatArea();
     void setupNickPanel();
     void setupInputBar();
+    void ensureEmojiPicker();
     void connectModel();
     void connectPreferences();
 

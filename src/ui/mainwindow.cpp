@@ -1042,7 +1042,7 @@ void MainWindow::setupChatArea()
     m_chatView->setReadOnly(true);
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
     m_chatView->setOpenLinks(false);
-    m_chatView->document()->setMaximumBlockCount(kMessageBufferCap + 300);
+    m_chatView->document()->setMaximumBlockCount(kMessageBufferCap);
     if (m_theme.valid)
         m_chatView->document()->setDefaultStyleSheet(
             QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
@@ -1188,6 +1188,26 @@ void MainWindow::setupChatArea()
     setCentralWidget(outer);
 }
 
+void MainWindow::ensureEmojiPicker()
+{
+    if (m_emojiPicker) return;
+    m_emojiPicker = new EmojiPicker(this);
+    connect(m_emojiPicker, &EmojiPicker::emojiSelected, this, [this](const QString &emoji){
+        if (!m_pendingReactMsgid.isEmpty()) {
+            m_model->sendReact(m_pendingReactHost, m_pendingReactChannel,
+                               m_pendingReactMsgid, emoji);
+            m_pendingReactMsgid.clear();
+            m_pendingReactHost.clear();
+            m_pendingReactChannel.clear();
+            return;
+        }
+        QTextCursor tc = m_input->textCursor();
+        tc.insertText(emoji);
+        m_input->setTextCursor(tc);
+        m_input->setFocus();
+    });
+}
+
 void MainWindow::setupInputBar()
 {
     auto *bar  = new QWidget;
@@ -1284,25 +1304,10 @@ void MainWindow::setupInputBar()
     layout->addWidget(m_typingLabel);
     layout->addWidget(bar);
 
-    // Emoji picker popup
-    m_emojiPicker = new EmojiPicker(this);
-    connect(m_emojiPicker, &EmojiPicker::emojiSelected, this, [this](const QString &emoji){
-        if (!m_pendingReactMsgid.isEmpty()) {
-            m_model->sendReact(m_pendingReactHost, m_pendingReactChannel,
-                               m_pendingReactMsgid, emoji);
-            m_pendingReactMsgid.clear();
-            m_pendingReactHost.clear();
-            m_pendingReactChannel.clear();
-            return;
-        }
-        QTextCursor tc = m_input->textCursor();
-        tc.insertText(emoji);
-        m_input->setTextCursor(tc);
-        m_input->setFocus();
-    });
     connect(m_emojiBtn, &QPushButton::clicked, this, [this]{
         const QPoint anchor = m_emojiBtn->mapToGlobal(
             QPoint(m_emojiBtn->width(), m_emojiBtn->height()));
+        ensureEmojiPicker();
         m_emojiPicker->showAt(anchor);
     });
 
@@ -1590,6 +1595,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     m_pendingReactMsgid    = msgid;
                     m_pendingReactHost     = host;
                     m_pendingReactChannel  = channel;
+                    ensureEmojiPicker();
                     m_emojiPicker->showAt(globalPos);
                 });
                 {
@@ -1746,7 +1752,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             connect(menu.addAction("React"), &QAction::triggered, this,
                     [this, msgid, host, chan, gp]{
                 m_pendingReactMsgid = msgid; m_pendingReactHost = host;
-                m_pendingReactChannel = chan; m_emojiPicker->showAt(gp);
+                m_pendingReactChannel = chan; ensureEmojiPicker(); m_emojiPicker->showAt(gp);
             });
             auto *cl = m_model->clientFor(host);
             auto *ch = m_model->channel(host, chan);
