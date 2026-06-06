@@ -23,6 +23,8 @@ static QString storePassword(const QString &value, const QString &serverName, co
         KeychainHelper::remove(kcKey(serverName, field));
         return {};
     }
+    if (value == kKeychainSentinel)
+        return kKeychainSentinel;
     if (KeychainHelper::write(kcKey(serverName, field), value))
         return kKeychainSentinel;
 

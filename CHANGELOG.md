@@ -3,6 +3,18 @@
 ---
 
 <!--
+Session summary — 2026-06-05 (keychain SASL password corruption fix)
+
+Fixed a bug where opening the Edit Server dialog and saving without changing a
+keychain-stored password would corrupt it — the sentinel string "<keychain>"
+was being written to the keychain as the literal password value, causing SASL
+authentication to fail on next connect.
+
+Fix: added an early-return guard in storePassword() (config.cpp) so a value
+that is already the sentinel passes through without touching the keychain.
+-->
+
+<!--
 Session summary — 2026-06-05 (compiler warning cleanup)
 
 Fixed all compiler warnings — no functional changes:
