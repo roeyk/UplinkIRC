@@ -219,6 +219,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] DCC offer validation — zero port / non-positive filesize rejected before accept dialog (v0.13.0)
 - [x] Reconnect socket abort — socket abort()ed before reconnect if not already unconnected (v0.13.0)
 - [x] Password field encryption — don't store plaintext passwords (OS keychain integration) (v0.16.6)
+- [x] Password field show/hide toggle — eye icon (Material Symbols) inside each password field in Add/Edit Server dialog; toggles echo mode (v0.24.2)
+- [x] Keychain sentinel UX — fields with keychain-stored passwords show placeholder text instead of sentinel as dots; empty-on-save preserves the keychain entry instead of deleting it (v0.24.2)
 - [x] Qt6Keychain CI integration — FetchContent fallback in CMakeLists.txt; all three platform CI + release builds passing (v0.16.6 follow-up)
 - [x] Theme-aware link preview cards — bg/border/text/timestamp colours from active theme (v0.16.7)
 - [x] Right-click Copy + Reply together — both available from message body right-click; no need to aim at the timestamp (v0.16.7)
@@ -280,6 +282,7 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 ## Stability Backlog
 
 - [x] Ping watchdog timeout: `sendPing` ignores stale pending pings indefinitely — abort + reconnect after ~90s; improves recovery from dead Wi-Fi, VPN changes, NAT timeouts (`ircclient.cpp:431-437`)
+- [x] Early PING during SASL registration — removed `singleShot(2000, sendPing)` from `onConnected()`; was causing 2-minute disconnect cycle on solanum servers (Libera.Chat) where pre-registration PINGs are silently ignored
 - [x] `sendRaw` disconnected: silently drops messages during reconnect — show local "Not connected; message not sent" error for user-visible commands (`ircclient.cpp:276-281`)
 - [x] DCC write failure: `onReadyRead` emits error but doesn't call `cancel()` — call cancel directly on write failure; guard against multiple error/finished emissions with `m_done` flag (`dccreceive.cpp:151-154`)
 - [x] DCC progress divide-by-zero: `checkTransferPrecon` does not reject `total <= 0` — malformed DCC offer with size=0 can divide-by-zero in UI progress callback (`dccreceive.cpp:21-47`, `mainwindow.cpp:1484-1485`)

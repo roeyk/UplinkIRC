@@ -527,6 +527,53 @@ Fix: combined selector covering both widget types; also extended
 Lesson recorded: "commit and push" ≠ permission to cut a release.
 -->
 
+<!--
+Session summary — 2026-06-06 (ping timeout fix + keychain UX + eye toggle)
+
+Three fixes shipped this session:
+
+1. Ping timeout every ~2 minutes on Libera.Chat (and any solanum server):
+   A QTimer::singleShot(2000, ...) in onConnected() fired a PING 2s after TCP
+   connect — during SASL negotiation, before the client was registered. Solanum
+   ignores PINGs from unregistered clients, leaving m_pingPending stuck true.
+   The 30s watchdog fired 4 more times before hitting the 90s elapsed threshold,
+   killing the connection at 2 + 4×30 = 122s (~2 minutes) every cycle. Fix:
+   removed the singleShot. The regular 30s timer handles keepalive once
+   registration completes.
+
+2. Keychain password fields showed <keychain> as masked dots in Edit Server:
+   Any keychain-stored password field displayed the literal sentinel string as
+   dots, making it unclear whether a password existed. If the user accidentally
+   cleared the field and saved, the keychain entry was silently deleted. Fixed
+   by: showing placeholder text "Stored in keychain — type to change, clear to
+   remove" for sentinel-valued fields; preserving the sentinel on save when the
+   field is left empty; logging qWarning on readAsync failures so the cause is
+   visible in terminal output.
+
+3. Added show/hide eye toggle to all password fields in Add/Edit Server dialog:
+   Material Symbols visibility/visibility_off SVG icons added to resources;
+   QLineEdit::addAction() places the icon inside the trailing edge of each
+   password field; clicking toggles echo mode and swaps the icon.
+
+No regressions observed. Memory updated to correct stale goals_features.md
+(all UI features were already done; movable panels dropped from roadmap).
+Next: icons (waiting on user design).
+-->
+
+## v0.24.2 — 2026-06-06
+
+### Bug Fixes
+
+- **Fix:** Client ping-timed-out and reconnected every ~2 minutes on Libera.Chat and other solanum-based servers. Root cause: a 2-second one-shot timer fired `PING :uplink_rtt` during SASL negotiation before the client was registered. Solanum ignores PINGs from unregistered clients, leaving `m_pingPending` stuck `true`. The 30-second watchdog then fired three more times until the 90-second elapsed threshold killed the connection (2 + 4×30 ≈ 120 s). Fix: removed `QTimer::singleShot(2000, this, &IrcClient::sendPing)` from `onConnected()`; the regular 30 s timer handles keepalive after registration.
+- **Fix:** Keychain-stored password fields in Edit Server showed the `<keychain>` sentinel as masked dots, making it unclear whether a password was stored. Leaving the field empty and saving silently deleted the keychain entry. Fields with keychain-stored values now show placeholder text instead, and saving with an empty field preserves the sentinel.
+
+### Features
+
+- **Show/hide toggle on password fields** — a clickable eye icon (Material Symbols) appears inside every password field in the Add/Edit Server dialog (server password, SASL, NickServ, proxy). Click to reveal; click again to hide.
+- **Keychain read error logging** — failed OS keychain reads now emit `qWarning` with the key name and error string, visible in terminal output.
+
+---
+
 ## v0.24.1 — 2026-06-05
 
 ### Bug Fixes

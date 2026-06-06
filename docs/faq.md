@@ -66,6 +66,8 @@ Open it in any text editor and restart Uplink to apply changes.
 
 **Passwords are stored in your OS keychain, not in the file.** Uplink uses the OS keychain (Secret Service on Linux, macOS Keychain, Windows Credential Manager) for `password`, `sasl_password`, and `nickserv_password`. The config file stores the sentinel value `"<keychain>"` in place of the actual secret. Even if someone reads your `config.toml`, they cannot recover your passwords from it.
 
+When you open Edit Server for a server with a stored password, the field shows a placeholder (*Stored in keychain — type to change, clear to remove*) so you know the value is there. Leaving the field empty and saving preserves the entry. All password fields also have a show/hide eye toggle on the right edge.
+
 Beyond that:
 
 - `config.toml` is written with **owner-only permissions** (mode `0600` on Linux/macOS) so other users on the machine cannot read it at all.
