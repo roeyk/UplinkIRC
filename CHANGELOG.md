@@ -560,6 +560,23 @@ No regressions observed. Memory updated to correct stale goals_features.md
 Next: icons (waiting on user design).
 -->
 
+<!--
+Session summary — 2026-06-06 continued (memory optimizations + v0.24.2 release)
+
+Shipped four memory/startup optimizations:
+1. Message buffer cap 2000→500 per channel (kMessageBufferCap in channel.h)
+2. Link preview cap 100→20 per channel (kPreviewCap in channel.h)
+3. EmojiPicker lazy-loaded — widget now created on first use via ensureEmojiPicker()
+   instead of at startup; all three call sites updated
+4. QTextDocument block count aligned to buffer cap (was kMessageBufferCap+300)
+
+Tagged and released v0.24.2. All CI passes (Linux, macOS, Windows). Binaries live:
+AppImage, Linux tar.gz, macOS dmg, Windows zip, zsync metadata.
+update-docs CI job ran and confirmed version strings correct across README/docs.
+
+Next: icons (waiting on user design).
+-->
+
 ## v0.24.2 — 2026-06-06
 
 ### Bug Fixes
