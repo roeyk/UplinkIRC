@@ -70,6 +70,14 @@ When you open Edit Server for a server with a stored password, the field shows a
 
 If Uplink shows a red **"Keychain: no password stored for…"** error in the server buffer on connect, your config has `<keychain>` as a sentinel but no matching entry in the OS keychain (the entry was never written or was cleared). Fix: open Edit Server, type your password in the affected field, and save. Uplink will store it and authenticate normally going forward.
 
+### KDE keeps asking me to unlock the wallet when I change a preference
+
+This was a bug fixed in v0.24.3. If you see a KWallet (or any OS keychain) unlock prompt when changing the font, theme, or any preference toggle, update to v0.24.3 or later.
+
+The root cause was that every config save — including unrelated UI changes — attempted to migrate plain-text passwords to the keychain. The fix restricts keychain writes to the Manage Servers dialog, which is the only place credentials are intentionally changed.
+
+If you are on an older build and cannot update yet, a workaround is to unlock the wallet once and keep it unlocked for your session. Alternatively, store your password as plain text in `config.toml` (no `<keychain>` sentinel) — the prompt will not appear.
+
 Beyond that:
 
 - `config.toml` is written with **owner-only permissions** (mode `0600` on Linux/macOS) so other users on the machine cannot read it at all.

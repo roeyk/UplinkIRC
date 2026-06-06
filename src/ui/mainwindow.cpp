@@ -650,7 +650,7 @@ void MainWindow::connectPreferences()
             }
         }
         m_config.servers = updated;
-        Config::save(m_config, Config::defaultPath());
+        Config::save(m_config, Config::defaultPath(), true);
     });
 
     connect(m_prefsDialog, &PreferencesDialog::aboutRequested, this, [this]{

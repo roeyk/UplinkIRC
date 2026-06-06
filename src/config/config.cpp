@@ -233,7 +233,7 @@ Config Config::load(const QString &path)
     return cfg;
 }
 
-void Config::save(const Config &cfg, const QString &path)
+void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
 {
     QDir().mkpath(QFileInfo(path).absolutePath());
 
@@ -304,12 +304,12 @@ void Config::save(const Config &cfg, const QString &path)
         out << "nick     = " << tomlQuote(s.nick)     << "\n";
         out << "user     = " << tomlQuote(s.user)     << "\n";
         out << "realname = " << tomlQuote(s.realname) << "\n";
-        const QString savedPw = storePassword(s.password, s.name, "password");
+        const QString savedPw = migratePasswords ? storePassword(s.password, s.name, "password") : s.password;
         if (!savedPw.isEmpty())
             out << "password          = " << tomlQuote(savedPw) << "\n";
         if (!s.saslUser.isEmpty())
             out << "sasl_user         = " << tomlQuote(s.saslUser) << "\n";
-        const QString savedSasl = storePassword(s.saslPassword, s.name, "sasl_password");
+        const QString savedSasl = migratePasswords ? storePassword(s.saslPassword, s.name, "sasl_password") : s.saslPassword;
         if (!savedSasl.isEmpty())
             out << "sasl_password     = " << tomlQuote(savedSasl) << "\n";
         if (s.saslExternal)
@@ -318,7 +318,7 @@ void Config::save(const Config &cfg, const QString &path)
             out << "client_cert       = " << tomlQuote(s.clientCertFile) << "\n";
         if (!s.clientKeyFile.isEmpty())
             out << "client_key        = " << tomlQuote(s.clientKeyFile) << "\n";
-        const QString savedNs = storePassword(s.nickservPassword, s.name, "nickserv_password");
+        const QString savedNs = migratePasswords ? storePassword(s.nickservPassword, s.name, "nickserv_password") : s.nickservPassword;
         if (!savedNs.isEmpty())
             out << "nickserv_password = " << tomlQuote(savedNs) << "\n";
         if (s.bouncerType == BouncerType::ZNC)
@@ -332,7 +332,7 @@ void Config::save(const Config &cfg, const QString &path)
             out << "proxy_port        = " << s.proxyPort << "\n";
             if (!s.proxyUser.isEmpty())
                 out << "proxy_user        = " << tomlQuote(s.proxyUser) << "\n";
-            const QString savedProxyPass = storePassword(s.proxyPass, s.name, "proxy_pass");
+            const QString savedProxyPass = migratePasswords ? storePassword(s.proxyPass, s.name, "proxy_pass") : s.proxyPass;
             if (!savedProxyPass.isEmpty())
                 out << "proxy_pass        = " << tomlQuote(savedProxyPass) << "\n";
         }
@@ -344,8 +344,7 @@ void Config::save(const Config &cfg, const QString &path)
             for (const auto &ch : s.channels) {
                 out << "\n[[server.channel]]\n";
                 out << "name = " << tomlQuote(ch.name) << "\n";
-                const QString savedKey = storePassword(ch.password,
-                    s.name + ":channel:" + ch.name, "key");
+                const QString savedKey = migratePasswords ? storePassword(ch.password, s.name + ":channel:" + ch.name, "key") : ch.password;
                 if (!savedKey.isEmpty())
                     out << "key  = " << tomlQuote(savedKey) << "\n";
             }

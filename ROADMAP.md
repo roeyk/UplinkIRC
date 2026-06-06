@@ -244,6 +244,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Unknown slash commands sent as raw IRC by default — change to "unknown command" message; keep `/raw` and `/quote` for power users; add opt-in `advanced_raw_passthrough` config key (`commanddispatcher.cpp:572-575`)
 - [x] `linkpreview`: apply `isBlockedBySchemeOrLiteral` in `extractImageUrl` before returning URL — defense-in-depth; currently only checked by the caller (`linkpreview.cpp`)
 - [x] `Channel::previews`: cap stored HTML string length per entry — `kPreviewCap=100` limits count but not per-entry size (`channel.h`)
+- [x] KWallet/keychain popup on every preference change — `Config::save()` called `storePassword()` unconditionally; now guarded by `migratePasswords` flag, only true for server dialog saves (v0.24.3)
 - [x] README vs code: README says "plaintext not supported" but `connectToHost()` is reachable when `ssl=false` — enforce TLS-only in code or update README (`ircclient.cpp:103-107`)
 
 ---

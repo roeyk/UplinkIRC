@@ -776,6 +776,9 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
     <div class="callout callout-warning">
       <strong>Seeing a red "Keychain: no password stored for…" error in the server buffer?</strong> This means your config file has <code>&lt;keychain&gt;</code> as a sentinel, but no matching entry exists in the OS keychain — the password was never written there (or the entry was cleared). Fix: open <strong>Edit Server</strong>, type your password in the affected field, and save. Uplink will write it to the keychain and authenticate normally from that point on.
     </div>
+    <div class="callout callout-warning">
+      <strong>KDE wallet keeps prompting when changing preferences (font, theme, toggles)?</strong> This was a bug fixed in v0.24.3. Every config save was attempting a keychain write even for unrelated changes. Update to v0.24.3 or later to resolve it. If you cannot update immediately, keeping the wallet unlocked for your session will suppress the prompts.
+    </div>
   </section>
 
   <hr />

@@ -94,7 +94,7 @@ struct Config {
     bool needsNickSetup() const;
 
     static Config    load(const QString &path);
-    static void      save(const Config &cfg, const QString &path);
+    static void      save(const Config &cfg, const QString &path, bool migratePasswords = false);
     static QString   defaultPath();
     static void      ensureExists(const QString &path);
 };

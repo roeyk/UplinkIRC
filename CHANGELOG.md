@@ -578,6 +578,28 @@ Next: icons (waiting on user design).
 -->
 
 <!--
+Session summary — 2026-06-05 (KWallet popup on every preference change)
+
+Fixed a bug where opening Preferences and changing anything — font config,
+theme, checkboxes, nick brackets — triggered a KDE Wallet unlock prompt on
+KDE/FreeBSD systems.
+
+Root cause: Config::save() calls storePassword() for every server password
+field on every save, including saves triggered by unrelated UI changes (font,
+theme, toggles). storePassword() with a plain-text value calls
+KeychainHelper::write(), which opens the KWallet dialog. On systems where the
+keychain is broken or not set up (e.g. FreeBSD plain-text passwords in config),
+every single preference change fires the prompt.
+
+Fix: added bool migratePasswords = false to Config::save(). Password keychain
+migration is now only attempted when the server management dialog explicitly
+saves (Config::save(..., true)). All other preference saves write passwords
+back as-is without touching the keychain.
+
+No new features. No regressions. One call site changed in mainwindow.cpp.
+-->
+
+<!--
 Session summary — 2026-06-07 (keychain missing-entry warning)
 
 Single fix: when config.toml has <keychain> as a password sentinel but no
@@ -597,6 +619,14 @@ socketError on empty val.
 Next: no pending items; app is at v0.24.2 with all known bugs resolved.
 Icons are done. No new features planned this session.
 -->
+
+## v0.24.3 — 2026-06-05
+
+### Bug Fixes
+
+- **Fix:** On KDE (and any system using KWallet as the keychain backend), a wallet unlock prompt appeared every time a preference was changed — font config, theme, toggles, nick brackets, etc. Root cause: `Config::save()` called `storePassword()` for every server password field on every save, triggering `QKeychain::WritePasswordJob` even for unrelated config changes. Fix: `Config::save()` now accepts a `migratePasswords` flag (default `false`). Keychain writes are only attempted when saving from the Manage Servers dialog, where a credential change is expected.
+
+---
 
 ## v0.24.2 — 2026-06-06
 
