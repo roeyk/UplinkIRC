@@ -40,4 +40,9 @@ private:
     QSpinBox  *m_proxyPort;
     QLineEdit *m_proxyUser;
     QLineEdit *m_proxyPass;
+
+    bool m_passwordKeychain{false};
+    bool m_saslPasswordKeychain{false};
+    bool m_nickservPasswordKeychain{false};
+    bool m_proxyPassKeychain{false};
 };

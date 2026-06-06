@@ -42,5 +42,7 @@ inline QIcon connStatus     (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon coloredNicks   (const QColor &c = {}) { return fromSvg(":/icons/mi-format-color-text.svg",  c); }
 inline QIcon exit           (const QColor &c = {}) { return fromSvg(":/icons/mi-logout.svg",             c); }
 inline QIcon preferences    (const QColor &c = {}) { return fromSvg(":/icons/mi-tune.svg",               c); }
+inline QIcon eye            (const QColor &c = {}) { return fromSvg(":/icons/mi-visibility.svg",          c); }
+inline QIcon eyeOff         (const QColor &c = {}) { return fromSvg(":/icons/mi-visibility-off.svg",      c); }
 
 } // namespace MenuIcons

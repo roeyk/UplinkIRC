@@ -1,5 +1,6 @@
 #include "keychainhelper.h"
 
+#include <QDebug>
 #include <QEventLoop>
 #include <qt6keychain/keychain.h>
 
@@ -52,6 +53,9 @@ void readAsync(const QString &key, std::function<void(const QString &)> callback
     job->setKey(key);
     QObject::connect(job, &QKeychain::Job::finished, job,
         [job, cb = std::move(callback)]() {
+            if (job->error() != QKeychain::NoError)
+                qWarning() << "Uplink: keychain read failed for" << job->key()
+                           << "—" << job->errorString();
             cb(job->error() == QKeychain::NoError ? job->textData() : QString{});
             job->deleteLater();
         });

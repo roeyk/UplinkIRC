@@ -1,4 +1,5 @@
 #include "serverdialog.h"
+#include "menuicons.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -29,12 +30,23 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_nick     = new QLineEdit;
     m_user     = new QLineEdit;
     m_realname = new QLineEdit;
+    auto addEyeToggle = [](QLineEdit *field) {
+        auto *act = field->addAction(MenuIcons::eyeOff(), QLineEdit::TrailingPosition);
+        QObject::connect(act, &QAction::triggered, field, [field, act] {
+            const bool show = field->echoMode() == QLineEdit::Password;
+            field->setEchoMode(show ? QLineEdit::Normal : QLineEdit::Password);
+            act->setIcon(show ? MenuIcons::eye() : MenuIcons::eyeOff());
+        });
+    };
+
     m_password = new QLineEdit;
     m_password->setEchoMode(QLineEdit::Password);
     m_password->setPlaceholderText("optional");
+    addEyeToggle(m_password);
     m_saslUser         = new QLineEdit;
     m_saslPassword     = new QLineEdit;
     m_saslPassword->setEchoMode(QLineEdit::Password);
+    addEyeToggle(m_saslPassword);
     m_saslExternal     = new QCheckBox("Use SASL EXTERNAL (client certificate)");
     m_clientCert       = new QLineEdit;
     m_clientCert->setPlaceholderText("path/to/client.crt (PEM)");
@@ -43,6 +55,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_nickservPassword = new QLineEdit;
     m_nickservPassword->setEchoMode(QLineEdit::Password);
     m_nickservPassword->setPlaceholderText("optional");
+    addEyeToggle(m_nickservPassword);
 
     auto makeHeader = [](const QString &text) {
         auto *lbl = new QLabel(text);
@@ -137,6 +150,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_proxyPass = new QLineEdit;
     m_proxyPass->setPlaceholderText("optional");
     m_proxyPass->setEchoMode(QLineEdit::Password);
+    addEyeToggle(m_proxyPass);
 
     form->addRow(makeHeader("SOCKS5 Proxy"));
     form->addRow("Proxy Host:", m_proxyHost);
@@ -164,19 +178,25 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     m_nick->setText(existing.nick);
     m_user->setText(existing.user);
     m_realname->setText(existing.realname);
-    m_password->setText(existing.password);
+    static const QString kSentinel = QStringLiteral("<keychain>");
+    static const QString kPlaceholder = QStringLiteral("Stored in keychain — type to change, clear to remove");
+    auto setupPw = [&](QLineEdit *field, const QString &value, bool &flag) {
+        if (value == kSentinel) { field->setPlaceholderText(kPlaceholder); flag = true; }
+        else                    { field->setText(value); }
+    };
+    setupPw(m_password,         existing.password,         m_passwordKeychain);
     m_saslUser->setText(existing.saslUser);
-    m_saslPassword->setText(existing.saslPassword);
+    setupPw(m_saslPassword,     existing.saslPassword,     m_saslPasswordKeychain);
     m_saslExternal->setChecked(existing.saslExternal);
     m_clientCert->setText(existing.clientCertFile);
     m_clientKey->setText(existing.clientKeyFile);
-    m_nickservPassword->setText(existing.nickservPassword);
+    setupPw(m_nickservPassword, existing.nickservPassword, m_nickservPasswordKeychain);
     m_bouncerType->setCurrentIndex(static_cast<int>(existing.bouncerType));
     m_bouncerNetwork->setText(existing.bouncerNetwork);
     m_proxyHost->setText(existing.proxyHost);
     m_proxyPort->setValue(existing.proxyPort ? existing.proxyPort : 1080);
     m_proxyUser->setText(existing.proxyUser);
-    m_proxyPass->setText(existing.proxyPass);
+    setupPw(m_proxyPass, existing.proxyPass, m_proxyPassKeychain);
 
     QStringList names;
     for (const auto &ch : existing.channels)
@@ -194,19 +214,23 @@ ServerConfig ServerDialog::serverConfig() const
     sc.nick             = m_nick->text().trimmed();
     sc.user             = m_user->text().trimmed();
     sc.realname         = m_realname->text().trimmed();
-    sc.password         = m_password->text();
+    static const QString kSentinel = QStringLiteral("<keychain>");
+    auto resolvePw = [&](QLineEdit *field, bool wasKeychain) {
+        return (field->text().isEmpty() && wasKeychain) ? kSentinel : field->text();
+    };
+    sc.password         = resolvePw(m_password,     m_passwordKeychain);
     sc.saslUser         = m_saslUser->text().trimmed();
-    sc.saslPassword     = m_saslPassword->text();
+    sc.saslPassword     = resolvePw(m_saslPassword, m_saslPasswordKeychain);
     sc.saslExternal     = m_saslExternal->isChecked();
     sc.clientCertFile   = m_clientCert->text().trimmed();
     sc.clientKeyFile    = m_clientKey->text().trimmed();
-    sc.nickservPassword = m_nickservPassword->text();
+    sc.nickservPassword = resolvePw(m_nickservPassword, m_nickservPasswordKeychain);
     sc.bouncerType      = static_cast<BouncerType>(m_bouncerType->currentData().toInt());
     sc.bouncerNetwork   = m_bouncerNetwork->text().trimmed();
     sc.proxyHost        = m_proxyHost->text().trimmed();
     sc.proxyPort        = static_cast<quint16>(m_proxyPort->value());
     sc.proxyUser        = m_proxyUser->text().trimmed();
-    sc.proxyPass        = m_proxyPass->text();
+    sc.proxyPass        = resolvePw(m_proxyPass, m_proxyPassKeychain);
     for (const QString &ch : m_autoJoin->text().split(',', Qt::SkipEmptyParts)) {
         const QString name = ch.trimmed();
         if (!name.isEmpty())
