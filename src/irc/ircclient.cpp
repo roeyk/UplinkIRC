@@ -334,7 +334,6 @@ void IrcClient::onConnected()
     m_reconnectDelay = 5;
     m_pingPending = false;
     m_pingTimer->start();
-    QTimer::singleShot(2000, this, &IrcClient::sendPing);
 
     sendRaw("CAP LS 302");
 
