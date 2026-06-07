@@ -620,6 +620,44 @@ Next: no pending items; app is at v0.24.2 with all known bugs resolved.
 Icons are done. No new features planned this session.
 -->
 
+## v0.25.0 — 2026-06-07
+
+### Bug Fixes
+
+- **Fix: WHOX bot detection was completely broken** — The 354 RPL_WHOSPCRPL handler assumed a 6-field format with a token (`WHO <channel> %cnfa,42`), but Ergo IRCd returns 5 fields without a token: `[me, channel, nick, flags, account]`. The size check `params.size() >= 6 && params[1] == "42"` never matched, silently dropping every WHO reply. Bot nicks were never detected, and account names were never populated from join. Fixed by removing the token check and correcting the param indices.
+
+- **Fix: echo-message typing self-echo** — With the `echo-message` CAP active, the typing TAGMSG was echoed back from the server, causing "you are typing..." to appear to yourself. Added `msg.nick != m_nick` guard so typing indicators from self are ignored.
+
+- **Fix: DCC self-echo** — With `echo-message`, outgoing DCC offers were echoed back to the sender, triggering an incoming DCC receive dialog on their own client. Same `msg.nick != m_nick` guard applied to the CTCP DCC branch.
+
+- **Fix: packaging/Uplink.desktop icon name** — `Icon=` was set to `uplink-irc`, which does not match the installed hicolor icon filename. Corrected to `uplink` to match the CMake install rule that renames `uplink-dark.png` → `uplink.png` in the hicolor theme.
+
+### New Features
+
+- **Contextual command replies** — `/whois`, `/version`, and `/ping` responses now appear in the active channel or PM window instead of routing to the server buffer. If you `/whois alice` while talking in `#linux`, the reply lands in `#linux`. Implemented via a new `contextualMessage` signal from `IrcClient` wired through `SessionModel::onContextualMessage`, which routes to the current active buffer.
+
+  **Example:**
+  ```
+  # In #linux:
+  /whois alice
+  → alice is alice@host.example (Alice Smith)        ← appears in #linux
+  → alice is on: #linux #general                     ← appears in #linux
+
+  /version alice
+  → VERSION reply from alice: Uplink 0.25.0          ← appears in #linux
+
+  /ping alice
+  → Ping reply from alice: 23ms                      ← appears in #linux
+  ```
+
+- **Bot icons in user list** — Nicks with mode `+B` (bot flag) are marked with a small icon drawn inline to the right of their nick in the user list. Each bot is randomly assigned either a robot icon or an alien icon for the session; the assignment is stable for the duration of the connection. Icons are rendered as SVGs colorized to the theme accent color.
+
+  The previous approach used emoji characters via font fallback, which was unreliable across systems and fontconfig configurations. This replaces it with proper `QIcon` rendering via a custom `FixedRowDelegate::paint()` override using `Qt::DecorationRole`.
+
+- **QComboBox drop-down arrow polish** — The native OS drop-down arrow in combo boxes (theme picker, nick brackets selector, etc.) is replaced with a clean Material Symbols chevron icon that matches the app's icon style. Applied via QSS in `ThemeLoader`.
+
+---
+
 ## v0.24.3 — 2026-06-05
 
 ### Bug Fixes

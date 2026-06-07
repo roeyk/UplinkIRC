@@ -138,7 +138,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Logging — per-channel log files at `~/.config/uplink/logs/<server>/<channel>.log`; `log_messages` config key; Preferences toggle (v0.15.0)
 - [x] Ignore list — client-side suppress of incoming PRIVMSGs/NOTICEs/ACTIONs from specific nicks; right-click → Ignore/Unignore; /ignore /unignore /ignored commands; persists as [ignore] nicks in config.toml (v0.14.0)
 - [x] msgid — IRCv3 unique message IDs stored on every received message; full signal chain (messageReceived, noticeReceived, actionReceived, batch delivery); prerequisite for reply threading, reactions, and redaction
-- [x] echo-message — server echoes sent messages back; duplicate local echo suppressed; PM routing corrected for self-echoes; also fixes ZNC self-message PM routing
+- [x] echo-message — server echoes sent messages back; duplicate local echo suppressed; PM routing corrected for self-echoes; also fixes ZNC self-message PM routing; typing TAGMSG and DCC CTCP offers filtered by `msg.nick != m_nick` to prevent self-echo of typing indicators and incoming DCC dialogs (v0.25.0)
 - [x] draft/reply — right-click any message → Reply; reply bar above input; ↩ origNick shown on received replies; @+draft/reply= tag sent on outgoing messages
 - [x] draft/message-redaction — right-click own message timestamp → Delete; REDACT sent; received redactions render as [message deleted] (v0.16.0)
 - [x] account-notify + extended-join — track NickServ account per nick; populate from JOIN + ACCOUNT commands; account tooltip in nick list (v0.16.0)
@@ -147,7 +147,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] chghost — CAP negotiated; CHGHOST parsed; quiet "nick changed host" status line in shared channels; no fake QUIT+JOIN noise (v0.15.0)
 - [x] invite-notify — CAP negotiated; channel invite broadcasts post to channel buffer; direct invites post to server buffer (v0.16.0)
 - [x] setname — CAP negotiated; SETNAME parsed; "nick changed their realname" posted to shared channels (v0.16.0)
-- [x] WHOX — WHO <channel> %cnfa,42; 354 RPL_WHOSPCRPL parsed; account names populated on join; bot flags preserved (v0.16.0)
+- [x] WHOX — WHO <channel> %cnfa,42; 354 RPL_WHOSPCRPL parsed; account names populated on join; bot flags preserved (v0.16.0); parser corrected for Ergo's 5-field format (no token) — was silently dropping all WHO replies (v0.25.0)
 - [x] userhost-in-names — CAP negotiated; !user@host stripped from NAMES entries before display (v0.16.0)
 - [x] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; policy cached to ~/.config/uplink/sts.ini; stsstore.h/cpp; m_stsUpgrade flag; downgrade prevention (v0.16.3)
 - [x] netsplit/netjoin batch types — collapse netsplit noise into a single folded entry (v0.16.4)
@@ -176,7 +176,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Nick panel width persistence — QSplitter position saved via QSettings on quit, restored on launch
 - [x] Config editor UI — Manage Servers dialog covers server-level editing
 - [x] Emoji picker — searchable popup grid with :shortcode: autocomplete and auto-substitution
-- [x] Bot nick indicators — 🤖/👾 shown for +B mode nicks; auto-detected on join via WHO reply; randomly assigned per nick each session, cached for stability
+- [x] Bot nick indicators — SVG robot/alien icon drawn inline to the right of +B nicks in the user list; randomly assigned per nick per session, stable for the connection duration; colorized to theme accent (v0.25.0; replaces emoji font approach which was unreliable across fontconfig configurations)
 - [x] Configurable nick brackets — `nick_brackets` in `[ui]`; `"<>"` `"[]"` `"::::"` `""` supported; also configurable live from Hamburger → Nick Brackets
 - [x] Autojoin regression fix — editing a server in the GUI no longer wipes auto-join channels; Auto-join field added to Add/Edit Server dialog
 - [x] Autojoin Windows fix — config loading now uses Qt file I/O instead of toml::parse_file; paths with non-ASCII characters load correctly on Windows
@@ -228,6 +228,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Right-click Copy + Reply together — both available from message body right-click; no need to aim at the timestamp (v0.16.7)
 - [x] NickServ credential redaction extended — IDENTIFY/REGISTER/GHOST/RECOVER/RELEASE/REGAIN/SETPASS all redacted in local echo (v0.16.7)
 - [x] Service NOTICE routing — ChanServ/NickServ/BotServ/MemoServ replies route to their PM tab when open (v0.16.7)
+- [x] Contextual command replies — /whois, /version, and /ping responses appear in the active channel/PM window instead of the server buffer; implemented via contextualMessage signal from IrcClient through SessionModel (v0.25.0)
 - [x] howto.html full-text search — live search box in nav sidebar, match count, keyboard navigation (v0.16.7)
 - [x] /leave and /close commands — close query buffer or part channel (v0.16.8)
 - [x] NickServ credential redaction complete — echo-message server echo path also redacted (v0.16.8)

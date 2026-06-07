@@ -256,13 +256,13 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 | **Message** | Opens a private message buffer in the sidebar. Equivalent to `/msg nick`. |
 | **Send File** | Opens a file picker and sends the file via active DCC. Use when you have a reachable port. |
 | **Send File (Passive)** | Same as Send File, but the recipient opens the port instead. Use when you are behind NAT. |
-| **Whois** | Sends `WHOIS nick`. The response appears in the server window. |
+| **Whois** | Sends `WHOIS nick`. The response appears in the active channel. |
 | **Invite** | Opens a dialog pre-filled with the current channel. Edit if needed and click OK to send `INVITE nick #channel`. |
 | **Give Op** | Sets `+o` on the nick. Requires op. |
 | **Take Op** | Removes `-o` from the nick. Requires op. |
 | **Give Voice** | Sets `+v` on the nick. Requires op or half-op. |
 | **Take Voice** | Removes `-v` from the nick. Requires op or half-op. |
-| **Version** | Sends a CTCP VERSION request. Reply appears in the server window. |
+| **Version** | Sends a CTCP VERSION request. Reply appears in the active channel. |
 | **Ping** | Sends a CTCP PING. Reply shows RTT in the active buffer: `Ping reply from nick: Xms`. |
 | **Copy Nick** | Copies the nickname to the clipboard. |
 | **Ignore / Unignore** | Suppresses all messages (PRIVMSG, NOTICE, ACTION) from this nick. The label toggles to **Unignore** if the nick is already ignored. Persists in config. |
