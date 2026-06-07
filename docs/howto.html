@@ -419,6 +419,7 @@
     <li><a href="#sidebar">Sidebar</a></li>
     <li><a href="#channel-panes">Channel panes</a></li>
     <li><a href="#chat-area">Chat area</a></li>
+    <li><a href="#typing">Typing indicator</a></li>
     <li><a href="#nick-panel">Nick list panel</a></li>
     <li><a href="#nick-context-menu">Nick right-click menu</a></li>
     <li><a href="#account-tracking">Account tracking</a></li>
@@ -430,6 +431,7 @@
   <ul>
     <li><a href="#sending">Sending messages</a></li>
     <li><a href="#commands">Slash commands</a></li>
+    <li><a href="#user-lookup">Looking up users</a></li>
     <li><a href="#pm">Private messages</a></li>
     <li><a href="#formatting">IRC formatting</a></li>
     <li><a href="#emoji">Emoji &amp; shortcodes</a></li>
@@ -1197,13 +1199,47 @@ channels        = "#debian"</pre>
       <li>Click any URL to open it in your browser.</li>
       <li>When a URL is posted, Uplink fetches a preview card (title + thumbnail) automatically.</li>
       <li>When someone mentions your nick, it is highlighted in red and bold.</li>
-      <li>A "nick is typing…" line appears above the input bar when someone with IRCv3 typing support is composing a message.</li>
+      <li>A <em>"nick is typing…"</em> line appears above the input bar when another user is composing a message and their client supports IRCv3 <code>draft/typing</code>. You never see your own typing indicator — it is only shown to others.</li>
       <li><strong>Right-click the timestamp</strong> (hh:mm) on any message for a context menu: <strong>Reply</strong>, <strong>React</strong>, and <strong>Delete</strong> (own messages only, when the server supports it). If you have text selected when you right-click the timestamp, a <strong>Copy</strong> option appears in the same menu. See <a href="#reply">Reply</a>, <a href="#reactions">Reactions</a>, and <a href="#deletion">Message deletion</a>.</li>
       <li><strong>Right-click selected text</strong> anywhere in a message to see a <strong>Copy</strong> option — and a <strong>Reply</strong> option for the message you clicked in, so you do not need to aim at the small timestamp.</li>
       <li><strong>Right-click any nick</strong> in a message to open the nick context menu — Message, Send File, Whois, Invite, Give Op, Take Op, Give Voice, Take Voice, Version, Ping, Copy Nick, and (for ops) Kick, Ban, Kick &amp; Ban. See <a href="#nick-context-menu">Nick right-click menu</a>.</li>
       <li><strong>Hover over a nick</strong> in a message to see their NickServ account name as a tooltip (when the server reports it via <code>account-tag</code> or <code>account-notify</code>).</li>
       <li>Press <kbd>Ctrl+F</kbd> to search the current buffer. See <a href="#search">Message search</a>.</li>
     </ul>
+  </section>
+
+  <!-- TYPING INDICATOR -->
+  <section id="typing">
+    <h2>Typing indicator</h2>
+    <p>When someone in a channel starts typing a reply, a small line appears above the input bar:</p>
+    <pre>alice is typing…</pre>
+    <p>When they stop typing (or send their message), the line disappears automatically.</p>
+
+    <h3>Requirements</h3>
+    <p>Both sides need to support IRCv3 <code>draft/typing</code>. Uplink negotiates this cap automatically on connect — if the server supports it, typing notifications are sent and received with no configuration needed. If the server does not advertise the cap, the feature is silently inactive.</p>
+
+    <h3>What you see vs. what others see</h3>
+    <p>You <strong>never see your own typing indicator</strong>. The indicator is only shown to other users in the channel — you see theirs, they see yours. This is by design: seeing your own "is typing…" would be distracting and confusing.</p>
+
+    <table>
+      <thead><tr><th>Scenario</th><th>What happens</th></tr></thead>
+      <tbody>
+        <tr><td>You start typing in <code>#linux</code></td><td>Other users in <code>#linux</code> see <em>"yournick is typing…"</em> — you do not</td></tr>
+        <tr><td>Alice starts typing in <code>#linux</code></td><td>You see <em>"alice is typing…"</em> above your input bar</td></tr>
+        <tr><td>Alice stops typing without sending</td><td>The indicator disappears after a few seconds</td></tr>
+        <tr><td>Alice sends her message</td><td>The indicator disappears as soon as the message arrives</td></tr>
+        <tr><td>Multiple people typing at once</td><td>Each indicator appears as a separate line above the input bar</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Enabling / disabling</h3>
+    <p>The typing indicator can be toggled from <strong>☰ → Preferences → Show typing indicator</strong>, or in config:</p>
+    <pre>[ui]
+show_typing = true   # set to false to disable completely</pre>
+
+    <div class="note">
+      <strong>Privacy note:</strong> when enabled, Uplink sends a <code>TAGMSG</code> with the <code>+typing=active</code> tag to the channel as you type. If you prefer not to broadcast this, disable the feature in Preferences.
+    </div>
   </section>
 
   <!-- NICK PANEL -->
@@ -1215,7 +1251,7 @@ channels        = "#debian"</pre>
       <li>Click the <code>⚙</code> gear to collapse or expand the panel. The gear animates a full spin before toggling.</li>
       <li>Drag the divider between the chat and the nick panel to resize it — width is saved.</li>
       <li>Nicks are sorted by prefix rank: <code>~</code> owner, <code>&amp;</code> admin, <code>@</code> op, <code>%</code> halfop, <code>+</code> voice, then alphabetical.</li>
-      <li>Nicks with <code>+B</code> (bot mode) show a bot indicator (🤖 or 👾).</li>
+      <li>Nicks with <code>+B</code> (bot mode) show a small icon drawn inline to the right of their name — either a robot or an alien, randomly assigned per nick for the session. The icon is colorized to your active theme's accent color and does not depend on any emoji font.</li>
       <li><strong>Hover</strong> over any nick to see their NickServ account name as a tooltip (shown as <code>account: name</code> when the server has reported it).</li>
       <li>Right-click any nick for a full action menu — see <a href="#nick-context-menu">Nick right-click menu</a> below.</li>
     </ul>
@@ -1232,14 +1268,14 @@ channels        = "#debian"</pre>
         <tr><td><strong>Message</strong></td><td>Opens a private message buffer for that nick in the sidebar. Equivalent to <code>/msg nick</code>.</td></tr>
         <tr><td><strong>Send File</strong></td><td>Opens a file picker and sends the file via active DCC — Uplink opens a port and the recipient connects in. Works when you have a reachable IP.</td></tr>
         <tr><td><strong>Send File (Passive)</strong></td><td>Sends via passive DCC — the recipient opens the port and Uplink connects out to them. Use this when you are behind a home router or VPN.</td></tr>
-        <tr><td><strong>Whois</strong></td><td>Sends a <code>WHOIS</code> request. The server response appears in the server window.</td></tr>
+        <tr><td><strong>Whois</strong></td><td>Sends a <code>WHOIS</code> request. The full response (hostname, channels, idle time, account, TLS status) appears in the <strong>active channel</strong> — right where you are chatting. See <a href="#user-lookup">Looking up users</a>.</td></tr>
         <tr><td><strong>Invite</strong></td><td>Opens a dialog pre-filled with the current channel. Edit if needed and click OK to send <code>INVITE nick #channel</code>.</td></tr>
         <tr><td><strong>Give Op</strong></td><td>Sets <code>+o</code> on the nick in the current channel. Requires op.</td></tr>
         <tr><td><strong>Take Op</strong></td><td>Removes <code>-o</code> from the nick in the current channel. Requires op.</td></tr>
         <tr><td><strong>Give Voice</strong></td><td>Sets <code>+v</code> on the nick in the current channel. Requires op or half-op.</td></tr>
         <tr><td><strong>Take Voice</strong></td><td>Removes <code>-v</code> from the nick in the current channel. Requires op or half-op.</td></tr>
-        <tr><td><strong>Version</strong></td><td>Sends a CTCP VERSION request. The reply appears in the server window (the server name turns purple when it arrives).</td></tr>
-        <tr><td><strong>Ping</strong></td><td>Sends a CTCP PING with a millisecond timestamp. When the reply arrives, the round-trip time appears in the active buffer as <em>Ping reply from nick: Xms</em>.</td></tr>
+        <tr><td><strong>Version</strong></td><td>Sends a CTCP VERSION request. The reply (client name and version) appears in the <strong>active channel</strong>. See <a href="#user-lookup">Looking up users</a>.</td></tr>
+        <tr><td><strong>Ping</strong></td><td>Sends a CTCP PING with a millisecond timestamp. The round-trip time appears in the <strong>active channel</strong> as <em>Ping reply from nick: Xms</em>. See <a href="#user-lookup">Looking up users</a>.</td></tr>
         <tr><td><strong>Copy Nick</strong></td><td>Copies the nickname to the system clipboard — paste it into the input bar or anywhere else.</td></tr>
         <tr><td><strong>Ignore / Unignore</strong></td><td>Suppress all messages (PRIVMSG, NOTICE, ACTION) from this nick. The label changes to <strong>Unignore</strong> if they are already on your ignore list. Persists in config.</td></tr>
         <tr><td><strong>Kick</strong></td><td>Prompts for an optional reason, then sends <code>KICK #channel nick :reason</code>. Requires op.</td></tr>
@@ -1366,8 +1402,9 @@ channels        = "#debian"</pre>
       <tr><td><code>/op nick</code></td><td>Give someone channel op</td><td><code>/op bob</code></td></tr>
       <tr><td><code>/voice nick</code></td><td>Give someone voice</td><td><code>/voice carol</code></td></tr>
       <tr><td><code>/ban mask</code></td><td>Ban a hostmask</td><td><code>/ban *!*@badhost.net</code></td></tr>
-      <tr><td><code>/ping nick</code></td><td>Measure round-trip time to a nick</td><td><code>/ping bob</code></td></tr>
-      <tr><td><code>/whois nick</code></td><td>Look up a nick's info</td><td><code>/whois bob</code></td></tr>
+      <tr><td><code>/ping nick</code></td><td>Measure round-trip time to a nick — reply appears in the active channel</td><td><code>/ping bob</code></td></tr>
+      <tr><td><code>/whois nick</code></td><td>Full user info (hostname, channels, idle time, account) — reply appears in the active channel</td><td><code>/whois bob</code></td></tr>
+      <tr><td><code>/version nick</code></td><td>Ask what IRC client a nick is running — reply appears in the active channel</td><td><code>/version bob</code></td></tr>
       <tr><td><code>/monitor add &lt;nick&gt;</code></td><td>Watch for a nick coming online</td><td><code>/monitor add alice</code></td></tr>
       <tr><td><code>/monitor del &lt;nick&gt;</code></td><td>Stop watching a nick</td><td><code>/monitor del alice</code></td></tr>
       <tr><td><code>/monitor list</code></td><td>Show your current watch list</td><td></td></tr>
@@ -1395,6 +1432,94 @@ channels        = "#debian"</pre>
       This means IRC operator commands like <code>/REHASH</code>, <code>/SAMODE</code>, <code>/GLOBOPS</code>, <code>/OPER</code>, and any other server-specific command work without needing a <code>/raw</code> prefix.
       Uplink does not need to know about every command your server supports.
     </div>
+
+    <div class="tip">
+      <strong>/whois, /version, and /ping replies appear in your active channel — not the server buffer.</strong>
+      If you run <code>/whois alice</code> while in <code>#linux</code>, the full WHOIS response lands in <code>#linux</code>.
+      Run it from alice's PM window and it lands there instead. See <a href="#user-lookup">Looking up users</a> for full examples.
+    </div>
+  </section>
+
+  <!-- LOOKING UP USERS -->
+  <section id="user-lookup">
+    <h2>Looking up users — /whois, /version, /ping</h2>
+    <p>Three commands let you inspect another user in detail. All three post their results in the <strong>active channel or PM window</strong> — wherever you have focus when the reply arrives. You do not need to switch to the server buffer to see them.</p>
+
+    <h3>/whois — full user profile</h3>
+    <p>Returns everything the server knows about a nick: hostname, real name, which channels they are in, which server they are connected to, idle time, NickServ account, and whether they are on a secure (TLS) connection.</p>
+
+    <pre>/whois alice</pre>
+
+    <p>Example — running <code>/whois alice</code> while in <code>#linux</code>. The entire block appears in <code>#linux</code>:</p>
+    <pre>alice is alice@host.example (Alice Smith)
+alice is in channels: #linux #uplink #general
+alice is on irc.linuxdojo.org (LinuxDojo IRC)
+alice is identified as account: alice
+alice has been idle 2 minutes, signed on 14:30:01
+alice is using a secure TLS connection</pre>
+
+    <p>You can also trigger it from the <strong>user list</strong> or <strong>chat view</strong> — right-click any nick → <strong>Whois</strong>. No need to type the command if you can see the nick.</p>
+
+    <div class="tip">
+      <strong>Want to whois yourself?</strong> <code>/whois yournick yournick</code> (nick twice) forces the server to return your own idle time and away status — useful for debugging whether your away message is set.
+    </div>
+
+    <h3>/version nick — what client are they running?</h3>
+    <p>Sends a CTCP VERSION request to the nick. Their client automatically replies with its name and version string. The reply appears in your active channel.</p>
+
+    <pre>/version alice</pre>
+
+    <p>Example output in the active channel:</p>
+    <pre>VERSION reply from alice: Uplink 0.25.0 / Qt 6.7.2 / Linux x86_64</pre>
+
+    <p>Common replies from other clients:</p>
+    <pre>VERSION reply from bob:   HexChat 2.16.2 Linux [x86_64]
+VERSION reply from carol: Irssi v1.4.5 - https://irssi.org
+VERSION reply from dave:  WeeChat 4.3.1 (compiled Apr 2 2024)
+VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
+
+    <div class="note">
+      <strong>No reply?</strong> The nick may have CTCP replies disabled, be using a client that does not respond, or be a bot. That is normal — just means no version info is available.
+    </div>
+
+    <h3>/ping nick — measure round-trip latency</h3>
+    <p>Sends a CTCP PING with a high-resolution timestamp. When the reply arrives, Uplink calculates the round-trip time and posts it to the active channel.</p>
+
+    <pre>/ping alice</pre>
+
+    <p>Example output:</p>
+    <pre>Ping reply from alice: 23ms</pre>
+
+    <p>What the numbers mean:</p>
+    <table>
+      <thead><tr><th>Result</th><th>What it indicates</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1–50 ms</strong></td><td>Same region or same server — very low latency</td></tr>
+        <tr><td><strong>50–150 ms</strong></td><td>Different country or continent — normal for international chat</td></tr>
+        <tr><td><strong>150–400 ms</strong></td><td>High latency — possibly a satellite connection or slow network path</td></tr>
+        <tr><td><strong>No reply</strong></td><td>The nick has CTCP PING blocked, or their client does not support it</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>All three commands route to your active window.</strong>
+      The rule is simple: whatever channel or PM you are looking at when the reply arrives — that is where it appears. This means you can look up multiple people in sequence from the same channel and all responses stack up there, together.
+
+      <pre># You are in #linux, talking to alice and bob:
+/whois alice     →  full WHOIS block appears in #linux
+/ping alice      →  "Ping reply from alice: 23ms" in #linux
+/version alice   →  "VERSION reply from alice: Uplink 0.25.0" in #linux
+/whois bob       →  full WHOIS block appears in #linux (below alice's)</pre>
+    </div>
+
+    <h3>Using right-click instead of commands</h3>
+    <p>All three are also in the nick right-click menu — right-click any nick in the user list <em>or</em> directly in the chat view, then choose:</p>
+    <ul>
+      <li><strong>Whois</strong> — same as <code>/whois nick</code></li>
+      <li><strong>Version</strong> — same as <code>/version nick</code></li>
+      <li><strong>Ping</strong> — same as <code>/ping nick</code></li>
+    </ul>
+    <p>The reply appears in the active channel regardless of whether you used the command or the menu.</p>
   </section>
 
   <!-- PM -->
