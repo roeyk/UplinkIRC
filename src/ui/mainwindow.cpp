@@ -715,7 +715,12 @@ void MainWindow::applyFontSizes()
     const FontSizes &fs = m_config.ui.fontSizes;
 
     auto makeFont = [&](int pt) {
-        QFont f(fam, pt);
+        QFont f;
+        f.setFamilies({fam,
+                       QStringLiteral("Noto Color Emoji"),
+                       QStringLiteral("Segoe UI Emoji"),
+                       QStringLiteral("Apple Color Emoji")});
+        f.setPointSize(pt);
         f.setStyleHint(QFont::Monospace);
         return f;
     };
