@@ -91,6 +91,26 @@ public:
         s.setHeight(m_height);
         return s;
     }
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const override
+    {
+        const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+        QStyleOptionViewItem opt = option;
+        initStyleOption(&opt, index);
+        opt.icon = QIcon();
+        opt.decorationSize = QSize(0, 0);
+        QStyledItemDelegate::paint(painter, opt, index);
+        if (!icon.isNull()) {
+            const int sz = 14;
+            const QFontMetrics fm(opt.font);
+            const int textEnd = opt.rect.left() + opt.fontMetrics.horizontalAdvance(opt.text)
+                                + fm.horizontalAdvance(QLatin1Char(' '));
+            QRect r(textEnd,
+                    opt.rect.top() + (opt.rect.height() - sz) / 2,
+                    sz, sz);
+            icon.paint(painter, r);
+        }
+    }
 };
 
 class SidebarDelegate : public QStyledItemDelegate {
@@ -721,7 +741,6 @@ void MainWindow::applyFontSizes()
                        QStringLiteral("Segoe UI Emoji"),
                        QStringLiteral("Apple Color Emoji")});
         f.setPointSize(pt);
-        f.setStyleHint(QFont::Monospace);
         return f;
     };
 
@@ -2189,11 +2208,12 @@ void MainWindow::onServerDisconnected(const QString &host)
     for (auto it = m_typingNicks.begin(); it != m_typingNicks.end(); )
         it = it.key().startsWith(prefix) ? m_typingNicks.erase(it) : ++it;
 
-    // Prune bot icon cache for nicks that only existed on this server
     if (auto *sess = m_model->session(host)) {
-        for (auto chIt = sess->channels.cbegin(); chIt != sess->channels.cend(); ++chIt)
-            for (const QString &bn : chIt.value().botNicks)
-                m_botIcons.remove(bn);
+        for (const auto &ch : std::as_const(sess->channels))
+            for (const QString &bn : ch.botNicks)
+                m_botIconIdx.remove(bn);
+        for (const QString &bn : sess->botNicks)
+            m_botIconIdx.remove(bn);
     }
 }
 
@@ -3189,11 +3209,17 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
 {
     const bool isBot = ch->botNicks.contains(e.nick.toLower())
                     || (sess && sess->botNicks.contains(e.nick.toLower()));
-    if (isBot && !m_botIcons.contains(e.nick.toLower()))
-        m_botIcons[e.nick.toLower()] = QRandomGenerator::global()->bounded(2)
-                                       ? QStringLiteral("🤖") : QStringLiteral("👾");
-    const QString label = isBot ? e.display() + " " + m_botIcons[e.nick.toLower()] : e.display();
-    auto *item = new QListWidgetItem(label);
+    auto *item = new QListWidgetItem(e.display());
+    if (isBot) {
+        const QString key = e.nick.toLower();
+        if (!m_botIconIdx.contains(key))
+            m_botIconIdx[key] = QRandomGenerator::global()->bounded(2);
+        const QString svgPath = m_botIconIdx[key] == 0
+            ? QStringLiteral(":/icons/mi-smart-toy.svg")
+            : QStringLiteral(":/icons/mi-alien.svg");
+        item->setIcon(MenuIcons::fromSvg(svgPath,
+                                         QColor(m_theme.valid ? m_theme.accent : "#5588ff")));
+    }
     item->setData(Qt::UserRole, e.nick);
     if (!e.account.isEmpty())
         item->setToolTip("Account: " + e.account);

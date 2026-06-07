@@ -417,9 +417,10 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::modesReceived,   this, &SessionModel::onModesReceived);
     connect(cl, &IrcClient::namesReceived,   this, &SessionModel::onNamesReceived);
     connect(cl, &IrcClient::whoEntryReceived,this, &SessionModel::onWhoEntry);
-    connect(cl, &IrcClient::serverMessage,   this, &SessionModel::onServerMessage);
-    connect(cl, &IrcClient::errorMessage,    this, &SessionModel::onErrorMessage);
-    connect(cl, &IrcClient::ctcpPingReply,   this, &SessionModel::onCtcpPingReply);
+    connect(cl, &IrcClient::serverMessage,     this, &SessionModel::onServerMessage);
+    connect(cl, &IrcClient::errorMessage,      this, &SessionModel::onErrorMessage);
+    connect(cl, &IrcClient::contextualMessage, this, &SessionModel::onContextualMessage);
+    connect(cl, &IrcClient::ctcpPingReply,     this, &SessionModel::onCtcpPingReply);
     connect(cl, &IrcClient::ctcpTimeReply,   this, &SessionModel::onCtcpTimeReply);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
     connect(cl, &IrcClient::typingReceived,  this, &SessionModel::typingReceived);
@@ -882,6 +883,13 @@ void SessionModel::onStandardReply(const QString &host, const QString &channel,
                  ? m_activeChannel : "(server)";
     const MessageType type = (severity == "FAIL") ? MessageType::Error : MessageType::Server;
     postMessage(host, target, Message::make(type, "", text));
+}
+
+void SessionModel::onContextualMessage(const QString &host, const QString &text)
+{
+    const QString target = (host == m_activeHost && !m_activeChannel.isEmpty())
+        ? m_activeChannel : "(server)";
+    postMessage(host, target, Message::make(MessageType::Server, "", text));
 }
 
 void SessionModel::onCtcpPingReply(const QString &host, const QString &nick, qint64 rttMs)

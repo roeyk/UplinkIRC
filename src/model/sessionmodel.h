@@ -148,9 +148,10 @@ private:
     void onNamesReceived  (const QString &host, const QString &channel, const QStringList &nicks);
     void onWhoEntry       (const QString &host, const QString &channel,
                            const QString &nick, const QString &flags);
-    void onServerMessage  (const QString &host, const QString &text);
-    void onErrorMessage   (const QString &host, const QString &text);
-    void onCtcpPingReply  (const QString &host, const QString &nick, qint64 rttMs);
+    void onServerMessage     (const QString &host, const QString &text);
+    void onErrorMessage      (const QString &host, const QString &text);
+    void onContextualMessage (const QString &host, const QString &text);
+    void onCtcpPingReply     (const QString &host, const QString &nick, qint64 rttMs);
     void onCtcpTimeReply  (const QString &host, const QString &nick, const QString &timeStr);
     void onSelfNickChanged(const QString &host, const QString &nick);
     void onHostChanged    (const QString &host, const QString &nick,

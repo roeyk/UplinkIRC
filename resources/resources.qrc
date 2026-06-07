@@ -1,8 +1,8 @@
 <RCC>
     <qresource prefix="/icons">
-        <file alias="uplink-dark.png">icons/uplink-dark.png</file>
-        <file alias="uplink-light.png">icons/uplink-light.png</file>
-        <file alias="about-logo.png">icons/uplink-dark.png</file>
+        <file alias="uplink-dark.png">../assets/uplink-dark.png</file>
+        <file alias="uplink-light.png">../assets/uplink-light.png</file>
+        <file alias="about-logo.png">../assets/uplink-dark.png</file>
         <file alias="banner.png">icons/banner.png</file>
         <file alias="menu.svg">icons/menu.svg</file>
         <file alias="settings.svg">icons/settings.svg</file>
@@ -23,6 +23,8 @@
         <file alias="mi-visibility.svg">icons/mi-visibility.svg</file>
         <file alias="mi-visibility-off.svg">icons/mi-visibility-off.svg</file>
         <file alias="mi-arrow-drop-down.svg">icons/mi-arrow-drop-down.svg</file>
+        <file alias="mi-smart-toy.svg">icons/mi-smart-toy.svg</file>
+        <file alias="mi-alien.svg">icons/mi-alien.svg</file>
     </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>

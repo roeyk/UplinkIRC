@@ -3,6 +3,6 @@ Type=Application
 Name=Uplink
 Comment=Fast, secure IRC client
 Exec=Uplink
-Icon=uplink-irc
+Icon=uplink
 Categories=Network;IRCClient;
 Terminal=false

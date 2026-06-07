@@ -633,7 +633,7 @@ void IrcClient::processLine(const QString &line)
                     const QString payload = stripCrlf(ctcp.section(' ', 1).left(32));
                     sendRaw("NOTICE " + msg.nick + " :\x01PING " + payload + "\x01");
                 }
-            } else if (ctcpCmd == "DCC") {
+            } else if (ctcpCmd == "DCC" && msg.nick != m_nick) {
                 const QString dccType = ctcp.section(' ', 1, 1).toUpper();
                 if (dccType == "SEND") {
                     const QString fn = ctcp.section(' ', 2, 2);
@@ -678,6 +678,9 @@ void IrcClient::processLine(const QString &line)
                 const qint64 sent = ctcp.section(' ', 1).toLongLong(&ok);
                 const qint64 rtt  = QDateTime::currentMSecsSinceEpoch() - sent;
                 emit ctcpPingReply(m_host, msg.nick, ok ? rtt : -1);
+            } else if (ctcpCmd == "VERSION") {
+                emit contextualMessage(m_host,
+                    QString("VERSION reply from %1: %2").arg(msg.nick, ctcp.section(' ', 1)));
             } else if (ctcpCmd == "TIME") {
                 emit ctcpTimeReply(m_host, msg.nick, ctcp.section(' ', 1));
             } else {
@@ -694,7 +697,7 @@ void IrcClient::processLine(const QString &line)
     if (cmd == "TAGMSG" && !msg.params.isEmpty()) {
         const QString target = msg.params[0];
         const QString typing = msg.tags.value("+typing");
-        if (!typing.isEmpty())
+        if (!typing.isEmpty() && msg.nick != m_nick)
             emit typingReceived(m_host, target, msg.nick, typing);
         const QString emoji = msg.tags.value("+draft/react");
         if (!emoji.isEmpty()) {
@@ -1151,14 +1154,14 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
     }
 
-    case 354: { // RPL_WHOSPCRPL (WHOX reply, token 42)
-        // Format: [me, "42", channel, nick, flags, account]
-        if (params.size() >= 6 && params[1] == "42") {
-            const QString channel = params[2];
-            const QString nick    = params[3];
-            const QString flags   = params[4];
-            const QString account = params[5];
-            emit whoEntryReceived(m_host, channel, nick, flags);
+    case 354: { // RPL_WHOSPCRPL — Ergo format: [me, channel, nick, flags, account]
+        if (params.size() >= 4) {
+            const QString channel = params[1];
+            const QString nick    = params[2];
+            const QString flags   = params[3];
+            const QString account = params.size() >= 5 ? params[4] : QString();
+            if (channel.startsWith('#') || channel.startsWith('&'))
+                emit whoEntryReceived(m_host, channel, nick, flags);
             if (!account.isEmpty() && account != "0" && account != "*")
                 emit accountChanged(m_host, nick, account);
         }
@@ -1230,6 +1233,13 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
     case 734: // ERR_MONLISTFULL
         emit errorMessage(m_host, "Monitor list full: " + trailing);
+        break;
+
+    // WHOIS replies — route to active channel/window
+    case 301: case 307: case 311: case 312: case 313:
+    case 317: case 318: case 319: case 320: case 671:
+        if (!trailing.isEmpty())
+            emit contextualMessage(m_host, trailing);
         break;
 
     default:

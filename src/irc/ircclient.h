@@ -88,8 +88,9 @@ signals:
     void whoEntryReceived (const QString &server, const QString &channel,
                            const QString &nick,   const QString &flags);
 
-    void serverMessage  (const QString &server, const QString &text);
-    void errorMessage   (const QString &server, const QString &text);
+    void serverMessage     (const QString &server, const QString &text);
+    void errorMessage      (const QString &server, const QString &text);
+    void contextualMessage (const QString &server, const QString &text);
     void pingRtt        (const QString &host, int ms);
     void reconnecting   (const QString &host);
     void ctcpPingReply  (const QString &server, const QString &nick, qint64 rttMs);
