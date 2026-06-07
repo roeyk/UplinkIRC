@@ -353,7 +353,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     statusBar()->hide();
 
-    QSettings settings("LinuxDojo", "Uplink");
+    QSettings settings("uplink", "uplink");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
 
@@ -407,7 +407,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     connect(qApp, &QApplication::aboutToQuit, this, [this]{
-        QSettings s("LinuxDojo", "Uplink");
+        QSettings s("uplink", "uplink");
         s.setValue("geometry", saveGeometry());
         s.setValue("windowState", saveState());
         s.setValue("nickSplitter", m_chatSplitter->saveState());
