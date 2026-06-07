@@ -330,8 +330,15 @@ QComboBox:focus {
     border-color: {{accent}};
 }
 QComboBox::drop-down {
+    subcontrol-origin: border;
+    subcontrol-position: center right;
     border: none;
-    width: 20px;
+    width: 24px;
+}
+QComboBox::down-arrow {
+    image: url(:/icons/mi-arrow-drop-down.svg);
+    width: 10px;
+    height: 6px;
 }
 QComboBox QAbstractItemView {
     background-color: {{bg}};

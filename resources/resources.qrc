@@ -22,6 +22,7 @@
         <file alias="mi-logout.svg">icons/mi-logout.svg</file>
         <file alias="mi-visibility.svg">icons/mi-visibility.svg</file>
         <file alias="mi-visibility-off.svg">icons/mi-visibility-off.svg</file>
+        <file alias="mi-arrow-drop-down.svg">icons/mi-arrow-drop-down.svg</file>
     </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>
