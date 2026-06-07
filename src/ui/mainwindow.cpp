@@ -357,21 +357,6 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
 
-    // Clamp window to the available screen area. Prevents the window from
-    // starting wider/taller than the screen (e.g. after a geometry save from
-    // a larger display, or when the default width exceeds screen width).
-    if (auto *scr = QGuiApplication::primaryScreen()) {
-        const QRect avail = scr->availableGeometry();
-        QRect w = geometry();
-        if (w.width() > avail.width())   w.setWidth(avail.width() - 40);
-        if (w.height() > avail.height()) w.setHeight(avail.height() - 60);
-        if (w.right()  > avail.right())  w.moveRight(avail.right());
-        if (w.left()   < avail.left())   w.moveLeft(avail.left());
-        if (w.bottom() > avail.bottom()) w.moveBottom(avail.bottom());
-        if (w.top()    < avail.top())    w.moveTop(avail.top());
-        setGeometry(w);
-    }
-
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
     if (settings.contains("sidebarWidth"))
@@ -381,6 +366,19 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     const int         savedPrimarySlot = settings.value("primarySlot", 0).toInt();
 
     QTimer::singleShot(0, this, [this]{
+        // Clamp to available screen after the window is mapped so geometry()
+        // reflects the actual on-screen size (X11 WM ignores pre-show hints).
+        if (auto *scr = screen() ? screen() : QGuiApplication::primaryScreen()) {
+            const QRect avail = scr->availableGeometry();
+            QRect w = geometry();
+            if (w.width()  > avail.width())  w.setWidth(avail.width() - 40);
+            if (w.height() > avail.height()) w.setHeight(avail.height() - 60);
+            if (w.right()  > avail.right())  w.moveRight(avail.right());
+            if (w.left()   < avail.left())   w.moveLeft(avail.left());
+            if (w.bottom() > avail.bottom()) w.moveBottom(avail.bottom());
+            if (w.top()    < avail.top())    w.moveTop(avail.top());
+            setGeometry(w);
+        }
         const int total = m_mainSplitter->width();
         if (total > 0)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
