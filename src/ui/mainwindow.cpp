@@ -73,6 +73,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QScreen>
 #include <QRandomGenerator>
 #include <QStyledItemDelegate>
 #if defined(Q_OS_WIN)
@@ -355,6 +356,22 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     QSettings settings("LinuxDojo", "Uplink");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
+
+    // Clamp window to the available screen area. Prevents the window from
+    // starting wider/taller than the screen (e.g. after a geometry save from
+    // a larger display, or when the default width exceeds screen width).
+    if (auto *scr = QGuiApplication::primaryScreen()) {
+        const QRect avail = scr->availableGeometry();
+        QRect w = geometry();
+        if (w.width() > avail.width())   w.setWidth(avail.width() - 40);
+        if (w.height() > avail.height()) w.setHeight(avail.height() - 60);
+        if (w.right()  > avail.right())  w.moveRight(avail.right());
+        if (w.left()   < avail.left())   w.moveLeft(avail.left());
+        if (w.bottom() > avail.bottom()) w.moveBottom(avail.bottom());
+        if (w.top()    < avail.top())    w.moveTop(avail.top());
+        setGeometry(w);
+    }
+
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
     if (settings.contains("sidebarWidth"))
