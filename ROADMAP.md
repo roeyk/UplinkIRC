@@ -16,7 +16,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Full IRC numerics — 001 welcome, 332/353/366 topic+names, MOTD, ISUPPORT, nick-in-use fallback
 - [x] IRC commands — JOIN, PART, QUIT, NICK, KICK, MODE, TOPIC, PRIVMSG, NOTICE, CTCP ACTION
 - [x] Data model — Message, Channel, ServerSession, SessionModel
-- [x] Message buffer cap — 2000 messages per channel (RAM-flat on long sessions)
+- [x] Message buffer cap — 500 messages per channel (RAM-flat on long sessions)
 - [x] Nick list — sorted by prefix rank (~&@%+), live updates on JOIN/PART/QUIT/NICK
 - [x] Main window UI — toolbar, sidebar (server/channel tree), chat view, nick list panel, topic bar, input bar
 - [x] Nick list panel — embedded on the right side of the chat view in a QSplitter
@@ -28,7 +28,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Open Config / Reload Config — Open Config opens config.toml in system editor; Reload Config restarts the app to apply all changes (v0.17.1: changed from partial hot-reload to full restart)
 - [x] Input commands — /join, /j, /part, /nick, /me, /msg, /quote, /raw, /quit, /ping, /invite, /mode, /op, /deop, /voice, /devoice, /ban, /unban, /clear
 - [x] Raw command passthrough — unrecognized /CMD inputs sent directly as raw IRC lines; /REHASH, /SAMODE, /GLOBOPS etc. work without /quote prefix (v0.16.1)
-- [x] System tray — minimize to tray on close, left-click shows window, right-click menu (Show/Quit)
+- [x] System tray — minimize to tray on close (× button or Ctrl+W), left-click shows window, right-click menu (Show/Quit)
 - [x] Unread badge — tray icon gets red dot on unread messages; green dot for mention/PM when window not focused
 - [x] Theme loader — 55 TOML themes, applies as QSS stylesheet, live switching from hamburger
 - [x] App icon — 3 switchable styles (Node N, Tower, Hub Spoke); SVG dark / PNG light variants; auto-selects based on active theme palette brightness; tray icon locked to hub-spoke SVG (v0.16.2)

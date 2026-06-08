@@ -159,7 +159,7 @@
 | **AppImage (Linux)** | Self-contained single-file executable. Download, `chmod +x`, run. Embeds zsync metadata — update in-place with `appimageupdatetool`. |
 | **Auto-reconnect** | Exponential backoff: 5 s → 10 s → 20 s → 40 s → 60 s. Deliberate `/quit` disables it. |
 | **Signal bars indicator** | 4-bar stair-step widget in the topic bar. Bar count = ping latency (4 bars < 50 ms … 1 bar > 300 ms). Blue flashing = connecting/reconnecting. Red flashing = disconnected. |
-| **System tray** | Minimizes to tray on close. Left-click shows window. Green dot on tray for mention/PM when unfocused; red dot for general unread. |
+| **System tray** | Minimizes to tray on close (**×** button or **Ctrl+W**). Left-click shows window. Green dot on tray for mention/PM when unfocused; red dot for general unread. |
 
 ---
 

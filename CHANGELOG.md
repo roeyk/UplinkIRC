@@ -673,11 +673,38 @@ Known issues:
 Next: no pending items; FreeBSD startup is now correct.
 -->
 
+<!--
+Session 2026-06-08 (continued — documentation audit + Ctrl+W):
+- Added Ctrl+W shortcut to minimize to system tray (no-op when no tray available)
+- Full documentation audit corrected 6 inaccuracies across docs/:
+  - keyboard-shortcuts.md: removed non-existent Ctrl+W entry; updated after real Ctrl+W wired
+  - howto.html: fixed wrong config key show_typing → typing_indicator
+  - index.html: buffer cap 2,000 → 500; IRCv3 cap statuses corrected
+    (batch/chathistory/msgid/sts → active; labeled-response/echo-message → partial)
+  - configuration.md: added missing font_server_header key to example + reference table
+  - commands.md: added /join #channel [key], /leave, /close, /monitor remove
+- In-app docs updated automatically (aliased from same docs/ files)
+Next: no pending items.
+-->
+
 ## v0.25.1 — 2026-06-08
 
 ### Bug Fixes
 
 - **Fix: window opens full-width and cannot be resized on FreeBSD KDE/X11** — On FreeBSD, font metrics inflate the layout minimum of several panels (`rightContent`, `panesSplitter`, `primaryPanel`) to ~2566 px. Qt's `qSmartMinSize()` falls back to `minimumSizeHint()` when no explicit minimum is set, so every resize attempt below that value bounced back immediately, and KWin read the same value from `WM_NORMAL_HINTS` and enforced it. Fixed by setting `setMinimumSize(1, 1)` on `m_mainSplitter` at construction — a non-zero explicit minimum causes `qSmartMinSize()` to use that value instead of the hint, breaking the enforcement chain at the top of the layout hierarchy. A startup correction timer then clamps any KWin session-restored oversized geometry to a sane width. Linux and macOS are unaffected.
+
+### Features
+
+- **Ctrl+W — minimize to system tray** — `Ctrl+W` now hides the window to the system tray, matching the behavior of the close button (×). No-op when no system tray is available.
+
+### Documentation
+
+- Corrected buffer cap in docs from 2,000 → 500 (matches actual `kMessageBufferCap` in code)
+- Fixed wrong config key `show_typing` → `typing_indicator` in howto.html
+- Updated IRCv3 cap statuses: `batch`, `chathistory`, `msgid`, `sts` → active; `labeled-response`, `echo-message` → partial
+- Added missing `font_server_header` config key to configuration.md
+- Added undocumented commands: `/join #channel [key]`, `/leave`, `/close`, `/monitor remove`
+- Keyboard shortcuts: corrected Ctrl+W entry after shortcut was wired
 
 ---
 
