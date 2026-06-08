@@ -116,6 +116,85 @@ public:
     }
 };
 
+class NickDelegate : public QStyledItemDelegate {
+    QColor m_accent;
+    QColor m_hover;
+    QColor m_activeText;
+public:
+    explicit NickDelegate(QObject *parent = nullptr)
+        : QStyledItemDelegate(parent) {}
+
+    void setColors(const QColor &accent, const QColor &hover, const QColor &activeText) {
+        m_accent     = accent;
+        m_hover      = hover;
+        m_activeText = activeText;
+    }
+
+    QSize sizeHint(const QStyleOptionViewItem &option,
+                   const QModelIndex &index) const override
+    {
+        QSize s = QStyledItemDelegate::sizeHint(option, index);
+        s.setHeight(16);
+        return s;
+    }
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option,
+               const QModelIndex &index) const override
+    {
+        const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+        QStyleOptionViewItem opt = option;
+        initStyleOption(&opt, index);
+        opt.icon = QIcon();
+        opt.decorationSize = QSize(0, 0);
+
+        const bool selected = opt.state & QStyle::State_Selected;
+        const bool hovered  = opt.state & QStyle::State_MouseOver;
+
+        if (selected || hovered) {
+            const QColor bg = selected ? m_accent : m_hover;
+            if (bg.isValid()) {
+                const QWidget *w = opt.widget;
+                const QStyle  *s = w ? w->style() : QApplication::style();
+                const QRect textRect = s->subElementRect(QStyle::SE_ItemViewItemText, &opt, w);
+                const QFontMetrics fm(opt.font);
+                const int textW = fm.horizontalAdvance(opt.text);
+                constexpr int hPad = 8;
+                constexpr int vPad = 1;
+                const int textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, w) + 1;
+                const int pillX = textRect.x() + textMargin - hPad;
+                QRect r(pillX,
+                        opt.rect.y() + vPad,
+                        qMin(textW + hPad * 2, opt.rect.right() - pillX),
+                        opt.rect.height() - vPad * 2);
+                painter->save();
+                painter->setRenderHint(QPainter::Antialiasing);
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(bg);
+                painter->drawRoundedRect(r, 6.0, 6.0);
+                painter->restore();
+            }
+        }
+
+        opt.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver);
+        if (selected && m_activeText.isValid()) {
+            opt.palette.setColor(QPalette::All, QPalette::Highlight,       QColor(Qt::transparent));
+            opt.palette.setColor(QPalette::All, QPalette::HighlightedText, m_activeText);
+        }
+        QStyledItemDelegate::paint(painter, opt, index);
+
+        if (!icon.isNull()) {
+            const int sz = 14;
+            const QFontMetrics fm(opt.font);
+            const int textEnd = opt.rect.left() + opt.fontMetrics.horizontalAdvance(opt.text)
+                                + fm.horizontalAdvance(QLatin1Char(' '));
+            QRect r(textEnd,
+                    opt.rect.top() + (opt.rect.height() - sz) / 2,
+                    sz, sz);
+            icon.paint(painter, r);
+        }
+    }
+};
+
 class SidebarDelegate : public QStyledItemDelegate {
     QColor m_accent;
     QColor m_hover;
@@ -609,6 +688,10 @@ void MainWindow::connectPreferences()
             m_sidebarDelegate->setColors(QColor(m_theme.accent),
                                          QColor(m_theme.border),
                                          QColor(m_theme.text));
+        if (m_nickDelegate && m_theme.valid)
+            m_nickDelegate->setColors(QColor(m_theme.accent),
+                                      QColor(m_theme.border),
+                                      QColor(m_theme.text));
         if (m_theme.valid) {
             if (m_primaryTopicBtn) {
                 const bool on = m_primaryTopicBtn->isChecked();
@@ -616,6 +699,11 @@ void MainWindow::connectPreferences()
                     QColor(on ? m_theme.accent : m_theme.placeholder)));
             }
             for (auto *pane : std::as_const(m_panes)) {
+                auto *nd = new NickDelegate(pane->nickList());
+                nd->setColors(QColor(m_theme.accent),
+                              QColor(m_theme.border),
+                              QColor(m_theme.text));
+                pane->nickList()->setItemDelegate(nd);
                 pane->setTopicIcon(
                     makeTopicIcon(QColor(m_theme.placeholder)),
                     makeTopicIcon(QColor(m_theme.accent)));
@@ -949,7 +1037,12 @@ void MainWindow::setupNickPanel()
 {
     m_nickList = new QListWidget;
     m_nickList->setSpacing(0);
-    m_nickList->setItemDelegate(new FixedRowDelegate(16, m_nickList));
+    m_nickDelegate = new NickDelegate(m_nickList);
+    if (m_theme.valid)
+        m_nickDelegate->setColors(QColor(m_theme.accent),
+                                  QColor(m_theme.border),
+                                  QColor(m_theme.text));
+    m_nickList->setItemDelegate(m_nickDelegate);
     m_nickList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_nickList, &QListWidget::customContextMenuRequested,
             this, &MainWindow::onNickListContextMenu);
@@ -2772,7 +2865,14 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
         pane->chatView()->setFont(chatFont);
         pane->chatView()->document()->setDefaultFont(chatFont);
         pane->nickList()->setFont(makeFont(fs.nickList));
-        pane->nickList()->setItemDelegate(new FixedRowDelegate(16, pane->nickList()));
+        {
+            auto *nd = new NickDelegate(pane->nickList());
+            if (m_theme.valid)
+                nd->setColors(QColor(m_theme.accent),
+                              QColor(m_theme.border),
+                              QColor(m_theme.text));
+            pane->nickList()->setItemDelegate(nd);
+        }
         pane->setTopicFont(makeFont(fs.topicBar));
         pane->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
     }

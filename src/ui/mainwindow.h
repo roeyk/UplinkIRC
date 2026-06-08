@@ -15,6 +15,7 @@
 
 class CommandDispatcher;
 class SidebarDelegate;
+class NickDelegate;
 class TrayIcon;
 class SignalBars;
 class AboutDialog;
@@ -148,6 +149,7 @@ private:
     // Widgets
     QTreeWidget      *m_sidebar;
     SidebarDelegate  *m_sidebarDelegate{nullptr};
+    NickDelegate     *m_nickDelegate{nullptr};
     QTextBrowser *m_chatView;
     QPlainTextEdit *m_input;
     QLabel       *m_nickPrefix;

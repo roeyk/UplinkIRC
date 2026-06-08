@@ -481,6 +481,13 @@ QWidget#nickPanel QListWidget {
     background-color: {{bufferBg}};
     color: {{text}};
 }
+QWidget#nickPanel QListWidget::item:selected {
+    background: transparent;
+    color: {{sidebarActive}};
+}
+QWidget#nickPanel QListWidget::item:hover {
+    background: transparent;
+}
 QWidget#nickPanelHeader QToolButton {
     background-color: transparent;
     color: {{text}};
