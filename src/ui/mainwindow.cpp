@@ -354,33 +354,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     statusBar()->hide();
 
     QSettings settings("uplink", "uplink");
-
-    // One-time migration from the old LinuxDojo/Uplink settings path (pre-v0.25).
-    if (!settings.contains("geometry")) {
-        QSettings old("LinuxDojo", "Uplink");
-        if (old.contains("geometry")) {
-            settings.setValue("geometry",     old.value("geometry"));
-            settings.setValue("windowState",  old.value("windowState"));
-            settings.setValue("nickSplitter", old.value("nickSplitter"));
-            settings.setValue("sidebarWidth", old.value("sidebarWidth"));
-            settings.setValue("panes",        old.value("panes"));
-            settings.setValue("primarySlot",  old.value("primarySlot"));
-        }
-    }
-
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
-
-    // Clamp size synchronously before show() so the WM receives a valid size
-    // in the initial MapRequest.  X11 WMs may override position but respect
-    // the requested size, so this is the reliable place to fix width/height.
-    if (auto *scr = QGuiApplication::primaryScreen()) {
-        const QRect avail = scr->availableGeometry();
-        QSize sz = size();
-        if (sz.width()  > avail.width())  sz.setWidth(avail.width()  - 40);
-        if (sz.height() > avail.height()) sz.setHeight(avail.height() - 60);
-        resize(sz);
-    }
 
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
@@ -391,10 +366,12 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     const int         savedPrimarySlot = settings.value("primarySlot", 0).toInt();
 
     QTimer::singleShot(0, this, [this]{
-        // Clamp position after WM applies initial placement.
+        // Clamp to available screen after show() so screen() is valid.
         if (auto *scr = screen() ? screen() : QGuiApplication::primaryScreen()) {
             const QRect avail = scr->availableGeometry();
             QRect w = geometry();
+            if (w.width()  > avail.width())  w.setWidth(avail.width()  - 40);
+            if (w.height() > avail.height()) w.setHeight(avail.height() - 60);
             if (w.right()  > avail.right())  w.moveRight(avail.right());
             if (w.left()   < avail.left())   w.moveLeft(avail.left());
             if (w.bottom() > avail.bottom()) w.moveBottom(avail.bottom());
