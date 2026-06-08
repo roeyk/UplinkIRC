@@ -991,3 +991,28 @@ Message deletion uses the IRCv3 `draft/message-redaction` capability. If the oth
 ### The "Delete" option doesn't appear on my messages
 
 Two conditions must both be true: the message must be one you sent, and the server must have acknowledged the `draft/message-redaction` capability during the CAP handshake. If either condition fails, the option is not shown. Check the server buffer on connect — if you don't see the CAP listed, the server doesn't support it.
+
+### The window opens too wide and I can't resize it
+
+This can happen on screens narrower than the default 1100 px window width, or when saved geometry from a larger display is restored. Fixed in v0.25.1 — upgrade and delete the old settings file to start fresh:
+
+```bash
+# Remove old misnamed file (leftover from earlier builds)
+rm -f ~/.config/LinuxDojo/Uplink.conf
+
+# Remove new file too so geometry starts from scratch
+rm -f ~/.config/uplink/uplink.conf
+```
+
+Then relaunch. The window will clamp itself to the available screen area.
+
+### Where does Uplink store window geometry and layout?
+
+Window geometry, sidebar width, splitter positions, and pane layout are saved in:
+
+| Platform | Path |
+|---|---|
+| Linux / FreeBSD / macOS | `~/.config/uplink/uplink.conf` |
+| Windows | `%APPDATA%\uplink\uplink\uplink.conf` |
+
+This is separate from `config.toml` (which holds your server/UI preferences). Deleting `uplink.conf` resets the window layout to defaults without affecting any other settings.

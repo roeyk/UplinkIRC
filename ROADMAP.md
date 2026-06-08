@@ -172,7 +172,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## Planned — Polish + Distribution
 
 - [ ] Virtual scrolling — render only visible messages (performance on busy channels)
-- [x] Window state persistence — sidebar width and nick panel width saved via QSettings on quit, restored on launch; sidebar is drag-resizable
+- [x] Window state persistence — sidebar width and nick panel width saved via QSettings on quit, restored on launch; sidebar is drag-resizable; geometry clamped to available screen on startup (v0.25.1); settings path corrected to ~/.config/uplink/uplink.conf (v0.25.1)
 - [x] Nick panel width persistence — QSplitter position saved via QSettings on quit, restored on launch
 - [x] Config editor UI — Manage Servers dialog covers server-level editing
 - [x] Emoji picker — searchable popup grid with :shortcode: autocomplete and auto-substitution

@@ -467,6 +467,7 @@
     <li><a href="#ts-nick">Nick in use</a></li>
     <li><a href="#ts-themes">Theme not loading</a></li>
     <li><a href="#ts-previews">Link previews</a></li>
+    <li><a href="#ts-window-size">Window too wide</a></li>
   </ul>
 </nav>
 
@@ -2098,6 +2099,36 @@ theme = "Catppuccin-Mocha"   # ✗ won't load — wrong case</pre>
 
     <h3>Previews disappeared when I switched channels</h3>
     <p>Preview cards are stored per-channel and reinjected when you switch back. If a card is missing after switching back, the fetch may still be in progress — wait a moment and it will appear.</p>
+  </section>
+
+  <section id="ts-window-size">
+    <h2>Troubleshooting — Window too wide to resize</h2>
+
+    <h3>The window opens wider than my screen and I can't make it smaller</h3>
+    <p>This happens when the saved window geometry is wider than the available screen area — common on FreeBSD or after moving to a smaller display. Uplink v0.25.1 fixes this by clamping the window to the screen after it is shown.</p>
+
+    <p>If you are already on v0.25.1 and still see the issue, delete the saved layout file so geometry starts fresh:</p>
+    <div class="tabs">
+      <div class="tab-labels">
+        <div class="tab-label active" onclick="switchTab(this,'wsize-linux')">Linux / FreeBSD</div>
+        <div class="tab-label" onclick="switchTab(this,'wsize-win')">Windows</div>
+      </div>
+      <div class="tab-panel active" id="tab-wsize-linux">
+<pre><code># Remove any leftover file from older builds
+rm -f ~/.config/LinuxDojo/Uplink.conf
+
+# Remove the current layout file (geometry resets to defaults)
+rm -f ~/.config/uplink/uplink.conf</code></pre>
+      </div>
+      <div class="tab-panel" id="tab-wsize-win">
+<pre><code>del "%APPDATA%\uplink\uplink\uplink.conf"</code></pre>
+      </div>
+    </div>
+    <p>Relaunch — the window will fit the screen. Your server config and preferences in <code>config.toml</code> are unaffected.</p>
+
+    <div class="note">
+      <strong>Note:</strong> Window geometry, sidebar width, and pane layout are stored separately from <code>config.toml</code> in <code>~/.config/uplink/uplink.conf</code> (Linux/FreeBSD/macOS) or <code>%APPDATA%\uplink\uplink\uplink.conf</code> (Windows). Deleting it only resets the window layout.
+    </div>
   </section>
 
 </main>

@@ -620,6 +620,45 @@ Next: no pending items; app is at v0.24.2 with all known bugs resolved.
 Icons are done. No new features planned this session.
 -->
 
+<!--
+Session: 2026-06-07 (patch — FreeBSD window geometry + QSettings path)
+
+What changed:
+- Fixed window starting ultra-wide and unresizable on FreeBSD (and any screen narrower
+  than the saved or default 1100px geometry). First attempt ran setGeometry() in the
+  constructor (pre-show) which X11 window managers silently ignore on first map. Moved
+  the bounds clamp into the existing QTimer::singleShot(0) callback that fires after
+  show() when geometry() reflects the real on-screen size.
+- Renamed QSettings path from QSettings("LinuxDojo","Uplink") → QSettings("uplink","uplink").
+  Old path wrote to ~/.config/LinuxDojo/Uplink.conf — a leftover from DojoIRC.
+  New path writes to ~/.config/uplink/uplink.conf alongside config.toml.
+
+Bugs fixed:
+- Window too wide to resize on FreeBSD — geometry clamping was firing before the
+  X11 window manager mapped the window; moved to post-show timer.
+- Wrong QSettings location — ~/.config/LinuxDojo/Uplink.conf should be
+  ~/.config/uplink/uplink.conf.
+
+Known issues:
+- Existing users will lose saved window geometry/splitter state on first run after
+  this update (old LinuxDojo path is no longer read). This is acceptable — the new
+  defaults are correct and the geometry fix makes a fresh start the right behavior.
+
+Next: no pending items; FreeBSD startup is now correct.
+-->
+
+## v0.25.1 — 2026-06-07
+
+### Bug Fixes
+
+- **Fix: window starts ultra-wide and unresizable on FreeBSD** — The geometry bounds clamp was placed in the `MainWindow` constructor, before `show()`. X11 window managers ignore `setGeometry()` on unmapped windows, so the clamp had no effect and the window could appear wider than the screen with no way to resize it. Moved the clamp into the existing `QTimer::singleShot(0)` callback that fires after the window is mapped, where `geometry()` returns the actual on-screen size.
+
+- **Fix: window state stored in wrong location** — `QSettings("LinuxDojo", "Uplink")` wrote window geometry and splitter positions to `~/.config/LinuxDojo/Uplink.conf`, a path inherited from DojoIRC. Changed to `QSettings("uplink", "uplink")` so state is stored at `~/.config/uplink/uplink.conf` alongside `config.toml`.
+
+  **Note:** Existing users will lose saved window geometry and splitter positions on first launch after this update — the old path is no longer read. The geometry fix makes starting fresh the correct behavior.
+
+---
+
 ## v0.25.0 — 2026-06-07
 
 ### Bug Fixes
