@@ -3371,6 +3371,32 @@ Next priorities:
   - In-app update check button (trigger appimageupdatetool or show version badge)
 -->
 
+<!--
+Session summary — 2026-06-08 (nick list pill highlights)
+
+Added pill-shaped selection/hover highlights to the nick list, matching the
+sidebar's SidebarDelegate style.
+
+Changes:
+- New NickDelegate class in mainwindow.cpp: draws a rounded-rect pill behind
+  the selected/hovered nick, sized to text width + 8px horizontal padding.
+  Preserves the existing icon-after-nick drawing from FixedRowDelegate.
+- m_nickDelegate tracked on MainWindow so colors update when the theme changes.
+  Pane nick lists also get a fresh NickDelegate on theme change and on pane open.
+- QSS fix: QListWidget::item:selected/hover was painting a solid background that
+  covered the delegate. Added QWidget#nickPanel QListWidget::item:selected/hover
+  { background: transparent } rules (same approach the sidebar already uses for
+  QTreeWidget::item) so the delegate shows through.
+- Pill geometry tuned: vPad=1 (14px tall in a 16px row), border-radius=6 — flat
+  sides, proper oblong pill rather than a lens shape.
+
+No bugs found or regressions introduced.
+No open issues.
+
+Next priorities: /list dialog, window full-width bug on FreeBSD X11 (diagnostic
+build still on main — needs output from user on X11).
+-->
+
 ## [0.25.1] — 2026-06-08
 
 ### Added

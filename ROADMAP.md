@@ -197,6 +197,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Event message visual polish — join/part/quit/nick lines render at 82% font size; part/quit/kick color softened to #e06b6b for dark backgrounds (v0.18.2)
 - [x] QSS visual polish overhaul — rounded inputs with focus rings, themed checkboxes/radio/tabs/tooltips, floating scrollbars, pill-shaped sidebar selection, menu border-radius and separators (v0.19.0)
 - [x] Sidebar fitted pill highlight — custom SidebarDelegate draws rounded rect sized to text width; no full-row highlight; hover shift eliminated; selected text always readable (v0.19.0)
+- [x] Nick list pill highlight — NickDelegate mirrors SidebarDelegate; selected/hovered nicks get pill-shaped background sized to text width; QSS transparent-background fix so delegate shows through; vPad=1 radius=6 for proper oblong pill (v0.25.1)
 - [x] Topic toggle button theme integration — both primary panel and channel pane topic buttons use #topicToggle QSS rule; removed palette(mid)/palette(highlight) inline stylesheets; always visible in single-window mode (v0.19.0)
 - [x] Topic button speech bubble icon — custom QPainter icon replaces text label; muted when collapsed, accent when open; ChannelPane::setTopicIcon() API; updates on theme change (v0.19.1)
 - [x] Floating rounded input bar — separator line removed; bar blends into chat area via bufferBg; QLineEdit gets border-radius pill shape (v0.19.1)
