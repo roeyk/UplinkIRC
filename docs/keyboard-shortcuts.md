@@ -33,7 +33,7 @@ Slash command completion works the same way:
 
 | Shortcut | Action |
 |---|---|
-| **Ctrl+W** | Minimize to system tray (does not quit; window reappears on tray left-click) |
+| **Close button (×)** | Minimize to system tray — Uplink keeps running in the background; left-click the tray icon to restore the window |
 | **Ctrl+F** | Open the message search bar in the current buffer |
 | **Escape** (search bar open) | Close the search bar and clear the highlight |
 | **Escape** (reply pending) | Cancel the pending reply without sending |

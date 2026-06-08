@@ -595,7 +595,7 @@
       <div class="feature-card">
         <span class="feature-icon">🧱</span>
         <h3>Stable memory</h3>
-        <p>Message buffer capped at 2,000 per channel. RAM usage stays flat across long sessions on busy networks.</p>
+        <p>Message buffer capped at 500 per channel. RAM usage stays flat across long sessions on busy networks.</p>
       </div>
 
       <div class="feature-card">
@@ -693,17 +693,17 @@
         </div>
       </div>
       <div class="cap-item">
-        <span class="cap-status partial"></span>
+        <span class="cap-status active"></span>
         <div>
           <div class="cap-name">batch</div>
-          <div class="cap-desc">Negotiated — grouping in progress</div>
+          <div class="cap-desc">Full batch processing — multiline, chathistory, and netsplit types</div>
         </div>
       </div>
       <div class="cap-item">
         <span class="cap-status partial"></span>
         <div>
           <div class="cap-name">labeled-response</div>
-          <div class="cap-desc">Negotiated — label matching planned</div>
+          <div class="cap-desc">Negotiated — label tracking planned</div>
         </div>
       </div>
       <div class="cap-item">
@@ -721,31 +721,31 @@
         </div>
       </div>
       <div class="cap-item">
-        <span class="cap-status planned"></span>
+        <span class="cap-status active"></span>
         <div>
           <div class="cap-name">chathistory</div>
-          <div class="cap-desc">Bouncer history replay on join</div>
+          <div class="cap-desc">History replay on connect — bouncer and Ergo supported</div>
         </div>
       </div>
       <div class="cap-item">
-        <span class="cap-status planned"></span>
+        <span class="cap-status partial"></span>
         <div>
           <div class="cap-name">echo-message</div>
-          <div class="cap-desc">Server-confirmed sent timestamps</div>
+          <div class="cap-desc">Negotiated — server echo of sent messages</div>
         </div>
       </div>
       <div class="cap-item">
-        <span class="cap-status planned"></span>
+        <span class="cap-status active"></span>
         <div>
           <div class="cap-name">msgid</div>
-          <div class="cap-desc">Unique message IDs for all messages</div>
+          <div class="cap-desc">Unique message IDs — used for reactions and reply threading</div>
         </div>
       </div>
       <div class="cap-item">
-        <span class="cap-status planned"></span>
+        <span class="cap-status active"></span>
         <div>
           <div class="cap-name">sts</div>
-          <div class="cap-desc">Strict Transport Security</div>
+          <div class="cap-desc">Strict Transport Security — auto-upgrades plain connections to TLS</div>
         </div>
       </div>
     </div>

@@ -47,6 +47,7 @@ font_topic_bar    = 10
 font_input_nick   = 10
 font_input        = 10
 font_typing       = 9
+font_server_header = 9   # server/section header rows in the sidebar
 font_emoji        = 16   # emoji size in chat messages (independent of font_chat)
 
 [privacy]
@@ -107,6 +108,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `font_input_nick` | integer | `10` | Font size (pt) for your nick label next to the input |
 | `font_input` | integer | `10` | Font size (pt) for the message input box |
 | `font_typing` | integer | `9` | Font size (pt) for the "nick is typing…" indicator |
+| `font_server_header` | integer | `9` | Font size (pt) for server/section header rows in the sidebar |
 | `font_emoji` | integer | `16` | Font size (pt) for emoji characters in chat messages — independent of `font_chat` so emoji stay readable at small font sizes |
 
 All font sizes and the theme can be changed live from **Preferences → Font Config...** and the theme list in **Preferences** without editing the file.

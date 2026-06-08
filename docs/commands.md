@@ -9,9 +9,12 @@ Type any of these commands in the message input box and press Enter.
 | Command | Description |
 |---|---|
 | `/join #channel` | Join a channel |
+| `/join #channel [key]` | Join a key-protected channel |
 | `/j #channel` | Short alias for `/join` |
 | `/part [#channel]` | Leave a channel. Defaults to the current channel if omitted |
 | `/part #channel reason` | Leave with a part message |
+| `/leave` | Alias for `/part` — leaves the current channel |
+| `/close` | Alias for `/part` — leaves the current channel (or closes a PM buffer) |
 | `/topic` | Show the current channel topic |
 | `/topic <text>` | Set the current channel topic |
 | `/topic #channel <text>` | Set the topic on a specific channel |
@@ -30,6 +33,7 @@ Type any of these commands in the message input box and press Enter.
 | `/ignored` | List all currently ignored nicks |
 | `/monitor add <nick>` | Add a nick to the online/offline watch list (IRCv3 MONITOR) |
 | `/monitor del <nick>` | Remove a nick from the watch list |
+| `/monitor remove <nick>` | Alias for `/monitor del` |
 | `/monitor list` | Show all watched nicks |
 | `/monitor clear` | Clear the entire watch list |
 | `/monitor status` | Ask the server for current online/offline status |
@@ -39,9 +43,12 @@ Type any of these commands in the message input box and press Enter.
 
 ```
 /join #linux
+/join #private secretkey
 /j #uplink
 /part
 /part #linux see you later
+/leave
+/close
 /topic new topic here
 /topic #uplink Welcome to the server
 /kick baduser spamming
