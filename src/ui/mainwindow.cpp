@@ -356,8 +356,14 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     QSettings settings("uplink", "uplink");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
-    // Never start maximized — the saved pre-maximize geometry may be off-screen.
     setWindowState(windowState() & ~Qt::WindowMaximized);
+    // If the restored normal-mode size fills ≥80% of the screen the right edge
+    // ends up at or near the screen boundary — WM can't offer a grab handle.
+    // Reset to default so the window always opens with visible resize margins.
+    if (auto *scr = QGuiApplication::primaryScreen()) {
+        if (width() > scr->availableGeometry().width() * 8 / 10)
+            resize(kDefaultWindowW, kDefaultWindowH);
+    }
 
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
@@ -372,8 +378,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         if (auto *scr = screen() ? screen() : QGuiApplication::primaryScreen()) {
             const QRect avail = scr->availableGeometry();
             QRect w = geometry();
-            if (w.width()  > avail.width())  w.setWidth(avail.width()  - 40);
-            if (w.height() > avail.height()) w.setHeight(avail.height() - 60);
+            if (w.width()  > avail.width()  - 80) w.setWidth(avail.width()  - 100);
+            if (w.height() > avail.height() - 60) w.setHeight(avail.height() - 80);
             if (w.right()  > avail.right())  w.moveRight(avail.right());
             if (w.left()   < avail.left())   w.moveLeft(avail.left());
             if (w.bottom() > avail.bottom()) w.moveBottom(avail.bottom());
