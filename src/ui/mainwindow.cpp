@@ -356,6 +356,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     QSettings settings("uplink", "uplink");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
+    // Never start maximized — the saved pre-maximize geometry may be off-screen.
+    setWindowState(windowState() & ~Qt::WindowMaximized);
 
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
