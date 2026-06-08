@@ -396,25 +396,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         }
 
         if (qtMaximized || tooWide) {
-            QTimer::singleShot(100, this, [this]() {
-                QScreen *scr2 = screen() ? screen() : QGuiApplication::primaryScreen();
-                if (scr2) {
-                    const QRect avail = scr2->availableGeometry();
-                    QRect w = geometry();
-                    if (w.width() > avail.width() * 8 / 10) w.setWidth(kDefaultWindowW);
-                    if (w.height() > avail.height() - 60)   w.setHeight(avail.height() - 80);
-                    if (w.right()  > avail.right())  w.moveRight(avail.right());
-                    if (w.left()   < avail.left())   w.moveLeft(avail.left());
-                    if (w.bottom() > avail.bottom()) w.moveBottom(avail.bottom());
-                    if (w.top()    < avail.top())    w.moveTop(avail.top());
-                    setMinimumSize(1, 1);
-                    setGeometry(w);
-                }
-                const int total = m_mainSplitter->width();
-                if (total > 0)
-                    m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-                if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
-            });
+            QTimer::singleShot(100, this, &MainWindow::correctStartupGeometry);
             return;
         }
 
@@ -475,6 +457,27 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 }
 
 MainWindow::~MainWindow() = default;
+
+void MainWindow::correctStartupGeometry()
+{
+    QScreen *scr = screen() ? screen() : QGuiApplication::primaryScreen();
+    if (scr) {
+        const QRect avail = scr->availableGeometry();
+        QRect w = geometry();
+        if (w.width() > avail.width() * 8 / 10) w.setWidth(kDefaultWindowW);
+        if (w.height() > avail.height() - 60)   w.setHeight(avail.height() - 80);
+        if (w.right()  > avail.right())  w.moveRight(avail.right());
+        if (w.left()   < avail.left())   w.moveLeft(avail.left());
+        if (w.bottom() > avail.bottom()) w.moveBottom(avail.bottom());
+        if (w.top()    < avail.top())    w.moveTop(avail.top());
+        setMinimumSize(1, 1);
+        setGeometry(w);
+    }
+    const int total = m_mainSplitter->width();
+    if (total > 0)
+        m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
+    if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
+}
 
 // ---------------------------------------------------------------------------
 // Setup
