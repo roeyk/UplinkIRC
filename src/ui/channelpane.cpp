@@ -19,6 +19,14 @@
 #include <QDesktopServices>
 #include <QUrl>
 
+namespace {
+class PaneBrowser : public QTextBrowser {
+public:
+    using QTextBrowser::QTextBrowser;
+    QSize minimumSizeHint() const override { return QSize(1, 1); }
+};
+}
+
 ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *parent)
     : QWidget(parent), m_host(host), m_channel(channel)
 {
@@ -99,7 +107,7 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     });
 
     // Chat view + nick list
-    m_chatView = new QTextBrowser;
+    m_chatView = new PaneBrowser;
     m_chatView->setReadOnly(true);
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
     m_chatView->setOpenLinks(false);

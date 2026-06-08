@@ -25,6 +25,7 @@
 #include <QClipboard>
 #include <QCloseEvent>
 #include <QKeyEvent>
+#include <QResizeEvent>
 #include <QToolBar>
 #include <QToolButton>
 #include <QMenu>
@@ -219,6 +220,7 @@ protected:
 class ChatBrowser : public QTextBrowser {
 public:
     using QTextBrowser::QTextBrowser;
+    QSize minimumSizeHint() const override { return QSize(1, 1); }
 protected:
     QVariant loadResource(int type, const QUrl &name) override {
         if (type == QTextDocument::ImageResource) {
@@ -364,6 +366,9 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         if (width() > scr->availableGeometry().width() * 8 / 10)
             resize(kDefaultWindowW, kDefaultWindowH);
     }
+    // Pre-show width cap: limits WM_NORMAL_HINTS.max_width so the WM cannot map
+    // the window wider than our target.  Released in the post-show timer.
+    setMaximumWidth(width() + 20);
 
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());
@@ -374,11 +379,48 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     const int         savedPrimarySlot = settings.value("primarySlot", 0).toInt();
 
     QTimer::singleShot(0, this, [this]{
-        // Clamp to available screen after show() so screen() is valid.
-        if (auto *scr = screen() ? screen() : QGuiApplication::primaryScreen()) {
+        // Release the pre-show width cap.
+        setMaximumWidth(QWIDGETSIZE_MAX);
+
+        auto *scr = screen() ? screen() : QGuiApplication::primaryScreen();
+        const bool qtMaximized = windowState() & Qt::WindowMaximized;
+        const bool tooWide     = scr && width() > scr->availableGeometry().width() * 8 / 10;
+
+        if (qtMaximized) {
+            setWindowState(Qt::WindowNoState);
+        } else if (tooWide) {
+            // KWin session-restored a wider-than-screen geometry that Qt doesn't
+            // surface as Maximized. Cycle state so KWin clears the saved size.
+            setWindowState(Qt::WindowMaximized);
+            setWindowState(Qt::WindowNoState);
+        }
+
+        if (qtMaximized || tooWide) {
+            QTimer::singleShot(100, this, [this]{
+                if (auto *scr2 = screen() ? screen() : QGuiApplication::primaryScreen()) {
+                    const QRect avail = scr2->availableGeometry();
+                    QRect w = geometry();
+                    if (w.width() > avail.width() * 8 / 10) w.setWidth(kDefaultWindowW);
+                    if (w.height() > avail.height() - 60)   w.setHeight(avail.height() - 80);
+                    if (w.right()  > avail.right())  w.moveRight(avail.right());
+                    if (w.left()   < avail.left())   w.moveLeft(avail.left());
+                    if (w.bottom() > avail.bottom()) w.moveBottom(avail.bottom());
+                    if (w.top()    < avail.top())    w.moveTop(avail.top());
+                    setMinimumSize(1, 1);
+                    setGeometry(w);
+                }
+                const int total = m_mainSplitter->width();
+                if (total > 0)
+                    m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
+                if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
+            });
+            return;
+        }
+
+        // Normal path: clamp position/size immediately.
+        if (scr) {
             const QRect avail = scr->availableGeometry();
             QRect w = geometry();
-            if (w.width()  > avail.width()  - 80) w.setWidth(avail.width()  - 100);
             if (w.height() > avail.height() - 60) w.setHeight(avail.height() - 80);
             if (w.right()  > avail.right())  w.moveRight(avail.right());
             if (w.left()   < avail.left())   w.moveLeft(avail.left());
@@ -1223,6 +1265,7 @@ void MainWindow::setupChatArea()
     m_mainSplitter->addWidget(m_rightContent);
     m_mainSplitter->setStretchFactor(0, 0);
     m_mainSplitter->setStretchFactor(1, 1);
+    m_mainSplitter->setMinimumSize(1, 1);
 
     auto *outer      = new QWidget;
     auto *outerVbox  = new QVBoxLayout(outer);
@@ -3452,10 +3495,35 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+}
+
 void MainWindow::changeEvent(QEvent *event)
 {
     if (event->type() == QEvent::ActivationChange && isActiveWindow() && m_tray)
         m_tray->setNotify(false);
+
+    if (event->type() == QEvent::WindowStateChange) {
+        const auto *sc = static_cast<QWindowStateChangeEvent *>(event);
+        const bool wasMaximized = sc->oldState() & Qt::WindowMaximized;
+        const bool isNormal     = !(windowState() & Qt::WindowMaximized);
+        if (wasMaximized && isNormal) {
+            QTimer::singleShot(0, this, [this]{
+                auto *scr = screen() ? screen() : QGuiApplication::primaryScreen();
+                if (!scr) return;
+                const QRect avail = scr->availableGeometry();
+                QRect w = geometry();
+                if (w.width() > avail.width() - 80)
+                    w.setWidth(qMin(kDefaultWindowW, avail.width() - 100));
+                if (w.right()  > avail.right())  w.moveRight(avail.right());
+                if (w.left()   < avail.left())   w.moveLeft(avail.left());
+                setGeometry(w);
+            });
+        }
+    }
+
     QMainWindow::changeEvent(event);
 }
 

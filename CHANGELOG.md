@@ -3,6 +3,32 @@
 ---
 
 <!--
+Session summary — 2026-06-07 (window width bug debugging — unresolved)
+
+Investigating persistent full-width window on FreeBSD KDE Plasma 6 / X11 / KWin.
+Symptoms: window opens at full screen width, user cannot resize it narrower.
+Deleting ~/.config/uplink/uplink.conf has no effect.
+
+Two attempted fixes (commits 7fb1b48, 05d9624), both ineffective:
+  1. setMaximumWidth(width()+20) before show() to cap WM_NORMAL_HINTS.max_width
+  2. Detect tooWide/qtMaximized in singleShot(0) and cycle _NET_WM_STATE atoms
+
+Current theory (unconfirmed): singleShot(0) releases the max_width cap and checks
+width() BEFORE KWin's ConfigureNotify arrives — so tooWide is false, normal path
+runs, then KWin expands the window after the timer exits with nothing left to stop it.
+
+Diagnostic build pushed (commit 9fd9d69): qWarning() lines trace width before/after
+max_width release, windowState, minimumSizeHint, and first 8 resizeEvents to stderr.
+
+Next step: user switching to X11 on Linux to reproduce; run:
+  ./build/Uplink 2>&1 | head -30
+Then paste the Uplink diag[] and resizeEvent[] lines to determine root cause.
+
+Nothing shipped this session. Diagnostic commit is temporary and should be reverted
+once root cause is confirmed and the real fix is written.
+-->
+
+<!--
 Session summary — 2026-06-05 (keychain SASL password corruption fix)
 
 Fixed a bug where opening the Edit Server dialog and saving without changing a
