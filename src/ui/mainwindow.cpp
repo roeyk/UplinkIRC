@@ -397,7 +397,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
         if (qtMaximized || tooWide) {
             QTimer::singleShot(100, this, [this]{
-                if (auto *scr2 = screen() ? screen() : QGuiApplication::primaryScreen()) {
+                auto *scr2 = screen() ? screen() : QGuiApplication::primaryScreen();
+                if (scr2) {
                     const QRect avail = scr2->availableGeometry();
                     QRect w = geometry();
                     if (w.width() > avail.width() * 8 / 10) w.setWidth(kDefaultWindowW);
