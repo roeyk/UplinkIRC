@@ -3371,6 +3371,13 @@ Next priorities:
   - In-app update check button (trigger appimageupdatetool or show version badge)
 -->
 
+## [0.25.1] — 2026-06-08
+
+### Added
+- **Nick list pill highlights** — selected and hovered users in the nick list now show the same pill-shaped highlight used in the server/channel sidebar, using the theme accent and hover colours.
+
+---
+
 ## [0.8.1] — 2026-05-30
 
 ### Fixed
