@@ -396,7 +396,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         }
 
         if (qtMaximized || tooWide) {
-            QTimer::singleShot(100, this, [this]{
+            QTimer::singleShot(100, this, [this]() {
                 QScreen *scr2 = screen() ? screen() : QGuiApplication::primaryScreen();
                 if (scr2) {
                     const QRect avail = scr2->availableGeometry();
