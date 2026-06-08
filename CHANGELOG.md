@@ -673,15 +673,11 @@ Known issues:
 Next: no pending items; FreeBSD startup is now correct.
 -->
 
-## v0.25.1 — 2026-06-07
+## v0.25.1 — 2026-06-08
 
 ### Bug Fixes
 
-- **Fix: window starts ultra-wide and unresizable on FreeBSD** — The geometry bounds clamp was placed in the `MainWindow` constructor, before `show()`. X11 window managers ignore `setGeometry()` on unmapped windows, so the clamp had no effect and the window could appear wider than the screen with no way to resize it. Moved the clamp into the existing `QTimer::singleShot(0)` callback that fires after the window is mapped, where `geometry()` returns the actual on-screen size.
-
-- **Fix: window state stored in wrong location** — `QSettings("LinuxDojo", "Uplink")` wrote window geometry and splitter positions to `~/.config/LinuxDojo/Uplink.conf`, a path inherited from DojoIRC. Changed to `QSettings("uplink", "uplink")` so state is stored at `~/.config/uplink/uplink.conf` alongside `config.toml`.
-
-  **Note:** Existing users will lose saved window geometry and splitter positions on first launch after this update — the old path is no longer read. The geometry fix makes starting fresh the correct behavior.
+- **Fix: window opens full-width and cannot be resized on FreeBSD KDE/X11** — On FreeBSD, font metrics inflate the layout minimum of several panels (`rightContent`, `panesSplitter`, `primaryPanel`) to ~2566 px. Qt's `qSmartMinSize()` falls back to `minimumSizeHint()` when no explicit minimum is set, so every resize attempt below that value bounced back immediately, and KWin read the same value from `WM_NORMAL_HINTS` and enforced it. Fixed by setting `setMinimumSize(1, 1)` on `m_mainSplitter` at construction — a non-zero explicit minimum causes `qSmartMinSize()` to use that value instead of the hint, breaking the enforcement chain at the top of the layout hierarchy. A startup correction timer then clamps any KWin session-restored oversized geometry to a sane width. Linux and macOS are unaffected.
 
 ---
 
