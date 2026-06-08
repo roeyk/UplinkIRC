@@ -76,6 +76,7 @@
 #include <QNetworkRequest>
 #include <QScreen>
 #include <QRandomGenerator>
+#include <QShortcut>
 #include <QStyledItemDelegate>
 #if defined(Q_OS_WIN)
 #  include <windows.h>
@@ -352,6 +353,11 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         m_tray->setBaseIcon(AppIcons::trayIcon());
         m_tray->setNotificationsEnabled(m_config.ui.notifications);
     }
+
+    auto *ctrlW = new QShortcut(QKeySequence("Ctrl+W"), this);
+    connect(ctrlW, &QShortcut::activated, this, [this]{
+        if (m_tray && m_tray->isVisible()) hide();
+    });
 
     statusBar()->hide();
 
