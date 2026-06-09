@@ -749,6 +749,20 @@ Commit: 229fa83
 No regressions. Binary builds clean on Linux.
 -->
 
+## v0.25.3 — 2026-06-09
+
+### Features
+
+- **Channel browser dialog (`/list`)** — `/list` now opens a sortable, filterable channel browser dialog instead of dumping raw text to the server buffer. Results stream in live as the server sends them (per `RPL_LIST` 322). Columns: Channel, Users (numeric sort), Topic. Filter box searches all columns simultaneously. Double-click or press Join to join; Refresh re-requests the list; Close dismisses without joining. Dialog is per-server and non-modal.
+
+- **WebSocket transport** — each server block now accepts `websocket = true` to connect via `ws://` or `wss://` instead of raw TCP. Scheme follows the `ssl` key: `wss://` when `ssl = true`, `ws://` when `ssl = false`. All existing features — SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect, ping watchdog — work identically over WebSocket. Configurable from Manage Servers (Use WebSocket checkbox) or directly in `config.toml`.
+
+- **User metadata (`draft/metadata-2`)** — when the server supports the `draft/metadata-2` IRCv3 capability, Uplink subscribes to `display-name` and `avatar` keys on connect. Values are pushed by the server and cached per-nick. Display name and avatar URL appear as tooltips in the nick list panel (hover any nick).
+
+- **IrcParser fuzz target** — libFuzzer harness (`tests/fuzz_ircparser.cpp`) with a 26-file seed corpus (`tests/corpus/`). Covers: basic messages, numerics, IRCv3 tags, tag escapes, extended JOIN, BATCH, TAGMSG, malformed prefix, UTF-8, empty/CRLF-only inputs. Builds as a real fuzzer with `UPLINK_BUILD_FUZZ=ON` + clang; falls back to a standalone corpus-replay binary under any compiler. Integrated as a ctest smoke test when fuzz mode is off.
+
+---
+
 ## v0.25.2 — 2026-06-08
 
 ### Features

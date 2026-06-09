@@ -266,6 +266,38 @@ Synchronizes your read position across all clients connected to the same soju in
 
 Tells soju not to send a NAMES list automatically on JOIN. This prevents duplicate nick list entries when soju is already managing channel state.
 
+### `draft/metadata-2`
+
+Associates key-value metadata with users — display names and avatar URLs stored server-side and synced to clients in real time.
+
+Uplink subscribes to the `display-name` and `avatar` keys on connect (`METADATA * SUBSCRIBE display-name avatar`). When a user sets or changes either value, the server pushes a `METADATA` notification or a `761 RPL_KEYVALUE` response. Uplink stores the data per-nick and shows it in the **nick list tooltip**:
+
+```
+Display Name: Alice Smith
+Account: alice
+Avatar: https://example.com/avatar/alice.png
+```
+
+No configuration is required — metadata is fetched and displayed automatically whenever the server supports `draft/metadata-2`.
+
+### WebSocket transport
+
+IRC lines carried over a WebSocket connection (`ws://` or `wss://`) instead of a raw TCP socket. Useful for connecting to servers hosted behind web infrastructure, or in environments where raw TCP is blocked.
+
+Enable per server with `websocket = true` in the server block (see [configuration](configuration.md)). The `ssl` key controls whether the connection uses `wss://` (TLS, recommended) or `ws://` (plain). All standard features — SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect backoff, and ping watchdog — work identically over WebSocket.
+
+```toml
+[[server]]
+name      = "The Lounge"
+host      = "lounge.example.com"
+port      = 9000
+ssl       = true
+websocket = true
+nick      = "yournick"
+user      = "uplink"
+realname  = "Uplink User"
+```
+
 ---
 
 ## Planned capabilities
@@ -273,14 +305,6 @@ Tells soju not to send a NAMES list automatically on JOIN. This prevents duplica
 ### `cap-notify`
 
 Notifies the client if the server gains or loses capabilities after the initial handshake. Lets the client adapt to capability changes dynamically.
-
-### WebSocket transport
-
-Conventions for carrying IRC lines over a WebSocket connection (`wss://`). Useful for connecting to servers hosted behind web infrastructure, or in environments where raw TCP is blocked.
-
-### User metadata (`metadata-2`)
-
-A framework for associating key-value metadata with users — display names, avatars, pronouns, homepage, color, status. Values are stored server-side and synced to clients. Negotiated via the `metadata-2` capability.
 
 ---
 

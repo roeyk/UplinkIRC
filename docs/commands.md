@@ -143,7 +143,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 |---|---|
 | `/quit [message]` | Disconnect from the current server with an optional quit message |
 | `/motd [server]` | Request the message of the day |
-| `/list [filter]` | List all channels on the server — results appear in the server buffer |
+| `/list` | Open the channel browser — a sortable dialog showing all channels with user count and topic; type to filter, double-click or press Join to join |
 | `/stats <query>` | Request server statistics — `u`=uptime, `o`=opers, `m`=commands |
 | `/time` | Query the server's local time |
 | `/oper <user> <pass>` | IRC operator login — sends `OPER user :pass` to the server |
@@ -155,7 +155,6 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 /quit later everyone
 /motd
 /list
-/list #linux
 /stats u
 /stats o
 /time

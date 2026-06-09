@@ -411,6 +411,7 @@
     <li><a href="#multi-server">Two servers at once</a></li>
     <li><a href="#znc">ZNC bouncer</a></li>
     <li><a href="#soju">soju bouncer</a></li>
+    <li><a href="#websocket">WebSocket transport</a></li>
   </ul>
 
   <div class="nav-section">The Interface</div>
@@ -423,6 +424,7 @@
     <li><a href="#nick-panel">Nick list panel</a></li>
     <li><a href="#nick-context-menu">Nick right-click menu</a></li>
     <li><a href="#account-tracking">Account tracking</a></li>
+    <li><a href="#user-metadata">User metadata</a></li>
     <li><a href="#signal-bars">Signal bars</a></li>
     <li><a href="#tray">System tray</a></li>
   </ul>
@@ -1108,6 +1110,31 @@ channels        = "#debian"</pre>
     </div>
   </section>
 
+  <!-- WEBSOCKET TRANSPORT -->
+  <section id="websocket">
+    <h2>WebSocket transport</h2>
+    <p>Most IRC servers accept plain TCP connections (port 6667) or TLS connections (port 6697). Some modern servers and bouncers — particularly web-based ones like <strong>The Lounge</strong> — are only reachable over WebSocket (<code>ws://</code> / <code>wss://</code>). Uplink supports both transports.</p>
+
+    <p>To use WebSocket, add <code>websocket = true</code> to the server block. When <code>ssl = true</code> is also set, Uplink connects with <code>wss://</code> (encrypted). When <code>ssl = false</code>, it uses <code>ws://</code> (plain).</p>
+
+    <pre>[[server]]
+name      = "The Lounge"
+host      = "lounge.example.com"
+port      = 9000
+ssl       = true
+websocket = true
+nick      = "alice"
+user      = "uplink"
+realname  = "Uplink User"
+channels  = "#uplink"</pre>
+
+    <div class="note">
+      <strong>Everything works the same.</strong> SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect, and the ping watchdog all function identically over WebSocket.
+    </div>
+
+    <p>You can also enable WebSocket from the GUI: <strong>☰ → Preferences → Manage Servers → Edit</strong> and tick the <strong>Use WebSocket</strong> checkbox.</p>
+  </section>
+
   <hr />
 
   <!-- TOPIC BAR -->
@@ -1343,6 +1370,26 @@ typing_indicator = true   # set to false to disable completely</pre>
     </div>
   </section>
 
+  <!-- USER METADATA -->
+  <section id="user-metadata">
+    <h2>User metadata — display names &amp; avatars</h2>
+    <p>On servers that support the IRCv3 <code>draft/metadata-2</code> capability, Uplink shows extra profile information for nicks in the user list.</p>
+
+    <h3>What is shown</h3>
+    <table>
+      <tr><th>Field</th><th>Where it appears</th></tr>
+      <tr><td><strong>Display Name</strong></td><td>Nick list tooltip — hover over any nick to see it</td></tr>
+      <tr><td><strong>Avatar URL</strong></td><td>Nick list tooltip — shown as a URL below the display name</td></tr>
+    </table>
+
+    <h3>How it works</h3>
+    <p>When Uplink connects to a server that advertises <code>draft/metadata-2</code>, it automatically subscribes to <code>display-name</code> and <code>avatar</code> keys. The server pushes updates as users set or change them — no manual query is needed. The information is stored per-server (not per-channel), so it follows a nick across all channels on that server.</p>
+
+    <div class="note">
+      <strong>Server support required.</strong> <code>draft/metadata-2</code> is an in-development IRCv3 extension. Most networks do not yet support it. Uplink silently skips metadata if the server does not advertise the capability.
+    </div>
+  </section>
+
   <!-- SIGNAL BARS -->
   <section id="signal-bars">
     <h2>Signal bars (lag / latency indicator)</h2>
@@ -1535,14 +1582,27 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
   <!-- CHANNEL LIST -->
   <section id="channel-list">
     <h2>Listing channels — /list</h2>
-    <p>To see all channels on the server, run:</p>
+    <p>To browse all channels on the current server, type:</p>
     <pre>/list</pre>
-    <p>Results appear in the <strong>server buffer</strong> — click the server name in the sidebar to read them. Each line shows the channel name, user count, and topic.</p>
-    <p>You can pass a filter to narrow the results:</p>
-    <pre>/list #linux</pre>
-    <p>The filter is sent directly to the server — what it matches depends on the server's implementation. On most servers it is a substring match on the channel name.</p>
-    <div class="callout">
-      <strong>Large networks:</strong> On big networks like Libera.Chat, <code>/list</code> returns thousands of channels. The output can be long — scroll up in the server buffer to read it all.
+    <p>A <strong>Channel Browser</strong> dialog opens. Results stream in as the server sends them — you don't have to wait for the full list before you can start filtering.</p>
+
+    <h3>Sorting and filtering</h3>
+    <ul>
+      <li>Click any column header (<strong>Channel</strong>, <strong>Users</strong>, <strong>Topic</strong>) to sort by that column. Click again to reverse. User count sorts numerically by default (highest first).</li>
+      <li>Type in the filter box at the top to narrow results — it matches against channel name and topic simultaneously.</li>
+    </ul>
+
+    <h3>Joining a channel</h3>
+    <ul>
+      <li><strong>Double-click</strong> any row, or select a row and click <strong>Join</strong>, to join that channel.</li>
+      <li>The dialog stays open after you join so you can browse and join more channels.</li>
+    </ul>
+
+    <h3>Refreshing</h3>
+    <p>Click <strong>Refresh</strong> to re-request the channel list from the server. Useful if the server's list has changed since you opened the dialog.</p>
+
+    <div class="note">
+      <strong>Large networks:</strong> On networks like Libera.Chat with thousands of channels, the dialog populates progressively — rows appear as the server sends them. Use the filter box to narrow down immediately without waiting for the full list.
     </div>
   </section>
 

@@ -71,6 +71,7 @@ realname = "Uplink User"
 # proxy_user        = ""               # optional: proxy username
 # proxy_pass        = ""               # optional: proxy password
 # ssl_fingerprint   = ""               # pin a self-signed cert SHA-256 fingerprint (set automatically on first connect)
+# websocket         = false            # connect via WebSocket (ws:// or wss://) instead of raw TCP
 
 [[server.channel]]
 name = "#uplink"
@@ -209,6 +210,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `proxy_user` | string | no | SOCKS5 proxy username. Only needed if your proxy requires authentication. |
 | `proxy_pass` | string | no | SOCKS5 proxy password. Only needed if your proxy requires authentication. |
 | `ssl_fingerprint` | string | no | SHA-256 fingerprint of a pinned self-signed TLS certificate. Set automatically when you choose "Pin Certificate" on first connect. Once set, the connection is rejected if the certificate changes. |
+| `websocket` | bool | no | Connect via WebSocket instead of a raw TCP socket. When `ssl = true`, uses `wss://`; when `ssl = false`, uses `ws://`. Useful for servers behind web infrastructure (e.g. The Lounge). Defaults to `false`. |
 
 ### Minimal server block
 
@@ -506,6 +508,29 @@ Go to **☰ → Manage Servers → Add** (or **Edit**) and fill in the **SOCKS5 
 - SSL/TLS still works through the proxy — the TLS handshake happens inside the SOCKS5 tunnel.
 - To use **Tor**, set `proxy_host = "127.0.0.1"` and `proxy_port = 9050` (the default Tor SOCKS5 port). Make sure the Tor daemon is running.
 - Leaving `proxy_host` empty (the default) connects directly — no proxy is used.
+
+---
+
+## WebSocket transport
+
+Set `websocket = true` to connect to a server over WebSocket instead of raw TCP. The `ssl` key controls the scheme: `wss://` when `ssl = true` (recommended), `ws://` when `ssl = false`.
+
+This is useful for IRC servers or bouncers accessible only over HTTP/S (e.g. The Lounge, some hosted soju instances).
+
+```toml
+[[server]]
+name      = "The Lounge"
+host      = "lounge.example.com"
+port      = 9000
+ssl       = true
+websocket = true
+nick      = "yournick"
+user      = "uplink"
+realname  = "Uplink User"
+channels  = "#uplink"
+```
+
+All features work identically over WebSocket — SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect backoff, and ping watchdog.
 
 ---
 
