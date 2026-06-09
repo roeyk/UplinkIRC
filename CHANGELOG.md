@@ -749,6 +749,41 @@ Commit: 229fa83
 No regressions. Binary builds clean on Linux.
 -->
 
+<!--
+Session summary — 2026-06-09 (v0.25.3 — /list dialog, WebSocket, metadata, fuzz)
+
+Built and released four features from the roadmap:
+
+1. /list channel browser dialog — QDialog with QTableView; streams RPL_LIST results live;
+   sortable by channel/users/topic; live filter box searches all columns; double-click or
+   Join button to join; Refresh re-requests; non-modal, per-server.
+
+2. WebSocket transport — QWebSocket dual-socket abstraction in IrcClient; helper methods
+   (sockWrite, sockState, sockDisconnect, sockAbort, etc.) so all IRC logic above is shared;
+   ws:// or wss:// based on ssl flag; websocket config key + Manage Servers checkbox.
+
+3. User metadata (draft/metadata-2) — subscribes to display-name and avatar on connect;
+   server-push METADATA command + 761 RPL_KEYVALUE handler; NickMeta stored per-nick at
+   ServerSession level; displayed in nick list tooltips.
+
+4. IrcParser fuzz target — libFuzzer harness (tests/fuzz_ircparser.cpp); 26-file seed
+   corpus (tests/corpus/); standalone replay driver; ctest smoke test when UPLINK_BUILD_FUZZ=OFF.
+
+Bugs found and fixed:
+  - qsizetype→int narrowing in channelListEnd emit (static_cast)
+  - QWebSocket private constructor matched wrong overload — fixed with explicit QString()
+  - Taking address of rvalue in makeNickItem tooltip (ternary pointer) — fixed with constFind + &it.value()
+  - (void)f.open() nodiscard warning in fuzz standalone driver
+  - QWebSocket::errorOccurred does not exist on Qt < 6.5 (Ubuntu 24.04 ships 6.4) —
+    version-guarded to use QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error)
+    on older Qt; errorOccurred on >= 6.5
+  - CI missing libqt6websockets6-dev (Linux) and qtwebsockets module (Windows install-qt-action)
+    — added to both ci.yml and release.yml
+
+No regressions found. All 3 CI + Release jobs passed on final push.
+Binaries: AppImage, tar.gz (Linux), zip (Windows), dmg (macOS) — all on v0.25.3 release page.
+-->
+
 ## v0.25.3 — 2026-06-09
 
 ### Features

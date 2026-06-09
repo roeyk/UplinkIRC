@@ -966,6 +966,35 @@ The tooltip shows `account: <name>` when the server has reported their account. 
 
 If the tooltip is absent, the server may not support any of these capabilities, or the user has not authenticated with services.
 
+### How do I browse channels on a server?
+
+Type `/list` in any input bar. A **Channel Browser** dialog opens and populates live as results arrive from the server — no waiting for the full list before you can start browsing.
+
+- **Filter** — type in the box at the top to narrow by channel name or topic.
+- **Sort** — click any column header (Channel, Users, Topic) to sort; click again to reverse. Users sorts numerically.
+- **Join** — double-click any row, or select it and click **Join**.
+- **Refresh** — click **Refresh** to re-request the list.
+
+The dialog stays open after joining so you can explore and join multiple channels.
+
+### How do I connect via WebSocket instead of raw TCP?
+
+Some servers and bouncers (e.g. The Lounge) are only reachable over WebSocket. Add `websocket = true` to the server block in `config.toml`:
+
+```toml
+[[server]]
+name      = "The Lounge"
+host      = "lounge.example.com"
+port      = 9000
+ssl       = true
+websocket = true
+nick      = "alice"
+```
+
+When `ssl = true`, Uplink uses `wss://` (encrypted). When `ssl = false`, it uses `ws://`. All other features — SASL, reconnect, IRCv3 CAP negotiation, SOCKS5 proxy — work identically over WebSocket.
+
+You can also enable it from the GUI: **☰ → Preferences → Manage Servers → Edit** → tick **Use WebSocket**.
+
 ### How do I watch for a nick coming online?
 
 Use the `/monitor` command. Uplink uses the IRCv3 MONITOR system — more efficient than the older ISON polling approach.
