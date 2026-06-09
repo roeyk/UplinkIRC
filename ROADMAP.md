@@ -281,7 +281,7 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 ### Bigger / architectural
 - [x] Keychain operations async — remove nested `QEventLoop` in `KeychainHelper`; load non-secret config first, then resolve secrets before connecting; avoids reentrancy hazard
 - [x] Targeted chat block updates — `BlockMsgid` userData tags each QTextBlock; onReactionsChanged and onMessageRedacted do targeted insert/replace/remove instead of full rebuild (v0.23.3)
-- [ ] IrcParser fuzz target — libFuzzer harness around `IrcParser::parseLine()` for parser regression coverage
+- [x] IrcParser fuzz target — libFuzzer harness around `IrcParser::parseLine()` for parser regression coverage
 - [ ] `ServerId` / `BufferId` strong types — replace stringly-typed host/channel routing; prerequisite for robust multi-network and bouncer support
 - [x] `selfNickRe` (`QRegularExpression`): verify compiled once per nick change at call site, not reconstructed per `formatMessage` call (`chatrenderer.cpp`) — already correct
 - [x] DCC ACK coalescing: send ACK every 64 KB and on completion, not every `readyRead` — reduces write syscalls on fast links (`dccreceive.cpp`)

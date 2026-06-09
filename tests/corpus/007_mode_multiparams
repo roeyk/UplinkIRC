@@ -1,0 +1,1 @@
+:nick!u@h MODE #chan +ov user1 user2
