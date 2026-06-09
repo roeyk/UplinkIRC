@@ -6,6 +6,11 @@
 #include <QSet>
 #include <QString>
 
+struct NickMeta {
+    QString displayName;
+    QString avatarUrl;
+};
+
 struct ServerSession {
     QString  name;        // display name from config
     QString  host;
@@ -14,6 +19,7 @@ struct ServerSession {
     QRegularExpression mentionRe; // pre-compiled; rebuilt when nick changes
 
     QSet<QString> botNicks;     // lowercased nicks with +B user mode (global)
+    QHash<QString, NickMeta> nickMeta; // lowercase nick → metadata
 
     // key = channel name lowercased
     QHash<QString, Channel> channels;

@@ -102,6 +102,10 @@ signals:
     void channelListEntry(const QString &host, const QString &channel, int users, const QString &topic);
     void channelListEnd  (const QString &host, int total);
 
+    // User metadata
+    void userMetaChanged (const QString &host, const QString &nick,
+                          const QString &key,  const QString &value);
+
     // TLS cert pin
     void sslFingerprintPrompt(const QString &host, const QString &fingerprint);
 
@@ -164,6 +168,8 @@ private:
                            const QString &nick,  const QString &msgid,
                            const QString &emoji);
     void onAccountChanged (const QString &host, const QString &nick, const QString &account);
+    void onUserMetaChanged(const QString &host, const QString &nick,
+                           const QString &key,  const QString &value);
     void onMessageRedacted(const QString &host, const QString &senderNick,
                            const QString &target, const QString &msgid, const QString &reason);
     void onInviteNotify   (const QString &host, const QString &inviter,

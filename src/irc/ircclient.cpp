@@ -802,6 +802,15 @@ void IrcClient::processLine(const QString &line)
         return;
     }
 
+    // draft/metadata-2 — server-push notification: METADATA <target> <key> <visibility> :<value>
+    if (cmd == "METADATA" && msg.params.size() >= 2) {
+        const QString &target = msg.params[0];
+        const QString &key    = msg.params[1];
+        if ((key == "display-name" || key == "avatar") && !target.startsWith('#'))
+            emit userMetaChanged(m_host, target, key, msg.trailing);
+        return;
+    }
+
     if (cmd == "SETNAME" && !msg.trailing.isEmpty()) {
         emit setNameReceived(m_host, msg.nick, msg.trailing);
         return;
@@ -1102,6 +1111,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             "chathistory", "echo-message", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
+            "draft/metadata-2",
         };
 
         // ZNC-specific caps
@@ -1148,6 +1158,9 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         } else {
             sendRaw("CAP END");
         }
+
+        if (m_ackedCaps.contains("draft/metadata-2"))
+            sendRaw("METADATA * SUBSCRIBE display-name avatar");
 
         // Request soju network list once caps are acked
         if (m_bouncerType == BouncerType::Soju &&
@@ -1329,6 +1342,17 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 734: // ERR_MONLISTFULL
         emit errorMessage(m_host, "Monitor list full: " + trailing);
         break;
+
+    case 761: { // RPL_KEYVALUE — response to METADATA GET: <client> <target> <key> <visibility> :<value>
+        // params: [client, target, key, visibility], trailing = value
+        if (params.size() >= 3) {
+            const QString &target = params[1];
+            const QString &key    = params[2];
+            if ((key == "display-name" || key == "avatar") && !target.startsWith('#'))
+                emit userMetaChanged(m_host, target, key, trailing);
+        }
+        break;
+    }
 
     case 321: // RPL_LISTSTART
         m_listBuffer.clear();

@@ -123,6 +123,8 @@ signals:
     void setNameReceived(const QString &server, const QString &nick, const QString &realname);
     void monitorOnline (const QString &server, const QStringList &nicks);
     void monitorOffline(const QString &server, const QStringList &nicks);
+    void userMetaChanged    (const QString &server, const QString &nick,
+                             const QString &key,    const QString &value);
     void channelListEntry   (const QString &server, const QString &channel, int users, const QString &topic);
     void channelListEnd     (const QString &server, int total);
     void channelListReceived(const QString &server, const QList<QStringList> &entries);

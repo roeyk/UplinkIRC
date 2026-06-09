@@ -457,6 +457,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::monitorOffline,  this, &SessionModel::onMonitorOffline);
     connect(cl, &IrcClient::channelListEntry, this, &SessionModel::channelListEntry);
     connect(cl, &IrcClient::channelListEnd,   this, &SessionModel::channelListEnd);
+    connect(cl, &IrcClient::userMetaChanged,  this, &SessionModel::onUserMetaChanged);
 
     if (!m_config.monitorList.isEmpty())
         cl->setMonitorList(m_config.monitorList);
@@ -988,6 +989,23 @@ void SessionModel::onAccountChanged(const QString &host, const QString &nick,
         if (ch.nickIndex.contains(nick.toLower()))
             emit nickListChanged(host, ch.name);
     }
+}
+
+void SessionModel::onUserMetaChanged(const QString &host, const QString &nick,
+                                      const QString &key,  const QString &value)
+{
+    auto *sess = session(host);
+    if (!sess) return;
+    const QString lower = nick.toLower();
+    auto &meta = sess->nickMeta[lower];
+    if (key == "display-name")
+        meta.displayName = value;
+    else if (key == "avatar")
+        meta.avatarUrl = value;
+    emit userMetaChanged(host, nick, key, value);
+    for (const auto &ch : std::as_const(sess->channels))
+        if (ch.nickIndex.contains(lower))
+            emit nickListChanged(host, ch.name);
 }
 
 void SessionModel::onMessageRedacted(const QString &host, const QString &senderNick,

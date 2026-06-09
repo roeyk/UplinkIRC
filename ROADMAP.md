@@ -170,7 +170,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] /time (server) — bare /time sends IRC TIME command; RPL_TIME (391) handled; /time <nick> CTCP already existed (v0.25.2)
 - [x] Soju bouncer network selection — SASL AUTHENTICATE payload now sends user/network when bouncerNetwork is set; LISTNETWORKS END handled; initial network list shown as formatted summary (v0.25.2)
 - [x] IRCv3 WebSocket transport — connect to servers over wss:// in addition to plain TCP+TLS
-- [ ] User metadata — IRCv3 metadata keys: display-name, avatar, pronouns; show in nick list and tooltips
+- [x] User metadata — IRCv3 draft/metadata-2: display-name and avatar keys; shown in nick list tooltips
 
 ---
 

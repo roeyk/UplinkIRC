@@ -3436,8 +3436,23 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
                                          QColor(m_theme.valid ? m_theme.accent : "#5588ff")));
     }
     item->setData(Qt::UserRole, e.nick);
-    if (!e.account.isEmpty())
-        item->setToolTip("Account: " + e.account);
+    {
+        const NickMeta *meta = nullptr;
+        if (sess) {
+            auto it = sess->nickMeta.constFind(e.nick.toLower());
+            if (it != sess->nickMeta.constEnd())
+                meta = &it.value();
+        }
+        QStringList tips;
+        if (meta && !meta->displayName.isEmpty())
+            tips << "Display Name: " + meta->displayName;
+        if (!e.account.isEmpty())
+            tips << "Account: " + e.account;
+        if (meta && !meta->avatarUrl.isEmpty())
+            tips << "Avatar: " + meta->avatarUrl;
+        if (!tips.isEmpty())
+            item->setToolTip(tips.join('\n'));
+    }
     if (m_config.ui.coloredNicks)
         item->setForeground(ChatRenderer::nickColor(e.nick));
     return item;
