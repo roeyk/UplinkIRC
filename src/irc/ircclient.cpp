@@ -96,7 +96,12 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
             connect(m_wsSocket, &QWebSocket::disconnected,        this, &IrcClient::onDisconnected);
             connect(m_wsSocket, &QWebSocket::textMessageReceived, this, &IrcClient::onWsTextReceived);
             connect(m_wsSocket, &QWebSocket::sslErrors,           this, &IrcClient::onSslErrors);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
             connect(m_wsSocket, &QWebSocket::errorOccurred,       this, &IrcClient::onErrorOccurred);
+#else
+            connect(m_wsSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
+                    this, &IrcClient::onErrorOccurred);
+#endif
         }
         applyProxy();
         QUrl url;
