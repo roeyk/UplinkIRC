@@ -408,8 +408,7 @@ QRadioButton::indicator:hover {
 
 /* ── Tab widget ── */
 QTabWidget::pane {
-    border: 1px solid {{border}};
-    border-top: none;
+    border: none;
 }
 QTabBar::tab {
     background-color: transparent;
@@ -519,7 +518,7 @@ QLabel {
 QPushButton {
     background: {{border}};
     color: {{text}};
-    border: 2px solid {{border}};
+    border: none;
     border-radius: 20px;
     padding: 6px 22px;
     font-weight: 500;

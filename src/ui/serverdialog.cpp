@@ -159,6 +159,8 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow("Proxy Pass:", m_proxyPass);
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    buttons->button(QDialogButtonBox::Ok)->setIcon(MenuIcons::confirm());
+    buttons->button(QDialogButtonBox::Cancel)->setIcon(MenuIcons::close());
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 

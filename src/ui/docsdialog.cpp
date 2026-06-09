@@ -1,11 +1,13 @@
 #include "docsdialog.h"
 #include "appicons.h"
+#include "menuicons.h"
 
 #include <QTabWidget>
 #include <QTextBrowser>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QDialogButtonBox>
+#include <QPushButton>
 #include <QLineEdit>
 #include <QFile>
 #include <QTextStream>
@@ -48,6 +50,7 @@ DocsDialog::DocsDialog(QWidget *parent)
     });
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close);
+    buttons->button(QDialogButtonBox::Close)->setIcon(MenuIcons::close());
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::close);
     layout->addWidget(buttons);
     layout->setContentsMargins(8, 0, 8, 8);

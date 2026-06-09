@@ -1,8 +1,10 @@
 #include "manageserversdialog.h"
 #include "serverdialog.h"
 #include "ui/pillbutton.h"
+#include "menuicons.h"
 
 #include <QDialogButtonBox>
+#include <QPushButton>
 #include <QHBoxLayout>
 #include <QListWidget>
 #include <QPushButton>
@@ -34,6 +36,8 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
     btnBar->addStretch();
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    buttons->button(QDialogButtonBox::Ok)->setIcon(MenuIcons::confirm());
+    buttons->button(QDialogButtonBox::Cancel)->setIcon(MenuIcons::close());
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
