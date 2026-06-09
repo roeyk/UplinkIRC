@@ -122,6 +122,7 @@ signals:
     void monitorOnline (const QString &server, const QStringList &nicks);
     void monitorOffline(const QString &server, const QStringList &nicks);
     void channelListReceived(const QString &server, const QList<QStringList> &entries);
+    void bouncerNetworksListed(const QString &server, const QList<QStringList> &networks);
     void netsplitDetected(const QString &server, const QString &splitServers, const QStringList &nicks);
     void netjoinDetected (const QString &server, const QString &splitServers,
                           const QStringList &channels, const QStringList &nicks);
@@ -189,7 +190,9 @@ private:
     QSet<QString>               m_ackedCaps;
     QStringList                 m_capLsBuffer;
     QHash<QString, QStringList> m_namesBuffer;
-    QList<QStringList>          m_listBuffer;  // [channel, count, topic] per entry
+    QList<QStringList>          m_listBuffer;         // [channel, count, topic] per entry
+    QList<QStringList>          m_bouncerNetBuf;      // [id, name, state] per soju network
+    bool                        m_bouncerListing{false};
 
     // Batch tracking
     struct BatchInfo {

@@ -396,9 +396,26 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
             [this](const QString &host, const QString &id,
                    const QString &name, bool connected){
         Q_UNUSED(id)
+        // live state-change update (not the initial listing)
         postMessage(host, "(server)",
             Message::make(MessageType::Server, "",
                 QString("Bouncer network: %1 [%2]").arg(name, connected ? "connected" : "offline")));
+    });
+    connect(cl, &IrcClient::bouncerNetworksListed, this,
+            [this](const QString &host, const QList<QStringList> &networks) {
+        if (networks.isEmpty()) {
+            postMessage(host, "(server)",
+                Message::make(MessageType::Server, "", "Bouncer: no networks configured."));
+            return;
+        }
+        postMessage(host, "(server)",
+            Message::make(MessageType::Server, "", "Bouncer networks:"));
+        for (const QStringList &n : networks) {
+            const QString name  = n.value(1).isEmpty() ? n.value(0) : n.value(1);
+            const QString state = n.value(2);
+            const QString line  = QString("  %1  [%2]").arg(name, -24).arg(state);
+            postMessage(host, "(server)", Message::make(MessageType::Server, "", line));
+        }
     });
     connect(cl, &IrcClient::readMarkerReceived, this,
             [this](const QString &host, const QString &target, const QDateTime &ts){

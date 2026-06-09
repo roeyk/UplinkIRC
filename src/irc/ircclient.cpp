@@ -538,8 +538,12 @@ void IrcClient::processLine(const QString &line)
             if (m_saslExternal) {
                 sendRaw("AUTHENTICATE +");
             } else {
+                // For soju, the SASL username must be "user/network" to select a network
+                QString saslUser = m_saslUser;
+                if (m_bouncerType == BouncerType::Soju && !m_bouncerNetwork.isEmpty())
+                    saslUser += "/" + m_bouncerNetwork;
                 const QByteArray payload =
-                    QByteArray("\0", 1) + m_saslUser.toUtf8() +
+                    QByteArray("\0", 1) + saslUser.toUtf8() +
                     QByteArray("\0", 1) + m_saslPassword.toUtf8();
                 sendRaw("AUTHENTICATE " + QString::fromLatin1(payload.toBase64()));
             }
@@ -922,7 +926,6 @@ void IrcClient::handleBouncer(const QStringList &params, const QString &trailing
     const QString sub = params[0].toUpper();
 
     if (sub == "NETWORK" && params.size() >= 2) {
-        // Parse key=value pairs from params[1]
         QHash<QString,QString> attrs;
         for (const QString &part : params[1].split(';', Qt::SkipEmptyParts)) {
             const qsizetype eq = part.indexOf('=');
@@ -930,8 +933,18 @@ void IrcClient::handleBouncer(const QStringList &params, const QString &trailing
         }
         const QString id    = attrs.value("id");
         const QString name  = attrs.value("name");
-        const bool connected = (attrs.value("state") == "connected");
-        emit bouncerNetworkReceived(m_host, id, name, connected);
+        const QString state = attrs.value("state");
+        if (!id.isEmpty())
+            m_bouncerNetBuf.append({id, name, state});
+        if (!m_bouncerListing) {
+            // live state-change notify (not the initial listing)
+            emit bouncerNetworkReceived(m_host, id, name, state == "connected");
+        }
+    } else if (sub == "LISTNETWORKS" && params.size() >= 2
+               && params[1].toUpper() == "END") {
+        m_bouncerListing = false;
+        emit bouncerNetworksListed(m_host, m_bouncerNetBuf);
+        m_bouncerNetBuf.clear();
     }
 }
 
@@ -1058,6 +1071,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         // Request soju network list once caps are acked
         if (m_bouncerType == BouncerType::Soju &&
             m_ackedCaps.contains("soju.im/bouncer-networks")) {
+            m_bouncerListing = true;
             sendRaw("BOUNCER LISTNETWORKS");
         }
         return;
