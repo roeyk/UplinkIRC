@@ -438,6 +438,25 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::setNameReceived, this, &SessionModel::onSetNameReceived);
     connect(cl, &IrcClient::monitorOnline,   this, &SessionModel::onMonitorOnline);
     connect(cl, &IrcClient::monitorOffline,  this, &SessionModel::onMonitorOffline);
+    connect(cl, &IrcClient::channelListReceived, this,
+            [this](const QString &host, const QList<QStringList> &entries) {
+        if (entries.isEmpty()) {
+            postMessage(host, "(server)", Message::make(MessageType::Server, "", "No channels listed."));
+            return;
+        }
+        for (const QStringList &e : entries) {
+            const QString name  = e.value(0);
+            const QString count = e.value(1);
+            const QString topic = e.value(2);
+            const QString line  = QString("%1  (%2 users)%3")
+                .arg(name, -20)
+                .arg(count)
+                .arg(topic.isEmpty() ? QString() : "  " + topic);
+            postMessage(host, "(server)", Message::make(MessageType::Server, "", line));
+        }
+        postMessage(host, "(server)", Message::make(MessageType::Server, "",
+            QString("End of LIST (%1 channels)").arg(entries.size())));
+    });
 
     if (!m_config.monitorList.isEmpty())
         cl->setMonitorList(m_config.monitorList);

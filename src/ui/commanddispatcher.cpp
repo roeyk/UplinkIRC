@@ -318,6 +318,8 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         m_model->sendRaw(host, args.isEmpty() ? "AWAY" : "AWAY :" + args);
     } else if (cmd == "/back") {
         m_model->sendRaw(host, "AWAY");
+    } else if (cmd == "/list") {
+        m_model->sendRaw(host, args.isEmpty() ? "LIST" : "LIST " + args.trimmed());
     } else if (cmd == "/motd") {
         m_model->sendRaw(host, args.isEmpty() ? "MOTD" : "MOTD " + args.trimmed());
     } else if (cmd == "/whois") {
@@ -554,6 +556,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
             "  /away [message]             — set away status",
             "  /back                       — clear away status",
             "  /whois <nick>               — request WHOIS info",
+            "  /list [filter]              — list channels on the server",
             "  /motd [server]              — request the MOTD",
             "  /version [nick]             — request VERSION (nick optional)",
             "  /ctcp <target> <cmd> [args] — send a CTCP request",

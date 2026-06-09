@@ -1235,6 +1235,20 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         emit errorMessage(m_host, "Monitor list full: " + trailing);
         break;
 
+    case 321: // RPL_LISTSTART
+        m_listBuffer.clear();
+        break;
+
+    case 322: // RPL_LIST — <client> <channel> <count> :<topic>
+        if (params.size() >= 3)
+            m_listBuffer.append({params[1], params[2], trailing});
+        break;
+
+    case 323: // RPL_LISTEND
+        emit channelListReceived(m_host, m_listBuffer);
+        m_listBuffer.clear();
+        break;
+
     // WHOIS replies — route to active channel/window
     case 301: case 307: case 311: case 312: case 313:
     case 317: case 318: case 319: case 320: case 671:
