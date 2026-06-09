@@ -327,6 +327,11 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         m_model->sendRaw(host, args.isEmpty() ? "LIST" : "LIST " + args.trimmed());
     } else if (cmd == "/motd") {
         m_model->sendRaw(host, args.isEmpty() ? "MOTD" : "MOTD " + args.trimmed());
+    } else if (cmd == "/stats") {
+        if (args.trimmed().isEmpty())
+            m_model->localMessage(host, channel, "Usage: /stats <query>  (e.g. u=uptime, o=opers, m=commands)");
+        else
+            m_model->sendRaw(host, "STATS " + args.trimmed().left(1));
     } else if (cmd == "/whois") {
         m_model->sendRaw(host, "WHOIS " + args.trimmed());
     } else if (cmd == "/whowas") {
@@ -566,6 +571,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
             "  /away [message]             — set away status",
             "  /back                       — clear away status",
             "  /whois <nick>               — request WHOIS info",
+            "  /stats <query>              — server stats (u=uptime, o=opers, m=commands…)",
             "  /whowas <nick>              — request WHOWAS info for a departed nick",
             "  /setname <realname>         — change your realname (IRCv3 setname)",
             "  /list [filter]              — list channels on the server",

@@ -1249,6 +1249,21 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         m_listBuffer.clear();
         break;
 
+    case 211: case 212: case 213: case 214: case 215:
+    case 216: case 217: case 218: case 241: case 242:
+    case 243: case 244: case 249: case 250: { // STATS reply lines
+        QStringList parts = params.mid(1); // skip client nick
+        if (!trailing.isEmpty()) parts << trailing;
+        if (!parts.isEmpty()) emit contextualMessage(m_host, parts.join(' '));
+        break;
+    }
+    case 219: { // RPL_ENDOFSTATS
+        const QString query = params.size() >= 2 ? params[1] : QString();
+        const QString msg   = trailing.isEmpty() ? "End of STATS" : trailing;
+        emit contextualMessage(m_host, query.isEmpty() ? msg : msg + " (" + query + ")");
+        break;
+    }
+
     case 314: { // RPL_WHOWASUSER — <client> <nick> <user> <host> * :<realname>
         if (params.size() >= 4) {
             const QString line = params[1] + " was " + params[2] + "@" + params[3]
