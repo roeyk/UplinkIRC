@@ -318,6 +318,11 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         m_model->sendRaw(host, args.isEmpty() ? "AWAY" : "AWAY :" + args);
     } else if (cmd == "/back") {
         m_model->sendRaw(host, "AWAY");
+    } else if (cmd == "/setname") {
+        if (args.trimmed().isEmpty())
+            m_model->localMessage(host, channel, "Usage: /setname <new realname>");
+        else
+            m_model->sendRaw(host, "SETNAME :" + args.trimmed());
     } else if (cmd == "/list") {
         m_model->sendRaw(host, args.isEmpty() ? "LIST" : "LIST " + args.trimmed());
     } else if (cmd == "/motd") {
@@ -556,6 +561,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
             "  /away [message]             — set away status",
             "  /back                       — clear away status",
             "  /whois <nick>               — request WHOIS info",
+            "  /setname <realname>         — change your realname (IRCv3 setname)",
             "  /list [filter]              — list channels on the server",
             "  /motd [server]              — request the MOTD",
             "  /version [nick]             — request VERSION (nick optional)",
