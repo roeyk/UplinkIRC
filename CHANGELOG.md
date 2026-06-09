@@ -784,6 +784,25 @@ No regressions found. All 3 CI + Release jobs passed on final push.
 Binaries: AppImage, tar.gz (Linux), zip (Windows), dmg (macOS) — all on v0.25.3 release page.
 -->
 
+<!--
+Session summary — 2026-06-09 (cap-notify + Ergo chathistory debugging)
+
+Implemented IRCv3 cap-notify (v0.25.4):
+- cap-notify added to desired CAP list
+- CAP NEW handler: filters new server-advertised caps against wanted list, sends CAP REQ for any not yet acked
+- CAP DEL handler: removes dropped caps from m_ackedCaps
+- m_registered flag added to IrcClient: set on RPL_WELCOME (001), cleared on disconnect
+- CAP ACK and CAP NAK: skip CAP END when m_registered is true (mid-session requests must not send CAP END)
+
+Also investigated chathistory not working on LinuxDojo (Ergo server):
+- Root cause: no history: block in /usr/local/etc/ergo/ircd.yaml — Ergo never initialized history tables
+- Fix: user added history block to ircd.yaml and restarted Ergo
+- chathistory confirmed working after restart
+
+No regressions. Clean build.
+Next: no open items — all IRCv3 planned caps are now implemented.
+-->
+
 ## v0.25.4 — 2026-06-09
 
 ### Features
