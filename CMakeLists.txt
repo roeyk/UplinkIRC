@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Svg)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Svg WebSockets)
 find_package(Qt6Keychain QUIET)
 if(NOT Qt6Keychain_FOUND)
     include(FetchContent)
@@ -117,6 +117,7 @@ target_link_libraries(Uplink PRIVATE
     Qt6::Widgets
     Qt6::Network
     Qt6::Svg
+    Qt6::WebSockets
     Qt6Keychain::Qt6Keychain
     tomlplusplus::tomlplusplus
 )

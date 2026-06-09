@@ -200,6 +200,7 @@ Config Config::load(const QString &path)
                 sc.proxyUser = QString::fromStdString((*s)["proxy_user"].value_or<std::string>(""));
                 sc.proxyPass = QString::fromStdString((*s)["proxy_pass"].value_or<std::string>(""));
                 sc.pinnedFingerprint = QString::fromStdString((*s)["ssl_fingerprint"].value_or<std::string>(""));
+                sc.websocket         = (*s)["websocket"].value_or(false);
 
                 if (auto chans = (*s)["channel"].as_array()) {
                     for (auto &cnode : *chans) {
@@ -338,6 +339,8 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
         }
         if (!s.pinnedFingerprint.isEmpty())
             out << "ssl_fingerprint   = " << tomlQuote(s.pinnedFingerprint) << "\n";
+        if (s.websocket)
+            out << "websocket         = true\n";
         const bool hasKeys = std::any_of(s.channels.begin(), s.channels.end(),
                                           [](const ChannelConfig &c){ return !c.password.isEmpty(); });
         if (hasKeys) {

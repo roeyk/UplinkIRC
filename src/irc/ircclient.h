@@ -7,10 +7,12 @@
 #include <QList>
 #include <QObject>
 #include <QSet>
+#include <QHostAddress>
 #include <QSslSocket>
 #include <QElapsedTimer>
 #include <QTimer>
 
+class QWebSocket;
 struct ServerConfig;
 
 class IrcClient : public QObject
@@ -141,6 +143,7 @@ private slots:
     void onConnected();
     void onDisconnected();
     void onReadyRead();
+    void onWsTextReceived(const QString &message);
     void onSslErrors(const QList<QSslError> &errors);
     void onErrorOccurred(QAbstractSocket::SocketError error);
     void doReconnect();
@@ -149,6 +152,12 @@ private slots:
 private:
     void processLine(const QString &line);
     void applyProxy();
+    void sockWrite(const QString &line);
+    void sockDisconnect();
+    void sockAbort();
+    QAbstractSocket::SocketState sockState() const;
+    QHostAddress                 sockLocalAddress() const;
+    QString                      sockErrorString() const;
     void handleCap     (const QStringList &params, const QString &trailing);
     void handleNumeric (const QString &cmd, const QStringList &params, const QString &trailing);
     void handleBatch   (const QStringList &params);
@@ -157,6 +166,8 @@ private:
     void scheduleReconnect();
 
     QSslSocket  *m_socket;
+    QWebSocket  *m_wsSocket{nullptr};
+    bool         m_useWs{false};
     QString      m_host;
     quint16      m_port{6697};
     bool         m_ssl{true};

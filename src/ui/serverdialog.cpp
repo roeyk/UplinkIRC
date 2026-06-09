@@ -25,8 +25,10 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_port     = new QSpinBox;
     m_port->setRange(1, 65535);
     m_port->setValue(6697);
-    m_ssl      = new QCheckBox("Use SSL/TLS");
+    m_ssl       = new QCheckBox("Use SSL/TLS");
     m_ssl->setChecked(true);
+    m_websocket = new QCheckBox("Use WebSocket (ws:// / wss://)");
+
     m_nick     = new QLineEdit;
     m_user     = new QLineEdit;
     m_realname = new QLineEdit;
@@ -71,6 +73,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow("Host:",    m_host);
     form->addRow("Port:",    m_port);
     form->addRow("",         m_ssl);
+    form->addRow("",         m_websocket);
 
     form->addRow(makeHeader("Identity"));
     form->addRow("Nick:",      m_nick);
@@ -177,6 +180,7 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     m_host->setText(existing.host);
     m_port->setValue(existing.port);
     m_ssl->setChecked(existing.ssl);
+    m_websocket->setChecked(existing.websocket);
     m_nick->setText(existing.nick);
     m_user->setText(existing.user);
     m_realname->setText(existing.realname);
@@ -213,6 +217,7 @@ ServerConfig ServerDialog::serverConfig() const
     sc.host             = m_host->text().trimmed();
     sc.port             = static_cast<quint16>(m_port->value());
     sc.ssl              = m_ssl->isChecked();
+    sc.websocket        = m_websocket->isChecked();
     sc.nick             = m_nick->text().trimmed();
     sc.user             = m_user->text().trimmed();
     sc.realname         = m_realname->text().trimmed();

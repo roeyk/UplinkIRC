@@ -39,6 +39,7 @@ struct ServerConfig {
     QString            proxyUser;        // optional proxy username
     QString            proxyPass;        // optional proxy password
     QString            pinnedFingerprint; // SHA-256 hex of pinned TLS cert (empty = verify normally)
+    bool               websocket{false};  // connect via WebSocket (ws:// or wss://)
     QList<ChannelConfig> channels;
 
     bool operator==(const ServerConfig &o) const {

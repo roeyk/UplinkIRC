@@ -11,6 +11,7 @@
 #include <QSslCertificate>
 #include <QSslKey>
 #include <QSslSocket>
+#include <QWebSocket>
 #include <QTimer>
 
 static QString stripCrlf(QString s)
@@ -86,6 +87,26 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_proxyUser           = cfg.proxyUser;
     m_proxyPass           = cfg.proxyPass;
     m_pinnedFingerprint   = cfg.pinnedFingerprint;
+    m_useWs               = cfg.websocket;
+
+    if (m_useWs) {
+        if (!m_wsSocket) {
+            m_wsSocket = new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this);
+            connect(m_wsSocket, &QWebSocket::connected,           this, &IrcClient::onConnected);
+            connect(m_wsSocket, &QWebSocket::disconnected,        this, &IrcClient::onDisconnected);
+            connect(m_wsSocket, &QWebSocket::textMessageReceived, this, &IrcClient::onWsTextReceived);
+            connect(m_wsSocket, &QWebSocket::sslErrors,           this, &IrcClient::onSslErrors);
+            connect(m_wsSocket, &QWebSocket::errorOccurred,       this, &IrcClient::onErrorOccurred);
+        }
+        applyProxy();
+        QUrl url;
+        url.setScheme(m_ssl ? "wss" : "ws");
+        url.setHost(m_host);
+        url.setPort(m_port);
+        url.setPath("/");
+        m_wsSocket->open(url);
+        return;
+    }
 
     // Apply cached STS policy — upgrade plain to TLS if one exists
     if (!m_ssl) {
@@ -122,24 +143,64 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
 
 void IrcClient::applyProxy()
 {
-    if (!m_proxyHost.isEmpty()) {
-        QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, m_proxyHost, m_proxyPort,
-                            m_proxyUser, m_proxyPass);
+    QNetworkProxy proxy = m_proxyHost.isEmpty()
+        ? QNetworkProxy(QNetworkProxy::NoProxy)
+        : QNetworkProxy(QNetworkProxy::Socks5Proxy, m_proxyHost, m_proxyPort,
+                        m_proxyUser, m_proxyPass);
+    if (m_useWs && m_wsSocket)
+        m_wsSocket->setProxy(proxy);
+    else
         m_socket->setProxy(proxy);
-    } else {
-        m_socket->setProxy(QNetworkProxy(QNetworkProxy::NoProxy));
-    }
+}
+
+// ---------------------------------------------------------------------------
+// Socket abstraction helpers
+// ---------------------------------------------------------------------------
+
+void IrcClient::sockWrite(const QString &line)
+{
+    if (m_useWs)
+        m_wsSocket->sendTextMessage(line);
+    else
+        m_socket->write((line + "\r\n").toUtf8());
+}
+
+void IrcClient::sockDisconnect()
+{
+    if (m_useWs) m_wsSocket->close();
+    else         m_socket->disconnectFromHost();
+}
+
+void IrcClient::sockAbort()
+{
+    if (m_useWs) m_wsSocket->abort();
+    else         m_socket->abort();
+}
+
+QAbstractSocket::SocketState IrcClient::sockState() const
+{
+    return m_useWs ? m_wsSocket->state() : m_socket->state();
+}
+
+QHostAddress IrcClient::sockLocalAddress() const
+{
+    return m_useWs ? m_wsSocket->localAddress() : m_socket->localAddress();
+}
+
+QString IrcClient::sockErrorString() const
+{
+    return m_useWs ? m_wsSocket->errorString() : m_socket->errorString();
 }
 
 bool IrcClient::isConnected() const
 {
-    return m_socket->state() == QAbstractSocket::ConnectedState;
+    return sockState() == QAbstractSocket::ConnectedState;
 }
 
 quint32 IrcClient::localIpv4() const
 {
     bool ok = false;
-    const quint32 v4 = m_socket->localAddress().toIPv4Address(&ok);
+    const quint32 v4 = sockLocalAddress().toIPv4Address(&ok);
     return ok ? v4 : 0;
 }
 
@@ -148,7 +209,7 @@ void IrcClient::quit(const QString &reason)
     m_intentionalDisconnect = true;
     m_reconnectTimer->stop();
     sendRaw("QUIT :" + reason);
-    m_socket->disconnectFromHost();
+    sockDisconnect();
 }
 
 void IrcClient::join(const QString &channel, const QString &key)
@@ -166,7 +227,7 @@ void IrcClient::part(const QString &channel, const QString &reason)
 void IrcClient::privmsg(const QString &target, const QString &text, const QString &replyToMsgid)
 {
     if (!validIrcToken(target)) return;
-    if (m_socket->state() != QAbstractSocket::ConnectedState) {
+    if (sockState() != QAbstractSocket::ConnectedState) {
         emit errorMessage(m_host, "Not connected — message not sent");
         return;
     }
@@ -183,7 +244,7 @@ void IrcClient::sendMultiline(const QString &target, const QString &text,
                                const QString &replyToMsgid)
 {
     if (!validIrcToken(target)) return;
-    if (m_socket->state() != QAbstractSocket::ConnectedState) {
+    if (sockState() != QAbstractSocket::ConnectedState) {
         emit errorMessage(m_host, "Not connected — message not sent");
         return;
     }
@@ -216,7 +277,7 @@ void IrcClient::sendMultiline(const QString &target, const QString &text,
 void IrcClient::notice(const QString &target, const QString &text)
 {
     if (!validIrcToken(target)) return;
-    if (m_socket->state() != QAbstractSocket::ConnectedState) {
+    if (sockState() != QAbstractSocket::ConnectedState) {
         emit errorMessage(m_host, "Not connected — message not sent");
         return;
     }
@@ -318,10 +379,10 @@ static QString redactRawForLog(const QString &line)
 
 void IrcClient::sendRaw(const QString &line)
 {
-    if (m_socket->state() != QAbstractSocket::ConnectedState) return;
+    if (sockState() != QAbstractSocket::ConnectedState) return;
     const QString clean = stripCrlf(line).left(510); // 510 + CRLF = 512 (RFC 1459)
     emit rawReceived(">> " + redactRawForLog(clean));
-    m_socket->write((clean + "\r\n").toUtf8());
+    sockWrite(clean);
 }
 
 // ---------------------------------------------------------------------------
@@ -367,6 +428,15 @@ static constexpr qsizetype kMaxPendingBuffer = 64 * 1024;
 static constexpr qsizetype kMaxIrcLine       = 8192;
 static constexpr int       kMaxOpenBatches   = 8;
 static constexpr int       kMaxBatchMessages = 1000;
+
+void IrcClient::onWsTextReceived(const QString &message)
+{
+    // Each WebSocket text frame is one complete IRC line — no buffering needed.
+    const QString line = message.trimmed();
+    if (line.isEmpty() || line.size() > kMaxIrcLine) return;
+    emit rawReceived(line);
+    processLine(line);
+}
 
 void IrcClient::onReadyRead()
 {
@@ -417,14 +487,16 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
         for (const auto &e : errors)
             msgs << e.errorString();
         emit socketError(m_host, "TLS error: " + msgs.join("; "));
-        m_socket->disconnectFromHost();
+        sockDisconnect();
         return;
     }
 
-    const auto chain = m_socket->peerCertificateChain();
+    const auto chain = m_useWs
+        ? m_wsSocket->sslConfiguration().peerCertificateChain()
+        : m_socket->peerCertificateChain();
     if (chain.isEmpty()) {
         emit socketError(m_host, "TLS error: no peer certificate");
-        m_socket->disconnectFromHost();
+        sockDisconnect();
         return;
     }
     const QString fp = QString::fromLatin1(
@@ -432,28 +504,29 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
 
     if (!m_pinnedFingerprint.isEmpty()) {
         if (m_pinnedFingerprint.compare(fp, Qt::CaseInsensitive) == 0) {
-            m_socket->ignoreSslErrors(errors);
+            if (m_useWs) m_wsSocket->ignoreSslErrors(errors);
+            else         m_socket->ignoreSslErrors(errors);
             return;
         }
         emit socketError(m_host,
             QString("TLS: certificate fingerprint mismatch!\nPinned: %1\nGot:    %2")
                 .arg(m_pinnedFingerprint, fp));
-        m_socket->disconnectFromHost();
+        sockDisconnect();
         return;
     }
 
     // No pin — abort before any credentials are sent, then ask the user.
     // The connection is re-established after the user accepts the fingerprint.
     m_intentionalDisconnect = true;
-    m_socket->abort();
+    sockAbort();
     emit sslFingerprintPrompt(m_host, fp);
 }
 
 void IrcClient::abort()
 {
     m_intentionalDisconnect = true;
-    if (m_socket->state() != QAbstractSocket::UnconnectedState)
-        m_socket->disconnectFromHost();
+    if (sockState() != QAbstractSocket::UnconnectedState)
+        sockDisconnect();
 }
 
 void IrcClient::reconnect()
@@ -463,7 +536,7 @@ void IrcClient::reconnect()
 
 void IrcClient::onErrorOccurred(QAbstractSocket::SocketError)
 {
-    emit socketError(m_host, m_socket->errorString());
+    emit socketError(m_host, sockErrorString());
     // disconnected() and scheduleReconnect() are handled by onDisconnected()
     // which Qt emits after every socket error that closes the connection.
 }
@@ -481,7 +554,7 @@ void IrcClient::sendPing()
     if (m_pingPending) {
         if (m_pingClock.elapsed() > 90000) {
             emit socketError(m_host, "Ping timeout");
-            m_socket->abort();
+            sockAbort();
         }
         return;
     }
@@ -495,13 +568,21 @@ void IrcClient::doReconnect()
     emit reconnecting(m_host);
     emit serverMessage(m_host, "Reconnecting…");
     m_saslPending = false;
-    if (m_socket->state() != QAbstractSocket::UnconnectedState)
-        m_socket->abort();
+    if (sockState() != QAbstractSocket::UnconnectedState)
+        sockAbort();
     applyProxy();
-    if (m_ssl)
+    if (m_useWs) {
+        QUrl url;
+        url.setScheme(m_ssl ? "wss" : "ws");
+        url.setHost(m_host);
+        url.setPort(m_port);
+        url.setPath("/");
+        m_wsSocket->open(url);
+    } else if (m_ssl) {
         m_socket->connectToHostEncrypted(m_host, m_port);
-    else
+    } else {
         m_socket->connectToHost(m_host, m_port);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1005,8 +1086,8 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
                     m_stsUpgrade = true;
                     emit serverMessage(m_host, QString("STS: upgrading to TLS on port %1").arg(stsPort));
                     QTimer::singleShot(0, this, [this]() {
-                        if (m_socket->state() != QAbstractSocket::UnconnectedState)
-                            m_socket->abort();
+                        if (sockState() != QAbstractSocket::UnconnectedState)
+                            sockAbort();
                         applyProxy();
                         m_socket->connectToHostEncrypted(m_host, m_port);
                     });
