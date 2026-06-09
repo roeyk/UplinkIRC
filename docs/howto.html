@@ -432,6 +432,9 @@
     <li><a href="#sending">Sending messages</a></li>
     <li><a href="#commands">Slash commands</a></li>
     <li><a href="#user-lookup">Looking up users</a></li>
+    <li><a href="#channel-list">Channel list (/list)</a></li>
+    <li><a href="#server-queries">Server queries (/stats, /time, /whowas)</a></li>
+    <li><a href="#setname">Changing your realname</a></li>
     <li><a href="#pm">Private messages</a></li>
     <li><a href="#formatting">IRC formatting</a></li>
     <li><a href="#emoji">Emoji &amp; shortcodes</a></li>
@@ -1063,7 +1066,7 @@ channels        = "#linux"</pre>
     <h3>What soju mode enables</h3>
     <table>
       <tr><th>Capability</th><th>What it does</th></tr>
-      <tr><td><code>soju.im/bouncer-networks</code></td><td>Lists all IRC networks your soju manages in the server buffer on connect, so you can see what's available.</td></tr>
+      <tr><td><code>soju.im/bouncer-networks</code></td><td>Lists all IRC networks your soju manages in the server buffer on connect as a formatted summary — network name and connection state for each.</td></tr>
       <tr><td><code>soju.im/read</code></td><td>Syncs your read position across all connected clients. If you read a message on your phone, Uplink on your desktop already knows.</td></tr>
       <tr><td><code>chathistory</code></td><td>Requests missed messages on each channel join — soju supports this natively and delivers history with original timestamps.</td></tr>
     </table>
@@ -1406,6 +1409,11 @@ typing_indicator = true   # set to false to disable completely</pre>
       <tr><td><code>/ban mask</code></td><td>Ban a hostmask</td><td><code>/ban *!*@badhost.net</code></td></tr>
       <tr><td><code>/ping nick</code></td><td>Measure round-trip time to a nick — reply appears in the active channel</td><td><code>/ping bob</code></td></tr>
       <tr><td><code>/whois nick</code></td><td>Full user info (hostname, channels, idle time, account) — reply appears in the active channel</td><td><code>/whois bob</code></td></tr>
+      <tr><td><code>/whowas nick</code></td><td>History for a departed nick — last known user@host and realname — reply appears in the active channel</td><td><code>/whowas bob</code></td></tr>
+      <tr><td><code>/setname realname</code></td><td>Change your realname (GECOS) on the fly without reconnecting (IRCv3 setname)</td><td><code>/setname Alice Smith</code></td></tr>
+      <tr><td><code>/list [filter]</code></td><td>List all channels on the server — results appear in the server buffer</td><td><code>/list</code>, <code>/list #linux</code></td></tr>
+      <tr><td><code>/stats query</code></td><td>Request server statistics — results appear in the active channel</td><td><code>/stats u</code></td></tr>
+      <tr><td><code>/time</code></td><td>Query the server's local time</td><td><code>/time</code></td></tr>
       <tr><td><code>/version nick</code></td><td>Ask what IRC client a nick is running — reply appears in the active channel</td><td><code>/version bob</code></td></tr>
       <tr><td><code>/monitor add &lt;nick&gt;</code></td><td>Watch for a nick coming online</td><td><code>/monitor add alice</code></td></tr>
       <tr><td><code>/monitor del &lt;nick&gt;</code></td><td>Stop watching a nick</td><td><code>/monitor del alice</code></td></tr>
@@ -1522,6 +1530,59 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
       <li><strong>Ping</strong> — same as <code>/ping nick</code></li>
     </ul>
     <p>The reply appears in the active channel regardless of whether you used the command or the menu.</p>
+  </section>
+
+  <!-- CHANNEL LIST -->
+  <section id="channel-list">
+    <h2>Listing channels — /list</h2>
+    <p>To see all channels on the server, run:</p>
+    <pre>/list</pre>
+    <p>Results appear in the <strong>server buffer</strong> — click the server name in the sidebar to read them. Each line shows the channel name, user count, and topic.</p>
+    <p>You can pass a filter to narrow the results:</p>
+    <pre>/list #linux</pre>
+    <p>The filter is sent directly to the server — what it matches depends on the server's implementation. On most servers it is a substring match on the channel name.</p>
+    <div class="callout">
+      <strong>Large networks:</strong> On big networks like Libera.Chat, <code>/list</code> returns thousands of channels. The output can be long — scroll up in the server buffer to read it all.
+    </div>
+  </section>
+
+  <!-- SERVER QUERIES -->
+  <section id="server-queries">
+    <h2>Server queries — /stats, /time, /whowas</h2>
+
+    <h3>/stats — server statistics</h3>
+    <p>The <code>/stats</code> command asks the server for operational information. The result appears in the active channel buffer.</p>
+    <table>
+      <tr><th>Command</th><th>What it returns</th></tr>
+      <tr><td><code>/stats u</code></td><td>Server uptime</td></tr>
+      <tr><td><code>/stats o</code></td><td>IRC operator list</td></tr>
+      <tr><td><code>/stats m</code></td><td>Command usage counts</td></tr>
+    </table>
+    <p>Other letters may be supported depending on your IRC server. On Ergo, <code>/stats u</code> is the most useful.</p>
+
+    <h3>/time — server local time</h3>
+    <p>Run <code>/time</code> with no arguments to query the server's local time:</p>
+    <pre>/time</pre>
+    <p>The result appears in the active channel buffer. To query another user's local time via CTCP, use <code>/time nick</code> instead.</p>
+
+    <h3>/whowas — history for departed nicks</h3>
+    <p>If a nick has left the network, <code>/whowas</code> shows their last known connection details:</p>
+    <pre>/whowas alice</pre>
+    <p>The reply shows the user's last <code>user@host</code> and realname, and appears in the active channel buffer alongside WHOIS output.</p>
+    <div class="tip">
+      <strong>WHOWAS history is server-dependent.</strong> Most servers keep a short rolling history. If the nick left too long ago the server may return "No such nick".
+    </div>
+  </section>
+
+  <!-- SETNAME -->
+  <section id="setname">
+    <h2>Changing your realname — /setname</h2>
+    <p>Your <em>realname</em> (also called GECOS) is the longer description shown in WHOIS output. Normally it is set in your config and only applied when you connect. With the IRCv3 <code>setname</code> extension, you can change it on the fly without reconnecting:</p>
+    <pre>/setname Alice Smith</pre>
+    <p>The change takes effect immediately on servers that support <code>setname</code> (Ergo does). Other users in channels you share will see a status line: <em>alice changed their realname to "Alice Smith"</em>.</p>
+    <div class="callout">
+      <strong>Persisting the change:</strong> <code>/setname</code> only lasts for the current connection. To make it permanent, update the <code>realname</code> field in your config file and save.
+    </div>
   </section>
 
   <!-- PM -->

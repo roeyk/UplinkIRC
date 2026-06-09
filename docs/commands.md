@@ -119,6 +119,8 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | `/away [message]` | Set yourself as away with an optional message |
 | `/back` | Clear your away status |
 | `/whois <nick>` | Look up info about a user — reply appears in the active channel |
+| `/whowas <nick>` | Query history for a departed nick — shows last known user@host and realname |
+| `/setname <realname>` | Change your realname (GECOS) on the fly without reconnecting (IRCv3 setname) |
 | `/caps` | List all IRCv3 capabilities currently negotiated with the server |
 
 ### Examples
@@ -128,6 +130,8 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 /away grabbing coffee
 /back
 /whois alice
+/whowas alice
+/setname Alice Smith
 /caps
 ```
 
@@ -139,6 +143,9 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 |---|---|
 | `/quit [message]` | Disconnect from the current server with an optional quit message |
 | `/motd [server]` | Request the message of the day |
+| `/list [filter]` | List all channels on the server — results appear in the server buffer |
+| `/stats <query>` | Request server statistics — `u`=uptime, `o`=opers, `m`=commands |
+| `/time` | Query the server's local time |
 | `/oper <user> <pass>` | IRC operator login — sends `OPER user :pass` to the server |
 
 ### Examples
@@ -147,6 +154,11 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 /quit
 /quit later everyone
 /motd
+/list
+/list #linux
+/stats u
+/stats o
+/time
 /oper myname mysecretpassword
 ```
 
@@ -157,7 +169,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | Command | Description |
 |---|---|
 | `/ping <nick>` | Send a CTCP PING to a user — reply shows round-trip time in the active channel |
-| `/time <nick>` | Ask a user for their local time — reply appears in the active channel |
+| `/time <nick>` | Ask a user for their local time via CTCP — reply appears in the active channel |
 | `/version [nick]` | Request server version, or CTCP VERSION from a nick |
 | `/ctcp <nick> <command> [args]` | Send a raw CTCP request to a user |
 | `/sysinfo` | Collect OS, CPU, RAM, GPU, and uptime info and post it to the current channel — asks for confirmation before posting |

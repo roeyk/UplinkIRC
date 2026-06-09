@@ -129,7 +129,9 @@ When you are a member of a channel, the server notifies you any time someone is 
 
 ### `setname`
 
-Allows users to update their real name (GECOS) field after connecting via a `SETNAME` command. When another user in a shared channel changes their real name, Uplink posts a status line in every channel you share with them: `nick changed their realname to "…"`.
+Allows users to update their real name (GECOS) field after connecting. When another user in a shared channel changes their real name, Uplink posts a status line in every channel you share with them: `nick changed their realname to "…"`.
+
+You can change your own realname with `/setname <new realname>` — no reconnect needed.
 
 ### `userhost-in-names`
 

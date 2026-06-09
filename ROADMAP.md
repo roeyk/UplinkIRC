@@ -146,7 +146,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Monitor — /monitor add|del|list|clear|status; watch list persisted in config.toml; MONITOR + sent on connect; 730/731 online/offline posted to server buffer (v0.16.0)
 - [x] chghost — CAP negotiated; CHGHOST parsed; quiet "nick changed host" status line in shared channels; no fake QUIT+JOIN noise (v0.15.0)
 - [x] invite-notify — CAP negotiated; channel invite broadcasts post to channel buffer; direct invites post to server buffer (v0.16.0)
-- [x] setname — CAP negotiated; SETNAME parsed; "nick changed their realname" posted to shared channels (v0.16.0)
+- [x] setname — CAP negotiated; SETNAME parsed; "nick changed their realname" posted to shared channels (v0.16.0); /setname send side added (v0.25.2)
 - [x] WHOX — WHO <channel> %cnfa,42; 354 RPL_WHOSPCRPL parsed; account names populated on join; bot flags preserved (v0.16.0); parser corrected for Ergo's 5-field format (no token) — was silently dropping all WHO replies (v0.25.0)
 - [x] userhost-in-names — CAP negotiated; !user@host stripped from NAMES entries before display (v0.16.0)
 - [x] STS (Strict Transport Security) — auto-upgrade plaintext connections to TLS; policy cached to ~/.config/uplink/sts.ini; stsstore.h/cpp; m_stsUpgrade flag; downgrade prevention (v0.16.3)
@@ -163,7 +163,12 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Pane layout persistence — save/restore pane arrangement across sessions
 - [x] Message reactions — IRCv3 draft/react; receive + store per-msgid; render inline below messages; right-click timestamp → React; /react command; IrcClient::sendReact (v0.15.0)
 - [x] Multiline messages — IRCv3 draft/multiline; compose and render multi-line message blocks
+- [x] /list command — sends LIST to server; RPL_LIST (322) and RPL_LISTEND (323) displayed in server buffer with user count and topic (v0.25.2)
 - [ ] /list dialog — QDialog channel browser; streams RPL_LIST (322) results into a sortable QTableWidget (channel, users, topic); live filter box; double-click to join; batched UI inserts to stay responsive on large networks; guard against concurrent LIST requests
+- [x] /whowas — RPL_WHOWASUSER (314) and RPL_ENDOFWHOWAS (369); results in active buffer alongside WHOIS (v0.25.2)
+- [x] /stats — routes 211–219 and 241–244 to active buffer; /stats u=uptime, o=opers, m=commands (v0.25.2)
+- [x] /time (server) — bare /time sends IRC TIME command; RPL_TIME (391) handled; /time <nick> CTCP already existed (v0.25.2)
+- [x] Soju bouncer network selection — SASL AUTHENTICATE payload now sends user/network when bouncerNetwork is set; LISTNETWORKS END handled; initial network list shown as formatted summary (v0.25.2)
 - [ ] IRCv3 WebSocket transport — connect to servers over wss:// in addition to plain TCP+TLS
 - [ ] User metadata — IRCv3 metadata keys: display-name, avatar, pronouns; show in nick list and tooltips
 

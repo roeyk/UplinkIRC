@@ -687,6 +687,39 @@ Session 2026-06-08 (continued — documentation audit + Ctrl+W):
 Next: no pending items.
 -->
 
+<!--
+Session summary — 2026-06-08 (v0.25.2 — IRC command completions + soju bouncer fix)
+
+Added a batch of missing IRC commands and fixed the soju bouncer network selection:
+
+- /list [filter] — sends LIST to the server; RPL_LIST (322) and RPL_LISTEND (323) collected and
+  displayed in the server buffer. A GUI dialog (/list dialog with live search) was discussed but
+  deferred — the text output is solid for now and the dialog is still on the roadmap.
+- /setname <realname> — send side added. Receive side (parsing SETNAME from others, "nick changed
+  their realname" in shared channels) was already done since v0.16.0. Now you can change your own
+  realname on the fly without reconnecting.
+- /whowas <nick> — was completely unimplemented. Now handles RPL_WHOWASUSER (314) and
+  RPL_ENDOFWHOWAS (369); results appear in the current buffer alongside WHOIS replies.
+- /stats <query> — was completely unimplemented. Now routes numerics 211–219 and 241–244 to the
+  current buffer. Typical usage: /stats u (uptime), /stats o (opers), /stats m (commands).
+- /time (no args) — bare /time was silently doing nothing. Now sends the IRC TIME command and
+  handles RPL_TIME (391). /time <nick> (CTCP) was already working.
+- Soju bouncer: SASL username fix — m_bouncerNetwork was stored in config and shown in the server
+  dialog but never actually used when authenticating. For soju, the SASL AUTHENTICATE payload must
+  send "user/network" as the username. This was the main reason soju network selection did not work.
+- Soju bouncer: LISTNETWORKS END — BOUNCER LISTNETWORKS END was unhandled. Networks are now
+  buffered during the initial listing and shown as a formatted summary when the list completes.
+  Live BOUNCER NETWORK state-change messages (outside of a listing) still print per-event.
+- Deleted resources/icons/uplink-icon.svg — untracked leftover from an abandoned SVG window icon
+  experiment; was never committed or referenced in the build.
+
+No bugs found or regressions this session. v0.25.2 tagged and released; all 4 CI jobs passed;
+AppImage, Windows zip, and macOS dmg all uploaded. Doc auto-bump blocked by branch protection
+so applied manually.
+
+Next: /knock, /links, bouncer network selection UI, /list GUI dialog (still on roadmap).
+-->
+
 ## v0.25.2 — 2026-06-08
 
 ### Features
