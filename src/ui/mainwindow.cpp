@@ -597,7 +597,7 @@ void MainWindow::setupToolbar()
             m_aboutDialog->showCentered();
         });
 
-        menu->addAction(MenuIcons::about(ic), "Check for Updates", this, [this]{
+        menu->addAction(MenuIcons::checkForUpdates(ic), "Check for Updates", this, [this]{
             auto *nam = new QNetworkAccessManager(this);
             QNetworkRequest req(QUrl("https://api.github.com/repos/noderelay/UplinkIRC/releases/latest"));
             req.setRawHeader("User-Agent", "Uplink/" UPLINK_VERSION);

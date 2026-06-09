@@ -20,6 +20,7 @@
         <file alias="mi-signal-cellular-alt.svg">icons/mi-signal-cellular-alt.svg</file>
         <file alias="mi-format-color-text.svg">icons/mi-format-color-text.svg</file>
         <file alias="mi-logout.svg">icons/mi-logout.svg</file>
+        <file alias="mi-new-releases.svg">icons/mi-new-releases.svg</file>
         <file alias="mi-visibility.svg">icons/mi-visibility.svg</file>
         <file alias="mi-visibility-off.svg">icons/mi-visibility-off.svg</file>
         <file alias="mi-arrow-drop-down.svg">icons/mi-arrow-drop-down.svg</file>

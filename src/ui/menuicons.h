@@ -40,6 +40,7 @@ inline QIcon emojiButton    (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon typingIndicator(const QColor &c = {}) { return fromSvg(":/icons/mi-pending.svg",            c); }
 inline QIcon connStatus     (const QColor &c = {}) { return fromSvg(":/icons/mi-signal-cellular-alt.svg",c); }
 inline QIcon coloredNicks   (const QColor &c = {}) { return fromSvg(":/icons/mi-format-color-text.svg",  c); }
+inline QIcon checkForUpdates(const QColor &c = {}) { return fromSvg(":/icons/mi-new-releases.svg",       c); }
 inline QIcon exit           (const QColor &c = {}) { return fromSvg(":/icons/mi-logout.svg",             c); }
 inline QIcon preferences    (const QColor &c = {}) { return fromSvg(":/icons/mi-tune.svg",               c); }
 inline QIcon eye            (const QColor &c = {}) { return fromSvg(":/icons/mi-visibility.svg",          c); }
