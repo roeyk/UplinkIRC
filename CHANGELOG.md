@@ -688,6 +688,20 @@ Next: no pending items.
 -->
 
 <!--
+Session summary — 2026-06-09 (post-v0.25.2 — icon polish)
+
+Fixed stale local build (version.h was stale, showed v0.25.1 in About dialog after
+v0.25.2 release — solved by re-running cmake configure; CI was never affected).
+
+Gave "Check for Updates" its own Material Symbols icon (mi-new-releases.svg) instead
+of sharing the info icon with "About Uplink". All burger menu items now have distinct
+icons.
+
+No version bump — cosmetic/icon change only.
+Commit: 720c73b
+-->
+
+<!--
 Session summary — 2026-06-08 (v0.25.2 — IRC command completions + soju bouncer fix)
 
 Added a batch of missing IRC commands and fixed the soju bouncer network selection:
