@@ -734,6 +734,21 @@ so applied manually.
 Next: /knock, /links, bouncer network selection UI, /list GUI dialog (still on roadmap).
 -->
 
+<!--
+Session summary — 2026-06-08 (UI polish — Material icons on dialog buttons)
+
+Small polish pass, no version bump.
+
+- Removed tab pane border (QTabWidget::pane) in the docs dialog — cleaner M3 look
+- Dropped redundant 2px QPushButton border (same color as fill, purely geometric waste)
+- Added mi-check and mi-close Material Symbols SVG icons
+- Wired confirm (✓) and close (✗) icons onto OK/Cancel/Close buttons in all four
+  dialogs: DocsDialog, FontDialog, ManageServersDialog, ServerDialog
+
+Commit: 229fa83
+No regressions. Binary builds clean on Linux.
+-->
+
 ## v0.25.2 — 2026-06-08
 
 ### Features
