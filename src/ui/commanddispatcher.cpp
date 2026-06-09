@@ -329,6 +329,11 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         m_model->sendRaw(host, args.isEmpty() ? "MOTD" : "MOTD " + args.trimmed());
     } else if (cmd == "/whois") {
         m_model->sendRaw(host, "WHOIS " + args.trimmed());
+    } else if (cmd == "/whowas") {
+        if (args.trimmed().isEmpty())
+            m_model->localMessage(host, channel, "Usage: /whowas <nick>");
+        else
+            m_model->sendRaw(host, "WHOWAS " + args.trimmed());
     } else if (cmd == "/topic") {
         QString topicTarget = channel;
         QString topicText   = args;
@@ -561,6 +566,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
             "  /away [message]             — set away status",
             "  /back                       — clear away status",
             "  /whois <nick>               — request WHOIS info",
+            "  /whowas <nick>              — request WHOWAS info for a departed nick",
             "  /setname <realname>         — change your realname (IRCv3 setname)",
             "  /list [filter]              — list channels on the server",
             "  /motd [server]              — request the MOTD",

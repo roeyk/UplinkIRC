@@ -1249,6 +1249,18 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         m_listBuffer.clear();
         break;
 
+    case 314: { // RPL_WHOWASUSER — <client> <nick> <user> <host> * :<realname>
+        if (params.size() >= 4) {
+            const QString line = params[1] + " was " + params[2] + "@" + params[3]
+                + (trailing.isEmpty() ? QString() : " (" + trailing + ")");
+            emit contextualMessage(m_host, line);
+        }
+        break;
+    }
+    case 369: // RPL_ENDOFWHOWAS
+        if (!trailing.isEmpty()) emit contextualMessage(m_host, trailing);
+        break;
+
     // WHOIS replies — route to active channel/window
     case 301: case 307: case 311: case 312: case 313:
     case 317: case 318: case 319: case 320: case 671:
