@@ -1263,6 +1263,13 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         m_listBuffer.clear();
         break;
 
+    case 391: { // RPL_TIME — <client> <server> [<timestamp>] :<human-readable>
+        const QString srv  = params.size() >= 2 ? params[1] : m_host;
+        const QString time = trailing.isEmpty() ? "(no time returned)" : trailing;
+        emit contextualMessage(m_host, "Time on " + srv + ": " + time);
+        break;
+    }
+
     case 211: case 212: case 213: case 214: case 215:
     case 216: case 217: case 218: case 241: case 242:
     case 243: case 244: case 249: case 250: { // STATS reply lines

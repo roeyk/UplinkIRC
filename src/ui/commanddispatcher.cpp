@@ -439,6 +439,8 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         if (!nick.isEmpty()) {
             m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01TIME\x01");
             m_model->localMessage(host, channel, "Querying time for " + nick);
+        } else {
+            m_model->sendRaw(host, "TIME");
         }
     } else if (cmd == "/invite") {
         const QString nick = args.section(' ', 0, 0);
