@@ -298,13 +298,15 @@ user      = "uplink"
 realname  = "Uplink User"
 ```
 
----
-
-## Planned capabilities
-
 ### `cap-notify`
 
-Notifies the client if the server gains or loses capabilities after the initial handshake. Lets the client adapt to capability changes dynamically.
+Keeps Uplink in sync if the server's capability set changes while you're already connected. Without this, Uplink only knows what the server can do at login time and never learns about changes.
+
+When `cap-notify` is active, the server sends:
+- `CAP NEW <caps>` — a capability was added (e.g. a server module was loaded). Uplink checks whether any of the new caps are on its wanted list and sends a `CAP REQ` for them.
+- `CAP DEL <caps>` — a capability was removed. Uplink drops it from its active set so it stops trying to use it.
+
+No configuration required. Negotiated automatically when the server supports it.
 
 ---
 

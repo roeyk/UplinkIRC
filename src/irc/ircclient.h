@@ -204,6 +204,7 @@ private:
     QSet<QString>               m_requestedCaps;
     QSet<QString>               m_ackedCaps;
     QStringList                 m_capLsBuffer;
+    bool                        m_registered{false};
     QHash<QString, QStringList> m_namesBuffer;
     QList<QStringList>          m_listBuffer;         // [channel, count, topic] per entry
     QList<QStringList>          m_bouncerNetBuf;      // [id, name, state] per soju network

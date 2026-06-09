@@ -784,6 +784,14 @@ No regressions found. All 3 CI + Release jobs passed on final push.
 Binaries: AppImage, tar.gz (Linux), zip (Windows), dmg (macOS) — all on v0.25.3 release page.
 -->
 
+## v0.25.4 — 2026-06-09
+
+### Features
+
+- **`cap-notify`** — Uplink now negotiates `cap-notify` so the server can inform it of capability changes mid-session. If the server adds a capability (`CAP NEW`), Uplink requests any new caps it wants. If the server removes one (`CAP DEL`), Uplink drops it from its active set. Handles the `m_registered` flag correctly so mid-session `CAP ACK` responses do not fire a spurious `CAP END`.
+
+---
+
 ## v0.25.3 — 2026-06-09
 
 ### Features

@@ -422,6 +422,7 @@ void IrcClient::onDisconnected()
     m_capLsBuffer.clear();
     m_batches.clear();
     m_saslPending = false;
+    m_registered  = false;
     emit disconnected(m_host);
     if (!m_stsUpgrade)
         scheduleReconnect();
@@ -1116,7 +1117,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             "chathistory", "echo-message", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
-            "draft/metadata-2",
+            "draft/metadata-2", "cap-notify",
         };
 
         // ZNC-specific caps
@@ -1156,12 +1157,14 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         for (const QString &cap : acked)
             m_ackedCaps.insert(cap.startsWith('-') ? cap.mid(1) : cap);
 
-        if (acked.contains("sasl") &&
-            ((!m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) || m_saslExternal)) {
-            m_saslPending = true;
-            sendRaw(m_saslExternal ? "AUTHENTICATE EXTERNAL" : "AUTHENTICATE PLAIN");
-        } else {
-            sendRaw("CAP END");
+        if (!m_registered) {
+            if (acked.contains("sasl") &&
+                ((!m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) || m_saslExternal)) {
+                m_saslPending = true;
+                sendRaw(m_saslExternal ? "AUTHENTICATE EXTERNAL" : "AUTHENTICATE PLAIN");
+            } else {
+                sendRaw("CAP END");
+            }
         }
 
         if (m_ackedCaps.contains("draft/metadata-2"))
@@ -1177,7 +1180,46 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
     }
 
     if (subCmd == "NAK") {
-        sendRaw("CAP END");
+        if (!m_registered)
+            sendRaw("CAP END");
+        return;
+    }
+
+    if (subCmd == "NEW") {
+        // Server added capabilities mid-session — request any we want
+        const QStringList newCaps = trailing.split(' ', Qt::SkipEmptyParts);
+        QStringList desired = {
+            "multi-prefix", "away-notify", "server-time",
+            "message-tags", "batch", "labeled-response", "draft/typing",
+            "chathistory", "echo-message", "chghost", "draft/react",
+            "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
+            "userhost-in-names", "draft/message-redaction", "draft/multiline",
+            "draft/metadata-2", "cap-notify",
+        };
+        if (m_bouncerType == BouncerType::ZNC)
+            desired << "znc.in/playback" << "znc.in/self-message" << "znc.in/batch";
+        if (m_bouncerType == BouncerType::Soju)
+            desired << "soju.im/bouncer-networks" << "soju.im/bouncer-networks-notify"
+                    << "soju.im/read" << "soju.im/no-implicit-names";
+        if ((!m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) || m_saslExternal)
+            desired << "sasl";
+
+        QStringList want;
+        for (const QString &cap : newCaps) {
+            const QString name = cap.section('=', 0, 0);
+            if (desired.contains(name) && !m_ackedCaps.contains(name))
+                want << name;
+        }
+        if (!want.isEmpty())
+            sendRaw("CAP REQ :" + want.join(' '));
+        return;
+    }
+
+    if (subCmd == "DEL") {
+        // Server removed capabilities mid-session
+        const QStringList delCaps = trailing.split(' ', Qt::SkipEmptyParts);
+        for (const QString &cap : delCaps)
+            m_ackedCaps.remove(cap);
         return;
     }
 }
@@ -1192,6 +1234,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
 
     switch (n) {
     case 1:   // RPL_WELCOME
+        m_registered = true;
         emit connected(m_host);
         emit serverMessage(m_host, trailing);
         if (!m_nickservPassword.isEmpty()) {
