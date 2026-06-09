@@ -687,6 +687,20 @@ Session 2026-06-08 (continued — documentation audit + Ctrl+W):
 Next: no pending items.
 -->
 
+## v0.25.2 — 2026-06-08
+
+### Features
+
+- **`/list [filter]`** — lists channels on the server. Results appear in the server buffer with user count and topic. Handles `RPL_LIST` (322) and `RPL_LISTEND` (323).
+- **`/setname <realname>`** — changes your realname on the fly via IRCv3 `setname`. Other users in shared channels see the change immediately. Receive side was already wired; this adds the send side.
+- **`/whowas <nick>`** — queries history for a departed nick. Handles `RPL_WHOWASUSER` (314) and `RPL_ENDOFWHOWAS` (369); results appear in the current buffer alongside WHOIS output.
+- **`/stats <query>`** — queries server statistics (e.g. `u`=uptime, `o`=opers, `m`=commands). Routes numerics 211–219 and 241–244 to the current buffer.
+- **`/time` (no args)** — queries the server's local time. `/time <nick>` (CTCP) was already supported; bare `/time` now sends the IRC `TIME` command and handles `RPL_TIME` (391).
+- **Soju bouncer: network selection via SASL** — when bouncer type is Soju and a network name is configured, the SASL `AUTHENTICATE` payload now sends `user/network` as the username so soju routes the connection to the correct network. Previously the network name was stored but never used.
+- **Soju bouncer: `LISTNETWORKS END` handling** — `BOUNCER LISTNETWORKS END` is now handled. Networks are buffered during the initial listing and displayed as a formatted summary when the list is complete. Live state-change notifications (`BOUNCER NETWORK` outside of a listing) continue to print per-event lines.
+
+---
+
 ## v0.25.1 — 2026-06-08
 
 ### Bug Fixes
