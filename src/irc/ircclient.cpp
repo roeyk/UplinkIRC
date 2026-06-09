@@ -1254,11 +1254,14 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
 
     case 322: // RPL_LIST — <client> <channel> <count> :<topic>
-        if (params.size() >= 3)
+        if (params.size() >= 3) {
             m_listBuffer.append({params[1], params[2], trailing});
+            emit channelListEntry(m_host, params[1], params[2].toInt(), trailing);
+        }
         break;
 
     case 323: // RPL_LISTEND
+        emit channelListEnd(m_host, static_cast<int>(m_listBuffer.size()));
         emit channelListReceived(m_host, m_listBuffer);
         m_listBuffer.clear();
         break;

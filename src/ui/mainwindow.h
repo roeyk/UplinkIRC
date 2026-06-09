@@ -19,6 +19,7 @@ class NickDelegate;
 class TrayIcon;
 class SignalBars;
 class AboutDialog;
+class ChannelListDialog;
 class DocsDialog;
 class PreferencesDialog;
 class LinkPreview;
@@ -97,6 +98,7 @@ private:
     void connectPreferences();
 
     void switchToChannel(const QString &host, const QString &channel);
+    void openChannelList(const QString &host);
     void refreshChatView(const QString &host, const QString &channel);
     void refreshNickList(const QString &host, const QString &channel);
     void scheduleNickRefresh(const QString &host, const QString &channel);
@@ -198,9 +200,10 @@ private:
     QString       m_pendingReactMsgid;
     QString       m_pendingReactHost;
     QString       m_pendingReactChannel;
-    AboutDialog       *m_aboutDialog{nullptr};
-    DocsDialog        *m_docsDialog{nullptr};
-    PreferencesDialog *m_prefsDialog{nullptr};
+    AboutDialog        *m_aboutDialog{nullptr};
+    ChannelListDialog  *m_channelListDialog{nullptr};
+    DocsDialog         *m_docsDialog{nullptr};
+    PreferencesDialog  *m_prefsDialog{nullptr};
     EmojiPicker       *m_emojiPicker{nullptr};
 
     // Typing indicator state

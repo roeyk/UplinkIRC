@@ -21,6 +21,7 @@ signals:
     void focusInput();
     void clearChat();
     void replyBarCleared();
+    void openChannelList(const QString &host);
 
 private:
     SessionModel *m_model;

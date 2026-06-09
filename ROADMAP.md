@@ -164,7 +164,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Message reactions — IRCv3 draft/react; receive + store per-msgid; render inline below messages; right-click timestamp → React; /react command; IrcClient::sendReact (v0.15.0)
 - [x] Multiline messages — IRCv3 draft/multiline; compose and render multi-line message blocks
 - [x] /list command — sends LIST to server; RPL_LIST (322) and RPL_LISTEND (323) displayed in server buffer with user count and topic (v0.25.2)
-- [ ] /list dialog — QDialog channel browser; streams RPL_LIST (322) results into a sortable QTableWidget (channel, users, topic); live filter box; double-click to join; batched UI inserts to stay responsive on large networks; guard against concurrent LIST requests
+- [x] /list dialog — QDialog channel browser; streams RPL_LIST (322) results into a sortable QTableWidget (channel, users, topic); live filter box; double-click to join; batched UI inserts to stay responsive on large networks; guard against concurrent LIST requests
 - [x] /whowas — RPL_WHOWASUSER (314) and RPL_ENDOFWHOWAS (369); results in active buffer alongside WHOIS (v0.25.2)
 - [x] /stats — routes 211–219 and 241–244 to active buffer; /stats u=uptime, o=opers, m=commands (v0.25.2)
 - [x] /time (server) — bare /time sends IRC TIME command; RPL_TIME (391) handled; /time <nick> CTCP already existed (v0.25.2)

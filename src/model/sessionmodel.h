@@ -98,6 +98,10 @@ signals:
     void typingReceived(const QString &host, const QString &channel,
                         const QString &nick, const QString &state);
 
+    // Channel list
+    void channelListEntry(const QString &host, const QString &channel, int users, const QString &topic);
+    void channelListEnd  (const QString &host, int total);
+
     // TLS cert pin
     void sslFingerprintPrompt(const QString &host, const QString &fingerprint);
 

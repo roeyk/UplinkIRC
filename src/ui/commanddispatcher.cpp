@@ -324,7 +324,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         else
             m_model->sendRaw(host, "SETNAME :" + args.trimmed());
     } else if (cmd == "/list") {
-        m_model->sendRaw(host, args.isEmpty() ? "LIST" : "LIST " + args.trimmed());
+        emit openChannelList(host);
     } else if (cmd == "/motd") {
         m_model->sendRaw(host, args.isEmpty() ? "MOTD" : "MOTD " + args.trimmed());
     } else if (cmd == "/stats") {

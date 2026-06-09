@@ -5,6 +5,7 @@
 #include "irc/dccreceive.h"
 #include "ui/trayicon.h"
 #include "ui/aboutdialog.h"
+#include "ui/channellistdialog.h"
 #include "ui/docsdialog.h"
 #include "ui/fontdialog.h"
 #include "ui/preferencesdialog.h"
@@ -535,9 +536,10 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     });
 
     m_dispatcher = new CommandDispatcher(m_model, &m_config, this, this);
-    connect(m_dispatcher, &CommandDispatcher::switchChannel, this, &MainWindow::switchToChannel);
-    connect(m_dispatcher, &CommandDispatcher::focusInput,    this, [this]{ if (m_input) m_input->setFocus(); });
-    connect(m_dispatcher, &CommandDispatcher::clearChat,     this, [this]{ if (m_chatView) m_chatView->clear(); });
+    connect(m_dispatcher, &CommandDispatcher::switchChannel,  this, &MainWindow::switchToChannel);
+    connect(m_dispatcher, &CommandDispatcher::focusInput,     this, [this]{ if (m_input) m_input->setFocus(); });
+    connect(m_dispatcher, &CommandDispatcher::clearChat,      this, [this]{ if (m_chatView) m_chatView->clear(); });
+    connect(m_dispatcher, &CommandDispatcher::openChannelList,this, &MainWindow::openChannelList);
     connect(m_dispatcher, &CommandDispatcher::replyBarCleared, this, &MainWindow::clearReplyBar);
 }
 
@@ -2767,6 +2769,44 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
 
     setWindowTitle("Uplink — " + channel + " @ " + host);
     updateTypingLabel();
+}
+
+void MainWindow::openChannelList(const QString &host)
+{
+    if (m_channelListDialog && m_channelListDialog->host() == host) {
+        m_channelListDialog->show();
+        m_channelListDialog->raise();
+        m_channelListDialog->activateWindow();
+        return;
+    }
+
+    if (m_channelListDialog)
+        m_channelListDialog->deleteLater();
+
+    m_channelListDialog = new ChannelListDialog(host, this);
+
+    connect(m_model, &SessionModel::channelListEntry,
+            m_channelListDialog, [this, host](const QString &h, const QString &ch, int u, const QString &t) {
+        if (h == host)
+            m_channelListDialog->addEntry(ch, u, t);
+    });
+    connect(m_model, &SessionModel::channelListEnd,
+            m_channelListDialog, [this, host](const QString &h, int total) {
+        if (h == host)
+            m_channelListDialog->onListEnd(total);
+    });
+    connect(m_channelListDialog, &ChannelListDialog::joinRequested,
+            this, [this](const QString &h, const QString &channel) {
+        m_model->sendRaw(h, "JOIN " + channel);
+    });
+    connect(m_channelListDialog, &ChannelListDialog::refreshRequested,
+            this, [this](const QString &h) {
+        m_channelListDialog->reset();
+        m_model->sendRaw(h, "LIST");
+    });
+
+    m_model->sendRaw(host, "LIST");
+    m_channelListDialog->show();
 }
 
 void MainWindow::onSidebarContextMenu(const QPoint &pos)

@@ -121,6 +121,8 @@ signals:
     void setNameReceived(const QString &server, const QString &nick, const QString &realname);
     void monitorOnline (const QString &server, const QStringList &nicks);
     void monitorOffline(const QString &server, const QStringList &nicks);
+    void channelListEntry   (const QString &server, const QString &channel, int users, const QString &topic);
+    void channelListEnd     (const QString &server, int total);
     void channelListReceived(const QString &server, const QList<QStringList> &entries);
     void bouncerNetworksListed(const QString &server, const QList<QStringList> &networks);
     void netsplitDetected(const QString &server, const QString &splitServers, const QStringList &nicks);
