@@ -862,13 +862,31 @@ void MainWindow::connectPreferences()
         m_config.profileDisplayName = displayName;
         m_config.profileAvatarUrl   = avatarUrl;
         Config::save(m_config, Config::defaultPath());
+        QStringList sent, skipped;
         for (const auto &sess : m_model->sessions()) {
             if (!sess.connected) continue;
             auto *cl = m_model->clientFor(sess.host);
-            if (!cl || !cl->hasCap("draft/metadata-2")) continue;
+            if (!cl || !cl->hasCap("draft/metadata-2")) {
+                skipped << sess.name;
+                continue;
+            }
             m_model->sendRaw(sess.host, "METADATA * SET display-name :" + displayName);
-            m_model->sendRaw(sess.host, "METADATA * SET avatar :" + avatarUrl);
+            const bool localPath = avatarUrl.startsWith('/') || QUrl(avatarUrl).isLocalFile();
+            if (!localPath)
+                m_model->sendRaw(sess.host, "METADATA * SET avatar :" + avatarUrl);
+            sent << sess.name;
         }
+        const QString activeHost = m_model->activeHost();
+        const QString activeChan = m_model->activeChannel();
+        if (!sent.isEmpty())
+            m_model->localMessage(activeHost, activeChan,
+                "Profile sent to: " + sent.join(", "));
+        if (!skipped.isEmpty())
+            m_model->localMessage(activeHost, activeChan,
+                "Skipped (no draft/metadata-2 support): " + skipped.join(", "));
+        if (sent.isEmpty() && skipped.isEmpty())
+            m_model->localMessage(activeHost, activeChan,
+                "No connected servers to send profile to.");
     });
 }
 
@@ -1602,6 +1620,10 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
     connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
     connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
+    connect(m_model, &SessionModel::userMetaChanged, this,
+            [this](const QString &, const QString &, const QString &key, const QString &value) {
+        if (key == QLatin1String("avatar")) fetchAvatar(value);
+    });
 
     connect(m_model, &SessionModel::sslFingerprintPrompt, this,
             [this](const QString &host, const QString &fp)
@@ -2382,7 +2404,10 @@ void MainWindow::onServerConnected(const QString &host)
         auto *cl = m_model->clientFor(host);
         if (cl && cl->hasCap("draft/metadata-2")) {
             m_model->sendRaw(host, "METADATA * SET display-name :" + m_config.profileDisplayName);
-            m_model->sendRaw(host, "METADATA * SET avatar :" + m_config.profileAvatarUrl);
+            const bool localPath = m_config.profileAvatarUrl.startsWith('/')
+                                   || QUrl(m_config.profileAvatarUrl).isLocalFile();
+            if (!localPath)
+                m_model->sendRaw(host, "METADATA * SET avatar :" + m_config.profileAvatarUrl);
         }
     }
 }
@@ -3604,15 +3629,36 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
             if (it != sess->nickMeta.constEnd())
                 meta = &it.value();
         }
-        QStringList tips;
-        if (meta && !meta->displayName.isEmpty())
-            tips << "Display Name: " + meta->displayName;
-        if (!e.account.isEmpty())
-            tips << "Account: " + e.account;
-        if (meta && !meta->avatarUrl.isEmpty())
-            tips << "Avatar: " + meta->avatarUrl;
-        if (!tips.isEmpty())
-            item->setToolTip(tips.join('\n'));
+        const bool hasAvatarImage = meta && !meta->avatarUrl.isEmpty()
+                                    && m_avatarCache.contains(meta->avatarUrl);
+        if (hasAvatarImage) {
+            QByteArray bytes;
+            QBuffer buf(&bytes);
+            buf.open(QIODevice::WriteOnly);
+            m_avatarCache[meta->avatarUrl].save(&buf, "PNG");
+            const QString b64 = QString::fromLatin1(bytes.toBase64());
+            QStringList lines;
+            if (!meta->displayName.isEmpty())
+                lines << "Name:" + meta->displayName.toHtmlEscaped();
+            if (!e.account.isEmpty())
+                lines << "Account: " + e.account.toHtmlEscaped();
+            item->setToolTip(
+                QString("<html><body><table><tr>"
+                        "<td><img src='data:image/png;base64,%1'></td>"
+                        "<td style='padding-left:8px;vertical-align:middle'>%2</td>"
+                        "</tr></table></body></html>")
+                    .arg(b64, lines.join("<br>")));
+        } else {
+            QStringList tips;
+            if (meta && !meta->displayName.isEmpty())
+                tips << "Name:" + meta->displayName;
+            if (!e.account.isEmpty())
+                tips << "Account: " + e.account;
+            if (meta && !meta->avatarUrl.isEmpty())
+                tips << "Avatar: " + meta->avatarUrl;
+            if (!tips.isEmpty())
+                item->setToolTip(tips.join('\n'));
+        }
     }
     if (m_config.ui.coloredNicks)
         item->setForeground(ChatRenderer::nickColor(e.nick));
@@ -3865,4 +3911,45 @@ QString MainWindow::formatMessage(const Message &msg) const
     ctx.selfNickRe   = m_selfNickRe;
     ctx.channel      = m_model->channel(m_model->activeHost(), m_model->activeChannel());
     return ChatRenderer::formatMessage(msg, ctx);
+}
+
+void MainWindow::fetchAvatar(const QString &url)
+{
+    if (url.isEmpty() || m_avatarCache.contains(url) || m_avatarFetching.contains(url))
+        return;
+
+    auto cacheAndRefresh = [this, url](QPixmap px) {
+        if (px.isNull()) return;
+        if (px.width() > 32 || px.height() > 32)
+            px = px.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        m_avatarCache.insert(url, px);
+        scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
+    };
+
+    // Local file — load directly without network
+    const QUrl qurl(url);
+    if (qurl.isLocalFile()) {
+        cacheAndRefresh(QPixmap(qurl.toLocalFile()));
+        return;
+    }
+    if (url.startsWith('/')) {
+        cacheAndRefresh(QPixmap(url));
+        return;
+    }
+
+    if (!m_avatarNam)
+        m_avatarNam = new QNetworkAccessManager(this);
+    m_avatarFetching.insert(url);
+    QNetworkRequest req{qurl};
+    req.setRawHeader("User-Agent", "Uplink/" UPLINK_VERSION);
+    auto *reply = m_avatarNam->get(req);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, url, cacheAndRefresh] {
+        reply->deleteLater();
+        m_avatarFetching.remove(url);
+        if (reply->error() != QNetworkReply::NoError)
+            return;
+        QPixmap px;
+        if (px.loadFromData(reply->readAll()))
+            cacheAndRefresh(px);
+    });
 }

@@ -329,10 +329,12 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
             m_model->localMessage(host, channel,
                 "Server does not support draft/metadata-2 — cannot set display name");
         } else {
-            m_model->sendRaw(host, "METADATA * SET display-name :" + args.trimmed());
+            const QString val = args.trimmed();
+            m_model->sendRaw(host, "METADATA * SET display-name :" + val);
+            m_config->profileDisplayName = val;
+            Config::save(*m_config, Config::defaultPath());
             m_model->localMessage(host, channel,
-                args.trimmed().isEmpty() ? "Display name cleared."
-                                         : "Display name set to: " + args.trimmed());
+                val.isEmpty() ? "Display name cleared." : "Display name set to: " + val);
         }
     } else if (cmd == "/avatar") {
         auto *cl = m_model->clientFor(host);
@@ -340,10 +342,12 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
             m_model->localMessage(host, channel,
                 "Server does not support draft/metadata-2 — cannot set avatar");
         } else {
-            m_model->sendRaw(host, "METADATA * SET avatar :" + args.trimmed());
+            const QString val = args.trimmed();
+            m_model->sendRaw(host, "METADATA * SET avatar :" + val);
+            m_config->profileAvatarUrl = val;
+            Config::save(*m_config, Config::defaultPath());
             m_model->localMessage(host, channel,
-                args.trimmed().isEmpty() ? "Avatar cleared."
-                                         : "Avatar URL set to: " + args.trimmed());
+                val.isEmpty() ? "Avatar cleared." : "Avatar URL set to: " + val);
         }
     } else if (cmd == "/list") {
         emit openChannelList(host);

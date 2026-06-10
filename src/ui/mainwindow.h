@@ -7,6 +7,7 @@
 #include <QColor>
 #include <QHash>
 #include <QMap>
+#include <QPixmap>
 #include <QSet>
 #include <QPair>
 #include "model/sessionmodel.h"
@@ -27,6 +28,7 @@ class EmojiPicker;
 class DccSend;
 class DccReceive;
 class ChannelPane;
+class QNetworkAccessManager;
 
 class QTimer;
 class QTreeWidget;
@@ -213,6 +215,12 @@ private:
     QHash<QString, QSet<QString>> m_typingNicks;       // "host|channel" → nicks
     QHash<QString, QTimer*>       m_typingNickTimers;  // "host|channel|nick" → timeout
     QHash<QString, int>           m_botIconIdx;        // lowercased nick → 0 (robot) or 1 (alien)
+
+    // Avatar image cache
+    QNetworkAccessManager        *m_avatarNam{nullptr};
+    QHash<QString, QPixmap>       m_avatarCache;    // URL → scaled pixmap
+    QSet<QString>                 m_avatarFetching; // in-flight URLs
+    void fetchAvatar(const QString &url);
 
     QRegularExpression m_selfNickRe; // pre-compiled highlight regex for active host's nick
 

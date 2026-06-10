@@ -5,6 +5,7 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QFileDialog>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
@@ -246,9 +247,20 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
         auto *row = new QHBoxLayout;
         row->addWidget(new QLabel("Avatar URL:"));
         m_avatarUrlEdit = new QLineEdit;
-        m_avatarUrlEdit->setPlaceholderText("https://example.com/avatar.png  (leave blank to clear)");
+        m_avatarUrlEdit->setPlaceholderText("https://example.com/avatar.png  or  /path/to/local.png");
         m_avatarUrlEdit->setText(cfg.profileAvatarUrl);
         row->addWidget(m_avatarUrlEdit, 1);
+        auto *browseBtn = new QPushButton("Browse...");
+        browseBtn->setAutoDefault(false);
+        browseBtn->setFixedWidth(72);
+        connect(browseBtn, &QPushButton::clicked, this, [this] {
+            const QString path = QFileDialog::getOpenFileName(
+                this, "Select Avatar Image", QString(),
+                "Images (*.png *.jpg *.jpeg *.gif *.ico *.webp)");
+            if (!path.isEmpty())
+                m_avatarUrlEdit->setText(path);
+        });
+        row->addWidget(browseBtn);
         vbox->addLayout(row);
     }
     {

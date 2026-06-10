@@ -810,11 +810,15 @@ void IrcClient::processLine(const QString &line)
     }
 
     // draft/metadata-2 — server-push notification: METADATA <target> <key> <visibility> :<value>
+    // ircmsg only adds trailing colon when value has spaces — plain URLs land in params[3]
     if (cmd == "METADATA" && msg.params.size() >= 2) {
-        const QString &target = msg.params[0];
-        const QString &key    = msg.params[1];
-        if ((key == "display-name" || key == "avatar") && !target.startsWith('#'))
-            emit userMetaChanged(m_host, target, key, msg.trailing);
+        QString target     = msg.params[0];
+        if (target == QLatin1String("*")) target = m_nick;
+        const QString &key = msg.params[1];
+        if ((key == "display-name" || key == "avatar") && !target.startsWith('#')) {
+            const QString value = !msg.trailing.isEmpty() ? msg.trailing : msg.params.value(3);
+            emit userMetaChanged(m_host, target, key, value);
+        }
         return;
     }
 
@@ -1248,6 +1252,8 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         }
         if (!m_monitorList.isEmpty())
             sendRaw("MONITOR + " + m_monitorList.join(','));
+        if (m_ackedCaps.contains("draft/metadata-2"))
+            sendRaw("METADATA * SUB display-name avatar");
         break;
 
     case 2:   // RPL_YOURHOST
@@ -1391,13 +1397,18 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         emit errorMessage(m_host, "Monitor list full: " + trailing);
         break;
 
-    case 761: { // RPL_KEYVALUE — response to METADATA GET: <client> <target> <key> <visibility> :<value>
-        // params: [client, target, key, visibility], trailing = value
+    case 761: { // RPL_KEYVALUE — response to METADATA SET/GET: <client> <target> <key> <visibility> :<value>
+        // params: [client, target, key, visibility, ?value], trailing = value
+        // Ergo echoes target as "*" when you SET your own metadata; resolve to own nick
+        // ircmsg only adds trailing colon when value has spaces — plain URLs land in params[4]
         if (params.size() >= 3) {
-            const QString &target = params[1];
-            const QString &key    = params[2];
-            if ((key == "display-name" || key == "avatar") && !target.startsWith('#'))
-                emit userMetaChanged(m_host, target, key, trailing);
+            QString target     = params[1];
+            if (target == QLatin1String("*")) target = m_nick;
+            const QString &key = params[2];
+            if ((key == "display-name" || key == "avatar") && !target.startsWith('#')) {
+                const QString value = !trailing.isEmpty() ? trailing : params.value(4);
+                emit userMetaChanged(m_host, target, key, value);
+            }
         }
         break;
     }
