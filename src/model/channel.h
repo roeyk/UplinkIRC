@@ -10,20 +10,6 @@
 
 static constexpr int kMessageBufferCap = 500;
 
-struct EventBatch {
-    QString      batchId;
-    QStringList  joins;
-    QStringList  parts;   // parts + quits merged
-    QList<QPair<QString,QString>> nicks; // oldNick → newNick
-    QStringList  kicks;
-    QDateTime    firstEventTime;
-
-    bool isEmpty() const {
-        return joins.isEmpty() && parts.isEmpty()
-            && nicks.isEmpty()  && kicks.isEmpty();
-    }
-};
-
 // Nick prefix rank: ~ & @ % + (owner → admin → op → halfop → voice)
 inline int prefixRank(QChar p)
 {
@@ -80,8 +66,6 @@ struct Channel {
     int              mentions{0};
     bool             joined{false};
     QDateTime        lastRead;  // soju.im/read marker
-    EventBatch       pendingBatch;
-    bool             hasPendingBatch{false};
 
     void addMessage(const Message &msg)
     {
@@ -92,12 +76,6 @@ struct Channel {
             if (!oldId.isEmpty())
                 reactions.remove(oldId);
         }
-    }
-
-    void updateMessageText(const QString &msgid, const QString &newText)
-    {
-        for (auto &msg : messages)
-            if (msg.msgid == msgid) { msg.text = newText; return; }
     }
 
     void rebuildNickIndex()

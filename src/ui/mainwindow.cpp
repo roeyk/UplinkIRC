@@ -1592,7 +1592,6 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::nickRenamed,       this, &MainWindow::onNickRenamed);
     connect(m_model, &SessionModel::unreadChanged,     this, &MainWindow::onUnreadChanged);
     connect(m_model, &SessionModel::reactionsChanged,  this, &MainWindow::onReactionsChanged);
-    connect(m_model, &SessionModel::eventBatchUpdated, this, &MainWindow::onEventBatchUpdated);
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
     connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
     connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
@@ -2425,23 +2424,98 @@ void MainWindow::onChannelRemoved(const QString &host, const QString &channel)
     closeChannelPane(host, channel);
 }
 
+static bool isCondensable(const Message &msg, const QString &selfNick)
+{
+    switch (msg.type) {
+    case MessageType::Join:
+    case MessageType::Part:
+    case MessageType::Quit:
+    case MessageType::Nick:
+    case MessageType::Kick:
+        return selfNick.isEmpty()
+            || msg.nick.compare(selfNick, Qt::CaseInsensitive) != 0;
+    default:
+        return false;
+    }
+}
+
+// Collect the tail run of consecutive condensable messages from ch.messages
+// that share the same calendar day as the last message.
+static QList<Message> collectEventGroup(const Channel *ch, const QString &selfNick)
+{
+    QList<Message> group;
+    if (ch->messages.isEmpty()) return group;
+    const QDate day = ch->messages.last().timestamp.toLocalTime().date();
+    for (qsizetype i = ch->messages.size() - 1; i >= 0; --i) {
+        const auto &m = ch->messages[i];
+        if (!isCondensable(m, selfNick)) break;
+        if (m.timestamp.toLocalTime().date() != day) break;
+        group.prepend(m);
+    }
+    return group;
+}
+
+// Find last block in view that has userData (skip trailing empty blocks).
+static QTextBlock lastTaggedBlock(QTextBrowser *view)
+{
+    QTextBlock b = view->document()->lastBlock();
+    while (b.isValid() && !b.userData())
+        b = b.previous();
+    return b;
+}
+
 void MainWindow::onMessageAdded(const QString &host, const QString &channel, const Message &msg)
 {
+    const QString selfNick = m_model->selfNick(host);
+
     if (host == m_model->activeHost() &&
         channel.toLower() == m_model->activeChannel().toLower())
     {
-        appendMessage(msg, m_config.ui.linkPreviews);
+        if (isCondensable(msg, selfNick)) {
+            auto *ch = m_model->channel(host, channel);
+            if (ch) {
+                ChatRenderer::Context ctx;
+                ctx.coloredNicks = m_config.ui.coloredNicks;
+                ctx.nickBrackets = m_config.ui.nickBrackets;
+                ctx.emojiPt      = m_config.ui.fontSizes.emoji;
+                ctx.chatPt       = m_config.ui.fontSizes.chat;
+                ctx.validTheme   = m_theme.valid;
+                ctx.themeText    = m_theme.text;
+                ctx.selfNickRe   = m_selfNickRe;
+                ctx.channel      = ch;
+
+                const QList<Message> group = collectEventGroup(ch, selfNick);
+                const QString html = ChatRenderer::formatEventGroup(group, ctx);
+
+                QTextBlock last = lastTaggedBlock(m_chatView);
+                auto *d = last.isValid() ? static_cast<BlockMsgid*>(last.userData()) : nullptr;
+                if (d && d->id == "evgrp") {
+                    replaceBlockHtml(m_chatView, last, html);
+                } else {
+                    insertHtmlBlock(m_chatView, html);
+                    m_chatView->document()->lastBlock().setUserData(new BlockMsgid("evgrp"));
+                }
+                auto *sb = m_chatView->verticalScrollBar();
+                sb->setValue(sb->maximum());
+            }
+        } else {
+            appendMessage(msg, m_config.ui.linkPreviews);
+        }
     }
 
     const QString paneKey = host + "|" + channel.toLower();
     if (auto *pane = m_panes.value(paneKey)) {
-        const bool isText = (msg.type == MessageType::Privmsg ||
-                             msg.type == MessageType::Action  ||
-                             msg.type == MessageType::Notice);
-        insertHtmlBlock(pane->chatView(), formatMessage(msg),
-                        isText && m_config.ui.hangingIndent);
-        if (!msg.msgid.isEmpty())
-            pane->chatView()->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
+        if (isCondensable(msg, selfNick)) {
+            refreshPaneChatView(pane);
+        } else {
+            const bool isText = (msg.type == MessageType::Privmsg ||
+                                 msg.type == MessageType::Action  ||
+                                 msg.type == MessageType::Notice);
+            insertHtmlBlock(pane->chatView(), formatMessage(msg),
+                            isText && m_config.ui.hangingIndent);
+            if (!msg.msgid.isEmpty())
+                pane->chatView()->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
+        }
         auto *sb = pane->chatView()->verticalScrollBar();
         sb->setValue(sb->maximum());
     }
@@ -2547,24 +2621,6 @@ void MainWindow::onReactionsChanged(const QString &host, const QString &channel,
     for (auto *pane : std::as_const(m_panes)) {
         if (pane->host() == host && pane->channel().toLower() == channel.toLower())
             refreshPaneChatView(pane);
-    }
-}
-
-void MainWindow::onEventBatchUpdated(const QString &host, const QString &channel,
-                                     const QString &batchId, const QString &html)
-{
-    if (host == m_model->activeHost() &&
-        channel.toLower() == m_model->activeChannel().toLower()) {
-        QTextBlock block = findBlock(m_chatView, batchId);
-        if (block.isValid())
-            replaceBlockHtml(m_chatView, block, html);
-    }
-    for (auto *pane : std::as_const(m_panes)) {
-        if (pane->host() == host && pane->channel().toLower() == channel.toLower()) {
-            QTextBlock block = findBlock(pane->chatView(), batchId);
-            if (block.isValid())
-                replaceBlockHtml(pane->chatView(), block, html);
-        }
     }
 }
 
@@ -3138,18 +3194,44 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     auto *ch = m_model->channel(pane->host(), pane->channel());
     if (!ch) return;
 
-    for (const auto &msg : std::as_const(ch->messages)) {
-        const bool isText = (msg.type == MessageType::Privmsg ||
-                             msg.type == MessageType::Action  ||
-                             msg.type == MessageType::Notice);
-        insertHtmlBlock(pane->chatView(), formatMessage(msg),
-                        isText && m_config.ui.hangingIndent);
+    ChatRenderer::Context ctx;
+    ctx.coloredNicks = m_config.ui.coloredNicks;
+    ctx.nickBrackets = m_config.ui.nickBrackets;
+    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
+    ctx.chatPt       = m_config.ui.fontSizes.chat;
+    ctx.validTheme   = m_theme.valid;
+    ctx.themeText    = m_theme.text;
+    ctx.channel      = ch;
 
-        if (!msg.msgid.isEmpty()) {
-            auto rxIt = ch->reactions.constFind(msg.msgid);
-            if (rxIt != ch->reactions.constEnd())
-                insertHtmlBlock(pane->chatView(),
-                                buildReactionHtml(*rxIt, m_config.ui.fontSizes.emoji));
+    const QString selfNick = m_model->selfNick(pane->host());
+    const int emojiPt = m_config.ui.fontSizes.emoji;
+
+    for (int i = 0; i < ch->messages.size(); ) {
+        const auto &msg = ch->messages[i];
+        if (isCondensable(msg, selfNick)) {
+            const QDate day = msg.timestamp.toLocalTime().date();
+            int j = i + 1;
+            while (j < ch->messages.size()
+                   && isCondensable(ch->messages[j], selfNick)
+                   && ch->messages[j].timestamp.toLocalTime().date() == day)
+                ++j;
+            QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
+            insertHtmlBlock(pane->chatView(), ChatRenderer::formatEventGroup(group, ctx));
+            pane->chatView()->document()->lastBlock().setUserData(new BlockMsgid("evgrp"));
+            i = j;
+        } else {
+            const bool isText = (msg.type == MessageType::Privmsg ||
+                                 msg.type == MessageType::Action  ||
+                                 msg.type == MessageType::Notice);
+            insertHtmlBlock(pane->chatView(), formatMessage(msg),
+                            isText && m_config.ui.hangingIndent);
+            if (!msg.msgid.isEmpty()) {
+                auto rxIt = ch->reactions.constFind(msg.msgid);
+                if (rxIt != ch->reactions.constEnd())
+                    insertHtmlBlock(pane->chatView(),
+                                    buildReactionHtml(*rxIt, emojiPt));
+            }
+            ++i;
         }
     }
 
@@ -3425,29 +3507,46 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
     const bool hangIndent = m_config.ui.hangingIndent;
     const int  emojiPt    = m_config.ui.fontSizes.emoji;
 
-    for (const auto &msg : std::as_const(ch->messages)) {
-        const bool isText = (msg.type == MessageType::Privmsg ||
-                             msg.type == MessageType::Action  ||
-                             msg.type == MessageType::Notice);
-        insertHtmlBlock(m_chatView, ChatRenderer::formatMessage(msg, ctx),
-                        isText && hangIndent);
-        if (!msg.msgid.isEmpty())
-            m_chatView->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
-        if (isText && !ch->previews.isEmpty()) {
-            auto it = urlRe.globalMatch(msg.text);
-            while (it.hasNext()) {
-                const QString urlStr = QUrl(it.next().captured(0)).toString();
-                const auto p = ch->previews.constFind(urlStr);
-                if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr))
-                    insertHtmlBlock(m_chatView, p.value());
+    const QString selfNick = m_model->selfNick(host);
+    for (int i = 0; i < ch->messages.size(); ) {
+        const auto &msg = ch->messages[i];
+        if (isCondensable(msg, selfNick)) {
+            // Collect consecutive condensable messages on the same day
+            const QDate day = msg.timestamp.toLocalTime().date();
+            int j = i + 1;
+            while (j < ch->messages.size()
+                   && isCondensable(ch->messages[j], selfNick)
+                   && ch->messages[j].timestamp.toLocalTime().date() == day)
+                ++j;
+            QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
+            insertHtmlBlock(m_chatView, ChatRenderer::formatEventGroup(group, ctx));
+            m_chatView->document()->lastBlock().setUserData(new BlockMsgid("evgrp"));
+            i = j;
+        } else {
+            const bool isText = (msg.type == MessageType::Privmsg ||
+                                 msg.type == MessageType::Action  ||
+                                 msg.type == MessageType::Notice);
+            insertHtmlBlock(m_chatView, ChatRenderer::formatMessage(msg, ctx),
+                            isText && hangIndent);
+            if (!msg.msgid.isEmpty())
+                m_chatView->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
+            if (isText && !ch->previews.isEmpty()) {
+                auto it = urlRe.globalMatch(msg.text);
+                while (it.hasNext()) {
+                    const QString urlStr = QUrl(it.next().captured(0)).toString();
+                    const auto p = ch->previews.constFind(urlStr);
+                    if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr))
+                        insertHtmlBlock(m_chatView, p.value());
+                }
             }
-        }
-        if (!msg.msgid.isEmpty()) {
-            auto rxIt = ch->reactions.constFind(msg.msgid);
-            if (rxIt != ch->reactions.constEnd()) {
-                insertHtmlBlock(m_chatView, buildReactionHtml(*rxIt, emojiPt));
-                m_chatView->document()->lastBlock().setUserData(new BlockMsgid("rx:" + msg.msgid));
+            if (!msg.msgid.isEmpty()) {
+                auto rxIt = ch->reactions.constFind(msg.msgid);
+                if (rxIt != ch->reactions.constEnd()) {
+                    insertHtmlBlock(m_chatView, buildReactionHtml(*rxIt, emojiPt));
+                    m_chatView->document()->lastBlock().setUserData(new BlockMsgid("rx:" + msg.msgid));
+                }
             }
+            ++i;
         }
     }
 

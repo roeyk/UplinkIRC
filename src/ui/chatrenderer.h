@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QColor>
+#include <QList>
 #include <QRegularExpression>
 #include <QString>
 #include "model/message.h"
@@ -20,8 +21,9 @@ struct Context {
     const Channel    *channel{nullptr}; // for reply-reference lookup
 };
 
-QString formatMessage (const Message &msg, const Context &ctx);
-QString linkifyTopic  (const QString &text);
+QString formatMessage    (const Message &msg, const Context &ctx);
+QString formatEventGroup (const QList<Message> &msgs, const Context &ctx);
+QString linkifyTopic     (const QString &text);
 QColor  nickColor     (const QString &nick);
 
 // Lower-level helpers — exposed for unit tests

@@ -285,9 +285,6 @@ QString formatMessage(const Message &msg, const Context &ctx)
         html = wrapEvent("steelblue", ts + " ~ "  + msg.text); break;
     case MessageType::Kick:
         html = wrap("#e06b6b", ts + " ✕ " + msg.text); break;
-    case MessageType::EventBatch:
-        // msg.text is pre-built HTML from formatBatchHtml — output directly
-        html = msg.text; break;
     case MessageType::Topic:
         html = wrap("steelblue", ts + " ⦁ Topic: " + msg.text); break;
     case MessageType::Error:
@@ -301,6 +298,82 @@ QString formatMessage(const Message &msg, const Context &ctx)
         html = "<span style='opacity:0.55'>" + html + "</span>";
 
     return html;
+}
+
+QString formatEventGroup(const QList<Message> &msgs, const Context &ctx)
+{
+    if (msgs.isEmpty()) return {};
+
+    const QDateTime local = msgs.front().timestamp.toLocalTime();
+    const bool sameDay = local.date() == QDate::currentDate();
+    const QString ts = sameDay ? local.toString("hh:mm") : local.toString("MM/dd hh:mm");
+    const QString tsSpan = QString("<span style='color:gray'>%1</span>").arg(ts);
+
+    const int eventPt = qMax(7, qRound(ctx.chatPt * 0.82));
+
+    QStringList joins, parts, kicks;
+    QList<QPair<QString,QString>> nickChanges;
+
+    for (const auto &msg : msgs) {
+        switch (msg.type) {
+        case MessageType::Join:  joins.append(msg.nick);                        break;
+        case MessageType::Part:
+        case MessageType::Quit:  parts.append(msg.nick);                        break;
+        case MessageType::Nick:  nickChanges.append({msg.nick, msg.replyTo});   break;
+        case MessageType::Kick:  kicks.append(msg.nick);                        break;
+        default: break;
+        }
+    }
+
+    // Net-change filter: nick that joins and parts in same group → suppress both
+    for (qsizetype i = joins.size() - 1; i >= 0; --i) {
+        if (parts.contains(joins[i])) {
+            parts.removeAll(joins[i]);
+            joins.removeAt(i);
+        }
+    }
+
+    const qsizetype total = joins.size() + parts.size() + nickChanges.size() + kicks.size();
+    const int maxNicks = 10;
+    int shown = 0;
+    QStringList segments;
+
+    auto addSection = [&](const QString &color, const QString &sym, const QStringList &nicks) {
+        if (nicks.isEmpty()) return;
+        QStringList display;
+        for (const QString &n : nicks) {
+            if (shown >= maxNicks) break;
+            display << QString("<span style='color:%1'>%2</span>").arg(color, n.toHtmlEscaped());
+            ++shown;
+        }
+        if (!display.isEmpty())
+            segments << sym + " " + display.join(" ");
+    };
+
+    addSection("seagreen",  "→", joins);
+    addSection("#e06b6b",   "←", parts);
+
+    if (!nickChanges.isEmpty()) {
+        QStringList display;
+        for (const auto &p : std::as_const(nickChanges)) {
+            if (shown >= maxNicks) break;
+            display << QString("<span style='color:steelblue'>%1→%2</span>")
+                .arg(p.first.toHtmlEscaped(), p.second.toHtmlEscaped());
+            ++shown;
+        }
+        if (!display.isEmpty())
+            segments << "~ " + display.join(" ");
+    }
+
+    addSection("#e06b6b", "✕", kicks);
+
+    const qsizetype overflow = total - shown;
+    QString body = segments.join("  ");
+    if (overflow > 0)
+        body += QString("  … %1 more").arg(overflow);
+
+    return QString("<span style='font-size:%1pt'>%2  %3</span>")
+        .arg(eventPt).arg(tsSpan, body);
 }
 
 } // namespace ChatRenderer
