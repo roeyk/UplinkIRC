@@ -312,7 +312,8 @@ void IrcClient::sendReact(const QString &target, const QString &msgid, const QSt
 
 void IrcClient::requestHistory(const QString &target, int limit)
 {
-    if (!m_ackedCaps.contains("chathistory")) return;
+    if (!m_ackedCaps.contains("chathistory") && !m_ackedCaps.contains("draft/chathistory"))
+        return;
     sendRaw(QString("CHATHISTORY LATEST %1 * %2").arg(target).arg(limit));
 }
 
@@ -941,7 +942,6 @@ void IrcClient::deliverBatch(const QString &ref)
 {
     if (!m_batches.contains(ref)) return;
     const BatchInfo batch = m_batches.take(ref);
-
     if (batch.type == "draft/multiline") {
         // Assemble lines into a single multi-line message.
         // Lines tagged draft/multiline-concat are appended without a newline prefix.
@@ -989,6 +989,7 @@ void IrcClient::deliverBatch(const QString &ref)
     }
 
     const bool isHistory = (batch.type == "chathistory" ||
+                            batch.type == "draft/chathistory" ||
                             batch.type == "znc.in/batch/playback");
 
     for (const BatchInfo::Msg &bm : batch.msgs) {
@@ -1114,7 +1115,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         QStringList desired = {
             "multi-prefix", "away-notify", "server-time",
             "message-tags", "batch", "labeled-response", "draft/typing",
-            "chathistory", "echo-message", "chghost", "draft/react",
+            "chathistory", "draft/chathistory", "echo-message", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
             "draft/metadata-2", "cap-notify",
@@ -1191,7 +1192,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         QStringList desired = {
             "multi-prefix", "away-notify", "server-time",
             "message-tags", "batch", "labeled-response", "draft/typing",
-            "chathistory", "echo-message", "chghost", "draft/react",
+            "chathistory", "draft/chathistory", "echo-message", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
             "draft/metadata-2", "cap-notify",
@@ -1332,7 +1333,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             sendRaw("MODE " + channel);
             sendRaw("WHO " + channel + " %cnfa,42");
             // Request chat history on join
-            if (m_ackedCaps.contains("chathistory"))
+            if (m_ackedCaps.contains("chathistory") || m_ackedCaps.contains("draft/chathistory"))
                 requestHistory(channel, 100);
         }
         break;
