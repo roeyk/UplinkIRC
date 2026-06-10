@@ -420,6 +420,7 @@
     <li><a href="#topic-bar">Topic bar</a></li>
     <li><a href="#sidebar">Sidebar</a></li>
     <li><a href="#channel-panes">Channel panes</a></li>
+    <li><a href="#event-condensation">Event condensation</a></li>
     <li><a href="#chat-area">Chat area</a></li>
     <li><a href="#typing">Typing indicator</a></li>
     <li><a href="#nick-panel">Nick list panel</a></li>
@@ -1272,6 +1273,35 @@ channels  = "#uplink"</pre>
       <li>Font sizes set in <strong>Preferences → Font Config</strong> apply consistently to all panes — chat text, nick list, topic bar, and input label all inherit the same configured sizes whether the pane is opened at launch or mid-session.</li>
       <li>Right-clicking a message timestamp in a pane gives the same context menu as the primary view — Reply, React, Delete (your own messages), and Copy.</li>
     </ul>
+  </section>
+
+  <!-- EVENT CONDENSATION -->
+  <section id="event-condensation">
+    <h2>Event condensation</h2>
+    <p>In busy channels, individual join, part, quit, nick-change, and kick lines would otherwise flood the chat view. Uplink automatically collapses consecutive server events into a single compact line:</p>
+    <pre>21:03  → halloy2109 sumeetj_ bustacheeze  ← CrystalDotGay AJ_Z0</pre>
+    <p>The symbols mean:</p>
+    <table>
+      <thead><tr><th>Symbol</th><th>Event</th></tr></thead>
+      <tbody>
+        <tr><td><span style="color:#a6e3a1">→</span></td><td>Nick joined the channel</td></tr>
+        <tr><td><span style="color:#f38ba8">←</span></td><td>Nick parted or quit</td></tr>
+        <tr><td><span style="color:#89b4fa">~</span></td><td>Nick rename — shown as <code>oldNick→newNick</code></td></tr>
+        <tr><td><span style="color:#f38ba8">✕</span></td><td>Nick was kicked</td></tr>
+      </tbody>
+    </table>
+
+    <h3>How grouping works</h3>
+    <p>Events are grouped purely by position in the message stream — no timer is involved. Any run of consecutive condensable events with <strong>no chat message between them</strong> is rendered as a single line. As soon as a regular message appears, the group seals and the next event starts a new group. Switching to a different channel and back always shows the correctly grouped history.</p>
+
+    <h3>Net-change filter</h3>
+    <p>If the same nick joins <em>and</em> parts within the same group (e.g., a brief reconnect), both events cancel out and neither is shown. Only the net result — what actually changed — appears.</p>
+
+    <h3>Overflow</h3>
+    <p>Up to 10 nicks are shown on one condensed line. If more events arrived before a chat message broke the group, the line ends with <code>… X more</code>.</p>
+
+    <h3>Self-join / self-part</h3>
+    <p>Your own <em>"You joined #channel"</em> and part messages always appear as full lines — they are never condensed, since they mark a meaningful context boundary for you.</p>
   </section>
 
   <!-- CHAT AREA -->

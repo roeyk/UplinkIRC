@@ -846,6 +846,14 @@ No regressions. Clean build.
 Next: send button disable-when-empty, nick completion button, send button Preferences toggle (roadmap).
 -->
 
+## v0.25.7 — 2026-06-09
+
+### Features
+
+- **Event condensation** — consecutive join, part, quit, nick-change, and kick events in a channel are collapsed into a single compact line rather than flooding the chat view. Groups are defined purely by position: any run of condensable events with no chat message between them renders as one line, sealing when a regular message arrives. Net-change filter suppresses nicks that both join and part before a message breaks the group. Up to 10 nicks per line; overflow shown as `… X more`. Self-join/self-part always render as full lines. Works correctly on channel switch and history replay.
+
+---
+
 ## v0.25.6 — 2026-06-09
 
 ### Features
