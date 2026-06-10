@@ -31,6 +31,9 @@
         <file alias="mi-lightbulb-2.svg">icons/mi-lightbulb-2.svg</file>
         <file alias="mi-forum.svg">icons/mi-forum.svg</file>
         <file alias="mi-send.svg">icons/mi-send.svg</file>
+        <file alias="mi-host.svg">icons/mi-host.svg</file>
+        <file alias="mi-language.svg">icons/mi-language.svg</file>
+        <file alias="mi-public.svg">icons/mi-public.svg</file>
     </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>

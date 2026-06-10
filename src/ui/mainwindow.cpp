@@ -977,14 +977,7 @@ static QIcon makeMenuIcon(const QColor &color)
 
 static QIcon makeConnectedIcon()
 {
-    QPixmap pm(10, 10);
-    pm.fill(Qt::transparent);
-    QPainter p(&pm);
-    p.setRenderHint(QPainter::Antialiasing);
-    p.setBrush(QColor("#a6adc8"));
-    p.setPen(Qt::NoPen);
-    p.drawEllipse(1, 1, 8, 8);
-    return QIcon(pm);
+    return MenuIcons::connectedServer();
 }
 
 void MainWindow::setupSidebar()
@@ -2367,7 +2360,7 @@ void MainWindow::onServerConnected(const QString &host)
 {
     auto *item = findServerItem(host);
     if (item)
-        item->setIcon(0, makeConnectedIcon());
+        item->setData(0, Qt::UserRole + 2, QVariant::fromValue(makeConnectedIcon()));
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Connected);
 }
@@ -2376,7 +2369,7 @@ void MainWindow::onServerDisconnected(const QString &host)
 {
     auto *item = findServerItem(host);
     if (item)
-        item->setIcon(0, QIcon());
+        item->setData(0, Qt::UserRole + 2, QVariant());
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Disconnected);
 
