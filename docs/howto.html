@@ -411,6 +411,7 @@
     <li><a href="#multi-server">Two servers at once</a></li>
     <li><a href="#znc">ZNC bouncer</a></li>
     <li><a href="#soju">soju bouncer</a></li>
+    <li><a href="#chathistory">Chat history replay</a></li>
     <li><a href="#websocket">WebSocket transport</a></li>
   </ul>
 
@@ -1108,6 +1109,58 @@ channels        = "#debian"</pre>
     <div class="note">
       <strong>Chat history replay</strong> is automatic on ZNC, soju, and Ergo IRCd (and any server supporting the <code>chathistory</code> or <code>draft/chathistory</code> CAP). Uplink requests the last 100 messages for each channel on join. History messages appear at reduced opacity with their original timestamps so you can tell them apart from live messages.
     </div>
+  </section>
+
+  <!-- CHAT HISTORY REPLAY -->
+  <section id="chathistory">
+    <h2>Chat history replay</h2>
+
+    <p>When you join a channel, Uplink automatically requests the last 100 messages from the server using the IRCv3 <code>chathistory</code> capability. The messages appear at the top of the chat window, dimmed slightly and stamped with their original timestamps, so you can catch up on what you missed without doing anything extra.</p>
+
+    <p>This works on any server or bouncer that supports the <code>chathistory</code> or <code>draft/chathistory</code> IRCv3 capability — no config change needed. Uplink requests both cap names automatically.</p>
+
+    <h3>Servers that support chat history</h3>
+    <table>
+      <tr><th>Server / Bouncer</th><th>Cap name advertised</th><th>Notes</th></tr>
+      <tr><td><strong>Ergo IRCd</strong></td><td><code>draft/chathistory</code></td><td>Requires <code>history:</code> block in <code>ircd.yaml</code> and a server restart (not just rehash) to initialise the history DB.</td></tr>
+      <tr><td><strong>soju</strong></td><td><code>chathistory</code></td><td>Works out of the box — soju stores and replays history natively.</td></tr>
+      <tr><td><strong>ZNC</strong></td><td><code>chathistory</code></td><td>Requires the <code>playback</code> module. Uplink enables it automatically when <code>bouncer = "znc"</code>.</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>Libera, EFnet, IRCnet, and most large networks do not support chat history.</strong> Their IRC daemons (Solanum, Charybdis, etc.) do not implement the <code>chathistory</code> cap. The feature simply does not activate — you will not see an error.
+    </div>
+
+    <h3>What history messages look like</h3>
+    <p>History messages are visually distinct from live messages:</p>
+    <ul>
+      <li>Displayed at reduced opacity (dimmed).</li>
+      <li>Timestamped with their <em>original</em> send time. Messages from a previous day include the date: <code>06/08 14:32</code>.</li>
+      <li>Not counted as unread — they do not badge the channel in the sidebar.</li>
+    </ul>
+
+    <h3>Connecting to an Ergo server with history</h3>
+    <p>No special config is needed on the client side. A normal SSL server entry works:</p>
+    <pre>[[server]]
+name     = "LinuxDojo"
+host     = "irc.linuxdojo.org"
+port     = 6697
+ssl      = true
+nick     = "yournick"
+user     = "uplink"
+realname = "Uplink User"
+channels = "#uplink, #linux"</pre>
+
+    <p>On connect, Uplink negotiates <code>draft/chathistory</code> with Ergo. After you join each channel, it sends:</p>
+    <pre>CHATHISTORY LATEST #uplink * 100</pre>
+    <p>Ergo replies with a batch of up to 100 recent messages and Uplink renders them into the chat window automatically.</p>
+
+    <div class="tip">
+      <strong>Ergo history requires server-side config.</strong> If history is not showing, ask your server admin to check that the <code>history:</code> block is enabled in <code>ircd.yaml</code> and that Ergo was fully restarted (not just rehashed) after enabling it. A rehash alone is not enough to initialise the history database.
+    </div>
+
+    <h3>How many messages are replayed?</h3>
+    <p>Uplink always requests the last <strong>100 messages</strong> per channel. The server may return fewer if the channel has less history stored. There is currently no config option to change this limit.</p>
   </section>
 
   <!-- WEBSOCKET TRANSPORT -->
