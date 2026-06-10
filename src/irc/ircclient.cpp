@@ -1168,8 +1168,6 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
             }
         }
 
-        if (m_ackedCaps.contains("draft/metadata-2"))
-            sendRaw("METADATA * SUBSCRIBE display-name avatar");
 
         // Request soju network list once caps are acked
         if (m_bouncerType == BouncerType::Soju &&
