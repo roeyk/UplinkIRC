@@ -2569,7 +2569,16 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
         for (const auto &sc : std::as_const(m_config.servers))
             if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
     }
-    if (channel != "(server)") {
+    if (channel == "(server)") {
+        const bool connected = [&]{
+            auto *s = m_model->session(host); return s && s->connected;
+        }();
+        if (connected) {
+            const QColor col = count > 0 ? QColor("#e06c75") : QColor();
+            item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::connectedServer(col)));
+        }
+        item->setText(0, label);
+    } else {
         if (count > 0 && m_model->hasMention(host, channel))
             item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::mention(QColor("#FFD700"))));
         else if (count > 0)
