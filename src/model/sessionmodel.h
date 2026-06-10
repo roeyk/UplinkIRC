@@ -65,6 +65,8 @@ public:
     void monitorStatus(const QString &host);
     void pinCertificate(const QString &host, const QString &fingerprint);
     void acceptCertificateOnce(const QString &host, const QString &fingerprint);
+    void onUserMetaChanged(const QString &host, const QString &nick,
+                           const QString &key,  const QString &value);
 
 signals:
     // Structural changes — sidebar needs a repaint
@@ -168,8 +170,6 @@ private:
                            const QString &nick,  const QString &msgid,
                            const QString &emoji);
     void onAccountChanged (const QString &host, const QString &nick, const QString &account);
-    void onUserMetaChanged(const QString &host, const QString &nick,
-                           const QString &key,  const QString &value);
     void onMessageRedacted(const QString &host, const QString &senderNick,
                            const QString &target, const QString &msgid, const QString &reason);
     void onInviteNotify   (const QString &host, const QString &inviter,

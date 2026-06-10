@@ -859,12 +859,21 @@ void MainWindow::connectPreferences()
 
     connect(m_prefsDialog, &PreferencesDialog::profileSetRequested,
             this, [this](const QString &displayName, const QString &avatarUrl) {
+        const QString oldAvatarUrl = m_config.profileAvatarUrl;
         m_config.profileDisplayName = displayName;
         m_config.profileAvatarUrl   = avatarUrl;
         Config::save(m_config, Config::defaultPath());
+        // Evict stale cached avatar so the new one is fetched and displayed
+        if (!oldAvatarUrl.isEmpty() && oldAvatarUrl != avatarUrl)
+            m_avatarCache.remove(oldAvatarUrl);
         QStringList sent, skipped;
         for (const auto &sess : m_model->sessions()) {
             if (!sess.connected) continue;
+            // Always update local nickMeta for own nick so tooltip reflects new values
+            if (!displayName.isEmpty())
+                m_model->onUserMetaChanged(sess.host, sess.nick, "display-name", displayName);
+            if (!avatarUrl.isEmpty())
+                m_model->onUserMetaChanged(sess.host, sess.nick, "avatar", avatarUrl);
             auto *cl = m_model->clientFor(sess.host);
             if (!cl || !cl->hasCap("draft/metadata-2")) {
                 skipped << sess.name;
@@ -876,6 +885,7 @@ void MainWindow::connectPreferences()
                 m_model->sendRaw(sess.host, "METADATA * SET avatar :" + avatarUrl);
             sent << sess.name;
         }
+        if (!avatarUrl.isEmpty()) fetchAvatar(avatarUrl);
         const QString activeHost = m_model->activeHost();
         const QString activeChan = m_model->activeChannel();
         if (!sent.isEmpty())
@@ -3920,8 +3930,7 @@ void MainWindow::fetchAvatar(const QString &url)
 
     auto cacheAndRefresh = [this, url](QPixmap px) {
         if (px.isNull()) return;
-        if (px.width() > 32 || px.height() > 32)
-            px = px.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        px = px.scaled(36, 36, Qt::KeepAspectRatio, Qt::FastTransformation);
         m_avatarCache.insert(url, px);
         scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
     };
