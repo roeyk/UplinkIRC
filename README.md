@@ -28,15 +28,15 @@
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.5-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.7-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.5-windows-x64.zip">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.7-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.5-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.7-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -121,6 +121,8 @@
 
 | Feature | Details |
 |---|---|
+| **Event condensation** | Consecutive join, part, quit, nick-change, and kick events with no chat message between them collapse into one compact line: `→ nick1 nick2  ← nick3  ~ old→new`. Net-change filter suppresses nicks that both join and part in the same group. Up to 10 nicks shown; overflow shown as `… X more`. |
+| **Send button** | Paper-plane button to the right of the emoji button sends the current message — same as pressing Enter. |
 | **Emoji picker** | Click 😊 to open a searchable grid of ~400 emoji. Enable with `show_emoji_button = true`. |
 | **`:shortcode:` autocomplete** | Type `:fire` and a live completion list appears. Navigate with Up/Down, confirm with Enter. |
 | **Emoji auto-substitute** | Typing `:trident:` replaces with 🔱 on the closing colon. Any remaining `:shortcode:` patterns resolve before the message is sent. |
@@ -148,7 +150,7 @@
 | **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from **☰ → Preferences**. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |
 | **Right-click menu** | Full action menu on any nick: **Message**, **Send File**, **Send File (Passive)**, **Whois**, **Invite**, **Give Op**, **Take Op**, **Give Voice**, **Take Voice**, **Version**, **Ping** (CTCP, shows RTT), **Copy Nick**, **Ignore / Unignore** — and for ops: **Kick** (with reason prompt), **Ban** (`nick!*@*`), **Kick & Ban**. |
-| **Unread indicators** | `🔥 #channel` for new activity. `💡 #channel` in red when your nick is mentioned. Both clear on focus. Your nick is highlighted **red bold** inline in messages that mention you. |
+| **Unread indicators** | A forum icon after the channel name for new activity; a yellow lightbulb icon for nick mentions. Both clear on focus. Your nick is highlighted **red bold** inline in messages that mention you. |
 
 ### 🔌 Connectivity & Servers
 
