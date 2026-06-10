@@ -912,6 +912,26 @@ Bug fixed:
 Clean build. All tests passing. Pushed to main.
 -->
 
+<!--
+Session summary — 2026-06-10 (post-release: stale avatar fix + Browse button)
+
+Bug fixed:
+- Changing the avatar in Preferences → Profile → Apply still showed the old
+  avatar image in the nick tooltip. Root cause: for local file paths, no
+  METADATA SET is sent, so there is no server echo and no userMetaChanged
+  signal ever fires. SessionModel::nickMeta for the own nick was never updated,
+  and the stale cached pixmap was never evicted. Fix: made onUserMetaChanged
+  public in SessionModel; the profileSetRequested handler now calls it directly
+  for every connected session to update nickMeta, evicts the old cache entry,
+  and immediately calls fetchAvatar with the new URL so the tooltip reflects
+  the change without reconnecting.
+
+- Browse button in the Avatar URL field was showing only "wse" — the fixed
+  width was 72px, which clipped the label. Increased to 90px.
+
+No regressions. Clean build.
+-->
+
 ## v0.25.10 — 2026-06-10
 
 ### Features
