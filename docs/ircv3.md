@@ -272,7 +272,7 @@ Tells soju not to send a NAMES list automatically on JOIN. This prevents duplica
 
 Associates key-value metadata with users — display names and avatar URLs stored server-side and synced to clients in real time.
 
-Uplink subscribes to the `display-name` and `avatar` keys on connect (`METADATA * SUBSCRIBE display-name avatar`). When a user sets or changes either value, the server pushes a `METADATA` notification or a `761 RPL_KEYVALUE` response. Uplink stores the data per-nick and shows it in the **nick list tooltip**:
+When a user sets or changes a `display-name` or `avatar` key, the server pushes a `METADATA` notification. Uplink receives and stores the data per-nick and shows it in the **nick list tooltip**:
 
 ```
 Display Name: Alice Smith
@@ -280,7 +280,31 @@ Account: alice
 Avatar: https://example.com/avatar/alice.png
 ```
 
-No configuration is required — metadata is fetched and displayed automatically whenever the server supports `draft/metadata-2`.
+#### Setting your own profile
+
+**Via Preferences:** Open ☰ → Preferences → scroll to the **Profile** section. Enter your Display Name and Avatar URL, then click **Apply to connected servers**. The values are saved to your config and re-sent automatically every time you connect.
+
+**Via commands:** Type in any channel or PM buffer:
+
+```
+/displayname Alice Smith
+/avatar https://example.com/avatar.png
+```
+
+Leave the argument blank to clear the value:
+
+```
+/displayname
+/avatar
+```
+
+Both commands print a confirmation line in the current buffer and tell you if the server does not support the capability.
+
+#### What the avatar field contains
+
+The `avatar` key holds a plain URL string — Uplink does not download or render the image. It appears as a clickable URL in the nick list tooltip. Other clients that support `draft/metadata-2` may render it as an actual image.
+
+No additional configuration is required — metadata is received and displayed automatically whenever the server supports `draft/metadata-2`.
 
 ### WebSocket transport
 

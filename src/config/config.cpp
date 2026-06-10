@@ -114,18 +114,21 @@ Config Config::load(const QString &path)
 
         // [ui]
         if (auto ui = tbl["ui"].as_table()) {
-            cfg.ui.theme           = QString::fromStdString((*ui)["theme"].value_or<std::string>("default"));
+            auto ustr = [&](const char *key, std::string def = "") -> QString {
+                return QString::fromStdString((*ui)[key].value_or<std::string>(std::move(def)));
+            };
+            cfg.ui.theme           = ustr("theme", "default");
             cfg.ui.showNickPrefix  = (*ui)["show_nick_prefix"].value_or(true);
             cfg.ui.showTopic       = (*ui)["show_topic"].value_or(true);
             cfg.ui.showEmojiButton = (*ui)["show_emoji_button"].value_or(false);
-            cfg.ui.coloredNicks          = (*ui)["colored_nicks"].value_or(true);
-            cfg.ui.typingIndicator       = (*ui)["typing_indicator"].value_or(true);
-            cfg.ui.hangingIndent         = (*ui)["hanging_indent"].value_or(true);
-            cfg.ui.logMessages           = (*ui)["log_messages"].value_or(false);
-            cfg.ui.appIcon               = QString::fromStdString((*ui)["app_icon"].value_or<std::string>("dark"));
-            cfg.ui.nickBrackets          = QString::fromStdString((*ui)["nick_brackets"].value_or<std::string>("<>"));
-            cfg.ui.notifications         = (*ui)["notifications"].value_or(true);
-            cfg.ui.fontFamily            = QString::fromStdString((*ui)["font_family"].value_or<std::string>(kDefaultFontFamily));
+            cfg.ui.coloredNicks    = (*ui)["colored_nicks"].value_or(true);
+            cfg.ui.typingIndicator = (*ui)["typing_indicator"].value_or(true);
+            cfg.ui.hangingIndent   = (*ui)["hanging_indent"].value_or(true);
+            cfg.ui.logMessages     = (*ui)["log_messages"].value_or(false);
+            cfg.ui.appIcon         = ustr("app_icon", "dark");
+            cfg.ui.nickBrackets    = ustr("nick_brackets", "<>");
+            cfg.ui.notifications   = (*ui)["notifications"].value_or(true);
+            cfg.ui.fontFamily      = ustr("font_family", kDefaultFontFamily);
             cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10);
             cfg.ui.fontSizes.serverHeader = (*ui)["font_server_header"].value_or(9);
             cfg.ui.fontSizes.sidebar      = (*ui)["font_sidebar"].value_or(10);
@@ -142,6 +145,12 @@ Config Config::load(const QString &path)
         // [privacy]
         if (auto priv = tbl["privacy"].as_table())
             cfg.ui.linkPreviews = (*priv)["link_previews"].value_or(false);
+
+        // [profile]
+        if (auto prof = tbl["profile"].as_table()) {
+            cfg.profileDisplayName = QString::fromStdString((*prof)["display_name"].value_or<std::string>(""));
+            cfg.profileAvatarUrl   = QString::fromStdString((*prof)["avatar_url"].value_or<std::string>(""));
+        }
 
         // [ignore]
         if (auto ign = tbl["ignore"].as_table()) {
@@ -175,31 +184,35 @@ Config Config::load(const QString &path)
                 auto *s = node.as_table();
                 if (!s) continue;
 
+                auto sstr = [&](const char *key, std::string def = "") -> QString {
+                    return QString::fromStdString((*s)[key].value_or<std::string>(std::move(def)));
+                };
+
                 ServerConfig sc;
-                sc.name     = QString::fromStdString((*s)["name"].value_or<std::string>(""));
-                sc.host     = QString::fromStdString((*s)["host"].value_or<std::string>(""));
+                sc.name     = sstr("name");
+                sc.host     = sstr("host");
                 sc.port     = static_cast<quint16>((*s)["port"].value_or(6697));
                 sc.ssl      = (*s)["ssl"].value_or(true);
-                sc.nick     = QString::fromStdString((*s)["nick"].value_or<std::string>(""));
-                sc.user     = QString::fromStdString((*s)["user"].value_or<std::string>("uplink"));
-                sc.realname = QString::fromStdString((*s)["realname"].value_or<std::string>("Uplink User"));
-                sc.password     = QString::fromStdString((*s)["password"].value_or<std::string>(""));
-                sc.saslUser         = QString::fromStdString((*s)["sasl_user"].value_or<std::string>(""));
-                sc.saslPassword     = QString::fromStdString((*s)["sasl_password"].value_or<std::string>(""));
+                sc.nick     = sstr("nick");
+                sc.user     = sstr("user", "uplink");
+                sc.realname = sstr("realname", "Uplink User");
+                sc.password         = sstr("password");
+                sc.saslUser         = sstr("sasl_user");
+                sc.saslPassword     = sstr("sasl_password");
                 sc.saslExternal     = (*s)["sasl_external"].value_or(false);
-                sc.clientCertFile   = QString::fromStdString((*s)["client_cert"].value_or<std::string>(""));
-                sc.clientKeyFile    = QString::fromStdString((*s)["client_key"].value_or<std::string>(""));
-                sc.nickservPassword = QString::fromStdString((*s)["nickserv_password"].value_or<std::string>(""));
+                sc.clientCertFile   = sstr("client_cert");
+                sc.clientKeyFile    = sstr("client_key");
+                sc.nickservPassword = sstr("nickserv_password");
                 const std::string bt = (*s)["bouncer"].value_or<std::string>("none");
                 if      (bt == "znc")  sc.bouncerType = BouncerType::ZNC;
                 else if (bt == "soju") sc.bouncerType = BouncerType::Soju;
                 else                   sc.bouncerType = BouncerType::None;
-                sc.bouncerNetwork = QString::fromStdString((*s)["bouncer_network"].value_or<std::string>(""));
-                sc.proxyHost = QString::fromStdString((*s)["proxy_host"].value_or<std::string>(""));
-                sc.proxyPort = static_cast<quint16>((*s)["proxy_port"].value_or(1080));
-                sc.proxyUser = QString::fromStdString((*s)["proxy_user"].value_or<std::string>(""));
-                sc.proxyPass = QString::fromStdString((*s)["proxy_pass"].value_or<std::string>(""));
-                sc.pinnedFingerprint = QString::fromStdString((*s)["ssl_fingerprint"].value_or<std::string>(""));
+                sc.bouncerNetwork    = sstr("bouncer_network");
+                sc.proxyHost         = sstr("proxy_host");
+                sc.proxyPort         = static_cast<quint16>((*s)["proxy_port"].value_or(1080));
+                sc.proxyUser         = sstr("proxy_user");
+                sc.proxyPass         = sstr("proxy_pass");
+                sc.pinnedFingerprint = sstr("ssl_fingerprint");
                 sc.websocket         = (*s)["websocket"].value_or(false);
 
                 if (auto chans = (*s)["channel"].as_array()) {
@@ -246,19 +259,21 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
 
     QTextStream out(&f);
 
+    auto boolStr = [](bool b) -> const char * { return b ? "true" : "false"; };
+
     out << "[ui]\n";
-    out << "theme             = " << tomlQuote(cfg.ui.theme)       << "\n";
-    out << "show_nick_prefix  = " << (cfg.ui.showNickPrefix  ? "true" : "false") << "\n";
-    out << "show_topic        = " << (cfg.ui.showTopic       ? "true" : "false") << "\n";
-    out << "show_emoji_button = " << (cfg.ui.showEmojiButton ? "true" : "false") << "\n";
-    out << "colored_nicks     = " << (cfg.ui.coloredNicks     ? "true" : "false") << "\n";
-    out << "typing_indicator  = " << (cfg.ui.typingIndicator  ? "true" : "false") << "\n";
-    out << "hanging_indent    = " << (cfg.ui.hangingIndent    ? "true" : "false") << "\n";
-    out << "log_messages      = " << (cfg.ui.logMessages     ? "true" : "false") << "\n";
-    out << "app_icon          = " << tomlQuote(cfg.ui.appIcon)     << "\n";
-    out << "nick_brackets     = " << tomlQuote(cfg.ui.nickBrackets) << "\n";
-    out << "notifications     = " << (cfg.ui.notifications    ? "true" : "false") << "\n";
-    out << "font_family       = " << tomlQuote(cfg.ui.fontFamily)  << "\n";
+    out << "theme             = " << tomlQuote(cfg.ui.theme)          << "\n";
+    out << "show_nick_prefix  = " << boolStr(cfg.ui.showNickPrefix)   << "\n";
+    out << "show_topic        = " << boolStr(cfg.ui.showTopic)        << "\n";
+    out << "show_emoji_button = " << boolStr(cfg.ui.showEmojiButton)  << "\n";
+    out << "colored_nicks     = " << boolStr(cfg.ui.coloredNicks)     << "\n";
+    out << "typing_indicator  = " << boolStr(cfg.ui.typingIndicator)  << "\n";
+    out << "hanging_indent    = " << boolStr(cfg.ui.hangingIndent)    << "\n";
+    out << "log_messages      = " << boolStr(cfg.ui.logMessages)      << "\n";
+    out << "app_icon          = " << tomlQuote(cfg.ui.appIcon)        << "\n";
+    out << "nick_brackets     = " << tomlQuote(cfg.ui.nickBrackets)   << "\n";
+    out << "notifications     = " << boolStr(cfg.ui.notifications)    << "\n";
+    out << "font_family       = " << tomlQuote(cfg.ui.fontFamily)     << "\n";
     out << "font_toolbar       = " << cfg.ui.fontSizes.toolbar      << "\n";
     out << "font_server_header = " << cfg.ui.fontSizes.serverHeader << "\n";
     out << "font_sidebar       = " << cfg.ui.fontSizes.sidebar      << "\n";
@@ -272,45 +287,46 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "font_emoji         = " << cfg.ui.fontSizes.emoji        << "\n\n";
 
     out << "[privacy]\n";
-    out << "link_previews = " << (cfg.ui.linkPreviews ? "true" : "false") << "\n\n";
+    out << "link_previews = " << boolStr(cfg.ui.linkPreviews) << "\n\n";
 
-    if (!cfg.ignoredNicks.isEmpty()) {
-        out << "[ignore]\nnicks = [";
-        bool first = true;
-        for (const QString &n : cfg.ignoredNicks) {
-            if (!first) out << ", ";
-            out << tomlQuote(n);
-            first = false;
-        }
-        out << "]\n\n";
+    if (!cfg.profileDisplayName.isEmpty() || !cfg.profileAvatarUrl.isEmpty()) {
+        out << "[profile]\n";
+        if (!cfg.profileDisplayName.isEmpty())
+            out << "display_name = " << tomlQuote(cfg.profileDisplayName) << "\n";
+        if (!cfg.profileAvatarUrl.isEmpty())
+            out << "avatar_url   = " << tomlQuote(cfg.profileAvatarUrl) << "\n";
+        out << "\n";
     }
 
-    if (!cfg.monitorList.isEmpty()) {
-        out << "[monitor]\nnicks = [";
-        bool first = true;
-        for (const QString &n : cfg.monitorList) {
-            if (!first) out << ", ";
-            out << tomlQuote(n);
-            first = false;
-        }
-        out << "]\n\n";
-    }
+    auto writeNickList = [&](const char *section, const QStringList &nicks) {
+        if (nicks.isEmpty()) return;
+        QStringList quoted;
+        for (const QString &n : nicks)
+            quoted << tomlQuote(n);
+        out << "[" << section << "]\nnicks = [" << quoted.join(", ") << "]\n\n";
+    };
+    writeNickList("ignore",  cfg.ignoredNicks);
+    writeNickList("monitor", cfg.monitorList);
 
     for (const auto &s : cfg.servers) {
+        auto pw = [&](const QString &val, const char *field) -> QString {
+            return migratePasswords ? storePassword(val, s.name, field) : val;
+        };
+
         out << "[[server]]\n";
         out << "name     = " << tomlQuote(s.name)     << "\n";
         out << "host     = " << tomlQuote(s.host)     << "\n";
         out << "port     = " << s.port                << "\n";
-        out << "ssl      = " << (s.ssl ? "true" : "false") << "\n";
+        out << "ssl      = " << boolStr(s.ssl)        << "\n";
         out << "nick     = " << tomlQuote(s.nick)     << "\n";
         out << "user     = " << tomlQuote(s.user)     << "\n";
         out << "realname = " << tomlQuote(s.realname) << "\n";
-        const QString savedPw = migratePasswords ? storePassword(s.password, s.name, "password") : s.password;
+        const QString savedPw = pw(s.password, "password");
         if (!savedPw.isEmpty())
             out << "password          = " << tomlQuote(savedPw) << "\n";
         if (!s.saslUser.isEmpty())
             out << "sasl_user         = " << tomlQuote(s.saslUser) << "\n";
-        const QString savedSasl = migratePasswords ? storePassword(s.saslPassword, s.name, "sasl_password") : s.saslPassword;
+        const QString savedSasl = pw(s.saslPassword, "sasl_password");
         if (!savedSasl.isEmpty())
             out << "sasl_password     = " << tomlQuote(savedSasl) << "\n";
         if (s.saslExternal)
@@ -319,7 +335,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             out << "client_cert       = " << tomlQuote(s.clientCertFile) << "\n";
         if (!s.clientKeyFile.isEmpty())
             out << "client_key        = " << tomlQuote(s.clientKeyFile) << "\n";
-        const QString savedNs = migratePasswords ? storePassword(s.nickservPassword, s.name, "nickserv_password") : s.nickservPassword;
+        const QString savedNs = pw(s.nickservPassword, "nickserv_password");
         if (!savedNs.isEmpty())
             out << "nickserv_password = " << tomlQuote(savedNs) << "\n";
         if (s.bouncerType == BouncerType::ZNC)
@@ -333,7 +349,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             out << "proxy_port        = " << s.proxyPort << "\n";
             if (!s.proxyUser.isEmpty())
                 out << "proxy_user        = " << tomlQuote(s.proxyUser) << "\n";
-            const QString savedProxyPass = migratePasswords ? storePassword(s.proxyPass, s.name, "proxy_pass") : s.proxyPass;
+            const QString savedProxyPass = pw(s.proxyPass, "proxy_pass");
             if (!savedProxyPass.isEmpty())
                 out << "proxy_pass        = " << tomlQuote(savedProxyPass) << "\n";
         }
@@ -347,7 +363,9 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             for (const auto &ch : s.channels) {
                 out << "\n[[server.channel]]\n";
                 out << "name = " << tomlQuote(ch.name) << "\n";
-                const QString savedKey = migratePasswords ? storePassword(ch.password, s.name + ":channel:" + ch.name, "key") : ch.password;
+                const QString savedKey = migratePasswords
+                    ? storePassword(ch.password, s.name + ":channel:" + ch.name, "key")
+                    : ch.password;
                 if (!savedKey.isEmpty())
                     out << "key  = " << tomlQuote(savedKey) << "\n";
             }

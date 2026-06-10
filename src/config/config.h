@@ -91,6 +91,8 @@ struct Config {
     UiConfig            ui;
     QStringList         ignoredNicks;
     QStringList         monitorList;   // nicks to watch with MONITOR
+    QString             profileDisplayName; // draft/metadata-2 display-name
+    QString             profileAvatarUrl;   // draft/metadata-2 avatar URL
 
     bool needsNickSetup() const;
 

@@ -856,6 +856,20 @@ void MainWindow::connectPreferences()
         m_docsDialog->raise();
         m_docsDialog->activateWindow();
     });
+
+    connect(m_prefsDialog, &PreferencesDialog::profileSetRequested,
+            this, [this](const QString &displayName, const QString &avatarUrl) {
+        m_config.profileDisplayName = displayName;
+        m_config.profileAvatarUrl   = avatarUrl;
+        Config::save(m_config, Config::defaultPath());
+        for (const auto &sess : m_model->sessions()) {
+            if (!sess.connected) continue;
+            auto *cl = m_model->clientFor(sess.host);
+            if (!cl || !cl->hasCap("draft/metadata-2")) continue;
+            m_model->sendRaw(sess.host, "METADATA * SET display-name :" + displayName);
+            m_model->sendRaw(sess.host, "METADATA * SET avatar :" + avatarUrl);
+        }
+    });
 }
 
 
@@ -2363,6 +2377,14 @@ void MainWindow::onServerConnected(const QString &host)
         item->setData(0, Qt::UserRole + 2, QVariant::fromValue(makeConnectedIcon()));
     if (m_signalBars && host == m_model->activeHost())
         m_signalBars->setState(SignalBars::State::Connected);
+
+    if (!m_config.profileDisplayName.isEmpty() || !m_config.profileAvatarUrl.isEmpty()) {
+        auto *cl = m_model->clientFor(host);
+        if (cl && cl->hasCap("draft/metadata-2")) {
+            m_model->sendRaw(host, "METADATA * SET display-name :" + m_config.profileDisplayName);
+            m_model->sendRaw(host, "METADATA * SET avatar :" + m_config.profileAvatarUrl);
+        }
+    }
 }
 
 void MainWindow::onServerDisconnected(const QString &host)

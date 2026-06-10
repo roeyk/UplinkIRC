@@ -4,6 +4,7 @@
 
 class QCheckBox;
 class QComboBox;
+class QLineEdit;
 
 class PreferencesDialog : public QDialog
 {
@@ -28,6 +29,7 @@ signals:
     void manageServersRequested();
     void aboutRequested();
     void docsRequested();
+    void profileSetRequested(const QString &displayName, const QString &avatarUrl);
 
 private:
     QCheckBox *m_topicCheck{nullptr};
@@ -40,6 +42,8 @@ private:
     QCheckBox *m_loggingCheck{nullptr};
     QCheckBox *m_linkPreviewsCheck{nullptr};
     QComboBox *m_bracketsCombo{nullptr};
+    QLineEdit *m_displayNameEdit{nullptr};
+    QLineEdit *m_avatarUrlEdit{nullptr};
 
     static const QList<QPair<QString,QString>> s_iconChoices;
     static const QList<QPair<QString,QString>> s_bracketChoices;

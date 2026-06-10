@@ -5,6 +5,7 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QPushButton>
@@ -214,6 +215,51 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
         });
         row->addWidget(m_bracketsCombo, 1);
         vbox->addLayout(row);
+    }
+
+    // ── Profile ───────────────────────────────────────────────────────────────
+    vbox->addSpacing(2);
+    vbox->addWidget(makeSep());
+    vbox->addWidget(sectionLabel("Profile"));
+
+    {
+        auto *note = new QLabel(
+            "Your display name and avatar URL are published to the server when you connect. "
+            "Other users can see them in the nick list tooltip. "
+            "Requires <b>draft/metadata-2</b> support (Ergo, soju, and others).");
+        note->setWordWrap(true);
+        note->setStyleSheet("font-size:11px;");
+        vbox->addWidget(note);
+    }
+
+    vbox->addSpacing(3);
+    {
+        auto *row = new QHBoxLayout;
+        row->addWidget(new QLabel("Display Name:"));
+        m_displayNameEdit = new QLineEdit;
+        m_displayNameEdit->setPlaceholderText("e.g. Alice Smith  (leave blank to clear)");
+        m_displayNameEdit->setText(cfg.profileDisplayName);
+        row->addWidget(m_displayNameEdit, 1);
+        vbox->addLayout(row);
+    }
+    {
+        auto *row = new QHBoxLayout;
+        row->addWidget(new QLabel("Avatar URL:"));
+        m_avatarUrlEdit = new QLineEdit;
+        m_avatarUrlEdit->setPlaceholderText("https://example.com/avatar.png  (leave blank to clear)");
+        m_avatarUrlEdit->setText(cfg.profileAvatarUrl);
+        row->addWidget(m_avatarUrlEdit, 1);
+        vbox->addLayout(row);
+    }
+    {
+        auto *applyBtn = new PillButton("Apply to connected servers");
+        applyBtn->setAccentColor(accent);
+        applyBtn->setAutoDefault(false);
+        connect(applyBtn, &QPushButton::clicked, this, [this]{
+            emit profileSetRequested(m_displayNameEdit->text().trimmed(),
+                                     m_avatarUrlEdit->text().trimmed());
+        });
+        vbox->addWidget(applyBtn);
     }
 
     vbox->addSpacing(2);
