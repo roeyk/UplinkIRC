@@ -866,6 +866,32 @@ focused. Triggered by anything that posts to the (server) channel: MOTD, server 
 No regressions. Clean build.
 -->
 
+<!--
+## v0.25.9 session summary — 2026-06-09
+
+Investigated [FAIL] METADATA SUBCOMMAND_INVALID error on irc.ergo.chat.
+Uplink was sending METADATA * SUBSCRIBE display-name avatar after CAP ACK.
+Ergo implements draft/metadata-2 but does not support the SUBSCRIBE subcommand —
+it pushes display-name and avatar automatically on join without needing a subscription.
+Fix: removed the SUBSCRIBE send entirely. Metadata delivery is unaffected.
+
+Also investigated a blank UI report when adding a 3rd server manually (config.toml edit
++ Reload Config). Could not reproduce. Most likely cause: TOML parse error in the
+manually edited config, which causes Config::load to return a blank default-constructed
+Config (empty theme, empty font family). Not fixed this session — noted as a known
+silent-failure in Config::load catch block.
+
+No regressions. Clean build.
+-->
+
+## v0.25.9 — 2026-06-09
+
+### Fix
+
+- **METADATA SUBSCRIBE error on Ergo servers** — Uplink was sending `METADATA * SUBSCRIBE display-name avatar` after CAP negotiation. Ergo does not implement the `SUBSCRIBE` subcommand and replied with `[FAIL] METADATA SUBCOMMAND_INVALID`. Removed the send; Ergo pushes metadata automatically without it.
+
+---
+
 ## v0.25.8 — 2026-06-09
 
 ### Features
