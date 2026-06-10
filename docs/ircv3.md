@@ -34,7 +34,7 @@ The full IRCv3 message tag extension is negotiated. Tags are parsed as a key-val
 
 `BATCH` commands are fully handled. When a batch starts (`BATCH +ref type param`), Uplink buffers all messages tagged with `batch=ref` instead of processing them immediately. When the batch ends (`BATCH -ref`), the buffered messages are delivered as a unit with appropriate handling based on the batch type:
 
-- `chathistory` — messages are delivered as history (dimmed, original timestamps, no unread count)
+- `chathistory` / `draft/chathistory` — messages are delivered as history (dimmed, original timestamps, no unread count)
 - `znc.in/batch/playback` — same treatment as chathistory
 - `netsplit` — all QUITs in the batch are collapsed into one summary line per affected channel (see [netsplit/netjoin](#netsplit--netjoin-batch-types))
 - `netjoin` — all JOINs in the batch are collapsed into one summary line per affected channel (see [netsplit/netjoin](#netsplit--netjoin-batch-types))
@@ -43,14 +43,16 @@ Safety limits apply: at most **8 batches** may be open simultaneously, and each 
 
 ### `chathistory`
 
-When `chathistory` is negotiated, Uplink sends `CHATHISTORY LATEST <channel> * 100` after joining each channel, requesting up to 100 recent messages. The server (or bouncer) responds with a `BATCH` of type `chathistory`.
+When `chathistory` (or `draft/chathistory`) is negotiated, Uplink sends `CHATHISTORY LATEST <channel> * 100` after joining each channel, requesting up to 100 recent messages. The server (or bouncer) responds with a `BATCH` of the matching type.
+
+Uplink requests both the ratified `chathistory` cap name and the draft name `draft/chathistory` used by Ergo IRCd, so history auto-loads on Ergo servers without any extra configuration.
 
 History messages are visually distinct from live messages:
 - Displayed at reduced opacity
 - Timestamped with their original send time — previous-day messages show `MM/dd hh:mm` so you always know when they were sent
 - Not counted as unread, so they do not badge the channel in the sidebar
 
-This works on any server or bouncer that supports `chathistory`, including soju and modern ZNC.
+This works on any server or bouncer that supports either cap name, including Ergo, soju, and modern ZNC.
 
 ### `sasl` (PLAIN and EXTERNAL)
 

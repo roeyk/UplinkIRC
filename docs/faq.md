@@ -273,11 +273,11 @@ channels        = "#linux"
 
 With `bouncer = "soju"`, Uplink negotiates `soju.im/bouncer-networks` (lists your networks in the server buffer), `soju.im/read` (syncs your read position across clients), and `soju.im/no-implicit-names`.
 
-Both bouncer types also negotiate the standard `chathistory` capability, which automatically requests the last 100 messages for each channel on join. See [IRCv3 support](ircv3.md) for full details.
+Both bouncer types also negotiate the `chathistory` capability, which automatically requests the last 100 messages for each channel on join. Uplink also supports `draft/chathistory` (used by Ergo IRCd), so history works on Ergo servers without any extra configuration. See [IRCv3 support](ircv3.md) for full details.
 
 ### What do the dimmed messages at the top of a channel mean?
 
-Those are history messages replayed by your bouncer or IRC server via the `chathistory` capability. They represent messages that were sent while you were offline or disconnected.
+Those are history messages replayed by your bouncer or IRC server via the `chathistory` (or `draft/chathistory`) capability. They represent messages that were sent while you were offline or disconnected.
 
 History messages are intentionally displayed at reduced opacity and with their original timestamps so they are easy to distinguish from live messages. Previous-day messages show the date as well as the time (`MM/dd hh:mm`). They do not count as unread, so they will not badge the channel in the sidebar.
 

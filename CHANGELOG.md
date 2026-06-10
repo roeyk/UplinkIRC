@@ -803,6 +803,28 @@ No regressions. Clean build.
 Next: no open items — all IRCv3 planned caps are now implemented.
 -->
 
+<!--
+## v0.25.5 session summary — 2026-06-09
+
+Stripped all debug qWarning lines left over from the chathistory investigation.
+Fixed draft/chathistory cap compatibility — Ergo 2.18.0 advertises the draft cap name,
+not the ratified one. Added draft/chathistory to desired caps list, requestHistory gate,
+366 handler gate, and isHistory batch type check. Verified end-to-end on LinuxDojo (Ergo):
+caps negotiate, CHATHISTORY LATEST is sent on join, batch arrives, history loads in the
+chat window automatically.
+
+No regressions. Clean build.
+Next: no open items.
+-->
+
+## v0.25.5 — 2026-06-09
+
+### Fix
+
+- **`draft/chathistory` compatibility** — Ergo IRCd 2.18.0 advertises `draft/chathistory` rather than the ratified `chathistory` cap name. Uplink now requests both, gates `CHATHISTORY LATEST` on either, and recognises `draft/chathistory` batch type as history. Chat history now auto-loads on join for Ergo servers.
+
+---
+
 ## v0.25.4 — 2026-06-09
 
 ### Features

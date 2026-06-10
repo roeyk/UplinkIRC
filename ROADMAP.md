@@ -172,6 +172,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] IRCv3 WebSocket transport — connect to servers over wss:// in addition to plain TCP+TLS
 - [x] User metadata — IRCv3 draft/metadata-2: display-name and avatar keys; shown in nick list tooltips
 - [x] cap-notify — server can notify client of capability changes mid-session; CAP NEW triggers REQ for wanted caps, CAP DEL removes from active set; m_registered flag prevents spurious CAP END on mid-session ACK (v0.25.4)
+- [x] draft/chathistory compatibility — Ergo IRCd uses draft cap name; Uplink now requests both names and handles either on history delivery and batch recognition (v0.25.5)
 
 ---
 

@@ -1070,7 +1070,7 @@ channels        = "#linux"</pre>
       <tr><th>Capability</th><th>What it does</th></tr>
       <tr><td><code>soju.im/bouncer-networks</code></td><td>Lists all IRC networks your soju manages in the server buffer on connect as a formatted summary — network name and connection state for each.</td></tr>
       <tr><td><code>soju.im/read</code></td><td>Syncs your read position across all connected clients. If you read a message on your phone, Uplink on your desktop already knows.</td></tr>
-      <tr><td><code>chathistory</code></td><td>Requests missed messages on each channel join — soju supports this natively and delivers history with original timestamps.</td></tr>
+      <tr><td><code>chathistory</code> / <code>draft/chathistory</code></td><td>Requests missed messages on each channel join — supported by soju, ZNC, and Ergo IRCd. History arrives with original timestamps.</td></tr>
     </table>
 
     <h3>Multiple networks on one soju</h3>
@@ -1106,7 +1106,7 @@ channels        = "#debian"</pre>
     </div>
 
     <div class="note">
-      <strong>Chat history replay</strong> is automatic on both ZNC and soju (and any server supporting the <code>chathistory</code> CAP). Uplink requests the last 100 messages for each channel on join. History messages appear at reduced opacity with their original timestamps so you can tell them apart from live messages.
+      <strong>Chat history replay</strong> is automatic on ZNC, soju, and Ergo IRCd (and any server supporting the <code>chathistory</code> or <code>draft/chathistory</code> CAP). Uplink requests the last 100 messages for each channel on join. History messages appear at reduced opacity with their original timestamps so you can tell them apart from live messages.
     </div>
   </section>
 
