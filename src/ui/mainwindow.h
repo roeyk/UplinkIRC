@@ -156,6 +156,7 @@ private:
     QPlainTextEdit *m_input;
     QLabel       *m_nickPrefix;
     QPushButton  *m_emojiBtn;
+    QToolButton  *m_sendBtn{nullptr};
     QWidget      *m_sidebarPanel{nullptr};
     QWidget      *m_sidebarHeader{nullptr};
     QWidget      *m_topicLeft{nullptr};

@@ -1435,9 +1435,18 @@ void MainWindow::setupInputBar()
     m_emojiBtn->setVisible(m_showEmojiBtn);
     m_emojiBtn->setToolTip("Emoji picker");
 
+    m_sendBtn = new QToolButton;
+    m_sendBtn->setFixedSize(30, 30);
+    m_sendBtn->setAutoRaise(true);
+    m_sendBtn->setIcon(MenuIcons::send());
+    m_sendBtn->setIconSize(QSize(18, 18));
+    m_sendBtn->setToolTip("Send");
+    connect(m_sendBtn, &QToolButton::clicked, this, &MainWindow::onInputSubmit);
+
     hbox->addWidget(m_nickPrefix);
     hbox->addWidget(m_input, 1);
     hbox->addWidget(m_emojiBtn);
+    hbox->addWidget(m_sendBtn);
 
     bar->setObjectName("inputBar");
 

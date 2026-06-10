@@ -30,6 +30,7 @@
         <file alias="mi-check.svg">icons/mi-check.svg</file>
         <file alias="mi-lightbulb-2.svg">icons/mi-lightbulb-2.svg</file>
         <file alias="mi-forum.svg">icons/mi-forum.svg</file>
+        <file alias="mi-send.svg">icons/mi-send.svg</file>
     </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>
