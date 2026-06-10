@@ -817,6 +817,49 @@ No regressions. Clean build.
 Next: no open items.
 -->
 
+<!--
+## v0.25.6 session summary — 2026-06-09
+
+Bug: mention detection (💡 indicator) never fired because `mentionRe` was only built
+when the server sent a mid-session NICK command. On initial connect, `selfNickChanged`
+was never emitted, so `mentionRe` stayed empty and `ch.mentions` never incremented.
+Fix: emit `selfNickChanged` from RPL_WELCOME (numeric 1) handler so the regex is built
+as soon as registration completes.
+
+Replaced 💡/🔥 emoji in the sidebar with Material Symbols Outlined SVGs:
+- lightbulb_2 (yellow #FFD700) for nick mentions
+- forum (palette WindowText) for general unread activity
+Icons are stored in Qt::UserRole+2 on the item and drawn after the channel name
+by SidebarDelegate — this avoids the Qt decoration column entirely, so the text
+position never shifts regardless of indicator state.
+
+Also fixed a second layout bug: SidebarDelegate was passing the icon through to
+QStyledItemDelegate::paint, which offset the text rect and caused the channel name
+to jump right on click. Zeroing opt.icon/opt.decorationSize before measuring the
+pill rect and drawing the indicator manually (matching the existing NickDelegate
+pattern) fixed it.
+
+Added a Material Design send button (paper plane) to the right of the emoji button
+in the input bar. Connects to onInputSubmit — same action as Enter key.
+
+No regressions. Clean build.
+Next: send button disable-when-empty, nick completion button, send button Preferences toggle (roadmap).
+-->
+
+## v0.25.6 — 2026-06-09
+
+### Features
+
+- **Material Design sidebar indicators** — the 💡 and 🔥 emoji unread indicators are replaced by Material Symbols SVG icons. A yellow lightbulb (`lightbulb_2`) appears after the channel name on a nick mention; a forum icon appears for general unread activity. Icons are theme-adaptive and rendered at 14 px inline by the delegate.
+- **Send button** — a paper-plane send button (`send` icon) sits to the right of the emoji button in the input bar. Clicking it sends the message, identical to pressing Enter.
+
+### Fix
+
+- **Mention detection never fired** — `mentionRe` (the regex used to detect your nick in messages) was only built on mid-session `NICK` commands, never on initial connect. As a result, the mention indicator never appeared after a fresh connection. Fixed by emitting `selfNickChanged` from the `RPL_WELCOME` (001) handler so the regex is compiled immediately after registration.
+- **Channel name jumped right on click** — selecting a channel caused the channel label to shift right because the SVG icon was stored as a Qt decoration role, which offset the text rect. Moved indicators to `Qt::UserRole+2` and draw them manually after the text in `SidebarDelegate`, matching the existing `NickDelegate` pattern. Text position is now stable in all states.
+
+---
+
 ## v0.25.5 — 2026-06-09
 
 ### Fix
