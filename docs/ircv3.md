@@ -272,23 +272,25 @@ Tells soju not to send a NAMES list automatically on JOIN. This prevents duplica
 
 Associates key-value metadata with users — display names and avatar URLs stored server-side and synced to clients in real time.
 
-When a user sets or changes a `display-name` or `avatar` key, the server pushes a `METADATA` notification. Uplink receives and stores the data per-nick and shows it in the **nick list tooltip**:
+When a user sets or changes a `display-name` or `avatar` key, the server pushes a `METADATA` notification. Uplink receives and stores the data per-nick, fetches the avatar image in the background, and shows it in the **nick list tooltip**:
 
 ```
-Display Name: Alice Smith
-Account: alice
-Avatar: https://example.com/avatar/alice.png
+[avatar image]  Name: Alice Smith
+                Account: alice
 ```
+
+Avatar images are fetched asynchronously when metadata arrives and cached for the session. Images are displayed at native size, capped at 32×32 — no upscaling, so small icons like favicons remain crisp.
 
 #### Setting your own profile
 
-**Via Preferences:** Open ☰ → Preferences → scroll to the **Profile** section. Enter your Display Name and Avatar URL, then click **Apply to connected servers**. The values are saved to your config and re-sent automatically every time you connect.
+**Via Preferences:** Open ☰ → Preferences → scroll to the **Profile** section. Enter your Display Name and Avatar URL (or click **Browse...** to pick a local image file), then click **Apply to connected servers**. The values are saved to your config and re-sent automatically every time you connect.
 
 **Via commands:** Type in any channel or PM buffer:
 
 ```
 /displayname Alice Smith
 /avatar https://example.com/avatar.png
+/avatar /home/alice/avatar.png
 ```
 
 Leave the argument blank to clear the value:
@@ -300,11 +302,19 @@ Leave the argument blank to clear the value:
 
 Both commands print a confirmation line in the current buffer and tell you if the server does not support the capability.
 
-#### What the avatar field contains
+#### Local file avatars
 
-The `avatar` key holds a plain URL string — Uplink does not download or render the image. It appears as a clickable URL in the nick list tooltip. Other clients that support `draft/metadata-2` may render it as an actual image.
+The `avatar_url` config key and the Preferences Avatar URL field accept local file paths (e.g. `/home/alice/avatar.png`). Local images are loaded from disk and displayed in your own tooltips. They are **not** sent to the server — only `http://`/`https://` URLs are broadcast via `METADATA SET`, so other users will only see your avatar if you use a web-accessible URL.
 
-No additional configuration is required — metadata is received and displayed automatically whenever the server supports `draft/metadata-2`.
+#### Config
+
+```toml
+[profile]
+display_name = "Alice Smith"
+avatar_url   = "https://example.com/avatar.png"
+```
+
+No additional configuration is required — metadata is received, fetched, and displayed automatically whenever the server supports `draft/metadata-2`.
 
 ### WebSocket transport
 

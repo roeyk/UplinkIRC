@@ -1458,43 +1458,49 @@ typing_indicator = true   # set to false to disable completely</pre>
   <section id="user-metadata">
     <h2>User metadata — display names &amp; avatars</h2>
     <p>
-      On servers that support the IRCv3 <code>draft/metadata-2</code> capability, every user can publish a <strong>display name</strong> and an <strong>avatar URL</strong> that other clients automatically receive. Think of it as a lightweight profile attached to your IRC nick, stored on the server and synced in real time.
+      On servers that support the IRCv3 <code>draft/metadata-2</code> capability, every user can publish a <strong>display name</strong> and an <strong>avatar image</strong> that other clients automatically receive and display. Think of it as a lightweight profile attached to your IRC nick, stored on the server and synced in real time.
     </p>
 
     <div class="note">
-      <strong>Server support required.</strong> <code>draft/metadata-2</code> is an in-development IRCv3 extension. <a href="https://ergo.chat/" target="_blank" rel="noopener">Ergo</a> and <a href="https://soju.im/" target="_blank" rel="noopener">soju</a> support it. Most traditional networks (Freenode, Libera, OFTC) do not. Uplink silently skips metadata if the server does not advertise the capability — no errors, it just does nothing.
+      <strong>Server support required.</strong> <code>draft/metadata-2</code> is an in-development IRCv3 extension. <a href="https://ergo.chat/" target="_blank" rel="noopener">Ergo</a> and <a href="https://soju.im/" target="_blank" rel="noopener">soju</a> support it. Most traditional networks (Libera, OFTC) do not. Uplink silently skips metadata if the server does not advertise the capability — no errors, it just does nothing.
     </div>
 
     <h3>Where it displays</h3>
     <p>
-      Hover over any nick in the <strong>right-side nick list panel</strong>. A tooltip appears showing whatever profile data that user has set:
+      Hover over any nick in the <strong>right-side nick list panel</strong>. A tooltip appears showing that user's profile. If they have set an avatar, the image appears inline on the left:
     </p>
-    <pre>Display Name: Alice Smith
-Account: alice
-Avatar: https://example.com/avatar.png</pre>
+    <pre>[avatar image]  Name: Alice Smith
+                Account: alice</pre>
     <p>
-      The avatar field shows the URL as text. Uplink does not download or render the image — other clients that support the extension may display it as an actual picture.
+      Uplink fetches the avatar image in the background as soon as the metadata arrives. Images are displayed at their native size, capped at 32×32 — no upscaling, so small icons like favicons stay crisp. The image is cached for the session; subsequent hovers are instant.
     </p>
     <p>
       Metadata follows a nick across all channels on the same server. If Alice sets her display name, you will see it in <code>#general</code>, <code>#linux</code>, and every other channel you share with her.
     </p>
 
     <h3>Setting your own display name and avatar</h3>
-    <p>There are two ways to set your profile — via the Preferences dialog or via slash commands. Both do the same thing and the values are saved to your config so they are re-sent automatically every time you connect.</p>
+    <p>There are two ways to set your profile — via the Preferences dialog or via slash commands. Both save the values to your config so they are re-published automatically every time you connect to a supporting server.</p>
 
     <h4>Via Preferences</h4>
     <ol>
       <li>Open <strong>☰ → Preferences</strong> and scroll to the <strong>Profile</strong> section at the bottom.</li>
-      <li>Enter your <strong>Display Name</strong> — this is the friendly name other users see in the tooltip (e.g. <em>Alice Smith</em>). It does not replace your IRC nick.</li>
-      <li>Enter your <strong>Avatar URL</strong> — a full HTTPS link to an image file (e.g. <code>https://example.com/avatar.png</code>). Leave blank if you do not want to set one.</li>
-      <li>Click <strong>Apply to connected servers</strong>. Uplink saves the values and sends them to every server you are currently connected to that supports <code>draft/metadata-2</code>.</li>
+      <li>Enter your <strong>Display Name</strong> — the friendly name other users see in the tooltip (e.g. <em>Alice Smith</em>). It does not replace your IRC nick.</li>
+      <li>
+        Enter your <strong>Avatar URL</strong> — a full <code>https://</code> link to an image file. Or click <strong>Browse...</strong> to pick a local image from your computer.
+        <ul>
+          <li><strong>Web URL</strong> (e.g. <code>https://example.com/avatar.png</code>) — broadcast to the server; other users see it when they hover your nick.</li>
+          <li><strong>Local file path</strong> (e.g. <code>/home/alice/avatar.png</code>) — displayed only in your own client; never sent to the server, so other users will not see it.</li>
+        </ul>
+      </li>
+      <li>Click <strong>Apply to connected servers</strong>. Uplink saves the values and sends them to every currently-connected server that supports <code>draft/metadata-2</code>.</li>
     </ol>
-    <p>From then on, Uplink automatically publishes your profile each time you connect to a supporting server — no need to re-enter anything.</p>
+    <p>From then on, Uplink automatically publishes your profile each time you connect — no need to re-enter anything.</p>
 
     <h4>Via commands</h4>
-    <p>You can also set your display name and avatar directly from the input box:</p>
+    <p>You can set your display name and avatar directly from the input box:</p>
     <pre>/displayname Alice Smith
-/avatar https://example.com/avatar.png</pre>
+/avatar https://example.com/avatar.png
+/avatar /home/alice/avatar.png</pre>
     <p>To <strong>clear</strong> a value (remove it from the server), run the command with no argument:</p>
     <pre>/displayname
 /avatar</pre>
@@ -1504,21 +1510,32 @@ Avatar: https://example.com/avatar.png</pre>
       <tr><th>Command</th><th>Effect</th></tr>
       <tr><td><code>/displayname Alice Smith</code></td><td>Set display name to "Alice Smith"</td></tr>
       <tr><td><code>/displayname</code></td><td>Clear your display name</td></tr>
-      <tr><td><code>/avatar https://…/pic.png</code></td><td>Set avatar URL</td></tr>
-      <tr><td><code>/avatar</code></td><td>Clear your avatar URL</td></tr>
+      <tr><td><code>/avatar https://…/pic.png</code></td><td>Set avatar to a web URL (visible to others)</td></tr>
+      <tr><td><code>/avatar /home/alice/avatar.png</code></td><td>Set avatar to a local file (visible only to you)</td></tr>
+      <tr><td><code>/avatar</code></td><td>Clear your avatar</td></tr>
     </table>
+
+    <h4>Config file</h4>
+    <p>You can also set your profile directly in <code>~/.config/uplink/config.toml</code>:</p>
+    <pre>[profile]
+display_name = "Alice Smith"
+avatar_url   = "https://example.com/avatar.png"</pre>
+    <p>Values are loaded on startup and published on each connect to a supporting server.</p>
 
     <h3>How it works under the hood</h3>
     <p>
-      When Uplink connects to a server that advertises <code>draft/metadata-2</code>, the capability is negotiated during the normal CAP handshake. The server then pushes <code>METADATA</code> notifications to all subscribed clients whenever a user's <code>display-name</code> or <code>avatar</code> key changes — no polling or manual query needed.
+      When Uplink connects to a server that advertises <code>draft/metadata-2</code>, the capability is negotiated during the normal CAP handshake. The server then pushes <code>METADATA</code> notifications whenever a user's <code>display-name</code> or <code>avatar</code> key changes — no polling needed.
     </p>
     <p>
-      Setting your profile sends a raw <code>METADATA * SET</code> command to the server:
+      Setting your profile sends a <code>METADATA * SET</code> command to the server:
     </p>
     <pre>METADATA * SET display-name :Alice Smith
 METADATA * SET avatar :https://example.com/avatar.png</pre>
     <p>
-      The server stores those values and immediately broadcasts them to other connected clients who have the capability active.
+      The server stores those values and immediately broadcasts them to other connected clients. When Uplink receives an avatar URL for a nick, it fires a background HTTP request to fetch the image, caches it in memory, and updates the tooltip. The first hover before the fetch completes shows the name and account only; subsequent hovers show the image.
+    </p>
+    <p>
+      Local file paths (starting with <code>/</code> or <code>file://</code>) are loaded from disk directly — no network request. They are never sent to the server, so other users see no avatar for you unless you also have a web URL configured.
     </p>
   </section>
 

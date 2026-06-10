@@ -884,6 +884,51 @@ silent-failure in Config::load catch block.
 No regressions. Clean build.
 -->
 
+<!--
+Session summary — 2026-06-10 (avatar image in nick tooltip, local file support, profile UI)
+
+Built on top of the draft/metadata-2 foundation from the previous session.
+
+New features:
+- Avatar images now render inline in the nick list tooltip. Images are fetched
+  async when metadata arrives and cached at native size up to 32×32.
+  A 48×48 cap was tried first but produced blur on small favicons — reduced to
+  32×32 with no-upscale to keep pixel-perfect icons crisp.
+- Local file paths accepted in the avatar_url config field and Preferences
+  Avatar URL field. Loaded from disk via QPixmap directly. Never sent to the
+  server via METADATA SET (only http/https URLs are broadcast).
+- "Browse..." button added to the Avatar URL field in Preferences — opens a
+  file picker for PNG/JPG/GIF/ICO/WebP.
+- "Display Name:" label in nick tooltip renamed to "Name:".
+
+Bug fixed:
+- Avatar URL was not appearing in tooltips on Ergo (LinuxDojo). Root cause:
+  Ergo's ircmsg library omits the trailing colon when the value has no spaces,
+  so a plain URL like https://linuxdojo.org/favicon.ico landed in params[4]
+  (for 761 RPL_KEYVALUE) or params[3] (for METADATA push) rather than in
+  trailing. Both handlers now fall back to those param slots when trailing is
+  empty.
+
+Clean build. All tests passing. Pushed to main.
+-->
+
+## v0.25.10 — 2026-06-10
+
+### Features
+
+- **Avatar image in nick tooltip** — Uplink fetches and renders avatar images inline in the nick list tooltip. Hover over a nick to see their picture alongside their Name and Account. Images are fetched async on metadata arrival, cached at native size up to 32×32 (no upscaling — small icons like favicons stay crisp), and displayed immediately on the next hover.
+- **Local avatar file support** — The Avatar URL field and `avatar_url` config key now accept local file paths (e.g. `/home/you/avatar.png`). Local images load from disk without a network request. Local paths are never broadcast to the server — only `http://`/`https://` URLs are sent via `METADATA SET`.
+- **Browse button in Preferences** — "Browse..." button next to the Avatar URL field opens a file picker for PNG/JPG/GIF/ICO/WebP.
+- **Profile Preferences UI** — new Profile section in Preferences: Display Name and Avatar URL fields with Apply to connected servers button. Values persist to config and auto-publish on each connect to a supporting server.
+- **`/displayname` and `/avatar` commands** — set or clear your display name and avatar from the input bar; print confirmation and check for `draft/metadata-2` support before sending.
+- **Nick tooltip label** — "Display Name:" renamed to "Name:".
+
+### Fix
+
+- **Avatar URL not showing on Ergo** — Ergo's `ircmsg` serializer omits the trailing colon on space-free values. The 761 `RPL_KEYVALUE` handler and the `METADATA` push handler now fall back to `params[4]`/`params[3]` when `trailing` is empty, so plain URLs are correctly parsed.
+
+---
+
 ## v0.25.9 — 2026-06-09
 
 ### Fix

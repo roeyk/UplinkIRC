@@ -53,6 +53,10 @@ font_emoji        = 16   # emoji size in chat messages (independent of font_chat
 [privacy]
 link_previews = false              # set to true to enable URL preview cards in chat
 
+[profile]
+display_name = "Alice Smith"           # shown in nick list tooltip (draft/metadata-2)
+avatar_url   = "https://example.com/avatar.png"  # https:// URL or /local/path
+
 [[server]]
 name     = "LinuxDojo"
 host     = "irc.linuxdojo.org"
@@ -605,6 +609,62 @@ The list is sent to all connected servers on every connect and reconnect.
 | `/monitor list` | Show the current watch list |
 | `/monitor clear` | Remove all watched nicks |
 | `/monitor status` | Ask the server for current online/offline status of all watched nicks |
+
+---
+
+## The `[profile]` block
+
+Stores your IRCv3 `draft/metadata-2` display name and avatar. Values are published to every server you connect to that advertises the capability — other users see them in the nick list tooltip.
+
+```toml
+[profile]
+display_name = "Alice Smith"
+avatar_url   = "https://example.com/avatar.png"
+```
+
+The block is written automatically when you use the **Preferences → Profile** section or the `/displayname` and `/avatar` commands. You can also edit it directly.
+
+| Key | Type | Description |
+|---|---|---|
+| `display_name` | string | Friendly name shown in the nick list tooltip alongside your IRC nick. Does not replace your nick. |
+| `avatar_url` | string | URL to your avatar image, or a local file path (e.g. `/home/you/avatar.png`). A web URL is broadcast to the server via `METADATA SET` and visible to other users. A local path is displayed only to you — it is never sent to the server. Leave blank to publish no avatar. |
+
+**Setting from Preferences:** Open **☰ → Preferences** and scroll to the **Profile** section. Fill in your Display Name and/or Avatar URL, then click **Apply to connected servers**.
+
+**Setting from commands:**
+
+```
+/displayname Alice Smith
+/avatar https://example.com/avatar.png
+/avatar /home/alice/avatar.png
+```
+
+Leave the argument blank to clear a value:
+
+```
+/displayname
+/avatar
+```
+
+Both commands save the value to config automatically. On the next connect to a server that supports `draft/metadata-2`, the profile is re-published automatically — no need to re-enter anything.
+
+**Example with both keys:**
+
+```toml
+[profile]
+display_name = "Alice Smith"
+avatar_url   = "https://example.com/avatar.png"
+```
+
+**Example with a local avatar (visible only to you):**
+
+```toml
+[profile]
+display_name = "Alice"
+avatar_url   = "/home/alice/Pictures/avatar.png"
+```
+
+> **Note:** `draft/metadata-2` is supported by [Ergo](https://ergo.chat/) and [soju](https://soju.im/). Most traditional networks (Libera, OFTC) do not support it. Uplink silently skips publishing if the server does not advertise the capability.
 
 ---
 
