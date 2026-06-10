@@ -73,9 +73,11 @@ private slots:
     void onNickListContextMenu  (const QPoint &pos);
     void onSidebarContextMenu   (const QPoint &pos);
     void onUnreadChanged    (const QString &host, const QString &channel, int count);
-    void onReactionsChanged (const QString &host, const QString &channel, const QString &msgid);
-    void onSelfNickChanged  (const QString &host, const QString &nick);
-    void onMessageRedacted  (const QString &host, const QString &channel, const QString &msgid);
+    void onReactionsChanged  (const QString &host, const QString &channel, const QString &msgid);
+    void onEventBatchUpdated (const QString &host, const QString &channel,
+                              const QString &batchId, const QString &html);
+    void onSelfNickChanged   (const QString &host, const QString &nick);
+    void onMessageRedacted   (const QString &host, const QString &channel, const QString &msgid);
 
     // UI → Model
     void onSidebarSelectionChanged();

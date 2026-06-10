@@ -10,6 +10,8 @@
 #include <QSet>
 #include <QStandardPaths>
 #include <QTextStream>
+#include <QTimer>
+#include <QUuid>
 
 SessionModel::SessionModel(QObject *parent)
     : QObject(parent)
@@ -503,6 +505,114 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
 }
 
 // ---------------------------------------------------------------------------
+// Event batch helpers
+// ---------------------------------------------------------------------------
+
+static void applyNetChange(EventBatch &batch)
+{
+    for (qsizetype i = batch.joins.size() - 1; i >= 0; --i) {
+        if (batch.parts.contains(batch.joins[i])) {
+            batch.parts.removeAll(batch.joins[i]);
+            batch.joins.removeAt(i);
+        }
+    }
+}
+
+static QString formatBatchHtml(const EventBatch &batch)
+{
+    const QDateTime local = batch.firstEventTime.toLocalTime();
+    const bool sameDay = local.date() == QDate::currentDate();
+    const QString ts = sameDay ? local.toString("hh:mm") : local.toString("MM/dd hh:mm");
+    const QString tsHtml = QString("<a href='msgid:%1' style='color:gray;text-decoration:none'>%2</a>")
+        .arg(batch.batchId.toHtmlEscaped(), ts);
+
+    const int maxNicks = 10;
+    int shown = 0;
+    QStringList segments;
+
+    auto addSection = [&](const QString &color, const QString &sym, const QStringList &nicks) {
+        if (nicks.isEmpty()) return;
+        QStringList display;
+        for (const QString &n : nicks) {
+            if (shown >= maxNicks) break;
+            display << QString("<span style='color:%1'>%2</span>").arg(color, n.toHtmlEscaped());
+            ++shown;
+        }
+        if (!display.isEmpty())
+            segments << sym + " " + display.join(" ");
+    };
+
+    addSection("seagreen", "→", batch.joins);
+    addSection("#e06b6b",  "←", batch.parts);
+
+    if (!batch.nicks.isEmpty()) {
+        QStringList display;
+        for (const auto &p : std::as_const(batch.nicks)) {
+            if (shown >= maxNicks) break;
+            display << QString("<span style='color:steelblue'>%1→%2</span>")
+                .arg(p.first.toHtmlEscaped(), p.second.toHtmlEscaped());
+            ++shown;
+        }
+        if (!display.isEmpty())
+            segments << "~ " + display.join(" ");
+    }
+
+    addSection("#e06b6b", "✕", batch.kicks);
+
+    const qsizetype total = batch.joins.size() + batch.parts.size()
+                          + batch.nicks.size()  + batch.kicks.size();
+    QString body = segments.join("  ");
+    const qsizetype overflow = total - shown;
+    if (overflow > 0)
+        body += QString("  … %1 more").arg(overflow);
+
+    return QString("<span style='font-size:0.82em'>%1  %2</span>").arg(tsHtml, body);
+}
+
+void SessionModel::emitOrUpdateBatch(const QString &host, const QString &channel, Channel &ch)
+{
+    if (!ch.hasPendingBatch) {
+        ch.pendingBatch.batchId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        ch.pendingBatch.firstEventTime = QDateTime::currentDateTime();
+        ch.hasPendingBatch = true;
+        const QString initHtml = formatBatchHtml(ch.pendingBatch);
+        postMessage(host, channel,
+            Message::make(MessageType::EventBatch, QString(), initHtml,
+                          ch.pendingBatch.firstEventTime, false, ch.pendingBatch.batchId));
+    } else {
+        const QString html = formatBatchHtml(ch.pendingBatch);
+        ch.updateMessageText(ch.pendingBatch.batchId, html);
+        emit eventBatchUpdated(host, channel, ch.pendingBatch.batchId, html);
+    }
+}
+
+void SessionModel::restartBatchTimer(const QString &host, const QString &channel)
+{
+    const QString key = host + "|" + channel;
+    auto it = m_batchTimers.find(key);
+    if (it == m_batchTimers.end()) {
+        QTimer *t = new QTimer(this);
+        t->setSingleShot(true);
+        t->setInterval(1500);
+        connect(t, &QTimer::timeout, this, [this, host, channel, key, t]() {
+            auto *sess = session(host);
+            if (sess) {
+                if (auto *ch = sess->get(channel)) {
+                    ch->hasPendingBatch = false;
+                    ch->pendingBatch = {};
+                }
+            }
+            m_batchTimers.remove(key);
+            t->deleteLater();
+        });
+        m_batchTimers[key] = t;
+        t->start();
+    } else {
+        it.value()->start();
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Handlers
 // ---------------------------------------------------------------------------
 
@@ -631,8 +741,16 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
     }
     ch.addNick(nick);
     emit nickAdded(host, channel, nick);
-    postMessage(host, channel, Message::make(MessageType::Join, nick,
-        isSelf ? "You joined " + channel : nick + " joined"));
+
+    if (isSelf) {
+        postMessage(host, channel, Message::make(MessageType::Join, nick, "You joined " + channel));
+        return;
+    }
+
+    ch.pendingBatch.joins.append(nick);
+    applyNetChange(ch.pendingBatch);
+    emitOrUpdateBatch(host, channel, ch);
+    restartBatchTimer(host, channel);
 }
 
 void SessionModel::onUserParted(const QString &host, const QString &channel,
@@ -648,15 +766,21 @@ void SessionModel::onUserParted(const QString &host, const QString &channel,
         ch->nicks.clear();
         ch->nickIndex.clear();
         emit nickListChanged(host, channel);
-    } else if (ch) {
+        postMessage(host, channel, Message::make(MessageType::Part, nick,
+            reason.isEmpty() ? nick + " left" : nick + " left (" + reason + ")"));
+        return;
+    }
+    if (ch) {
         ch->removeNick(nick);
         emit nickRemoved(host, channel, nick);
+        ch->pendingBatch.parts.append(nick);
+        applyNetChange(ch->pendingBatch);
+        emitOrUpdateBatch(host, channel, *ch);
+        restartBatchTimer(host, channel);
     }
-    postMessage(host, channel, Message::make(MessageType::Part, nick,
-        reason.isEmpty() ? nick + " left" : nick + " left (" + reason + ")"));
 }
 
-void SessionModel::onUserQuit(const QString &host, const QString &nick, const QString &reason)
+void SessionModel::onUserQuit(const QString &host, const QString &nick, const QString &/*reason*/)
 {
     auto *sess = session(host);
     if (!sess) return;
@@ -664,8 +788,10 @@ void SessionModel::onUserQuit(const QString &host, const QString &nick, const QS
         if (!ch.nickIndex.contains(nick.toLower())) continue;
         ch.removeNick(nick);
         emit nickRemoved(host, ch.name, nick);
-        postMessage(host, ch.name, Message::make(MessageType::Quit, nick,
-            reason.isEmpty() ? nick + " quit" : nick + " quit (" + reason + ")"));
+        ch.pendingBatch.parts.append(nick);
+        applyNetChange(ch.pendingBatch);
+        emitOrUpdateBatch(host, ch.name, ch);
+        restartBatchTimer(host, ch.name);
     }
 }
 
@@ -719,8 +845,9 @@ void SessionModel::onNickChanged(const QString &host, const QString &oldNick, co
         if (!ch.nickIndex.contains(oldNick.toLower())) continue;
         ch.renameNick(oldNick, newNick);
         emit nickRenamed(host, ch.name, oldNick, newNick);
-        postMessage(host, ch.name, Message::make(MessageType::Nick, oldNick,
-            oldNick + " is now known as " + newNick));
+        ch.pendingBatch.nicks.append({oldNick, newNick});
+        emitOrUpdateBatch(host, ch.name, ch);
+        restartBatchTimer(host, ch.name);
     }
 }
 
@@ -733,9 +860,11 @@ void SessionModel::onKicked(const QString &host, const QString &channel,
     if (ch) {
         ch->removeNick(nick);
         emit nickRemoved(host, channel, nick);
+        ch->pendingBatch.kicks.append(nick + " (by " + by +
+            (reason.isEmpty() ? ")" : ", " + reason + ")"));
+        emitOrUpdateBatch(host, channel, *ch);
+        restartBatchTimer(host, channel);
     }
-    postMessage(host, channel, Message::make(MessageType::Kick, by,
-        nick + " was kicked by " + by + " (" + reason + ")"));
 }
 
 void SessionModel::onTopicReceived(const QString &host, const QString &channel, const QString &topic)

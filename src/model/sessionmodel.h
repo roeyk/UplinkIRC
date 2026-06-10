@@ -9,6 +9,7 @@
 #include <QList>
 
 class IrcClient;
+class QTimer;
 
 class SessionModel : public QObject
 {
@@ -73,6 +74,10 @@ signals:
     void serverDisconnected(const QString &host);
     void channelAdded   (const QString &host, const QString &channel);
     void channelRemoved (const QString &host, const QString &channel);
+
+    // Event batch (condensed join/part/quit/nick/kick line — updated in-place)
+    void eventBatchUpdated(const QString &host, const QString &channel,
+                           const QString &batchId, const QString &html);
 
     // Content changes — chat view needs updating
     void messageAdded(const QString &host, const QString &channel, const Message &msg);
@@ -180,12 +185,15 @@ private:
 
     void postMessage(const QString &host, const QString &target, const Message &msg);
     void logMessage (const QString &host, const QString &target, const Message &msg);
+    void emitOrUpdateBatch(const QString &host, const QString &channel, Channel &ch);
+    void restartBatchTimer(const QString &host, const QString &channel);
 
     QList<ServerSession> m_sessions;
     QList<IrcClient *>   m_clients;
     Config               m_config;
     QSet<QString>        m_ignoredNicks;
     QHash<QString, QFile*> m_logFiles;
+    QHash<QString, QTimer*> m_batchTimers;  // key: "host|channel"
 
     QString m_activeHost;
     QString m_activeChannel;

@@ -1592,6 +1592,7 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::nickRenamed,       this, &MainWindow::onNickRenamed);
     connect(m_model, &SessionModel::unreadChanged,     this, &MainWindow::onUnreadChanged);
     connect(m_model, &SessionModel::reactionsChanged,  this, &MainWindow::onReactionsChanged);
+    connect(m_model, &SessionModel::eventBatchUpdated, this, &MainWindow::onEventBatchUpdated);
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
     connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
     connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
@@ -2439,6 +2440,8 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
                              msg.type == MessageType::Notice);
         insertHtmlBlock(pane->chatView(), formatMessage(msg),
                         isText && m_config.ui.hangingIndent);
+        if (!msg.msgid.isEmpty())
+            pane->chatView()->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
         auto *sb = pane->chatView()->verticalScrollBar();
         sb->setValue(sb->maximum());
     }
@@ -2544,6 +2547,24 @@ void MainWindow::onReactionsChanged(const QString &host, const QString &channel,
     for (auto *pane : std::as_const(m_panes)) {
         if (pane->host() == host && pane->channel().toLower() == channel.toLower())
             refreshPaneChatView(pane);
+    }
+}
+
+void MainWindow::onEventBatchUpdated(const QString &host, const QString &channel,
+                                     const QString &batchId, const QString &html)
+{
+    if (host == m_model->activeHost() &&
+        channel.toLower() == m_model->activeChannel().toLower()) {
+        QTextBlock block = findBlock(m_chatView, batchId);
+        if (block.isValid())
+            replaceBlockHtml(m_chatView, block, html);
+    }
+    for (auto *pane : std::as_const(m_panes)) {
+        if (pane->host() == host && pane->channel().toLower() == channel.toLower()) {
+            QTextBlock block = findBlock(pane->chatView(), batchId);
+            if (block.isValid())
+                replaceBlockHtml(pane->chatView(), block, html);
+        }
     }
 }
 

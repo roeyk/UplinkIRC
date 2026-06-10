@@ -15,6 +15,7 @@ enum class MessageType {
     Nick,
     Topic,
     Error,
+    EventBatch, // condensed join/part/quit/nick/kick line
 };
 
 struct Message {

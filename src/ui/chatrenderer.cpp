@@ -285,6 +285,9 @@ QString formatMessage(const Message &msg, const Context &ctx)
         html = wrapEvent("steelblue", ts + " ~ "  + msg.text); break;
     case MessageType::Kick:
         html = wrap("#e06b6b", ts + " ✕ " + msg.text); break;
+    case MessageType::EventBatch:
+        // msg.text is pre-built HTML from formatBatchHtml — output directly
+        html = msg.text; break;
     case MessageType::Topic:
         html = wrap("steelblue", ts + " ⦁ Topic: " + msg.text); break;
     case MessageType::Error:
