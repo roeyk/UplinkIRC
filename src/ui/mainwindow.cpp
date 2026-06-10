@@ -222,8 +222,11 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override
     {
+        const QIcon indicator = qvariant_cast<QIcon>(index.data(Qt::UserRole + 2));
         QStyleOptionViewItem opt = option;
         initStyleOption(&opt, index);
+        opt.icon = QIcon();
+        opt.decorationSize = QSize(0, 0);
 
         const bool selected = opt.state & QStyle::State_Selected;
         const bool hovered  = opt.state & QStyle::State_MouseOver;
@@ -231,8 +234,6 @@ public:
         if (selected || hovered) {
             const QColor bg = selected ? m_accent : m_hover;
             if (bg.isValid()) {
-                // Use the style's actual text rect so we measure from where
-                // Qt will draw the text, not the raw item rect edge.
                 const QWidget *w = opt.widget;
                 const QStyle  *s = w ? w->style() : QApplication::style();
                 const QRect textRect = s->subElementRect(
@@ -242,8 +243,6 @@ public:
                 const int textW = fm.horizontalAdvance(opt.text);
                 constexpr int hPad = 8;
                 constexpr int vPad = 2;
-                // Qt draws text at textRect.x() + PM_FocusFrameHMargin+1 internally;
-                // shift pill origin right by that margin so padding is symmetric.
                 const int textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, w) + 1;
                 const int pillX = textRect.x() + textMargin - hPad;
                 QRect r(pillX,
@@ -259,15 +258,23 @@ public:
             }
         }
 
-        // Suppress focus rect and hover shift from the native style.
         opt.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver);
         if (selected && m_activeText.isValid()) {
-            // Keep State_Selected so Qt uses HighlightedText for the text color,
-            // but make the Highlight background transparent so our rounded rect shows.
             opt.palette.setColor(QPalette::All, QPalette::Highlight,       QColor(Qt::transparent));
             opt.palette.setColor(QPalette::All, QPalette::HighlightedText, m_activeText);
         }
         QStyledItemDelegate::paint(painter, opt, index);
+
+        if (!indicator.isNull()) {
+            const int sz = 14;
+            const QFontMetrics fm(opt.font);
+            const int textEnd = opt.rect.left() + opt.fontMetrics.horizontalAdvance(opt.text)
+                                + fm.horizontalAdvance(QLatin1Char(' '));
+            QRect r(textEnd,
+                    opt.rect.top() + (opt.rect.height() - sz) / 2,
+                    sz, sz);
+            indicator.paint(painter, r);
+        }
     }
 };
 
@@ -2485,11 +2492,12 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
     }
     if (channel != "(server)") {
         if (count > 0 && m_model->hasMention(host, channel))
-            item->setText(0, "💡 " + label);
+            item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::mention(QColor("#FFD700"))));
         else if (count > 0)
-            item->setText(0, "🔥 " + label);
+            item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::unread()));
         else
-            item->setText(0, label);
+            item->setData(0, Qt::UserRole + 2, QVariant());
+        item->setText(0, label);
     }
 }
 

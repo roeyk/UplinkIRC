@@ -1236,6 +1236,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     switch (n) {
     case 1:   // RPL_WELCOME
         m_registered = true;
+        emit selfNickChanged(m_host, m_nick);
         emit connected(m_host);
         emit serverMessage(m_host, trailing);
         if (!m_nickservPassword.isEmpty()) {
