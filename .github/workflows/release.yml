@@ -126,10 +126,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      # RELEASE_PAT must be a repo-scoped Personal Access Token stored as a
+      # repository secret. GITHUB_TOKEN cannot push to branch-protected main.
+      # Create one at GitHub → Settings → Developer settings → Personal access
+      # tokens → Fine-grained → Contents: read+write, then save as RELEASE_PAT.
       - uses: actions/checkout@v4
         with:
           ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Bump version strings in README and docs
         run: |
@@ -160,4 +164,4 @@ jobs:
           git diff --quiet && exit 0
           git add README.md docs/index.html
           git commit -m "docs: bump download links to ${{ github.ref_name }}"
-          git push origin main || echo "Push blocked by branch protection — apply doc bump manually via the release process."
+          git push origin main
