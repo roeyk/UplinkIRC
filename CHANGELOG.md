@@ -846,6 +846,39 @@ No regressions. Clean build.
 Next: send button disable-when-empty, nick completion button, send button Preferences toggle (roadmap).
 -->
 
+<!--
+## v0.25.8 session summary — 2026-06-09
+
+Replaced the hand-drawn gray ellipse server connection dot with the Material Symbols
+"public" globe icon (mi-public.svg). Also added mi-host.svg and mi-language.svg as
+candidates — public was chosen.
+
+Bug fixed along the way: the old dot was set via setIcon(0, ...) which goes to
+Qt::DecorationRole. The SidebarDelegate suppresses DecorationRole (opts.icon = QIcon(),
+decorationSize = (0,0)) and only renders Qt::UserRole+2. The dot was silently invisible.
+Fix: store the icon in UserRole+2 via setData(), matching the channel indicator path.
+
+Added server status unread indicator: when the server status pane has unread messages
+the globe turns light red (#e06c75). Cleared back to normal color when the pane is
+focused. Triggered by anything that posts to the (server) channel: MOTD, server NOTICE,
+/raw replies, etc.
+
+No regressions. Clean build.
+-->
+
+## v0.25.8 — 2026-06-09
+
+### Features
+
+- **Server globe icon** — the server connection indicator in the sidebar is now a Material Symbols "public" globe icon instead of a hand-drawn gray dot. Matches the icon style of all other UI elements.
+- **Server status unread indicator** — the globe turns light red when the server status pane has unread messages (MOTD, server notices, `/raw` replies, etc.) and returns to normal when the pane is opened.
+
+### Fix
+
+- **Server icon not rendering** — the connection dot was stored in `Qt::DecorationRole`, which `SidebarDelegate` suppresses. Moved to `Qt::UserRole+2` so it is drawn by the delegate's manual paint path, consistent with channel unread indicators.
+
+---
+
 ## v0.25.7 — 2026-06-09
 
 ### Features

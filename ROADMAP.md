@@ -179,6 +179,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 ## Planned — Polish + Distribution
 
 - [x] Material Design sidebar indicators — lightbulb_2 (yellow) for mentions, forum for unread; drawn after channel name by SidebarDelegate; text position stable
+- [x] Server globe icon — Material Symbols "public" replaces hand-drawn dot; stored in UserRole+2 so SidebarDelegate renders it; turns red on server status pane unread
 - [x] Mention detection fix — emit selfNickChanged on RPL_WELCOME so mentionRe is built on connect, not only on mid-session NICK change
 - [x] Send button — paper-plane SVG in input bar right of emoji button; calls onInputSubmit
 - [ ] Send button: disable when input empty, re-enable on text change
