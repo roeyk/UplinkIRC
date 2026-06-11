@@ -1031,7 +1031,7 @@ channels = "#debian"</pre>
       <tr><td>Password incorrect / access denied</td><td>Wrong format — double-check <code>username/network:password</code>. The network name must match exactly what ZNC has (case-sensitive on some ZNC versions).</td></tr>
       <tr><td>Connected but no channels join</td><td>The channels in Auto-join don't exist on that ZNC network, or ZNC is set to manage joins itself. Check ZNC's channel settings in its web panel.</td></tr>
       <tr><td>No message history on connect</td><td><code>znc.in/playback</code> not loaded in ZNC. Enable the <em>playback</em> module in ZNC's web panel under your network's modules.</td></tr>
-      <tr><td>TLS errors</td><td>Port mismatch — ZNC's SSL port is usually different from the plain port. Check the ZNC web panel under <em>Global Settings → Listeners</em>.</td></tr>
+      <tr><td>TLS errors</td><td>Port mismatch — ZNC's SSL port is usually different from the plain port. Check the ZNC web panel under <em>Global Settings → Listeners</em>. If your ZNC uses a self-signed certificate, add <code>ssl_verify = false</code> to the server block to skip certificate verification.</td></tr>
     </table>
   </section>
 

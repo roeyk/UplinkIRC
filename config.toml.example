@@ -26,6 +26,9 @@ channels = "#uplink, #linux"      # channels to join on connect (comma-separated
 # Optional: server password (used for bouncers like ZNC or soju)
 # password = "joe/network:mypassword"
 
+# Optional: skip TLS certificate verification (useful for ZNC/soju with self-signed certs)
+# ssl_verify = false
+
 # --- Multiple servers ---
 # Add more [[server]] blocks to connect to additional networks.
 
