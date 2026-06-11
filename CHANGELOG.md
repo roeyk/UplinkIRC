@@ -4,8 +4,17 @@
 
 ## Unreleased
 
+---
+
+## v0.25.12
+
 ### Added
 - Event group batches (join/quit/nick lines) are now clickable. A `▸` indicator marks each compact batch; clicking it expands the group in-place to show individual event lines with full hostmasks and quit/part reasons. Clicking `▾` collapses it back. Expanded state survives channel switches and view refreshes. Works in both the primary view and extra pane views.
+
+### Fixed
+- Sidebar selection pill now encloses indicator icons (unread bubble, mention star, server globe) symmetrically — equal padding on both sides of the label and icon.
+- Nick list selection pill now encloses the away-status icon symmetrically using the same fix.
+- Chat history replay messages now render visibly dimmed in gray. The previous CSS `opacity` approach had no effect in Qt's HTML renderer; replaced with explicit per-element color changes.
 
 ---
 
