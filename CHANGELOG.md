@@ -3,6 +3,16 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-11 (post-release hotfix session)
+What changed:
+  - Discovered that the paintEvent + QPainter::setOpacity approach introduced in the review session is invisible when QSS is active. Qt's stylesheet engine renders through its own painter path and ignores the opacity set on the outer painter. QGraphicsOpacityEffect composites after all painting and is the only approach that works reliably with QSS-styled scrollbars.
+  - Restored QGraphicsOpacityEffect in FadeScrollBar. All behavioral fixes from the review session are retained (sliderReleased, unconditional enterEvent wake, timer no polling loop, leaveEvent guard).
+  - Also restored valueChanged (had been changed to actionTriggered in the review session) — actionTriggered does not fire for mouse wheel events on the parent scroll area, so wheel scrolling never triggered wake(). Scrollbars were invisible on wheel scroll. valueChanged is the correct signal.
+  - Both regressions shipped in v0.25.16. Post-release fix committed and pushed as patch.
+Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-11 (v0.25.16 release session)
 What changed:
   - Full /code-review pass (high effort, 7 angles) on the FadeScrollBar and IRC TAGMSG diff. Found and fixed 9 issues.
@@ -13,6 +23,12 @@ What changed:
   - docs/howto.html: added Fade Scrollbars section and nav entry; corrected typing indicator compat note (message-tags → draft/typing).
 No regressions. Next priorities: Send button disable-when-empty; virtual scrolling for busy channels; heaptrack session audit.
 -->
+
+## Unreleased
+
+### Fixed
+- FadeScrollBar: reverted opacity implementation from `paintEvent` + `QPainter::setOpacity` back to `QGraphicsOpacityEffect`. When Qt's stylesheet engine (QStyleSheetStyle) is active it renders through its own internal painter path; the opacity set on the outer `QPainter` is ignored and the scrollbar is permanently invisible. `QGraphicsOpacityEffect` composites at the widget level after all painting and is the only reliable fade mechanism for QSS-styled widgets.
+- FadeScrollBar: reverted wake signal from `actionTriggered` back to `valueChanged`. Mouse wheel events on a parent `QAbstractScrollArea` are handled internally by the scroll area and emit only `valueChanged` — `actionTriggered` is never fired for wheel scrolls, so wheel scrolling never woke the bar.
 
 ## v0.25.16
 
