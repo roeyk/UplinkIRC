@@ -18,7 +18,7 @@ static QHash<QString,QString> parseTags(const QString &raw)
                 else if (next == '\\') unescaped += '\\';
                 else if (next == 'r')  unescaped += '\r';
                 else if (next == 'n')  unescaped += '\n';
-                else                   unescaped += next;
+                else                   { unescaped += '\\'; unescaped += next; }
             } else {
                 unescaped += val[i];
             }

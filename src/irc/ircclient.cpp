@@ -882,7 +882,7 @@ void IrcClient::processLine(const QString &line)
 
     if (cmd == "NICK") {
         const QString newNick = msg.params.isEmpty() ? msg.trailing : msg.params[0];
-        if (newNick.toLower() == m_nick.toLower()) {
+        if (msg.nick.toLower() == m_nick.toLower()) {
             m_nick = newNick;
             emit selfNickChanged(m_host, newNick);
         }
@@ -1184,9 +1184,10 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
                 ((!m_saslUser.isEmpty() && !m_saslPassword.isEmpty()) || m_saslExternal)) {
                 m_saslPending = true;
                 sendRaw(m_saslExternal ? "AUTHENTICATE EXTERNAL" : "AUTHENTICATE PLAIN");
-            } else {
+            } else if (!m_requestedCaps.contains("sasl") || m_ackedCaps.contains("sasl")) {
                 sendRaw("CAP END");
             }
+            // else: sasl was requested but not yet acked — wait for the next ACK
         }
 
 
@@ -1317,7 +1318,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         if (params.size() >= 3) {
             const QString channel = params[2];
             const QStringList nicks = trailing.split(' ', Qt::SkipEmptyParts);
-            m_namesBuffer[channel] += nicks;
+            m_namesBuffer[channel.toLower()] += nicks;
         }
         break;
     }
@@ -1350,7 +1351,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 366: { // RPL_ENDOFNAMES
         if (params.size() >= 2) {
             const QString channel = params[1];
-            emit namesReceived(m_host, channel, m_namesBuffer.take(channel));
+            emit namesReceived(m_host, channel, m_namesBuffer.take(channel.toLower()));
             emit namesDone(m_host, channel);
             sendRaw("MODE " + channel);
             sendRaw("WHO " + channel + " %cnfa,42");
