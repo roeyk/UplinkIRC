@@ -267,6 +267,16 @@ void SessionModel::closeBuffer(const QString &host, const QString &target)
     }
 
     sess->channels.remove(target.toLower());
+
+    const QString logPath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                            + "/.config/uplink/logs/"
+                            + sanitizeFilename(host) + "/"
+                            + sanitizeFilename(target) + ".log";
+    if (auto *f = m_logFiles.take(logPath)) {
+        f->close();
+        delete f;
+    }
+
     emit channelRemoved(host, target);
 }
 
@@ -1036,11 +1046,7 @@ void SessionModel::onUserMetaChanged(const QString &host, const QString &nick,
     auto *sess = session(host);
     if (!sess) return;
     const QString lower = nick.toLower();
-    auto &meta = sess->nickMeta[lower];
-    if (key == "display-name")
-        meta.displayName = value;
-    else if (key == "avatar")
-        meta.avatarUrl = value;
+    sess->setNickMeta(lower, key, value);
     emit userMetaChanged(host, nick, key, value);
     for (const auto &ch : std::as_const(sess->channels))
         if (ch.nickIndex.contains(lower))

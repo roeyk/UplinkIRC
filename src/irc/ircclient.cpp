@@ -729,7 +729,7 @@ void IrcClient::processLine(const QString &line)
                 const qint64  now  = QDateTime::currentMSecsSinceEpoch();
                 if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {
                     if (m_ctcpTimestamps.size() >= 500)
-                        m_ctcpTimestamps.clear();
+                        m_ctcpTimestamps.erase(m_ctcpTimestamps.begin());
                     m_ctcpTimestamps.insert(rkey, now);
                     sendRaw("NOTICE " + msg.nick + " :\x01VERSION Uplink " UPLINK_VERSION "\x01");
                     emit serverMessage(m_host, "CTCP VERSION from " + msg.nick);
@@ -739,7 +739,7 @@ void IrcClient::processLine(const QString &line)
                 const qint64  now  = QDateTime::currentMSecsSinceEpoch();
                 if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {
                     if (m_ctcpTimestamps.size() >= 500)
-                        m_ctcpTimestamps.clear();
+                        m_ctcpTimestamps.erase(m_ctcpTimestamps.begin());
                     m_ctcpTimestamps.insert(rkey, now);
                     QString payload = stripCrlf(ctcp.section(' ', 1).left(32));
                     payload.remove(QChar(1)); // strip CTCP delimiters from peer-supplied data

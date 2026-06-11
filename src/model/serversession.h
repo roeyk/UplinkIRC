@@ -19,7 +19,17 @@ struct ServerSession {
     QRegularExpression mentionRe; // pre-compiled; rebuilt when nick changes
 
     QSet<QString> botNicks;     // lowercased nicks with +B user mode (global)
-    QHash<QString, NickMeta> nickMeta; // lowercase nick → metadata
+    static constexpr int kNickMetaCap = 1000;
+    QHash<QString, NickMeta> nickMeta; // lowercase nick → metadata; capped at kNickMetaCap
+
+    void setNickMeta(const QString &lowerNick, const QString &key, const QString &value)
+    {
+        if (!nickMeta.contains(lowerNick) && nickMeta.size() >= kNickMetaCap)
+            nickMeta.erase(nickMeta.begin());
+        auto &m = nickMeta[lowerNick];
+        if (key == "display-name") m.displayName = value;
+        else if (key == "avatar")  m.avatarUrl   = value;
+    }
 
     // key = channel name lowercased
     QHash<QString, Channel> channels;
