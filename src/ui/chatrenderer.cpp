@@ -196,13 +196,15 @@ QString formatMessage(const Message &msg, const Context &ctx)
         ? local.toString("hh:mm")
         : local.toString("MM/dd hh:mm");
 
-    auto wrap = [](const QString &color, const QString &text) {
-        return QString("<span style='color:%1'>%2</span>").arg(color, text.toHtmlEscaped());
+    const QString dimColor = QStringLiteral("#888888");
+    auto wrap = [&](const QString &color, const QString &text) {
+        return QString("<span style='color:%1'>%2</span>")
+            .arg(msg.isHistory ? dimColor : color, text.toHtmlEscaped());
     };
     const int eventPt = qMax(7, qRound(ctx.chatPt * 0.82));
-    auto wrapEvent = [&eventPt](const QString &color, const QString &text) {
+    auto wrapEvent = [&](const QString &color, const QString &text) {
         return QString("<span style='color:%1; font-size:%2pt'>%3</span>")
-            .arg(color, QString::number(eventPt), text.toHtmlEscaped());
+            .arg(msg.isHistory ? dimColor : color, QString::number(eventPt), text.toHtmlEscaped());
     };
 
     QString html;
@@ -213,16 +215,14 @@ QString formatMessage(const Message &msg, const Context &ctx)
 
     if (msg.redacted) {
         html = tsSpan + " <span style='color:gray;font-style:italic'>[message deleted]</span>";
-        if (msg.isHistory)
-            html = "<span style='opacity:0.55'>" + html + "</span>";
         return html;
     }
 
     switch (msg.type) {
     case MessageType::Privmsg: {
-        const QString color = ctx.coloredNicks
-            ? nickColor(msg.nick).name()
-            : (ctx.validTheme ? ctx.themeText : QStringLiteral("#cccccc"));
+        const QString color = msg.isHistory ? dimColor
+            : (ctx.coloredNicks ? nickColor(msg.nick).name()
+                                : (ctx.validTheme ? ctx.themeText : QStringLiteral("#cccccc")));
         const QString &br = ctx.nickBrackets;
         QString nickOpen, nickClose;
         if (!br.isEmpty()) {
@@ -242,8 +242,10 @@ QString formatMessage(const Message &msg, const Context &ctx)
             .arg(htmlAttr(msg.nick), titleAttr, color, nickDisplay);
         QString textHtml = wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), ctx.emojiPt);
         textHtml.replace('\n', QLatin1String("<br>"));
-        if (ctx.selfNickRe.isValid())
+        if (ctx.selfNickRe.isValid() && !msg.isHistory)
             textHtml.replace(ctx.selfNickRe, "<span style='color:red;font-weight:bold'>\\1</span>");
+        if (msg.isHistory)
+            textHtml = "<span style='color:" + dimColor + "'>" + textHtml + "</span>";
         QString replySpan;
         if (!msg.replyTo.isEmpty() && ctx.channel) {
             QString origNick;
@@ -263,15 +265,17 @@ QString formatMessage(const Message &msg, const Context &ctx)
             : " title='account: " + htmlAttr(msg.account) + "'";
         const QString actionNick = QString("<a href='nick:%1'%2 style='color:inherit; text-decoration:none'>%1</a>")
             .arg(htmlAttr(msg.nick), aTitleAttr);
-        html = QString("%1 <i>* %2 %3</i>")
-            .arg(tsSpan, actionNick, wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), ctx.emojiPt));
+        html = QString("%1 <span style='color:%2'><i>* %3 %4</i></span>")
+            .arg(tsSpan, msg.isHistory ? dimColor : QStringLiteral("inherit"),
+                 actionNick, wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), ctx.emojiPt));
         break;
     }
     case MessageType::Notice: {
         const QString noticeNick = QString("<a href='nick:%1' style='color:inherit; text-decoration:none'>%1</a>")
             .arg(htmlAttr(msg.nick));
-        html = QString("%1 <span style='color:#cc8800'>-%2- %3</span>")
-            .arg(tsSpan, noticeNick, wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), ctx.emojiPt));
+        const QString noticeColor = msg.isHistory ? dimColor : QStringLiteral("#cc8800");
+        html = QString("%1 <span style='color:%2'>-%3- %4</span>")
+            .arg(tsSpan, noticeColor, noticeNick, wrapEmojiHtml(linkifyHtml(ircToHtml(msg.text)), ctx.emojiPt));
         break;
     }
 
@@ -293,9 +297,6 @@ QString formatMessage(const Message &msg, const Context &ctx)
     default:
         html = wrap("gray",      ts + " * "  + msg.text); break;
     }
-
-    if (msg.isHistory)
-        html = "<span style='opacity:0.55'>" + html + "</span>";
 
     return html;
 }
