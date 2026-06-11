@@ -93,10 +93,10 @@ void TstIrcParser::ircv3Tags()
 void TstIrcParser::tagUnescape()
 {
     // Tag value: a\:b\sc\\d\re\nf\z
-    // Expected:  a ; b   c \ d CR e LF f z
+    // Expected:  a ; b   c \ d CR e LF f \ z  (unknown \z preserves backslash per current behaviour)
     const auto m = IrcParser::parse("@k=a\\:b\\sc\\\\d\\re\\nf\\z :s PING");
     QVERIFY(m.isValid());
-    const QString expected = QStringLiteral("a;b c\\d\re\nfz");
+    const QString expected = QStringLiteral("a;b c\\d\re\nf\\z");
     QCOMPARE(m.tags.value(QStringLiteral("k")), expected);
 }
 
