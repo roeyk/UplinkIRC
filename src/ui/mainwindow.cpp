@@ -21,6 +21,7 @@
 #include "ui/channelpane.h"
 #include "ui/chatrenderer.h"
 #include "config/config.h"
+#include "net/addresscheck.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -1678,7 +1679,8 @@ void MainWindow::connectModel()
             QMessageBox::Yes | QMessageBox::No);
         if (ret != QMessageBox::Yes) return;
 
-        const QString savePath = QFileDialog::getSaveFileName(this, "Save File", filename);
+        const QString savePath = QFileDialog::getSaveFileName(
+            this, "Save File", QFileInfo(filename).fileName());
         if (savePath.isEmpty()) return;
 
         auto *dcc  = new DccReceive(savePath, ip, port, filesize, this);
@@ -1726,7 +1728,8 @@ void MainWindow::connectModel()
             QMessageBox::Yes | QMessageBox::No);
         if (ret != QMessageBox::Yes) return;
 
-        const QString savePath = QFileDialog::getSaveFileName(this, "Save File", filename);
+        const QString savePath = QFileDialog::getSaveFileName(
+            this, "Save File", QFileInfo(filename).fileName());
         if (savePath.isEmpty()) return;
 
         auto *dcc = new DccReceive(savePath, 0, 0, filesize, this);
@@ -1774,7 +1777,14 @@ void MainWindow::connectModel()
                    quint32 ip, quint16 port, qint64, const QString &token)
     {
         DccSend *dcc = m_pendingPassiveSends.take(token);
-        if (dcc) dcc->connectOut(ip, port);
+        if (dcc) {
+            if (isPrivateAddress(QHostAddress(ip))) {
+                QMessageBox::warning(this, "DCC", "Blocked: remote address is private or reserved.");
+                dcc->deleteLater();
+            } else {
+                dcc->connectOut(ip, port);
+            }
+        }
     });
 
     connect(m_model, &SessionModel::pingRtt, this, [this](const QString &host, int ms){

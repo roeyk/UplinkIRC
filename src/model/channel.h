@@ -130,9 +130,7 @@ struct Channel {
         if (nickIndex.contains(e.nick.toLower())) return;
         const qsizetype idx = std::lower_bound(nicks.cbegin(), nicks.cend(), e) - nicks.cbegin();
         nicks.insert(idx, e);
-        for (auto &v : nickIndex)
-            if (v >= idx) ++v;
-        nickIndex[e.nick.toLower()] = idx;
+        rebuildNickIndex();
     }
 
     void removeNick(const QString &nick)
@@ -140,10 +138,8 @@ struct Channel {
         const auto it = nickIndex.find(nick.toLower());
         if (it == nickIndex.end()) return;
         const qsizetype idx = it.value();
-        nickIndex.erase(it);
         nicks.removeAt(idx);
-        for (auto &v : nickIndex)
-            if (v > idx) --v;
+        rebuildNickIndex();
     }
 
     void renameNick(const QString &oldNick, const QString &newNick)

@@ -181,18 +181,27 @@ void SessionModel::logMessage(const QString &host, const QString &target, const 
     QTextStream out(f);
     const QString ts = msg.timestamp.toLocalTime().toString("yyyy-MM-dd hh:mm:ss");
 
+    const auto sanitize = [](const QString &s) {
+        QString r = s;
+        r.replace('\n', ' ');
+        r.replace('\r', ' ');
+        return r;
+    };
+    const QString safeNick = sanitize(msg.nick);
+    const QString safeText = sanitize(msg.text);
+
     switch (msg.type) {
     case MessageType::Privmsg:
-        out << "[" << ts << "] <" << msg.nick << "> " << msg.text << "\n";
+        out << "[" << ts << "] <" << safeNick << "> " << safeText << "\n";
         break;
     case MessageType::Action:
-        out << "[" << ts << "] * " << msg.nick << " " << msg.text << "\n";
+        out << "[" << ts << "] * " << safeNick << " " << safeText << "\n";
         break;
     case MessageType::Notice:
-        out << "[" << ts << "] -" << msg.nick << "- " << msg.text << "\n";
+        out << "[" << ts << "] -" << safeNick << "- " << safeText << "\n";
         break;
     default:
-        out << "[" << ts << "] -- " << msg.text << "\n";
+        out << "[" << ts << "] -- " << safeText << "\n";
         break;
     }
 }

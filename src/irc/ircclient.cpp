@@ -102,6 +102,8 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
             connect(m_wsSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
                     this, &IrcClient::onErrorOccurred);
 #endif
+        } else if (m_wsSocket->state() != QAbstractSocket::UnconnectedState) {
+            m_wsSocket->abort();
         }
         applyProxy();
         QUrl url;
@@ -386,7 +388,16 @@ static QString redactRawForLog(const QString &line)
 void IrcClient::sendRaw(const QString &line)
 {
     if (sockState() != QAbstractSocket::ConnectedState) return;
-    const QString clean = stripCrlf(line).left(510); // 510 + CRLF = 512 (RFC 1459)
+    const QString stripped = stripCrlf(line);
+    // Enforce 510-byte wire limit (RFC 1459: 512 bytes including CRLF).
+    // left(510) counts code-points, not bytes — multi-byte chars could exceed the limit.
+    QByteArray utf8 = stripped.toUtf8();
+    if (utf8.size() > 510) {
+        int i = 510;
+        while (i > 0 && (static_cast<unsigned char>(utf8[i]) & 0xC0) == 0x80) --i;
+        utf8.truncate(i);
+    }
+    const QString clean = QString::fromUtf8(utf8);
     emit rawReceived(">> " + redactRawForLog(clean));
     sockWrite(clean);
 }
@@ -631,8 +642,8 @@ void IrcClient::processLine(const QString &line)
                 if (m_bouncerType == BouncerType::Soju && !m_bouncerNetwork.isEmpty())
                     saslUser += "/" + m_bouncerNetwork;
                 const QByteArray payload =
-                    QByteArray("\0", 1) + saslUser.toUtf8() +
-                    QByteArray("\0", 1) + m_saslPassword.toUtf8();
+                    QByteArray("\0", 1) + QString(saslUser).remove(QChar(0)).toUtf8() +
+                    QByteArray("\0", 1) + QString(m_saslPassword).remove(QChar(0)).toUtf8();
                 sendRaw("AUTHENTICATE " + QString::fromLatin1(payload.toBase64()));
             }
         }
@@ -722,7 +733,8 @@ void IrcClient::processLine(const QString &line)
                     if (m_ctcpTimestamps.size() >= 500)
                         m_ctcpTimestamps.clear();
                     m_ctcpTimestamps.insert(rkey, now);
-                    const QString payload = stripCrlf(ctcp.section(' ', 1).left(32));
+                    QString payload = stripCrlf(ctcp.section(' ', 1).left(32));
+                    payload.remove(QChar(1)); // strip CTCP delimiters from peer-supplied data
                     sendRaw("NOTICE " + msg.nick + " :\x01PING " + payload + "\x01");
                 }
             } else if (ctcpCmd == "DCC" && msg.nick != m_nick) {
@@ -1361,7 +1373,10 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
 
     case 433: // ERR_NICKNAMEINUSE
-        setNick(m_nick + "_");
+        if (!m_registered)
+            setNick(m_nick + "_");
+        else
+            emit errorMessage(m_host, "Nickname " + m_nick + " is already in use");
         break;
 
     case 431: case 432:

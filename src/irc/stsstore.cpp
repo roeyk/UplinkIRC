@@ -13,22 +13,29 @@ static QString stsPath()
 
 bool StsStore::lookup(const QString &host, Policy &out)
 {
-    QSettings s(stsPath(), QSettings::IniFormat);
-    s.beginGroup(host.toLower());
-    if (!s.contains("expires")) {
+    bool expired = false;
+    {
+        QSettings s(stsPath(), QSettings::IniFormat);
+        s.beginGroup(host.toLower());
+        if (!s.contains("expires")) {
+            s.endGroup();
+            return false;
+        }
+        const qint64 expires = s.value("expires").toLongLong();
+        const qint64 now     = QDateTime::currentSecsSinceEpoch();
+        if (expires > 0 && now >= expires) {
+            expired = true;
+        } else {
+            out.port    = static_cast<quint16>(s.value("port", 6697).toUInt());
+            out.expires = expires;
+        }
         s.endGroup();
-        return false;
     }
-    const qint64 expires = s.value("expires").toLongLong();
-    const qint64 now     = QDateTime::currentSecsSinceEpoch();
-    if (expires > 0 && now >= expires) {
-        s.endGroup();
+    // Destruct QSettings before calling remove() to avoid a double-open write conflict.
+    if (expired) {
         remove(host);
         return false;
     }
-    out.port    = static_cast<quint16>(s.value("port", 6697).toUInt());
-    out.expires = expires;
-    s.endGroup();
     return true;
 }
 

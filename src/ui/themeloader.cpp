@@ -57,7 +57,8 @@ static QString str(const toml::table &tbl, std::string_view key, const char *def
 
 Theme ThemeLoader::load(const QString &name)
 {
-    const QString path = themesDir() + "/" + name + ".toml";
+    const QString safeName = QFileInfo(name).fileName();
+    const QString path = themesDir() + "/" + safeName + ".toml";
     Theme t;
 
     try {

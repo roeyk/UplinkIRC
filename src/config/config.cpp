@@ -29,8 +29,8 @@ static QString storePassword(const QString &value, const QString &serverName, co
         return kKeychainSentinel;
 
     qWarning() << "Uplink: keychain write failed for" << serverName << field
-               << "— storing in config";
-    return value;
+               << "— password will not be persisted";
+    return {};
 }
 
 static QString tomlQuote(QString s)
