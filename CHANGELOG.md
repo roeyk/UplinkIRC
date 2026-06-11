@@ -3,14 +3,15 @@
 ---
 
 <!--
-SESSION SUMMARY — 2026-06-11
+SESSION SUMMARY — 2026-06-11 (v0.25.16 release session)
 What changed:
-  - Code review pass (performance/correctness) on the FadeScrollBar and IRC TAGMSG changes from the previous session.
-  - FadeScrollBar overhauled: QGraphicsOpacityEffect replaced with paintEvent + QPainter::setOpacity (no offscreen buffers); hover now reveals a hidden scrollbar; scrollbar no longer fades mid-drag; timer polling loop removed; leaveEvent no longer resets hold timer during an active fade; valueChanged replaced with actionTriggered so incoming messages don't flash the scrollbar.
-  - sendTyping: cap guard corrected from message-tags to draft/typing (the actual extension cap).
-  - sendReact: target validated with validIrcToken() before TAGMSG is built.
-No regressions found. All changes compile cleanly.
-Next priorities: Send button disable-when-empty; virtual scrolling for busy channels.
+  - Full /code-review pass (high effort, 7 angles) on the FadeScrollBar and IRC TAGMSG diff. Found and fixed 9 issues.
+  - FadeScrollBar: QGraphicsOpacityEffect → paintEvent+QPainter::setOpacity (no offscreen buffers); hover reveals hidden bar; enterEvent unconditional wake; sliderReleased connected; timer polling loop removed; leaveEvent guards on opacity>=kVisible; valueChanged → actionTriggered (no flash on incoming messages).
+  - IRC: sendTyping cap guard corrected to draft/typing; sendReact target validated with validIrcToken().
+  - Long-session leak audit: log fd leak on closeBuffer fixed; nickMeta capped at 1000 entries with eviction; ctcpTimestamps evicts one entry instead of clearing all; ChannelPane doc cap aligned to kMessageBufferCap.
+  - Bumped to v0.25.16, tagged, pushed. All 8 CI jobs (Linux/Windows/macOS build + ASan/UBSan + AppImage + update-docs) passed.
+  - docs/howto.html: added Fade Scrollbars section and nav entry; corrected typing indicator compat note (message-tags → draft/typing).
+No regressions. Next priorities: Send button disable-when-empty; virtual scrolling for busy channels; heaptrack session audit.
 -->
 
 ## v0.25.16
