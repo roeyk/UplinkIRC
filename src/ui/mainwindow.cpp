@@ -231,23 +231,25 @@ public:
         const bool selected = opt.state & QStyle::State_Selected;
         const bool hovered  = opt.state & QStyle::State_MouseOver;
 
+        const QWidget *w    = opt.widget;
+        const QStyle  *s    = w ? w->style() : QApplication::style();
+        const QRect textRect = s->subElementRect(QStyle::SE_ItemViewItemText, &opt, w);
+        const QFontMetrics fm(opt.font);
+        const int textW      = fm.horizontalAdvance(opt.text);
+        const int textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, w) + 1;
+        constexpr int hPad   = 8;
+        constexpr int vPad   = 2;
+        constexpr int iconSz = 14;
+        const int iconGap    = fm.horizontalAdvance(QLatin1Char(' '));
+        const int pillX      = textRect.x() + textMargin - hPad;
+        const int iconExtra  = indicator.isNull() ? 0 : (iconGap + iconSz);
+
         if (selected || hovered) {
             const QColor bg = selected ? m_accent : m_hover;
             if (bg.isValid()) {
-                const QWidget *w = opt.widget;
-                const QStyle  *s = w ? w->style() : QApplication::style();
-                const QRect textRect = s->subElementRect(
-                    QStyle::SE_ItemViewItemText, &opt, w);
-
-                const QFontMetrics fm(opt.font);
-                const int textW = fm.horizontalAdvance(opt.text);
-                constexpr int hPad = 8;
-                constexpr int vPad = 2;
-                const int textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, w) + 1;
-                const int pillX = textRect.x() + textMargin - hPad;
                 QRect r(pillX,
                         opt.rect.y() + vPad,
-                        qMin(textW + hPad * 2, opt.rect.right() - pillX),
+                        qMin(textW + hPad * 2 + iconExtra, opt.rect.right() - pillX),
                         opt.rect.height() - vPad * 2);
                 painter->save();
                 painter->setRenderHint(QPainter::Antialiasing);
@@ -266,13 +268,10 @@ public:
         QStyledItemDelegate::paint(painter, opt, index);
 
         if (!indicator.isNull()) {
-            const int sz = 14;
-            const QFontMetrics fm(opt.font);
-            const int textEnd = opt.rect.left() + opt.fontMetrics.horizontalAdvance(opt.text)
-                                + fm.horizontalAdvance(QLatin1Char(' '));
-            QRect r(textEnd,
-                    opt.rect.top() + (opt.rect.height() - sz) / 2,
-                    sz, sz);
+            const int iconX = textRect.x() + textMargin + textW + iconGap;
+            QRect r(iconX,
+                    opt.rect.top() + (opt.rect.height() - iconSz) / 2,
+                    iconSz, iconSz);
             indicator.paint(painter, r);
         }
     }
