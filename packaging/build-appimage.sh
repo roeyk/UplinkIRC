@@ -192,6 +192,28 @@ if [[ ! -f "$APPDIR/AppRun" ]]; then
     cat > "$APPDIR/AppRun" << 'APPRUN'
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "$0")")"
+
+# Self-integrate on first run when running as an AppImage
+if [[ -n "${APPIMAGE:-}" && ! -f "${HOME}/.local/share/applications/uplink.desktop" ]]; then
+    mkdir -p "${HOME}/.local/share/applications"
+    mkdir -p "${HOME}/.local/share/icons/hicolor/256x256/apps"
+    cat > "${HOME}/.local/share/applications/uplink.desktop" << DESKTOP
+[Desktop Entry]
+Name=Uplink
+Exec=${APPIMAGE}
+Icon=uplink
+Type=Application
+Categories=Network;IRCClient;
+Terminal=false
+DESKTOP
+    if [[ -f "$HERE/usr/share/icons/hicolor/256x256/apps/uplink.png" ]]; then
+        cp "$HERE/usr/share/icons/hicolor/256x256/apps/uplink.png" \
+           "${HOME}/.local/share/icons/hicolor/256x256/apps/uplink.png"
+    fi
+    command -v update-desktop-database &>/dev/null && \
+        update-desktop-database "${HOME}/.local/share/applications" 2>/dev/null || true
+fi
+
 export LD_LIBRARY_PATH="$HERE/usr/lib:${LD_LIBRARY_PATH:-}"
 export QT_PLUGIN_PATH="$HERE/usr/plugins:${QT_PLUGIN_PATH:-}"
 export QT_QPA_PLATFORM_PLUGIN_PATH="$HERE/usr/plugins/platforms"
