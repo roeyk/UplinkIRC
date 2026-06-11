@@ -29,7 +29,8 @@ This is a complete config file showing every available option.
 theme             = "catppuccin-mocha"  # omit or set "default" for native look on Windows
 show_nick_prefix  = true
 show_topic        = true
-show_emoji_button = true               # shows 😊 button next to input bar
+show_emoji_button         = true       # shows 😊 button next to input bar
+show_nick_complete_button = false      # shows person-search button that triggers Tab nick completion
 colored_nicks     = true
 typing_indicator  = true
 hanging_indent    = true               # wrap long messages past the timestamp+nick column

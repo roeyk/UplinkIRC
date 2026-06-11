@@ -74,6 +74,7 @@ struct UiConfig {
     bool      showNickPrefix{true};
     bool      showTopic{true};
     bool      showEmojiButton{false};
+    bool      showNickCompleteButton{false};
     bool      coloredNicks{true};
     QString   fontFamily{kDefaultFontFamily};
     FontSizes fontSizes;

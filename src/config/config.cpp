@@ -120,7 +120,8 @@ Config Config::load(const QString &path)
             cfg.ui.theme           = ustr("theme", "default");
             cfg.ui.showNickPrefix  = (*ui)["show_nick_prefix"].value_or(true);
             cfg.ui.showTopic       = (*ui)["show_topic"].value_or(true);
-            cfg.ui.showEmojiButton = (*ui)["show_emoji_button"].value_or(false);
+            cfg.ui.showEmojiButton          = (*ui)["show_emoji_button"].value_or(false);
+            cfg.ui.showNickCompleteButton   = (*ui)["show_nick_complete_button"].value_or(false);
             cfg.ui.coloredNicks    = (*ui)["colored_nicks"].value_or(true);
             cfg.ui.typingIndicator = (*ui)["typing_indicator"].value_or(true);
             cfg.ui.hangingIndent   = (*ui)["hanging_indent"].value_or(true);
@@ -265,7 +266,8 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "theme             = " << tomlQuote(cfg.ui.theme)          << "\n";
     out << "show_nick_prefix  = " << boolStr(cfg.ui.showNickPrefix)   << "\n";
     out << "show_topic        = " << boolStr(cfg.ui.showTopic)        << "\n";
-    out << "show_emoji_button = " << boolStr(cfg.ui.showEmojiButton)  << "\n";
+    out << "show_emoji_button         = " << boolStr(cfg.ui.showEmojiButton)          << "\n";
+    out << "show_nick_complete_button = " << boolStr(cfg.ui.showNickCompleteButton)  << "\n";
     out << "colored_nicks     = " << boolStr(cfg.ui.coloredNicks)     << "\n";
     out << "typing_indicator  = " << boolStr(cfg.ui.typingIndicator)  << "\n";
     out << "hanging_indent    = " << boolStr(cfg.ui.hangingIndent)    << "\n";

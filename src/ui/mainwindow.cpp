@@ -416,9 +416,10 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     , m_config(cfg)
 {
     // Init UI toggles from config
-    m_showNickPrefix = cfg.ui.showNickPrefix;
-    m_showTopic      = cfg.ui.showTopic;
-    m_showEmojiBtn   = cfg.ui.showEmojiButton;
+    m_showNickPrefix      = cfg.ui.showNickPrefix;
+    m_showTopic           = cfg.ui.showTopic;
+    m_showEmojiBtn        = cfg.ui.showEmojiButton;
+    m_showNickCompleteBtn = cfg.ui.showNickCompleteButton;
 
     setWindowTitle("Uplink");
     setWindowIcon(AppIcons::appIcon(m_config.ui.appIcon));
@@ -767,6 +768,13 @@ void MainWindow::connectPreferences()
         m_showEmojiBtn = on;
         m_config.ui.showEmojiButton = on;
         m_emojiBtn->setVisible(on);
+        Config::save(m_config, Config::defaultPath());
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::nickCompleteBtnToggled, this, [this](bool on){
+        m_showNickCompleteBtn = on;
+        m_config.ui.showNickCompleteButton = on;
+        m_nickCompleteBtn->setVisible(on);
         Config::save(m_config, Config::defaultPath());
     });
 
@@ -1477,6 +1485,18 @@ void MainWindow::setupInputBar()
     m_emojiBtn->setVisible(m_showEmojiBtn);
     m_emojiBtn->setToolTip("Emoji picker");
 
+    m_nickCompleteBtn = new QToolButton;
+    m_nickCompleteBtn->setFixedSize(30, 30);
+    m_nickCompleteBtn->setAutoRaise(true);
+    m_nickCompleteBtn->setIcon(MenuIcons::nickComplete());
+    m_nickCompleteBtn->setIconSize(QSize(18, 18));
+    m_nickCompleteBtn->setToolTip("Nick complete (Tab)");
+    m_nickCompleteBtn->setVisible(m_showNickCompleteBtn);
+    connect(m_nickCompleteBtn, &QToolButton::clicked, this, [this]{
+        handleTabComplete(m_input, m_model->activeHost(), m_model->activeChannel());
+        m_input->setFocus();
+    });
+
     m_sendBtn = new QToolButton;
     m_sendBtn->setFixedSize(30, 30);
     m_sendBtn->setAutoRaise(true);
@@ -1487,6 +1507,7 @@ void MainWindow::setupInputBar()
 
     hbox->addWidget(m_nickPrefix);
     hbox->addWidget(m_input, 1);
+    hbox->addWidget(m_nickCompleteBtn);
     hbox->addWidget(m_emojiBtn);
     hbox->addWidget(m_sendBtn);
 
