@@ -132,6 +132,7 @@ private:
     void handleTabComplete(QPlainTextEdit *input, const QString &host, const QString &channel);
     QStringList m_tabCandidates;
     int         m_tabCandidateIndex{0};
+    int         m_tabWordStart{0};
     QString     m_tabPrefix;
     bool        m_tabActive{false};
 

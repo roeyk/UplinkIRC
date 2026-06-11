@@ -2179,18 +2179,17 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, const QString &channel)
 {
     const QTextCursor tc = input->textCursor();
-    const QString text = tc.block().text();   // current line only
+    const QString text = tc.block().text();
     const int pos = tc.positionInBlock();
 
-    // Find start of word before cursor
-    const qsizetype wordStart = text.lastIndexOf(' ', pos - 1) + 1;
-    const QString prefix = text.mid(wordStart, pos - wordStart);
+    if (!m_tabActive) {
+        // Start a new cycle: derive prefix from text before cursor
+        const qsizetype wordStart = text.lastIndexOf(' ', pos - 1) + 1;
+        const QString prefix = text.mid(wordStart, pos - wordStart);
+        if (prefix.isEmpty()) return;
 
-    if (prefix.isEmpty()) return;
-
-    // Build candidate list if this is a new cycle or prefix changed
-    if (!m_tabActive || prefix != m_tabPrefix) {
-        m_tabPrefix = prefix;
+        m_tabPrefix    = prefix;
+        m_tabWordStart = static_cast<int>(wordStart);
         m_tabCandidates.clear();
         m_tabCandidateIndex = 0;
         m_tabActive = true;
@@ -2213,24 +2212,26 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, c
                 for (const auto &e : std::as_const(ch->nicks))
                     if (e.nick.startsWith(prefix, Qt::CaseInsensitive))
                         m_tabCandidates << e.nick;
+                m_tabCandidates.sort(Qt::CaseInsensitive);
             }
         }
     }
+    // else: continuing a cycle — use stored m_tabWordStart and m_tabPrefix as-is
 
     if (m_tabCandidates.isEmpty()) return;
 
     const QString completed = m_tabCandidates[m_tabCandidateIndex];
     m_tabCandidateIndex = static_cast<int>((m_tabCandidateIndex + 1) % m_tabCandidates.size());
 
-    // Commands always get a space suffix; nicks get ": " at line start, " " otherwise
+    // Nicks at line start get ": ", everything else at end-of-line gets " "
     QString suffix;
     if (pos == static_cast<int>(text.length()))
-        suffix = (wordStart == 0 && !completed.startsWith('/'))
+        suffix = (m_tabWordStart == 0 && !completed.startsWith('/'))
             ? QStringLiteral(": ") : QStringLiteral(" ");
 
     const int blockStart = tc.block().position();
     QTextCursor editCursor = input->textCursor();
-    editCursor.setPosition(blockStart + static_cast<int>(wordStart));
+    editCursor.setPosition(blockStart + m_tabWordStart);
     editCursor.setPosition(blockStart + pos, QTextCursor::KeepAnchor);
     editCursor.insertText(completed + suffix);
     input->setTextCursor(editCursor);
