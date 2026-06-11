@@ -189,6 +189,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Fade scrollbars — appear on scroll, fade out after 3.5 s; applied to chat view, nick list, sidebar, all channel panes (2026-06-11)
 - [x] TAGMSG cap guard — sendTyping/sendReact no longer fire on servers that haven't ACKed message-tags; fixes Unknown command spam on Undernet (2026-06-11)
 - [x] FadeScrollBar hardened — QGraphicsOpacityEffect replaced with paintEvent+QPainter::setOpacity (no offscreen buffers); hover reveals hidden bar; mid-drag fade fixed; timer polling loop removed; valueChanged→actionTriggered prevents auto-scroll flash; sendTyping cap corrected to draft/typing; sendReact target validated (2026-06-11)
+- [x] Long-session memory/fd leaks fixed — log fd leak on closeBuffer; nickMeta unbounded growth; ctcpTimestamps clear-all on overflow; channelpane doc cap misaligned (2026-06-11)
+- [x] v0.25.16 released (2026-06-11)
 - [ ] Send button: disable when input empty, re-enable on text change
 - [ ] Nick completion button — person_search icon triggers Tab completion for non-keyboard users (was added then reverted as pointless mid-message)
 - [ ] Preferences toggle for send button — same pattern as emoji button toggle

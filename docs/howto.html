@@ -524,6 +524,7 @@
     <li><a href="#fonts">Font sizes</a></li>
     <li><a href="#brackets">Nick brackets</a></li>
     <li><a href="#panels">Show/hide panels</a></li>
+    <li><a href="#scrollbars">Fade scrollbars</a></li>
     <li><a href="#hanging-indent">Hanging indent</a></li>
     <li><a href="#app-icon">App icon</a></li>
     <li><a href="#notifications">Notifications</a></li>
@@ -2324,6 +2325,21 @@ show_topic = true   # global default — applies to primary channel view on laun
     <h3>Nick label in input box</h3>
     <pre>[ui]
 show_nick_prefix = false   # hides "alice ▸" next to the input</pre>
+  </section>
+
+  <!-- FADE SCROLLBARS -->
+  <section id="scrollbars">
+    <h2>Fade scrollbars</h2>
+    <p>Scrollbars on the chat view, nick list, sidebar, and channel panes are hidden at rest. They appear when you:</p>
+    <ul>
+      <li><strong>Scroll</strong> with the mouse wheel or keyboard</li>
+      <li><strong>Click or drag</strong> the scrollbar track</li>
+      <li><strong>Hover</strong> over the scrollbar area</li>
+    </ul>
+    <p>After 3.5 seconds of inactivity, the scrollbar fades out over 300 ms. This keeps the interface clean without hiding the scrollbar when you need it.</p>
+    <div class="tip">
+      <strong>Can't find the scrollbar?</strong> Move your mouse to the right edge of the chat area or nick list. The scrollbar will appear immediately on hover.
+    </div>
   </section>
 
   <!-- HANGING INDENT -->
