@@ -10,12 +10,14 @@
 
 namespace MenuIcons {
 
-inline QIcon fromSvg(const QString &path, const QColor &color = {})
+// logicalSize: the icon size in logical pixels; rendered at 2x for crisp HiDPI output.
+inline QIcon fromSvg(const QString &path, const QColor &color = {}, int logicalSize = 16)
 {
     const QColor col = color.isValid() ? color
                                        : QApplication::palette().color(QPalette::WindowText);
     QSvgRenderer renderer(path);
-    QPixmap pix(32, 32);
+    const int phys = logicalSize * 2;
+    QPixmap pix(phys, phys);
     pix.fill(Qt::transparent);
     {
         QPainter p(&pix);
@@ -49,7 +51,7 @@ inline QIcon confirm        (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon close          (const QColor &c = {}) { return fromSvg(":/icons/mi-close.svg",               c); }
 inline QIcon mention        (const QColor &c = {}) { return fromSvg(":/icons/mi-lightbulb-2.svg",         c); }
 inline QIcon unread         (const QColor &c = {}) { return fromSvg(":/icons/mi-forum.svg",               c); }
-inline QIcon send           (const QColor &c = {}) { return fromSvg(":/icons/mi-send.svg",                c); }
+inline QIcon send           (const QColor &c = {}, int sz = 16) { return fromSvg(":/icons/mi-send.svg", c, sz); }
 inline QIcon connectedServer(const QColor &c = {}) { return fromSvg(":/icons/mi-public.svg",              c); }
 
 } // namespace MenuIcons
