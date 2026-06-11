@@ -20,8 +20,9 @@ bool DccSend::listen(QHostAddress bindAddr, std::optional<QHostAddress> expected
         emit error("Cannot open: " + m_file.fileName());
         return false;
     }
+    m_filesize = QFileInfo(m_file.fileName()).size();
 
-    const qint64 size = filesize();
+    const qint64 size = m_filesize;
     if (size <= 0 || size > static_cast<qint64>(UINT32_MAX)) {
         emit error(size <= 0 ? "File is empty" : "File too large for DCC (max 4 GiB)");
         m_file.close();
@@ -51,7 +52,8 @@ QString DccSend::initPassive()
         emit error("Cannot open: " + m_file.fileName());
         return {};
     }
-    const qint64 size = filesize();
+    m_filesize = QFileInfo(m_file.fileName()).size();
+    const qint64 size = m_filesize;
     if (size <= 0 || size > static_cast<qint64>(UINT32_MAX)) {
         emit error(size <= 0 ? "File is empty" : "File too large for DCC (max 4 GiB)");
         m_file.close();
@@ -102,7 +104,7 @@ QString DccSend::filename() const
 
 qint64 DccSend::filesize() const
 {
-    return QFileInfo(m_file.fileName()).size();
+    return m_filesize;
 }
 
 void DccSend::onNewConnection()

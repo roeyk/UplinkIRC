@@ -166,10 +166,13 @@ void IrcClient::applyProxy()
 
 void IrcClient::sockWrite(const QString &line)
 {
-    if (m_useWs)
+    if (m_useWs) {
         m_wsSocket->sendTextMessage(line);
-    else
-        m_socket->write((line + "\r\n").toUtf8());
+    } else {
+        QByteArray buf = line.toUtf8();
+        buf.append("\r\n", 2);
+        m_socket->write(buf);
+    }
 }
 
 void IrcClient::sockDisconnect()
@@ -472,10 +475,10 @@ void IrcClient::onReadyRead()
         return;
     }
 
-    qsizetype idx;
-    while ((idx = m_buffer.indexOf('\n')) != -1) {
-        QByteArray lineBytes = m_buffer.left(idx);
-        m_buffer.remove(0, static_cast<int>(idx + 1));
+    qsizetype start = 0, idx;
+    while ((idx = m_buffer.indexOf('\n', start)) != -1) {
+        QByteArray lineBytes = m_buffer.mid(start, idx - start);
+        start = idx + 1;
         if (!lineBytes.isEmpty() && lineBytes.back() == '\r')
             lineBytes.chop(1);
         if (lineBytes.isEmpty()) continue;
@@ -487,6 +490,8 @@ void IrcClient::onReadyRead()
         emit rawReceived(line);
         processLine(line);
     }
+    if (start > 0)
+        m_buffer = m_buffer.mid(start);
 }
 
 void IrcClient::onSslErrors(const QList<QSslError> &errors)

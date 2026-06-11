@@ -93,11 +93,10 @@ void EmojiPicker::buildButtons()
 
 void EmojiPicker::filterGrid(const QString &filter)
 {
-    // Remove all from layout without deleting widgets
-    while (m_gridLayout->count() > 0) {
-        auto *item = m_gridLayout->takeAt(0);
-        delete item;
-    }
+    m_gridWidget->setUpdatesEnabled(false);
+
+    for (int i = m_gridLayout->count() - 1; i >= 0; --i)
+        delete m_gridLayout->takeAt(i);
 
     int col = 0, row = 0;
     for (auto &entry : m_buttons) {
@@ -113,6 +112,7 @@ void EmojiPicker::filterGrid(const QString &filter)
     }
 
     m_gridWidget->adjustSize();
+    m_gridWidget->setUpdatesEnabled(true);
 }
 
 void EmojiPicker::onSearch(const QString &text)

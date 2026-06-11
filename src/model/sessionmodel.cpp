@@ -9,7 +9,6 @@
 #include <QRegularExpression>
 #include <QSet>
 #include <QStandardPaths>
-#include <QTextStream>
 
 SessionModel::SessionModel(QObject *parent)
     : QObject(parent)
@@ -178,7 +177,6 @@ void SessionModel::logMessage(const QString &host, const QString &target, const 
         m_logFiles.insert(filePath, f);
     }
 
-    QTextStream out(f);
     const QString ts = msg.timestamp.toLocalTime().toString("yyyy-MM-dd hh:mm:ss");
 
     const auto sanitize = [](const QString &s) {
@@ -190,20 +188,22 @@ void SessionModel::logMessage(const QString &host, const QString &target, const 
     const QString safeNick = sanitize(msg.nick);
     const QString safeText = sanitize(msg.text);
 
+    QString line;
     switch (msg.type) {
     case MessageType::Privmsg:
-        out << "[" << ts << "] <" << safeNick << "> " << safeText << "\n";
+        line = "[" + ts + "] <" + safeNick + "> " + safeText + "\n";
         break;
     case MessageType::Action:
-        out << "[" << ts << "] * " << safeNick << " " << safeText << "\n";
+        line = "[" + ts + "] * " + safeNick + " " + safeText + "\n";
         break;
     case MessageType::Notice:
-        out << "[" << ts << "] -" << safeNick << "- " << safeText << "\n";
+        line = "[" + ts + "] -" + safeNick + "- " + safeText + "\n";
         break;
     default:
-        out << "[" << ts << "] -- " << safeText << "\n";
+        line = "[" + ts + "] -- " + safeText + "\n";
         break;
     }
+    f->write(line.toUtf8());
 }
 
 void SessionModel::addServer(const ServerConfig &sc)
@@ -224,6 +224,17 @@ void SessionModel::removeServer(const QString &host)
     m_sessions.removeIf([&](const ServerSession &s){ return s.host == host; });
     m_config.servers.removeIf([&](const ServerConfig &s){ return s.host == host; });
     emit serverDisconnected(host);
+
+    const QString hostSeg = "/" + sanitizeFilename(host) + "/";
+    for (auto it = m_logFiles.begin(); it != m_logFiles.end(); ) {
+        if (it.key().contains(hostSeg)) {
+            it.value()->close();
+            delete it.value();
+            it = m_logFiles.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 void SessionModel::updateServer(const QString &oldHost, const ServerConfig &sc)
@@ -497,7 +508,7 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     if (m_config.ui.logMessages)
         logMessage(host, target, msg);
 
-    const bool isActive = (host == m_activeHost && target.toLower() == m_activeChannel.toLower());
+    const bool isActive = (host == m_activeHost && target.compare(m_activeChannel, Qt::CaseInsensitive) == 0);
     const bool countsAsUnread = msg.type == MessageType::Privmsg
         || (msg.type == MessageType::Notice && target == "(server)");
     if (!isActive && !msg.isHistory && countsAsUnread) {
@@ -687,14 +698,18 @@ void SessionModel::onNetsplitDetected(const QString &host, const QString &server
 {
     auto *sess = session(host);
     if (!sess) return;
+
+    QSet<QString> lowerNicks;
+    lowerNicks.reserve(nicks.size());
+    for (const QString &n : nicks)
+        lowerNicks.insert(n.toLower());
+
     for (auto &ch : sess->channels) {
         int lost = 0;
-        for (const QString &nick : nicks) {
-            if (!ch.nickIndex.contains(nick.toLower())) continue;
-            ch.removeNick(nick);
-            ++lost;
-        }
+        for (const QString &ln : std::as_const(lowerNicks))
+            if (ch.nickIndex.contains(ln)) ++lost;
         if (lost == 0) continue;
+        ch.removeNicks(lowerNicks);
         emit nickListChanged(host, ch.name);
         const QString text = QString("Netsplit: %1 user%2 lost (%3)")
             .arg(lost).arg(lost == 1 ? "" : "s").arg(servers);

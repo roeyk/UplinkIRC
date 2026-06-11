@@ -25,6 +25,7 @@ inline int prefixRank(QChar p)
 
 struct NickEntry {
     QString     nick;
+    QString     lowerNick; // pre-computed nick.toLower() for fast comparisons
     QString     account;   // NickServ account, empty if unknown or logged out
     QChar       prefix{' '};
     QSet<QChar> prefixes;
@@ -46,7 +47,7 @@ struct NickEntry {
     {
         int ra = prefixRank(prefix), rb = prefixRank(o.prefix);
         if (ra != rb) return ra > rb;
-        return nick.toLower() < o.nick.toLower();
+        return lowerNick < o.lowerNick;
     }
 };
 
@@ -83,7 +84,7 @@ struct Channel {
         nickIndex.clear();
         nickIndex.reserve(nicks.size());
         for (qsizetype i = 0; i < nicks.size(); ++i)
-            nickIndex[nicks[i].nick.toLower()] = i;
+            nickIndex[nicks[i].lowerNick] = i;
     }
 
     void setNicks(const QStringList &raw)
@@ -103,6 +104,7 @@ struct Channel {
             const qsizetype bang = e.nick.indexOf('!');
             if (bang != -1)
                 e.nick = e.nick.left(bang);
+            e.lowerNick = e.nick.toLower();
             nicks.append(e);
         }
         std::sort(nicks.begin(), nicks.end());
@@ -127,7 +129,8 @@ struct Channel {
         }
         e.recomputePrefix();
         e.nick = raw.mid(i);
-        if (nickIndex.contains(e.nick.toLower())) return;
+        e.lowerNick = e.nick.toLower();
+        if (nickIndex.contains(e.lowerNick)) return;
         const qsizetype idx = std::lower_bound(nicks.cbegin(), nicks.cend(), e) - nicks.cbegin();
         nicks.insert(idx, e);
         rebuildNickIndex();
@@ -147,7 +150,16 @@ struct Channel {
         const auto it = nickIndex.constFind(oldNick.toLower());
         if (it == nickIndex.constEnd()) return;
         nicks[it.value()].nick = newNick;
+        nicks[it.value()].lowerNick = newNick.toLower();
         std::sort(nicks.begin(), nicks.end());
+        rebuildNickIndex();
+    }
+
+    void removeNicks(const QSet<QString> &lowerNicks)
+    {
+        nicks.removeIf([&](const NickEntry &e){
+            return lowerNicks.contains(e.lowerNick);
+        });
         rebuildNickIndex();
     }
 

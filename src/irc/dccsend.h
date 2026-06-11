@@ -42,6 +42,7 @@ private:
     QFile       m_file;
     QString     m_token;
     qint64      m_sent{0};
+    qint64      m_filesize{0};
     std::optional<QHostAddress> m_expectedPeer;
 
     static constexpr qint32 kChunk = 65536;

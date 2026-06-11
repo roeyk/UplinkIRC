@@ -9,7 +9,6 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
-#include <QTextDocument>
 #include <memory>
 
 static constexpr int kMaxBytes     = 32768;   // 32 KB
@@ -47,9 +46,17 @@ static bool isImageUrl(const QUrl &url)
 
 static QString decodeEntities(const QString &s)
 {
-    QTextDocument doc;
-    doc.setHtml(s);
-    return doc.toPlainText();
+    QString r = s;
+    r.replace(QLatin1String("&amp;"),  QLatin1String("&"));
+    r.replace(QLatin1String("&lt;"),   QLatin1String("<"));
+    r.replace(QLatin1String("&gt;"),   QLatin1String(">"));
+    r.replace(QLatin1String("&quot;"), QLatin1String("\""));
+    r.replace(QLatin1String("&#39;"),  QLatin1String("'"));
+    r.replace(QLatin1String("&apos;"), QLatin1String("'"));
+    r.replace(QLatin1String("&nbsp;"), QLatin1String(" "));
+    r.replace(QLatin1String("&ndash;"), QLatin1String("–"));
+    r.replace(QLatin1String("&mdash;"), QLatin1String("—"));
+    return r;
 }
 
 // ── LinkPreview ───────────────────────────────────────────────────────────────

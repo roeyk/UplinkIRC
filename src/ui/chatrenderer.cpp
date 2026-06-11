@@ -6,6 +6,10 @@
 
 namespace ChatRenderer {
 
+static const QRegularExpression s_urlRe(
+    R"((https?://[^\s<>"]+))",
+    QRegularExpression::CaseInsensitiveOption);
+
 QString htmlAttr(const QString &s)
 {
     QString out = s.toHtmlEscaped();
@@ -15,21 +19,15 @@ QString htmlAttr(const QString &s)
 
 QString linkifyTopic(const QString &text)
 {
-    static const QRegularExpression urlRe(
-        R"((https?://[^\s<>"]+))",
-        QRegularExpression::CaseInsensitiveOption);
     QString result = text.toHtmlEscaped();
-    result.replace(urlRe, R"(<a href="\1">\1</a>)");
+    result.replace(s_urlRe, R"(<a href="\1">\1</a>)");
     return result;
 }
 
 QString linkifyHtml(const QString &html)
 {
-    static const QRegularExpression urlRe(
-        R"((https?://[^\s<>"]+))",
-        QRegularExpression::CaseInsensitiveOption);
     QString result = html;
-    result.replace(urlRe, R"(<a href="\1">\1</a>)");
+    result.replace(s_urlRe, R"(<a href="\1">\1</a>)");
     return result;
 }
 
