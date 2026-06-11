@@ -6,10 +6,12 @@
 
 ### Docs / Site
 - Redesigned GitHub Pages site (`docs/index.html`) with Gruvbox Light theme, IBM Plex Mono font, scanline texture, and sections for Download, IRCv3 features, Themes, Security, Power Users, and Community.
-- Added Quick Start section to the landing page: 3-step onboarding, minimal config snippet, config path table, essential slash command reference, and keyboard shortcuts — all drawing from the how-to guide content.
-- Added Gruvbox Dark / Light toggle (sun/moon icon button) to the nav on both `index.html` and `howto.html`; preference is persisted to localStorage and shared between both pages.
+- Added Quick Start section to the landing page: 3-step onboarding, minimal config snippet, config path table, essential slash command reference, and keyboard shortcuts — drawn from the how-to guide content.
+- Added Gruvbox Dark / Light toggle (sun/moon icon button) to the nav on both `index.html` and `howto.html`; preference persisted to localStorage and shared between both pages.
 - Updated `docs/howto.html` CSS from Catppuccin Mocha to Gruvbox Dark; switched body font to IBM Plex Mono to match the landing page.
+- Fixed transparent icon bleed in `howto.html` header — swapped `icons/uplink-dark.png` (transparent bg) for `assets/uplink-icon-192.png` (full-color, works on any background).
 - Added `docs/assets/` directory with app icon, favicon, and three theme screenshots used by the site.
+- Added `scripts/sync-site.sh` — reads version from CMakeLists.txt and patches version strings in `docs/index.html` and `README.md`; now runs at every session close and automatically in CI on tag push via the new `update-docs` job in `release.yml`.
 
 ## v0.25.15
 

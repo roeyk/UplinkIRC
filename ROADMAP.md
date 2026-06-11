@@ -185,6 +185,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Send button — paper-plane SVG in input bar right of emoji button; calls onInputSubmit
 - [x] Send button floats inside input area — child widget of input, right-edge centred, repositions on resize; QTextFrameFormat right margin keeps text clear (2026-06-11)
 - [x] Tab completion cycling fixed — repeated Tab now cycles all alphabetical matches; stored m_tabWordStart prevents empty-prefix bail-out after first completion (2026-06-11)
+- [x] GitHub Pages site redesigned — Gruvbox Light + IBM Plex Mono; Quick Start how-to section embedded on landing page; dark/light mode toggle on both index.html and howto.html (2026-06-11)
 - [ ] Send button: disable when input empty, re-enable on text change
 - [ ] Nick completion button — person_search icon triggers Tab completion for non-keyboard users (was added then reverted as pointless mid-message)
 - [ ] Preferences toggle for send button — same pattern as emoji button toggle
@@ -206,7 +207,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Native Windows style — windows11 Qt style by default; no alien dark theme on fresh installs
 - [x] FreeBSD port skeleton — `packaging/freebsd/`: Makefile, pkg-descr, pkg-plist; uses GH source tarball; needs `make makesum` + qt6-keychain port verification before submission
 - [x] AppImage packaging for Linux — build-appimage.sh; linuxdeploy + Qt plugin; zsync metadata embedded; release.yml uploads .AppImage + .AppImage.zsync; plugin strip patched for .relr.dyn (v0.15.0)
-- [x] Auto-bump release docs — update-docs job in release.yml replaces all version strings in README.md and docs/index.html after each successful tag build; no manual bump needed on future releases
+- [x] Auto-bump release docs — `scripts/sync-site.sh` replaces all version strings in README.md and docs/index.html; `update-docs` job in release.yml runs it automatically on every tag push; also run manually at session close
 - [x] Service shortcuts — /ns /cs /bs /ms aliases for NickServ/ChanServ/BotServ/MemoServ; /query opens PM without sending; /oper for IRC operator login (v0.15.0)
 - [x] Right-click copy in chat view — selecting text and right-clicking shows Copy (v0.14.0)
 - [x] Theme-aware icons — hamburger menu and gear buttons use m_theme.text; link preview card hardcoded dark (v0.14.0)
