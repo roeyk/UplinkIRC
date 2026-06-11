@@ -300,16 +300,53 @@ QString formatMessage(const Message &msg, const Context &ctx)
     return html;
 }
 
-QString formatEventGroup(const QList<Message> &msgs, const Context &ctx)
+QString formatEventGroup(const QList<Message> &msgs, const Context &ctx,
+                         const QString &groupId, bool expanded)
 {
     if (msgs.isEmpty()) return {};
 
+    const int eventPt = qMax(7, qRound(ctx.chatPt * 0.82));
+
+    if (expanded) {
+        QString collapseAnchor;
+        if (!groupId.isEmpty())
+            collapseAnchor = QString("<a href='evgrp:%1' style='text-decoration:none;color:gray'>▾ </a>")
+                .arg(htmlAttr(groupId));
+
+        QStringList lines;
+        bool firstLine = true;
+        for (const auto &msg : msgs) {
+            const QDateTime mLocal = msg.timestamp.toLocalTime();
+            const bool mSameDay = mLocal.date() == QDate::currentDate();
+            const QString mTs = mSameDay ? mLocal.toString("hh:mm") : mLocal.toString("MM/dd hh:mm");
+            const QString mTsSpan = QString("<span style='color:gray'>%1</span>").arg(mTs);
+
+            QString color, sym;
+            switch (msg.type) {
+            case MessageType::Join: color = QStringLiteral("seagreen");   sym = QStringLiteral("→"); break;
+            case MessageType::Part:
+            case MessageType::Quit: color = QStringLiteral("#e06b6b");   sym = QStringLiteral("←"); break;
+            case MessageType::Nick: color = QStringLiteral("steelblue"); sym = QStringLiteral("~");      break;
+            case MessageType::Kick: color = QStringLiteral("#e06b6b");   sym = QStringLiteral("✕"); break;
+            default: continue;
+            }
+
+            const QString lineHtml =
+                QString("<span style='color:%1;font-size:%2pt'>%3 %4 %5</span>")
+                    .arg(color, QString::number(eventPt), mTsSpan, sym, msg.text.toHtmlEscaped());
+
+            lines << (firstLine ? collapseAnchor + lineHtml : lineHtml);
+            firstLine = false;
+        }
+        if (lines.isEmpty()) return {};
+        return lines.join(QStringLiteral("<br>"));
+    }
+
+    // Collapsed form
     const QDateTime local = msgs.front().timestamp.toLocalTime();
     const bool sameDay = local.date() == QDate::currentDate();
     const QString ts = sameDay ? local.toString("hh:mm") : local.toString("MM/dd hh:mm");
     const QString tsSpan = QString("<span style='color:gray'>%1</span>").arg(ts);
-
-    const int eventPt = qMax(7, qRound(ctx.chatPt * 0.82));
 
     QStringList joins, parts, kicks;
     QList<QPair<QString,QString>> nickChanges;
@@ -372,8 +409,13 @@ QString formatEventGroup(const QList<Message> &msgs, const Context &ctx)
     if (overflow > 0)
         body += QString("  … %1 more").arg(overflow);
 
-    return QString("<span style='font-size:%1pt'>%2  %3</span>")
-        .arg(eventPt).arg(tsSpan, body);
+    const QString expandAnchor = groupId.isEmpty()
+        ? QString()
+        : QString("<a href='evgrp:%1' style='text-decoration:none;color:gray'>▸ </a>")
+              .arg(htmlAttr(groupId));
+
+    return QString("<span style='font-size:%1pt'>%2%3  %4</span>")
+        .arg(eventPt).arg(expandAnchor, tsSpan, body);
 }
 
 } // namespace ChatRenderer

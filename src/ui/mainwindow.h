@@ -120,6 +120,8 @@ private:
     static int       findNickRow (QListWidget *list, const QString &nick);
 
     QString    formatMessage(const Message &msg) const;
+    void       toggleEventGroupInView(QTextBrowser *view, const QString &groupId,
+                                      const QString &host, const QString &channel);
     void       showNickContextMenu(const QString &nick, const QPoint &globalPos);
     QString    msgidAtViewPos(const QPoint &viewPos) const;
     void       doSearch(bool backward);
@@ -180,7 +182,8 @@ private:
     QSplitter    *m_panesSplitter{nullptr};
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
     QList<ChannelPane*>          m_orderedPanes; // insertion order for layout
-    QSet<QString>                m_nickRefreshPending; // channels with a debounced refresh queued
+    QSet<QString>                m_nickRefreshPending;    // channels with a debounced refresh queued
+    QSet<QString>                m_expandedEventGroups;  // groupIds (first-msg timestamp ms) of expanded event batches
     ChannelPane                 *m_dragHighlighted{nullptr};
     int                          m_primarySlot{0}; // position of primary panel in layout order
     QTimer       *m_gearTimer{nullptr};

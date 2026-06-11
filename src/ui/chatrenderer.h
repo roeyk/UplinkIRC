@@ -22,7 +22,8 @@ struct Context {
 };
 
 QString formatMessage    (const Message &msg, const Context &ctx);
-QString formatEventGroup (const QList<Message> &msgs, const Context &ctx);
+QString formatEventGroup (const QList<Message> &msgs, const Context &ctx,
+                          const QString &groupId = {}, bool expanded = false);
 QString linkifyTopic     (const QString &text);
 QColor  nickColor     (const QString &nick);
 

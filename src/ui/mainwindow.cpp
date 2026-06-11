@@ -1281,7 +1281,13 @@ void MainWindow::setupChatArea()
     if (m_theme.valid)
         m_chatView->document()->setDefaultStyleSheet(
             QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
-    connect(m_chatView, &QTextBrowser::anchorClicked, this, [](const QUrl &url){
+    connect(m_chatView, &QTextBrowser::anchorClicked, this, [this](const QUrl &url){
+        const QString urlStr = url.toString();
+        if (urlStr.startsWith(QLatin1String("evgrp:"))) {
+            toggleEventGroupInView(m_chatView, urlStr.mid(6),
+                                   m_model->activeHost(), m_model->activeChannel());
+            return;
+        }
         QString s = url.scheme().toLower();
         QUrl target = url;
         if (s == "preview") {
@@ -2524,6 +2530,69 @@ static QTextBlock lastTaggedBlock(QTextBrowser *view)
     return b;
 }
 
+void MainWindow::toggleEventGroupInView(QTextBrowser *view, const QString &groupId,
+                                         const QString &host, const QString &channel)
+{
+    auto *ch = m_model->channel(host, channel);
+    if (!ch) return;
+
+    const qint64 targetMs = groupId.toLongLong();
+    const QString selfNick = m_model->selfNick(host);
+    int start = -1;
+    for (int i = 0; i < ch->messages.size(); ++i) {
+        if (ch->messages[i].timestamp.toMSecsSinceEpoch() == targetMs
+            && isCondensable(ch->messages[i], selfNick)) {
+            start = i;
+            break;
+        }
+    }
+    if (start < 0) return;
+
+    const QDate day = ch->messages[start].timestamp.toLocalTime().date();
+    int j = start + 1;
+    while (j < ch->messages.size()
+           && isCondensable(ch->messages[j], selfNick)
+           && ch->messages[j].timestamp.toLocalTime().date() == day)
+        ++j;
+
+    QList<Message> group(ch->messages.cbegin() + start, ch->messages.cbegin() + j);
+
+    const bool expand = !m_expandedEventGroups.contains(groupId);
+    if (expand)
+        m_expandedEventGroups.insert(groupId);
+    else
+        m_expandedEventGroups.remove(groupId);
+
+    ChatRenderer::Context ctx;
+    ctx.coloredNicks = m_config.ui.coloredNicks;
+    ctx.nickBrackets = m_config.ui.nickBrackets;
+    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
+    ctx.chatPt       = m_config.ui.fontSizes.chat;
+    ctx.validTheme   = m_theme.valid;
+    ctx.themeText    = m_theme.text;
+    ctx.selfNickRe   = m_selfNickRe;
+    ctx.channel      = ch;
+
+    const QString html = ChatRenderer::formatEventGroup(group, ctx, groupId, expand);
+
+    QScrollBar *sb = view->verticalScrollBar();
+    const int scrollPos = sb->value();
+    const bool atBottom = scrollPos >= sb->maximum() - 4;
+
+    QTextBlock block = findBlock(view, "evgrp:" + groupId);
+    if (!block.isValid()) return;
+
+    const int blockPos = block.position();
+    replaceBlockHtml(view, block, html);
+
+    QTextBlock refreshed = view->document()->findBlock(blockPos);
+    if (refreshed.isValid())
+        refreshed.setUserData(new BlockMsgid("evgrp:" + groupId));
+
+    if (!atBottom)
+        sb->setValue(scrollPos);
+}
+
 void MainWindow::onMessageAdded(const QString &host, const QString &channel, const Message &msg)
 {
     const QString selfNick = m_model->selfNick(host);
@@ -2545,15 +2614,23 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
                 ctx.channel      = ch;
 
                 const QList<Message> group = collectEventGroup(ch, selfNick);
-                const QString html = ChatRenderer::formatEventGroup(group, ctx);
+                const QString groupId = group.isEmpty() ? QString()
+                    : QString::number(group.first().timestamp.toMSecsSinceEpoch());
+                const bool grpExpanded = m_expandedEventGroups.contains(groupId);
+                const QString html = ChatRenderer::formatEventGroup(group, ctx, groupId, grpExpanded);
 
                 QTextBlock last = lastTaggedBlock(m_chatView);
                 auto *d = last.isValid() ? static_cast<BlockMsgid*>(last.userData()) : nullptr;
-                if (d && d->id == "evgrp") {
+                const QString blockId = "evgrp:" + groupId;
+                if (d && d->id == blockId) {
+                    const int lastPos = last.position();
                     replaceBlockHtml(m_chatView, last, html);
+                    QTextBlock refreshed = m_chatView->document()->findBlock(lastPos);
+                    if (refreshed.isValid())
+                        refreshed.setUserData(new BlockMsgid(blockId));
                 } else {
                     insertHtmlBlock(m_chatView, html);
-                    m_chatView->document()->lastBlock().setUserData(new BlockMsgid("evgrp"));
+                    m_chatView->document()->lastBlock().setUserData(new BlockMsgid(blockId));
                 }
                 auto *sb = m_chatView->verticalScrollBar();
                 sb->setValue(sb->maximum());
@@ -3056,6 +3133,13 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
 
     pane->chatView()->viewport()->installEventFilter(this);
     pane->input()->installEventFilter(this);
+    connect(pane->chatView(), &QTextBrowser::anchorClicked, this,
+            [this, pane](const QUrl &url){
+        const QString urlStr = url.toString();
+        if (urlStr.startsWith(QLatin1String("evgrp:")))
+            toggleEventGroupInView(pane->chatView(), urlStr.mid(6),
+                                   pane->host(), pane->channel());
+    });
 
     if (auto *sess = m_model->session(host))
         pane->setNick(sess->nick);
@@ -3285,8 +3369,10 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
                    && ch->messages[j].timestamp.toLocalTime().date() == day)
                 ++j;
             QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
-            insertHtmlBlock(pane->chatView(), ChatRenderer::formatEventGroup(group, ctx));
-            pane->chatView()->document()->lastBlock().setUserData(new BlockMsgid("evgrp"));
+            const QString groupId = QString::number(group.first().timestamp.toMSecsSinceEpoch());
+            const bool grpExpanded = m_expandedEventGroups.contains(groupId);
+            insertHtmlBlock(pane->chatView(), ChatRenderer::formatEventGroup(group, ctx, groupId, grpExpanded));
+            pane->chatView()->document()->lastBlock().setUserData(new BlockMsgid("evgrp:" + groupId));
             i = j;
         } else {
             const bool isText = (msg.type == MessageType::Privmsg ||
@@ -3588,8 +3674,10 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
                    && ch->messages[j].timestamp.toLocalTime().date() == day)
                 ++j;
             QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
-            insertHtmlBlock(m_chatView, ChatRenderer::formatEventGroup(group, ctx));
-            m_chatView->document()->lastBlock().setUserData(new BlockMsgid("evgrp"));
+            const QString groupId = QString::number(group.first().timestamp.toMSecsSinceEpoch());
+            const bool grpExpanded = m_expandedEventGroups.contains(groupId);
+            insertHtmlBlock(m_chatView, ChatRenderer::formatEventGroup(group, ctx, groupId, grpExpanded));
+            m_chatView->document()->lastBlock().setUserData(new BlockMsgid("evgrp:" + groupId));
             i = j;
         } else {
             const bool isText = (msg.type == MessageType::Privmsg ||
