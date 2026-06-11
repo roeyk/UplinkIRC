@@ -4,6 +4,32 @@
 
 ## Unreleased
 
+<!--
+Session summary — 2026-06-11 (tab completion cycling + floating send button)
+
+Tab completion was broken for multiple matches: typing "N" then Tab correctly completed
+the first match ("Nate:"), but pressing Tab again would try to re-derive the prefix from
+the now-modified text ("Nate: "), find an empty string after the trailing space, and bail
+out early. The fix stores m_tabWordStart at cycle start so all subsequent Tabs replace
+from the original insertion point, bypassing prefix re-derivation entirely. Candidates are
+now sorted case-insensitively so the cycle order is alphabetical and predictable.
+
+The send button was moved from the hbox layout into the input widget itself (as a child
+widget), floating at the right edge and vertically centred. It repositions on every
+QEvent::Resize so it tracks the input as it grows from 1 to 4 lines. A QTextFrameFormat
+right margin keeps text from flowing under the button. Icon rendering was fixed to render
+directly at the requested pixel size rather than using the DPR trick (which was silently
+producing a 16px logical icon regardless of the requested size).
+
+Known open: icon size visually indistinguishable from original on FreeBSD 1x display;
+likely due to input height constraining the button to a size similar to before.
+
+Next priorities: send button disable-when-empty, or whatever comes up next.
+-->
+
+### Changed
+- Send button now floats inside the right edge of the text input area instead of sitting to its right; icon rendered at explicit pixel size (26×26) rather than through the DPR upscaling path.
+
 ### Fixed
 - Own nick changes (e.g. `/nick`) now correctly update the UI nick display and self-highlight regex. The NICK source comparison was checking the wrong field and silently ignoring all self-nick events.
 - SASL authentication no longer fails silently against servers that split CAP ACK across two messages. CAP END is now deferred until all requested caps — including `sasl` — have been acknowledged.
@@ -13,6 +39,7 @@
 - Reactions, redactions, and condensable event-group updates no longer trigger a full history rebuild in extra pane views — they use the same surgical block replacement as the main view.
 - DCC file size is now cached at open time instead of re-stat'd on every ACK and progress call.
 - Log file handles are now closed and released when a server is removed.
+- Tab completion now correctly cycles through all matching nicks alphabetically on repeated Tab presses. Previously the second Tab would find an empty prefix (cursor landed after the inserted `: ` suffix) and bail out, making only the first match reachable. The fix stores the word-start position at the beginning of each cycle so all subsequent Tabs replace from the original insertion point.
 
 ### Performance
 - IRC receive loop no longer copies and shifts the read buffer on every newline — uses a start-offset scan with a single tail copy instead.

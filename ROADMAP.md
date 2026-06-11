@@ -183,8 +183,10 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] METADATA SUBSCRIBE removed — Ergo does not support the subcommand; metadata is pushed automatically; fixes [FAIL] SUBCOMMAND_INVALID on ergo.chat
 - [x] Mention detection fix — emit selfNickChanged on RPL_WELCOME so mentionRe is built on connect, not only on mid-session NICK change
 - [x] Send button — paper-plane SVG in input bar right of emoji button; calls onInputSubmit
+- [x] Send button floats inside input area — child widget of input, right-edge centred, repositions on resize; QTextFrameFormat right margin keeps text clear (2026-06-11)
+- [x] Tab completion cycling fixed — repeated Tab now cycles all alphabetical matches; stored m_tabWordStart prevents empty-prefix bail-out after first completion (2026-06-11)
 - [ ] Send button: disable when input empty, re-enable on text change
-- [ ] Nick completion button — person_search icon triggers Tab completion for non-keyboard users
+- [ ] Nick completion button — person_search icon triggers Tab completion for non-keyboard users (was added then reverted as pointless mid-message)
 - [ ] Preferences toggle for send button — same pattern as emoji button toggle
 - [ ] Virtual scrolling — render only visible messages (performance on busy channels)
 - [x] Window state persistence — sidebar width and nick panel width saved via QSettings on quit, restored on launch; sidebar is drag-resizable; geometry clamped to available screen on startup (v0.25.1); settings path corrected to ~/.config/uplink/uplink.conf (v0.25.1)
