@@ -46,6 +46,10 @@ Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack se
 
 ## Unreleased
 
+### Fixed
+
+- Bot icon (alien) now appears for users with `+B` who join a channel after you — previously only users already in the channel at join time were detected via the bulk WHO sweep; late joiners were never queried
+
 ### Security
 
 - Warn when server password, SASL credentials, or NickServ password are sent over an unencrypted connection (`ssl = false`)

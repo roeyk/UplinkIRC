@@ -666,6 +666,9 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
     ch.addNick(nick);
     emit nickAdded(host, channel, nick);
 
+    if (!isSelf)
+        sendRaw(host, "WHO " + nick + " %cnfa,42");
+
     postMessage(host, channel, Message::make(MessageType::Join, nick,
         isSelf ? "You joined " + channel : nick + " joined"));
 }
