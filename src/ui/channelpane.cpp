@@ -1,5 +1,6 @@
 #include "channelpane.h"
 #include "model/channel.h"
+#include "ui/fadescrollbar.h"
 
 #include <QTextBrowser>
 #include <QListWidget>
@@ -112,8 +113,10 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
     m_chatView->setOpenLinks(false);
     m_chatView->document()->setMaximumBlockCount(kMessageBufferCap + 300);
+    m_chatView->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_chatView));
 
     m_nickList = new QListWidget;
+    m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
     m_nickList->setSpacing(0);
 
     auto *nickWrapper = new QWidget;

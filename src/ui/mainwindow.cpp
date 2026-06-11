@@ -18,6 +18,7 @@
 #include "ui/emojidata.h"
 #include "ui/menuicons.h"
 #include "ui/signalbars.h"
+#include "ui/fadescrollbar.h"
 #include "ui/channelpane.h"
 #include "ui/chatrenderer.h"
 #include "config/config.h"
@@ -1029,6 +1030,7 @@ static QIcon makeConnectedIcon()
 void MainWindow::setupSidebar()
 {
     m_sidebar = new QTreeWidget;
+    m_sidebar->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_sidebar));
     m_sidebar->setHeaderHidden(true);
     m_sidebar->setRootIsDecorated(false);
     m_sidebar->setItemsExpandable(false);
@@ -1084,6 +1086,7 @@ void MainWindow::setupSidebar()
 void MainWindow::setupNickPanel()
 {
     m_nickList = new QListWidget;
+    m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
     m_nickList->setSpacing(0);
     m_nickDelegate = new NickDelegate(m_nickList);
     if (m_theme.valid)
@@ -1281,6 +1284,7 @@ void MainWindow::setupChatArea()
     m_chatView->setReadOnly(true);
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
     m_chatView->setOpenLinks(false);
+    m_chatView->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_chatView));
     m_chatView->document()->setMaximumBlockCount(kMessageBufferCap);
     if (m_theme.valid)
         m_chatView->document()->setDefaultStyleSheet(

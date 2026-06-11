@@ -93,6 +93,8 @@ qt_add_executable(Uplink WIN32
     src/ui/emojipicker.cpp
     src/ui/linkpreview.cpp
     src/ui/linkpreview.h
+    src/ui/fadescrollbar.cpp
+    src/ui/fadescrollbar.h
     src/ui/signalbars.cpp
     src/ui/signalbars.h
     src/ui/themeloader.cpp
