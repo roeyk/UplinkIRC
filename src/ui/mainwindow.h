@@ -160,7 +160,6 @@ private:
     QPlainTextEdit *m_input;
     QLabel       *m_nickPrefix;
     QPushButton  *m_emojiBtn;
-    QToolButton  *m_nickCompleteBtn{nullptr};
     QToolButton  *m_sendBtn{nullptr};
     QWidget      *m_sidebarPanel{nullptr};
     QWidget      *m_sidebarHeader{nullptr};
@@ -246,7 +245,6 @@ private:
 
     bool    m_showNickPrefix{true};
     bool    m_showEmojiBtn{false};
-    bool    m_showNickCompleteBtn{false};
     bool    m_showTopic{true};
 
     CommandDispatcher *m_dispatcher{nullptr};

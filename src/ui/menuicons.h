@@ -51,6 +51,5 @@ inline QIcon mention        (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon unread         (const QColor &c = {}) { return fromSvg(":/icons/mi-forum.svg",               c); }
 inline QIcon send           (const QColor &c = {}) { return fromSvg(":/icons/mi-send.svg",                c); }
 inline QIcon connectedServer(const QColor &c = {}) { return fromSvg(":/icons/mi-public.svg",              c); }
-inline QIcon nickComplete   (const QColor &c = {}) { return fromSvg(":/icons/mi-person-search.svg",       c); }
 
 } // namespace MenuIcons

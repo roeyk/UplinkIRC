@@ -165,11 +165,6 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     connect(m_emojiCheck, &QCheckBox::toggled, this, [this](bool on){ emit emojiBtnToggled(on); });
     vbox->addWidget(m_emojiCheck);
 
-    m_nickCompleteCheck = new QCheckBox("Show Nick Complete Button");
-    m_nickCompleteCheck->setChecked(cfg.ui.showNickCompleteButton);
-    connect(m_nickCompleteCheck, &QCheckBox::toggled, this, [this](bool on){ emit nickCompleteBtnToggled(on); });
-    vbox->addWidget(m_nickCompleteCheck);
-
     m_typingCheck = new QCheckBox("Typing Indicator");
     m_typingCheck->setChecked(cfg.ui.typingIndicator);
     connect(m_typingCheck, &QCheckBox::toggled, this, [this](bool on){ emit typingIndicatorToggled(on); });
