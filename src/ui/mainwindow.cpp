@@ -1478,14 +1478,29 @@ void MainWindow::setupInputBar()
     m_emojiBtn->setVisible(m_showEmojiBtn);
     m_emojiBtn->setToolTip("Emoji picker");
 
-    // Send button floats inside the right edge of the input widget
+    // Send button floats inside the right edge of the input widget.
+    // Render the icon directly at the button pixel size — no DPR tricks —
+    // so the size is unambiguous on both 1x and HiDPI displays.
     m_sendBtn = new QToolButton(m_input);
     m_sendBtn->setFixedSize(28, 28);
     m_sendBtn->setAutoRaise(true);
-    m_sendBtn->setIcon(MenuIcons::send({}, 26));
-    m_sendBtn->setIconSize(QSize(26, 26));
     m_sendBtn->setToolTip("Send");
     m_sendBtn->raise();
+    {
+        const int sz = 26;
+        QSvgRenderer rend(QStringLiteral(":/icons/mi-send.svg"));
+        QPixmap pix(sz, sz);
+        pix.fill(Qt::transparent);
+        {
+            QPainter p(&pix);
+            p.setRenderHint(QPainter::Antialiasing);
+            rend.render(&p);
+            p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+            p.fillRect(pix.rect(), QApplication::palette().color(QPalette::WindowText));
+        }
+        m_sendBtn->setIcon(QIcon(pix));
+        m_sendBtn->setIconSize(QSize(sz, sz));
+    }
     connect(m_sendBtn, &QToolButton::clicked, this, &MainWindow::onInputSubmit);
 
     // Push text content left so it doesn't flow under the floating button
