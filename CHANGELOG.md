@@ -5,10 +5,17 @@
 ## Unreleased
 
 ### Added
-- Fade scrollbars — `src/ui/fadescrollbar.{h,cpp}`: custom `QScrollBar` subclass that starts hidden, snaps to 85% opacity on scroll or drag, and fades out over 300 ms after a 3.5 s idle. Applied to the main chat view, nick list, sidebar, and all channel panes. Uses `QGraphicsOpacityEffect` so the fade works correctly with QSS-styled handles.
+- Fade scrollbars — `src/ui/fadescrollbar.{h,cpp}`: custom `QScrollBar` subclass that starts hidden, snaps to 85% opacity on scroll or drag, and fades out over 300 ms after a 3.5 s idle. Applied to the main chat view, nick list, sidebar, and all channel panes.
 
 ### Fixed
 - `sendTyping` and `sendReact` now guard on `m_ackedCaps.contains("message-tags")` before sending `TAGMSG`. Without the guard, every keystroke sent a `TAGMSG` to servers that don't support the cap (e.g. Undernet / ircu), producing an `!! Unknown command` error line for every character typed.
+- `FadeScrollBar`: replaced `QGraphicsOpacityEffect` with a `paintEvent` override using `QPainter::setOpacity` — eliminates per-instance offscreen compositing buffers and reduces CPU overhead during scrolling.
+- `FadeScrollBar`: hovering over a fully-faded scrollbar now reveals it; `enterEvent` no longer ignores the widget when opacity is 0.
+- `FadeScrollBar`: scrollbar no longer fades mid-drag — `sliderReleased` resets the hold timer, and the timeout handler no longer fades while `underMouse()` is true.
+- `FadeScrollBar`: `leaveEvent` no longer restarts the hold timer during an active fade, preventing the visible window from being extended unexpectedly.
+- `FadeScrollBar`: `actionTriggered` replaces `valueChanged` so programmatic auto-scrolls (new incoming messages) no longer flash the scrollbar without user input.
+- `sendTyping`: cap guard corrected from `message-tags` to `draft/typing` — typing indicators are only sent when the server has explicitly negotiated the typing extension.
+- `sendReact`: target is now validated with `validIrcToken()` before constructing the `TAGMSG` line.
 
 ### Docs / Site
 - Redesigned GitHub Pages site (`docs/index.html`) with Gruvbox Light theme, IBM Plex Mono font, scanline texture, and sections for Download, IRCv3 features, Themes, Security, Power Users, and Community.
