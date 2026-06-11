@@ -1434,7 +1434,7 @@ typing_indicator = true   # set to false to disable completely</pre>
       <strong>Privacy note:</strong> when enabled, Uplink sends a <code>TAGMSG</code> with the <code>+typing=active</code> tag to the channel as you type. If you prefer not to broadcast this, disable the feature in Preferences.
     </div>
     <div class="tip">
-      <strong>Compatibility:</strong> Uplink only sends typing <code>TAGMSG</code> when the server has negotiated the <code>message-tags</code> capability. On older networks (Undernet, EFnet, IRCnet) that do not support IRCv3 message tags, the typing indicator is automatically silenced — no errors, no spam.
+      <strong>Compatibility:</strong> Uplink only sends typing <code>TAGMSG</code> when the server has negotiated the <code>draft/typing</code> capability. On older networks (Undernet, EFnet, IRCnet) that do not support this extension, the typing indicator is automatically silenced — no errors, no spam.
     </div>
   </section>
 

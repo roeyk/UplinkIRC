@@ -2,6 +2,17 @@
 
 ---
 
+<!--
+SESSION SUMMARY — 2026-06-11
+What changed:
+  - Code review pass (performance/correctness) on the FadeScrollBar and IRC TAGMSG changes from the previous session.
+  - FadeScrollBar overhauled: QGraphicsOpacityEffect replaced with paintEvent + QPainter::setOpacity (no offscreen buffers); hover now reveals a hidden scrollbar; scrollbar no longer fades mid-drag; timer polling loop removed; leaveEvent no longer resets hold timer during an active fade; valueChanged replaced with actionTriggered so incoming messages don't flash the scrollbar.
+  - sendTyping: cap guard corrected from message-tags to draft/typing (the actual extension cap).
+  - sendReact: target validated with validIrcToken() before TAGMSG is built.
+No regressions found. All changes compile cleanly.
+Next priorities: Send button disable-when-empty; virtual scrolling for busy channels.
+-->
+
 ## Unreleased
 
 ### Added
