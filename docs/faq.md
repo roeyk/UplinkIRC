@@ -481,6 +481,26 @@ You can also use slash commands:
 
 The ignore list is saved in `config.toml` under `[ignore] nicks = [...]` and persists across sessions.
 
+### How do I see the full hostmask and quit reason from a join/quit line?
+
+Join, quit, part, nick-change, and kick events are automatically collapsed into a single compact line to reduce noise. Each compact line starts with a **▸** indicator on the left.
+
+**Click ▸** to expand the group in-place:
+
+```
+21:03  ▾
+21:03  ← CrystalDotGay (~crystal@2600:1700:...) has quit (Ping timeout: 252 seconds)
+21:03  ← AJ_Z0 (~AJ@user/aj-z0) has quit (Remote host closed the connection)
+21:03  → halloy2109 (~halloy210@208.59.60.21) has joined #uplink
+21:03  → sumeetj_ (~sumeet@103.145.17.55) has joined #uplink
+```
+
+**Click ▾** to collapse back to the compact view.
+
+The expanded view shows every event individually — full hostmask, quit/part reason, and exact timestamp per entry — regardless of how many nicks are in the group. The expanded state persists when you switch channels and return.
+
+This is useful any time you want to check a specific user's hostmask, read a quit reason, or confirm the exact order of events during a netsplit or reconnect storm.
+
 ### Can I send a message that spans multiple lines?
 
 Yes. Press **Shift+Enter** in the input box to insert a line break. The box grows up to 4 lines automatically. Press **Enter** (without Shift) to send the whole thing.

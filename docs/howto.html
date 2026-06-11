@@ -1280,7 +1280,7 @@ channels  = "#uplink"</pre>
   <section id="event-condensation">
     <h2>Event condensation</h2>
     <p>In busy channels, individual join, part, quit, nick-change, and kick lines would otherwise flood the chat view. Uplink automatically collapses consecutive server events into a single compact line:</p>
-    <pre>21:03  → halloy2109 sumeetj_ bustacheeze  ← CrystalDotGay AJ_Z0</pre>
+    <pre>21:03  ▸  → halloy2109 sumeetj_ bustacheeze  ← CrystalDotGay AJ_Z0</pre>
     <p>The symbols mean:</p>
     <table>
       <thead><tr><th>Symbol</th><th>Event</th></tr></thead>
@@ -1292,14 +1292,30 @@ channels  = "#uplink"</pre>
       </tbody>
     </table>
 
+    <h3>Expanding a group to see details</h3>
+    <p>Every condensed group has a <strong>▸</strong> expand indicator at the left edge. Click it to expand the group in-place and see every event as a full line, with hostmasks and quit/part reasons:</p>
+    <pre style="line-height:1.8">21:03  ▾
+21:03  <span style="color:#f38ba8">← CrystalDotGay (~crystal@2600:1700:...) has quit (Ping timeout: 252 seconds)</span>
+21:03  <span style="color:#f38ba8">← AJ_Z0 (~AJ@user/aj-z0) has quit (Remote host closed the connection)</span>
+21:03  <span style="color:#a6e3a1">→ halloy2109 (~halloy210@208.59.60.21) has joined #uplink</span>
+21:03  <span style="color:#a6e3a1">→ sumeetj_ (~sumeet@103.145.17.55) has joined #uplink</span>
+21:03  <span style="color:#a6e3a1">→ bustacheeze (~bust@user/bustacheeze) has joined #uplink</span></pre>
+    <p>Click <strong>▾</strong> to collapse the group back to the compact view. Expanded state persists when you switch channels and come back.</p>
+    <p>This is particularly useful for:</p>
+    <ul>
+      <li>Seeing the full hostmask of someone who just joined (to check for a ban match, for example)</li>
+      <li>Reading quit and part reasons without /whowas</li>
+      <li>Verifying exactly when each event happened when multiple nicks arrive in the same second</li>
+    </ul>
+
     <h3>How grouping works</h3>
     <p>Events are grouped purely by position in the message stream — no timer is involved. Any run of consecutive condensable events with <strong>no chat message between them</strong> is rendered as a single line. As soon as a regular message appears, the group seals and the next event starts a new group. Switching to a different channel and back always shows the correctly grouped history.</p>
 
     <h3>Net-change filter</h3>
-    <p>If the same nick joins <em>and</em> parts within the same group (e.g., a brief reconnect), both events cancel out and neither is shown. Only the net result — what actually changed — appears.</p>
+    <p>If the same nick joins <em>and</em> parts within the same group (e.g., a brief reconnect), both events cancel out and neither is shown in the compact view. The expanded view shows every individual event, including the ones that cancel out, so you can see the full sequence of what actually happened.</p>
 
     <h3>Overflow</h3>
-    <p>Up to 10 nicks are shown on one condensed line. If more events arrived before a chat message broke the group, the line ends with <code>… X more</code>.</p>
+    <p>Up to 10 nicks are shown on one condensed line. If more events arrived before a chat message broke the group, the line ends with <code>… X more</code>. Expanding the group always shows all events regardless of the 10-nick limit.</p>
 
     <h3>Self-join / self-part</h3>
     <p>Your own <em>"You joined #channel"</em> and part messages always appear as full lines — they are never condensed, since they mark a meaningful context boundary for you.</p>
