@@ -192,6 +192,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Long-session memory/fd leaks fixed — log fd leak on closeBuffer; nickMeta unbounded growth; ctcpTimestamps clear-all on overflow; channelpane doc cap misaligned (2026-06-11)
 - [x] v0.25.16 released (2026-06-11)
 - [x] FadeScrollBar post-release regression fixed — reverted to QGraphicsOpacityEffect (QSS painter path bypasses QPainter::setOpacity; effect composites after all painting); reverted to valueChanged (actionTriggered never fires for wheel events on parent QAbstractScrollArea) (2026-06-11)
+- [x] AppImage self-integrates on first run — writes .desktop entry + copies icon to ~/.local/share/; Uplink appears in launchers without manual setup (2026-06-11)
+- [x] v0.25.17 released (2026-06-11)
 - [ ] Send button: disable when input empty, re-enable on text change
 - [ ] Nick completion button — person_search icon triggers Tab completion for non-keyboard users (was added then reverted as pointless mid-message)
 - [ ] Preferences toggle for send button — same pattern as emoji button toggle

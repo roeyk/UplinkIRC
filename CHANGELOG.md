@@ -24,7 +24,10 @@ What changed:
 No regressions. Next priorities: Send button disable-when-empty; virtual scrolling for busy channels; heaptrack session audit.
 -->
 
-## Unreleased
+## v0.25.17
+
+### Added
+- AppImage self-integrates on first run — writes a `.desktop` entry and copies the app icon into `~/.local/share/` so Uplink appears in application launchers without any manual setup. Runs only once and only when launched as an AppImage.
 
 ### Fixed
 - FadeScrollBar: reverted opacity implementation from `paintEvent` + `QPainter::setOpacity` back to `QGraphicsOpacityEffect`. When Qt's stylesheet engine (QStyleSheetStyle) is active it renders through its own internal painter path; the opacity set on the outer `QPainter` is ignored and the scrollbar is permanently invisible. `QGraphicsOpacityEffect` composites at the widget level after all painting and is the only reliable fade mechanism for QSS-styled widgets.
