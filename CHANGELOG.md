@@ -3,6 +3,16 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-11 (v0.25.17 release session)
+What changed:
+  - Reviewed post-v0.25.16 unreleased commits: AppImage self-install (.desktop + icon on first run) and both scrollbar regression fixes.
+  - Decided they warranted a patch release. Bumped to v0.25.17, promoted Unreleased → v0.25.17 in CHANGELOG, ran sync-site.sh, tagged and pushed.
+  - All CI passed: Release workflow (Linux AppImage, Windows zip, macOS dmg, update-docs) + CI workflow (Linux/Windows/macOS builds, ASan/UBSan sanitizers) — 3/3 workflows green.
+  - Built locally and launched for user verification.
+Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-11 (post-release hotfix session)
 What changed:
   - Discovered that the paintEvent + QPainter::setOpacity approach introduced in the review session is invisible when QSS is active. Qt's stylesheet engine renders through its own painter path and ignores the opacity set on the outer painter. QGraphicsOpacityEffect composites after all painting and is the only approach that works reliably with QSS-styled scrollbars.
