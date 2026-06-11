@@ -186,6 +186,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Send button floats inside input area — child widget of input, right-edge centred, repositions on resize; QTextFrameFormat right margin keeps text clear (2026-06-11)
 - [x] Tab completion cycling fixed — repeated Tab now cycles all alphabetical matches; stored m_tabWordStart prevents empty-prefix bail-out after first completion (2026-06-11)
 - [x] GitHub Pages site redesigned — Gruvbox Light + IBM Plex Mono; Quick Start how-to section embedded on landing page; dark/light mode toggle on both index.html and howto.html (2026-06-11)
+- [x] Fade scrollbars — appear on scroll, fade out after 3.5 s; applied to chat view, nick list, sidebar, all channel panes (2026-06-11)
+- [x] TAGMSG cap guard — sendTyping/sendReact no longer fire on servers that haven't ACKed message-tags; fixes Unknown command spam on Undernet (2026-06-11)
 - [ ] Send button: disable when input empty, re-enable on text change
 - [ ] Nick completion button — person_search icon triggers Tab completion for non-keyboard users (was added then reverted as pointless mid-message)
 - [ ] Preferences toggle for send button — same pattern as emoji button toggle

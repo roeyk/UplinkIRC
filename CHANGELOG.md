@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+### Added
+- Fade scrollbars — `src/ui/fadescrollbar.{h,cpp}`: custom `QScrollBar` subclass that starts hidden, snaps to 85% opacity on scroll or drag, and fades out over 300 ms after a 3.5 s idle. Applied to the main chat view, nick list, sidebar, and all channel panes.
+
+### Fixed
+- `sendTyping` and `sendReact` now guard on `m_ackedCaps.contains("message-tags")` before sending `TAGMSG`. Without the guard, every keystroke sent a `TAGMSG` to servers that don't support the cap (e.g. Undernet / ircu), producing an `!! Unknown command` error line for every character typed.
+
 ### Docs / Site
 - Redesigned GitHub Pages site (`docs/index.html`) with Gruvbox Light theme, IBM Plex Mono font, scanline texture, and sections for Download, IRCv3 features, Themes, Security, Power Users, and Community.
 - Added Quick Start section to the landing page: 3-step onboarding, minimal config snippet, config path table, essential slash command reference, and keyboard shortcuts — drawn from the how-to guide content.
