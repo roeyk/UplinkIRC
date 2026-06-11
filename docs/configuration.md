@@ -74,7 +74,6 @@ realname = "Uplink User"
 # proxy_port        = 1080             # SOCKS5 proxy port (default 1080)
 # proxy_user        = ""               # optional: proxy username
 # proxy_pass        = ""               # optional: proxy password
-# ssl_verify        = true             # set to false to skip TLS certificate verification (e.g. ZNC with self-signed cert)
 # ssl_fingerprint   = ""               # pin a self-signed cert SHA-256 fingerprint (set automatically on first connect)
 # websocket         = false            # connect via WebSocket (ws:// or wss://) instead of raw TCP
 
@@ -214,7 +213,6 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `proxy_port` | integer | no | SOCKS5 proxy port. Defaults to `1080`. |
 | `proxy_user` | string | no | SOCKS5 proxy username. Only needed if your proxy requires authentication. |
 | `proxy_pass` | string | no | SOCKS5 proxy password. Only needed if your proxy requires authentication. |
-| `ssl_verify` | bool | no | Verify the server's TLS certificate. Defaults to `true`. Set to `false` to skip all certificate checks — useful for ZNC or other bouncers with self-signed certificates when you do not want to pin a fingerprint. Only disable this on servers you control or trust. |
 | `ssl_fingerprint` | string | no | SHA-256 fingerprint of a pinned self-signed TLS certificate. Set automatically when you choose "Pin Certificate" on first connect. Once set, the connection is rejected if the certificate changes. |
 | `websocket` | bool | no | Connect via WebSocket instead of a raw TCP socket. When `ssl = true`, uses `wss://`; when `ssl = false`, uses `ws://`. Useful for servers behind web infrastructure (e.g. The Lounge). Defaults to `false`. |
 
@@ -816,25 +814,6 @@ Got:    FF:EE:...
 ```
 
 To re-pin, remove the `ssl_fingerprint` line from `config.toml` and reconnect. You will get the pin dialog again.
-
-### Skip verification entirely
-
-If you prefer not to pin a fingerprint — for example, on a ZNC bouncer you control that uses a self-signed certificate — you can disable certificate verification entirely with `ssl_verify = false`:
-
-```toml
-[[server]]
-name       = "ZNC"
-host       = "znc.example.com"
-port       = 6697
-ssl        = true
-ssl_verify = false
-nick       = "yournick"
-password   = "yournick/network:password"
-bouncer    = "znc"
-channels   = "#linux"
-```
-
-> **Only use `ssl_verify = false` on servers you own or fully trust.** It disables all TLS certificate checks, including hostname validation and expiry. For servers you do not control, use fingerprint pinning instead.
 
 ### Notes
 

@@ -212,7 +212,6 @@ Config Config::load(const QString &path)
                 sc.proxyPort         = static_cast<quint16>((*s)["proxy_port"].value_or(1080));
                 sc.proxyUser         = sstr("proxy_user");
                 sc.proxyPass         = sstr("proxy_pass");
-                sc.sslVerify         = (*s)["ssl_verify"].value_or(true);
                 sc.pinnedFingerprint = sstr("ssl_fingerprint");
                 sc.websocket         = (*s)["websocket"].value_or(false);
 
@@ -354,8 +353,6 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             if (!savedProxyPass.isEmpty())
                 out << "proxy_pass        = " << tomlQuote(savedProxyPass) << "\n";
         }
-        if (!s.sslVerify)
-            out << "ssl_verify        = false\n";
         if (!s.pinnedFingerprint.isEmpty())
             out << "ssl_fingerprint   = " << tomlQuote(s.pinnedFingerprint) << "\n";
         if (s.websocket)

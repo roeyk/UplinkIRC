@@ -86,7 +86,6 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_proxyPort           = cfg.proxyPort;
     m_proxyUser           = cfg.proxyUser;
     m_proxyPass           = cfg.proxyPass;
-    m_sslVerify           = cfg.sslVerify;
     m_pinnedFingerprint   = cfg.pinnedFingerprint;
     m_useWs               = cfg.websocket;
 
@@ -497,12 +496,6 @@ void IrcClient::onReadyRead()
 
 void IrcClient::onSslErrors(const QList<QSslError> &errors)
 {
-    if (!m_sslVerify) {
-        if (m_useWs) m_wsSocket->ignoreSslErrors(errors);
-        else         m_socket->ignoreSslErrors(errors);
-        return;
-    }
-
     bool allSelfSigned = true;
     for (const auto &e : errors) {
         if (e.error() != QSslError::SelfSignedCertificate &&

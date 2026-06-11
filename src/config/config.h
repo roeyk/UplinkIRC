@@ -38,7 +38,6 @@ struct ServerConfig {
     quint16            proxyPort{1080};  // SOCKS5 proxy port
     QString            proxyUser;        // optional proxy username
     QString            proxyPass;        // optional proxy password
-    bool               sslVerify{true};    // false = skip TLS certificate verification
     QString            pinnedFingerprint; // SHA-256 hex of pinned TLS cert (empty = verify normally)
     bool               websocket{false};  // connect via WebSocket (ws:// or wss://)
     QList<ChannelConfig> channels;

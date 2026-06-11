@@ -173,7 +173,6 @@ private:
     QString      m_host;
     quint16      m_port{6697};
     bool         m_ssl{true};
-    bool         m_sslVerify{true};
     QString      m_nick;
     QString      m_user;
     QString      m_realname;
