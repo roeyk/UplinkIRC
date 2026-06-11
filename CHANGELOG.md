@@ -4,6 +4,26 @@
 
 ## Unreleased
 
+### Fixed
+- Own nick changes (e.g. `/nick`) now correctly update the UI nick display and self-highlight regex. The NICK source comparison was checking the wrong field and silently ignoring all self-nick events.
+- SASL authentication no longer fails silently against servers that split CAP ACK across two messages. CAP END is now deferred until all requested caps — including `sasl` — have been acknowledged.
+- Channel nick list is no longer silently dropped when a server uses inconsistent casing between RPL_NAMREPLY (353) and RPL_ENDOFNAMES (366). The names buffer key is now case-normalised.
+- IRCv3 tag values with unrecognised escape sequences now preserve the literal backslash per spec instead of dropping it.
+- Pane chat views (extra panes opened alongside the main view) now correctly highlight your own nick in messages.
+- Reactions, redactions, and condensable event-group updates no longer trigger a full history rebuild in extra pane views — they use the same surgical block replacement as the main view.
+- DCC file size is now cached at open time instead of re-stat'd on every ACK and progress call.
+- Log file handles are now closed and released when a server is removed.
+
+### Performance
+- IRC receive loop no longer copies and shifts the read buffer on every newline — uses a start-offset scan with a single tail copy instead.
+- `sockWrite` builds a single `QByteArray` instead of allocating a temporary `QString + "\r\n"` before UTF-8 encoding.
+- Log messages write directly via `QFile::write` instead of constructing a `QTextStream` on every call.
+- Nick sort comparisons and index rebuilds use a pre-computed `lowerNick` field instead of calling `toLower()` on every comparison.
+- Netsplit nick removal now passes a `QSet` to a batch `removeNicks()` method, rebuilding the nick index once per channel instead of once per departing nick.
+- `decodeEntities` in link preview uses a string replacement table instead of allocating a `QTextDocument`.
+- URL regex is now a single file-scope constant in `chatrenderer.cpp` shared by `linkifyTopic` and `linkifyHtml`.
+- Emoji picker layout rebuild suppresses per-item repaints with `setUpdatesEnabled`.
+
 ---
 
 ## v0.25.12
