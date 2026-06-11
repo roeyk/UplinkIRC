@@ -3,6 +3,15 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-11 (bot icon late-join fix)
+What changed:
+  - Diagnosed missing alien icon for bots (+B) that join a channel after the client is already in it. The bulk WHO sweep on RPL_ENDOFNAMES only covers users present at join time; late arrivals were never queried.
+  - Fix: one-liner in SessionModel::onUserJoined — send "WHO <nick> %cnfa,42" for every non-self join. Ergo responds with WHOSPCRPL (354); onWhoEntry inserts the nick into botNicks and the icon appears.
+  - Updated CHANGELOG Unreleased section. Committed and pushed.
+Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-11 (v0.25.17 release session)
 What changed:
   - Reviewed post-v0.25.16 unreleased commits: AppImage self-install (.desktop + icon on first run) and both scrollbar regression fixes.
