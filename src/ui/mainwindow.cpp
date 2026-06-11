@@ -343,6 +343,7 @@ static QString buildReactionHtml(const QHash<QString, QSet<QString>> &rx, int em
 static void insertHtmlBlock(QTextBrowser *view, const QString &html, bool hangIndent = false)
 {
     QTextCursor cursor(view->document());
+    cursor.beginEditBlock();
     cursor.movePosition(QTextCursor::End);
     if (view->document()->characterCount() > 1)
         cursor.insertBlock();
@@ -355,6 +356,7 @@ static void insertHtmlBlock(QTextBrowser *view, const QString &html, bool hangIn
         cursor.setBlockFormat(fmt);
     }
     cursor.insertHtml(html);
+    cursor.endEditBlock();
 }
 
 
@@ -1479,28 +1481,12 @@ void MainWindow::setupInputBar()
     m_emojiBtn->setToolTip("Emoji picker");
 
     // Send button floats inside the right edge of the input widget.
-    // Render the icon directly at the button pixel size — no DPR tricks —
-    // so the size is unambiguous on both 1x and HiDPI displays.
     m_sendBtn = new QToolButton(m_input);
     m_sendBtn->setFixedSize(28, 28);
     m_sendBtn->setAutoRaise(true);
     m_sendBtn->setToolTip("Send");
-    m_sendBtn->raise();
-    {
-        const int sz = 26;
-        QSvgRenderer rend(QStringLiteral(":/icons/mi-send.svg"));
-        QPixmap pix(sz, sz);
-        pix.fill(Qt::transparent);
-        {
-            QPainter p(&pix);
-            p.setRenderHint(QPainter::Antialiasing);
-            rend.render(&p);
-            p.setCompositionMode(QPainter::CompositionMode_SourceIn);
-            p.fillRect(pix.rect(), QApplication::palette().color(QPalette::WindowText));
-        }
-        m_sendBtn->setIcon(QIcon(pix));
-        m_sendBtn->setIconSize(QSize(sz, sz));
-    }
+    m_sendBtn->setIcon(MenuIcons::send({}, 26));
+    m_sendBtn->setIconSize(QSize(26, 26));
     connect(m_sendBtn, &QToolButton::clicked, this, &MainWindow::onInputSubmit);
 
     // Push text content left so it doesn't flow under the floating button
@@ -1637,6 +1623,8 @@ void MainWindow::setupInputBar()
             }
         }
     });
+
+    QTimer::singleShot(0, this, [this]{ repositionSendBtn(); });
 }
 
 void MainWindow::connectModel()
@@ -4102,6 +4090,9 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 void MainWindow::changeEvent(QEvent *event)
 {
+    if (event->type() == QEvent::PaletteChange && m_sendBtn)
+        m_sendBtn->setIcon(MenuIcons::send({}, 26));
+
     if (event->type() == QEvent::ActivationChange && isActiveWindow() && m_tray)
         m_tray->setNotify(false);
 

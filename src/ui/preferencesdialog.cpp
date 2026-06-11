@@ -252,7 +252,6 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
         row->addWidget(m_avatarUrlEdit, 1);
         auto *browseBtn = new QPushButton("Browse...");
         browseBtn->setAutoDefault(false);
-        browseBtn->setFixedWidth(90);
         connect(browseBtn, &QPushButton::clicked, this, [this] {
             const QString path = QFileDialog::getOpenFileName(
                 this, "Select Avatar Image", QString(),
