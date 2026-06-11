@@ -160,7 +160,7 @@ public:
         constexpr int hPad   = 8;
         constexpr int vPad   = 1;
         constexpr int iconSz = 14;
-        const int iconGap    = fm.horizontalAdvance(QLatin1Char(' '));
+        constexpr int iconGap = 2;
         const int pillX      = textRect.x() + textMargin - hPad;
         const int iconExtra  = icon.isNull() ? 0 : (iconGap + iconSz);
 
@@ -241,7 +241,7 @@ public:
         constexpr int hPad   = 8;
         constexpr int vPad   = 2;
         constexpr int iconSz = 14;
-        const int iconGap    = fm.horizontalAdvance(QLatin1Char(' '));
+        constexpr int iconGap = 2;
         const int pillX      = textRect.x() + textMargin - hPad;
         const int iconExtra  = indicator.isNull() ? 0 : (iconGap + iconSz);
 
