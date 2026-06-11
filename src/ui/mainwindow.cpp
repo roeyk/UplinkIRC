@@ -66,6 +66,7 @@
 #include <QCursor>
 #include <QMouseEvent>
 #include <QTextDocument>
+#include <QTextFrame>
 #include <QTextCursor>
 #include <QTextBlock>
 #include <QTextFragment>
@@ -1477,18 +1478,26 @@ void MainWindow::setupInputBar()
     m_emojiBtn->setVisible(m_showEmojiBtn);
     m_emojiBtn->setToolTip("Emoji picker");
 
-    m_sendBtn = new QToolButton;
-    m_sendBtn->setFixedSize(30, 30);
+    // Send button floats inside the right edge of the input widget
+    m_sendBtn = new QToolButton(m_input);
+    m_sendBtn->setFixedSize(28, 28);
     m_sendBtn->setAutoRaise(true);
     m_sendBtn->setIcon(MenuIcons::send());
-    m_sendBtn->setIconSize(QSize(18, 18));
+    m_sendBtn->setIconSize(QSize(22, 22));
     m_sendBtn->setToolTip("Send");
+    m_sendBtn->raise();
     connect(m_sendBtn, &QToolButton::clicked, this, &MainWindow::onInputSubmit);
+
+    // Push text content left so it doesn't flow under the floating button
+    {
+        QTextFrameFormat fmt = m_input->document()->rootFrame()->frameFormat();
+        fmt.setRightMargin(36);
+        m_input->document()->rootFrame()->setFrameFormat(fmt);
+    }
 
     hbox->addWidget(m_nickPrefix);
     hbox->addWidget(m_input, 1);
     hbox->addWidget(m_emojiBtn);
-    hbox->addWidget(m_sendBtn);
 
     bar->setObjectName("inputBar");
 
@@ -2102,6 +2111,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
+    if (obj == m_input && event->type() == QEvent::Resize) {
+        repositionSendBtn();
+        return QMainWindow::eventFilter(obj, event);
+    }
+
     if (obj != m_input || event->type() != QEvent::KeyPress)
         return QMainWindow::eventFilter(obj, event);
 
@@ -2174,6 +2188,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 
     return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::repositionSendBtn()
+{
+    if (!m_sendBtn || !m_input) return;
+    const int pad = 3;
+    const int x = m_input->width()  - m_sendBtn->width()  - pad;
+    const int y = (m_input->height() - m_sendBtn->height()) / 2;
+    m_sendBtn->move(x, y);
+    m_sendBtn->raise();
 }
 
 void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, const QString &channel)

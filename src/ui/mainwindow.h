@@ -130,6 +130,7 @@ private:
 
     // Tab completion
     void handleTabComplete(QPlainTextEdit *input, const QString &host, const QString &channel);
+    void repositionSendBtn();
     QStringList m_tabCandidates;
     int         m_tabCandidateIndex{0};
     int         m_tabWordStart{0};
