@@ -1483,7 +1483,7 @@ void MainWindow::setupInputBar()
     m_sendBtn->setFixedSize(28, 28);
     m_sendBtn->setAutoRaise(true);
     m_sendBtn->setIcon(MenuIcons::send());
-    m_sendBtn->setIconSize(QSize(22, 22));
+    m_sendBtn->setIconSize(QSize(24, 24));
     m_sendBtn->setToolTip("Send");
     m_sendBtn->raise();
     connect(m_sendBtn, &QToolButton::clicked, this, &MainWindow::onInputSubmit);
