@@ -2,6 +2,13 @@
 
 ---
 
+## Unreleased
+
+### Added
+- Event group batches (join/quit/nick lines) are now clickable. A `▸` indicator marks each compact batch; clicking it expands the group in-place to show individual event lines with full hostmasks and quit/part reasons. Clicking `▾` collapses it back. Expanded state survives channel switches and view refreshes. Works in both the primary view and extra pane views.
+
+---
+
 <!--
 Session summary — 2026-06-10 (avatar persistence and cross-machine propagation)
 
