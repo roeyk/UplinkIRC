@@ -34,6 +34,23 @@ What changed:
 No regressions. Next priorities: Send button disable-when-empty; virtual scrolling for busy channels; heaptrack session audit.
 -->
 
+<!--
+SESSION SUMMARY — 2026-06-11 (security audit session)
+What changed:
+  - Ran full security audit of src/. Two medium-severity findings.
+  - Vuln 1: PASS, SASL PLAIN, and NickServ IDENTIFY were sent over plaintext connections with no user warning. Added warning messages for all three when ssl=false.
+  - Vuln 2: onConnected() sent credentials on QSslSocket::connected, which fires before TLS handshake completes. Added isEncrypted() guard that defers via QSslSocket::encrypted (SingleShotConnection) so credentials never go out before TLS is confirmed.
+  - All other findings (HTML injection, DCC path traversal, SSRF, STS hostname injection, credential logging, QProcess, config permissions) were reviewed and cleared.
+Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
+-->
+
+## Unreleased
+
+### Security
+
+- Warn when server password, SASL credentials, or NickServ password are sent over an unencrypted connection (`ssl = false`)
+- Defer credential sending until after TLS handshake completes (`QSslSocket::encrypted`) to make the security invariant explicit
+
 ## v0.25.17
 
 ### Added

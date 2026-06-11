@@ -414,6 +414,13 @@ void IrcClient::sendRaw(const QString &line)
 
 void IrcClient::onConnected()
 {
+    // For SSL connections, defer until TLS handshake completes.
+    if (m_ssl && !m_useWs && !m_socket->isEncrypted()) {
+        connect(m_socket, &QSslSocket::encrypted, this, &IrcClient::onConnected,
+                Qt::SingleShotConnection);
+        return;
+    }
+
     m_reconnectTimer->stop();
     m_reconnectDelay = 5;
     m_pingPending = false;
@@ -421,8 +428,11 @@ void IrcClient::onConnected()
 
     sendRaw("CAP LS 302");
 
-    if (!m_password.isEmpty())
+    if (!m_password.isEmpty()) {
+        if (!m_ssl)
+            emit serverMessage(m_host, "Warning: sending server password over unencrypted connection");
         sendRaw("PASS :" + stripCrlf(m_password));
+    }
 
     const QString safeNick = stripCrlf(m_nick).remove(' ').remove('\0');
     const QString safeUser = stripCrlf(m_user).remove(' ').remove('\0');
@@ -645,6 +655,8 @@ void IrcClient::processLine(const QString &line)
             if (m_saslExternal) {
                 sendRaw("AUTHENTICATE +");
             } else {
+                if (!m_ssl)
+                    emit serverMessage(m_host, "Warning: sending SASL credentials over unencrypted connection");
                 // For soju, the SASL username must be "user/network" to select a network
                 QString saslUser = m_saslUser;
                 if (m_bouncerType == BouncerType::Soju && !m_bouncerNetwork.isEmpty())
@@ -1263,6 +1275,8 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         emit connected(m_host);
         emit serverMessage(m_host, trailing);
         if (!m_nickservPassword.isEmpty()) {
+            if (!m_ssl)
+                emit serverMessage(m_host, "Warning: sending NickServ password over unencrypted connection");
             sendRaw("PRIVMSG NickServ :IDENTIFY " + m_nickservPassword);
             emit serverMessage(m_host, "Sent NickServ IDENTIFY");
         }
