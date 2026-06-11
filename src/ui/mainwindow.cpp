@@ -2419,6 +2419,16 @@ void MainWindow::onServerConnected(const QString &host)
             if (!localPath)
                 m_model->sendRaw(host, "METADATA * SET avatar :" + m_config.profileAvatarUrl);
         }
+        // Local file avatars are never sent to the server, so seed nickMeta + cache manually.
+        if (!m_config.profileAvatarUrl.isEmpty()) {
+            const bool localPath = m_config.profileAvatarUrl.startsWith('/')
+                                   || QUrl(m_config.profileAvatarUrl).isLocalFile();
+            if (localPath) {
+                if (auto *sess = m_model->session(host); sess && !sess->nick.isEmpty())
+                    m_model->onUserMetaChanged(host, sess->nick, "avatar", m_config.profileAvatarUrl);
+                fetchAvatar(m_config.profileAvatarUrl);
+            }
+        }
     }
 }
 

@@ -1471,6 +1471,10 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             emit contextualMessage(m_host, trailing);
         break;
 
+    case 766: // ERR_NOMATCHINGKEY — metadata key not set, expected and silent
+    case 768: // ERR_KEYNOTSET
+        break;
+
     default:
         if (!trailing.isEmpty()) {
             if (n >= 400)

@@ -994,6 +994,16 @@ void SessionModel::onAccountChanged(const QString &host, const QString &nick,
         if (ch.nickIndex.contains(nick.toLower()))
             emit nickListChanged(host, ch.name);
     }
+    // If this nick has no avatar yet and the server supports metadata, request it.
+    const QString lower = nick.toLower();
+    const bool noAvatar = !sess->nickMeta.contains(lower)
+                       || sess->nickMeta[lower].avatarUrl.isEmpty();
+    if (noAvatar) {
+        if (auto *cl = clientFor(host)) {
+            if (cl->hasCap("draft/metadata-2"))
+                sendRaw(host, "METADATA " + nick + " GET avatar display-name");
+        }
+    }
 }
 
 void SessionModel::onUserMetaChanged(const QString &host, const QString &nick,
