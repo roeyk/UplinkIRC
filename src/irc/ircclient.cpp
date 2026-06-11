@@ -304,12 +304,13 @@ void IrcClient::setNick(const QString &nick)
 void IrcClient::sendTyping(const QString &channel, const QString &state)
 {
     if (!validIrcToken(channel)) return;
-    if (!m_ackedCaps.contains("message-tags")) return;
+    if (!m_ackedCaps.contains("draft/typing")) return;
     sendRaw("@+typing=" + ircv3TagEscape(state) + " TAGMSG " + channel);
 }
 
 void IrcClient::sendReact(const QString &target, const QString &msgid, const QString &emoji)
 {
+    if (!validIrcToken(target)) return;
     if (msgid.isEmpty() || emoji.isEmpty()) return;
     if (!m_ackedCaps.contains("message-tags")) return;
     sendRaw("@+draft/react=" + ircv3TagEscape(emoji)
