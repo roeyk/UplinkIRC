@@ -10,6 +10,39 @@
 ---
 
 <!--
+Session summary — 2026-06-10 (clickable event group expand/collapse)
+
+Added in-place expand/collapse for join/quit/nick-change/kick event batches.
+
+Design: event groups already rendered as a single compact line (up to 10 nicks).
+New feature adds a ▸ indicator as a clickable anchor (href="evgrp:TIMESTAMP_MS").
+Clicking toggles the group between compact and expanded views in-place using
+QTextCursor block replacement. Expanded view shows every event as a full line
+with hostmask and quit/part reason (formatMessage style), joined with <br>
+within the same document block. The ▾ collapse anchor on the first expanded
+line restores the compact form.
+
+Key implementation points:
+- chatrenderer: formatEventGroup gains groupId + expanded params; all existing
+  call sites pass defaults so no behavior change unless opted in.
+- mainwindow: m_expandedEventGroups (QSet<QString>) stores toggled groupIds.
+  toggleEventGroupInView() finds the group by first-message timestamp, re-renders,
+  replaces the block, and re-sets userData (BlockMsgid) after replacement.
+- anchorClicked wired for both primary chatView and all pane chatViews.
+- refreshChatView and refreshPaneChatView pass groupId and check
+  m_expandedEventGroups so expanded state survives channel switches and
+  view redraws.
+- Scroll position preserved on toggle (restore if not at bottom; stay at
+  max if at bottom).
+
+Docs updated: howto.html event condensation section expanded with example
+and use-case notes; faq.md new entry "How do I see the full hostmask and
+quit reason from a join/quit line?".
+
+Clean build, all tests pass. Three commits: feat, docs/changelog, docs.
+-->
+
+<!--
 Session summary — 2026-06-10 (avatar persistence and cross-machine propagation)
 
 Root cause investigation: local file avatars were not showing on cold start
