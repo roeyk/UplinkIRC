@@ -3,6 +3,31 @@
 ---
 
 <!--
+Session summary — 2026-06-10 (avatar persistence and cross-machine propagation)
+
+Root cause investigation: local file avatars were not showing on cold start
+because onServerConnected only sends METADATA SET for HTTP URLs (correct —
+local files are never uploaded). Nothing was seeding nickMeta or calling
+fetchAvatar for local paths on connect. Fix: onServerConnected now seeds
+nickMeta and calls fetchAvatar for local file avatar paths so the image
+shows immediately on startup without needing to re-apply via Preferences.
+
+Also added METADATA GET fallback: when a nick's account becomes known and
+no avatar URL is cached, Uplink now requests it with
+METADATA <nick> GET avatar display-name. This covers the case where the
+server push was missed or the server does not auto-push on join. Silenced
+766/768 error numerics (ERR_NOMATCHINGKEY / ERR_KEYNOTSET) which were
+appearing as error messages in the chat window when nicks had no avatar set.
+
+Verified behavior:
+- Local file avatar: shows on the machine that has the file, not others.
+- HTTP URL avatar: stored in Ergo via METADATA SET, propagates to all clients.
+- FreeBSD user with HTTP avatar URL shows correctly on Linux clients.
+
+No regressions. Clean build.
+-->
+
+<!--
 Session summary — 2026-06-07 (window width bug debugging — unresolved)
 
 Investigating persistent full-width window on FreeBSD KDE Plasma 6 / X11 / KWin.
