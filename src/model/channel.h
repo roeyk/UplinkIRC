@@ -59,8 +59,9 @@ struct Channel {
     QHash<QString, qsizetype> nickIndex; // lowercase nick → index in nicks
     QList<Message>   messages;
     QSet<QString>    botNicks;  // lowercased nicks with +B channel user mode
-    QHash<QString, QString> previews;  // url → persisted card HTML
-    QSet<QString>           hiddenPreviews; // urls the user manually hid
+    QHash<QString, QString>    previews;      // url → skeleton card HTML (no image)
+    QHash<QString, QByteArray> previewImages; // url → PNG bytes for the thumbnail
+    QSet<QString>              hiddenPreviews; // urls the user manually hid
     // msgid → emoji → set of nicks who reacted (QSet deduplicates per nick)
     QHash<QString, QHash<QString, QSet<QString>>> reactions;
     int              unread{0};
@@ -163,15 +164,18 @@ struct Channel {
         rebuildNickIndex();
     }
 
-    static constexpr int kPreviewCap     = 20;
-    static constexpr int kPreviewHtmlCap = 8192;
+    static constexpr int kPreviewCap = 20;
 
-    void addPreview(const QString &url, const QString &html)
+    void addPreview(const QString &url, const QString &html, const QByteArray &pngData = {})
     {
         if (previews.size() >= kPreviewCap) {
-            hiddenPreviews.remove(previews.begin().key());
+            const QString evicted = previews.begin().key();
+            hiddenPreviews.remove(evicted);
+            previewImages.remove(evicted);
             previews.erase(previews.begin());
         }
-        previews.insert(url, html.left(kPreviewHtmlCap));
+        previews.insert(url, html);
+        if (!pngData.isEmpty())
+            previewImages.insert(url, pngData);
     }
 };

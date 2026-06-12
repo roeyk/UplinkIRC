@@ -1345,9 +1345,9 @@ void MainWindow::setupChatArea()
         auto *ch = m_model->channel(host, channel);
         if (!ch) return;
 
+        QByteArray imgData;
         QString imgHtml;
         if (!thumbnail.isNull()) {
-            QByteArray imgData;
             QBuffer imgBuf(&imgData);
             imgBuf.open(QIODevice::WriteOnly);
             thumbnail.save(&imgBuf, "PNG");
@@ -1369,7 +1369,9 @@ void MainWindow::setupChatArea()
             ? QFontMetrics(m_chatView->font()).horizontalAdvance("00:00  ")
             : 20;
 
-        const QString cardHtml =
+        // Skeleton HTML has no image — safe to store long-term without bloat.
+        // imgData is stored separately so the full card can be reconstructed on refresh.
+        const QString cardBase =
             QString("<table cellpadding=\"5\" cellspacing=\"0\" "
                     "style=\"margin:1px 0 3px %1px;"
                     "border-left:3px solid %2;"
@@ -1379,11 +1381,12 @@ void MainWindow::setupChatArea()
             + "\" style=\"text-decoration:none\">"
             + QString("<span style=\"color:%1;font-weight:bold\">%2</span><br/>"
                       "<span style=\"color:%3;font-size:8pt\">%4</span>")
-                .arg(fg.name(), titleEsc, sub.name(), domainEsc)
-            + imgHtml
-            + "</a></td></tr></table>";
+                .arg(fg.name(), titleEsc, sub.name(), domainEsc);
 
-        ch->addPreview(urlStr, cardHtml);
+        const QString skeletonHtml = cardBase + "</a></td></tr></table>";
+        const QString cardHtml     = cardBase + imgHtml + "</a></td></tr></table>";
+
+        ch->addPreview(urlStr, skeletonHtml, imgData);
 
         if (host != m_model->activeHost() ||
             channel.toLower() != m_model->activeChannel().toLower())
@@ -3804,8 +3807,19 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
                 while (it.hasNext()) {
                     const QString urlStr = QUrl(it.next().captured(0)).toString();
                     const auto p = ch->previews.constFind(urlStr);
-                    if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr))
-                        insertHtmlBlock(m_chatView, p.value());
+                    if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
+                        continue;
+                    QString displayHtml = p.value();
+                    const auto imgIt = ch->previewImages.constFind(urlStr);
+                    if (imgIt != ch->previewImages.constEnd() && !imgIt->isEmpty()) {
+                        const QString dataUri = "data:image/png;base64,"
+                            + QString::fromLatin1(imgIt->toBase64());
+                        const QString imgTag = "<br/><img src=\"" + dataUri + "\"/>";
+                        const qsizetype pos = displayHtml.lastIndexOf("</a></td></tr></table>");
+                        if (pos != -1)
+                            displayHtml.insert(pos, imgTag);
+                    }
+                    insertHtmlBlock(m_chatView, displayHtml);
                 }
             }
             if (!msg.msgid.isEmpty()) {
