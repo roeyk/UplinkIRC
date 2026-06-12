@@ -1332,6 +1332,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             emit topicReceived(m_host, params[1], trailing);
         break;
 
+    case 315: break; // RPL_ENDOFWHO — suppress from server window
     case 333: break; // RPL_TOPICWHOTIME
 
     case 353: { // RPL_NAMREPLY
