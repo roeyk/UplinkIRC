@@ -1,6 +1,7 @@
 #include "fontdialog.h"
 #include "menuicons.h"
 
+#include <QAbstractItemView>
 #include <QFontComboBox>
 #include <QSpinBox>
 #include <QLabel>
@@ -20,6 +21,7 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     m_familyBox = new QFontComboBox;
     m_familyBox->setCurrentFont(QFont(family));
     m_familyBox->setMinimumHeight(30);
+    m_familyBox->view()->setAutoFillBackground(true);
 
     m_spToolbar      = makeSpinBox(sizes.toolbar);
     m_spServerHeader = makeSpinBox(sizes.serverHeader);

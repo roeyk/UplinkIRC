@@ -200,9 +200,8 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
         auto *row = new QHBoxLayout;
         row->addWidget(new QLabel("Nick Brackets:"));
         m_bracketsCombo = new QComboBox;
-        m_bracketsCombo->setStyleSheet(
-            "QComboBox { font-size:11px; padding:2px 4px; }"
-            "QComboBox QAbstractItemView { background-color: palette(base); color: palette(text); }");
+        m_bracketsCombo->setStyleSheet("QComboBox { font-size:11px; padding:2px 4px; }");
+        m_bracketsCombo->view()->setAutoFillBackground(true);
         for (const auto &[key, label] : s_bracketChoices)
             m_bracketsCombo->addItem(label);
         for (int i = 0; i < s_bracketChoices.size(); ++i) {

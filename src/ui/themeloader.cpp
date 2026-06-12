@@ -1,6 +1,7 @@
 #include "themeloader.h"
 
 #include <QApplication>
+#include <QPalette>
 #include <QDir>
 #include <QFile>
 #include <QStandardPaths>
@@ -349,6 +350,9 @@ QComboBox QAbstractItemView {
     selection-color: {{text}};
     outline: none;
 }
+QComboBox QFrame {
+    background-color: {{bg}};
+}
 
 /* ── Spin box ── */
 QSpinBox {
@@ -627,5 +631,21 @@ void ThemeLoader::apply(const QString &name)
         qWarning() << "ThemeLoader: could not load theme" << name;
         return;
     }
+
+    // Keep QPalette in sync so palette() references in stylesheets and
+    // autoFillBackground on popup widgets resolve to the correct theme colors.
+    QPalette pal;
+    pal.setColor(QPalette::Window,          QColor(t.background));
+    pal.setColor(QPalette::WindowText,      QColor(t.text));
+    pal.setColor(QPalette::Base,            QColor(t.background));
+    pal.setColor(QPalette::AlternateBase,   QColor(t.sidebarBg));
+    pal.setColor(QPalette::Text,            QColor(t.text));
+    pal.setColor(QPalette::Button,          QColor(t.inputBg));
+    pal.setColor(QPalette::ButtonText,      QColor(t.inputText));
+    pal.setColor(QPalette::Highlight,       QColor(t.accent));
+    pal.setColor(QPalette::HighlightedText, QColor(t.text));
+    pal.setColor(QPalette::PlaceholderText, QColor(t.placeholder));
+    qApp->setPalette(pal);
+
     qApp->setStyleSheet(toStyleSheet(t));
 }
