@@ -1115,23 +1115,29 @@ sasl_password = "mysecretpassword"</pre>
     <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Preferences</strong>, then click <strong>Manage Servers</strong> and click <strong>Add</strong>.</div></div>
     <div class="step-row"><span class="step">2</span><div>Fill in <strong>Connection</strong>: set <strong>Host</strong> to your ZNC server's hostname or IP, and <strong>Port</strong> to the port ZNC listens on (commonly <code>6697</code> for SSL or <code>6667</code> for plain). Check <strong>Use SSL/TLS</strong> if your ZNC has SSL enabled (recommended).</div></div>
     <div class="step-row"><span class="step">3</span><div>Fill in <strong>Identity</strong>: set <strong>Nick</strong>, <strong>Username</strong>, and <strong>Real Name</strong> to whatever you normally use on IRC. These are sent to the IRC network through ZNC.</div></div>
-    <div class="step-row"><span class="step">4</span><div>Under <strong>Authentication → Server Password</strong>, enter your ZNC password in <code>username/network:password</code> format. Example: <code>alice/libera:hunter2</code>. Leave all SASL fields blank.</div></div>
+    <div class="step-row"><span class="step">4</span><div>Under <strong>Authentication</strong>: set <strong>SASL User</strong> to your ZNC username and <strong>SASL Password</strong> to your ZNC password. Leave the Server Password field blank.</div></div>
     <div class="step-row"><span class="step">5</span><div>Under <strong>Channels → Auto-join</strong>, list the channels you want to join: <code>#linux, #archlinux</code></div></div>
-    <div class="step-row"><span class="step">6</span><div>Under <strong>Bouncer → Type</strong>, select <strong>ZNC</strong>. The Network field disappears — it is not used for ZNC. Click <strong>OK</strong>, then <strong>OK</strong> again in Manage Servers.</div></div>
+    <div class="step-row"><span class="step">6</span><div>Under <strong>Bouncer → Type</strong>, select <strong>ZNC</strong>. A <strong>Network</strong> field appears — enter the ZNC network name here (e.g. <code>libera</code>). Uplink assembles the <code>username/network:password</code> string automatically. Click <strong>OK</strong>, then <strong>OK</strong> again in Manage Servers.</div></div>
+
+    <div class="note">
+      <strong>Old-style password format still works.</strong> If you prefer to put the full <code>username/network:password</code> string in the Server Password field and leave SASL and Network blank, that continues to work exactly as before.
+    </div>
 
     <h3>Config file equivalent</h3>
-    <p>The Manage Servers dialog writes this to <code>config.toml</code> for you, but you can also edit it directly:</p>
+    <p>The Manage Servers dialog writes this to <code>config.toml</code> for you, but you can also edit it directly. The recommended form uses separate fields:</p>
     <pre>[[server]]
-name     = "ZNC → Libera"
-host     = "znc.example.com"
-port     = 6697
-ssl      = true
-nick     = "alice"
-user     = "alice"
-realname = "Alice Smith"
-password = "alice/libera:hunter2"   # ZNC: username/network:password
-bouncer  = "znc"
-channels = "#linux, #archlinux"</pre>
+name            = "ZNC → Libera"
+host            = "znc.example.com"
+port            = 6697
+ssl             = true
+nick            = "alice"
+user            = "alice"
+realname        = "Alice Smith"
+sasl_user       = "alice"
+sasl_password   = "hunter2"
+bouncer         = "znc"
+bouncer_network = "libera"
+channels        = "#linux, #archlinux"</pre>
 
     <h3>What ZNC mode enables</h3>
     <p>Setting <code>bouncer = "znc"</code> (or selecting ZNC in the dialog) tells Uplink to negotiate two ZNC-specific IRCv3 capabilities:</p>
@@ -1142,33 +1148,37 @@ channels = "#linux, #archlinux"</pre>
     </table>
 
     <h3>Multiple networks on one ZNC</h3>
-    <p>ZNC can carry several IRC networks simultaneously. Add a separate Uplink server entry for each one — same host and port, different network name in the password:</p>
+    <p>ZNC can carry several IRC networks simultaneously. Add a separate Uplink server entry for each one — same host, port, and credentials, only <code>bouncer_network</code> changes:</p>
     <pre>[[server]]
-name     = "ZNC → Libera"
-host     = "znc.example.com"
-port     = 6697
-ssl      = true
-nick     = "alice"
-user     = "alice"
-realname = "Alice Smith"
-password = "alice/libera:hunter2"
-bouncer  = "znc"
-channels = "#linux"
+name            = "ZNC → Libera"
+host            = "znc.example.com"
+port            = 6697
+ssl             = true
+nick            = "alice"
+user            = "alice"
+realname        = "Alice Smith"
+sasl_user       = "alice"
+sasl_password   = "hunter2"
+bouncer         = "znc"
+bouncer_network = "libera"
+channels        = "#linux"
 
 [[server]]
-name     = "ZNC → OFTC"
-host     = "znc.example.com"
-port     = 6697
-ssl      = true
-nick     = "alice"
-user     = "alice"
-realname = "Alice Smith"
-password = "alice/oftc:hunter2"   # same password, different network name
-bouncer  = "znc"
-channels = "#debian"</pre>
+name            = "ZNC → OFTC"
+host            = "znc.example.com"
+port            = 6697
+ssl             = true
+nick            = "alice"
+user            = "alice"
+realname        = "Alice Smith"
+sasl_user       = "alice"
+sasl_password   = "hunter2"
+bouncer         = "znc"
+bouncer_network = "oftc"
+channels        = "#debian"</pre>
 
     <div class="tip">
-      <strong>Not sure what your network is named in ZNC?</strong> Connect once without setting the bouncer type, then type <code>/znc ListNetworks</code> in the server buffer. ZNC will reply with the exact names to use in the password.
+      <strong>Not sure what your network is named in ZNC?</strong> Connect once without setting the bouncer type, then type <code>/znc ListNetworks</code> in the server buffer. ZNC will reply with the exact names to use.
     </div>
 
     <h3>Troubleshooting</h3>

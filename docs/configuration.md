@@ -69,7 +69,7 @@ realname = "Uplink User"
 # sasl_password     = "yourpassword"
 # nickserv_password = "yourpassword"   # alternative: NickServ IDENTIFY on connect
 # bouncer           = "soju"           # "znc" or "soju" — enables bouncer-specific caps
-# bouncer_network   = "libera"         # soju only: which network to attach to
+# bouncer_network   = "libera"         # znc or soju: network name (see Bouncer section)
 # proxy_host        = "127.0.0.1"      # SOCKS5 proxy hostname (omit for direct connection)
 # proxy_port        = 1080             # SOCKS5 proxy port (default 1080)
 # proxy_user        = ""               # optional: proxy username
@@ -216,7 +216,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `client_key` | string | no | Path to the PEM private key for SASL EXTERNAL. RSA and EC (ECDSA) keys are both supported. |
 | `nickserv_password` | string | no | Sends `PRIVMSG NickServ :IDENTIFY <password>` after connecting. Use on servers without SASL support. **Stored in OS keychain — see note below.** |
 | `bouncer` | string | no | Bouncer type. Set to `"znc"` or `"soju"` to enable bouncer-specific IRCv3 capabilities. Omit or set `"none"` for a direct server connection |
-| `bouncer_network` | string | no | **soju only.** The network name to attach to (e.g. `"libera"`). Sent to soju's `BOUNCER LISTNETWORKS` subsystem. Leave empty if connecting to a single-network soju instance |
+| `bouncer_network` | string | no | The IRC network name inside your bouncer. For **ZNC**: set this alongside `sasl_user` and `sasl_password` and Uplink assembles `user/network:password` automatically — or leave blank and put the full string in `password` manually. For **soju**: the network to attach to, sent via SASL. Leave empty for single-network instances. |
 | `proxy_host` | string | no | SOCKS5 proxy hostname or IP (e.g. `"127.0.0.1"`). Leave empty (the default) to connect directly with no proxy. |
 | `proxy_port` | integer | no | SOCKS5 proxy port. Defaults to `1080`. |
 | `proxy_user` | string | no | SOCKS5 proxy username. Only needed if your proxy requires authentication. |
@@ -429,9 +429,29 @@ The `password` field is used for bouncer authentication and is sent as `PASS` be
 
 ### Connecting to ZNC
 
-ZNC expects the password in the format `username/network:password`. Set `bouncer = "znc"` to activate ZNC-specific caps.
+ZNC identifies you via the `PASS` command using the format `username/network:password`. Set `bouncer = "znc"` to activate ZNC-specific caps.
 
 When `znc.in/playback` is available, Uplink sends `PRIVMSG *playback :PLAY * 0` after the welcome message to replay all missed messages. Self-messages sent from other clients are echoed correctly via `znc.in/self-message`.
+
+**Recommended — let Uplink assemble the password:** set `sasl_user`, `sasl_password`, and `bouncer_network` separately. Uplink constructs `user/network:password` automatically:
+
+```toml
+[[server]]
+name            = "ZNC — Libera"
+host            = "znc.example.com"
+port            = 6697
+ssl             = true
+nick            = "yournick"
+user            = "uplink"
+realname        = "Uplink User"
+sasl_user       = "joe"
+sasl_password   = "mysecretpassword"
+bouncer         = "znc"
+bouncer_network = "libera"
+channels        = "#linux, #archlinux"
+```
+
+**Alternative — embed the full string in `password`:** if you prefer the old-style format or your ZNC requires it:
 
 ```toml
 [[server]]
@@ -447,32 +467,36 @@ bouncer  = "znc"
 channels = "#linux, #archlinux"
 ```
 
-If your ZNC instance carries multiple networks, add one `[[server]]` block per network, each with its own `password` entry using the correct network name:
+If your ZNC instance carries multiple networks, add one `[[server]]` block per network — only `bouncer_network` (or the network name in the password) changes:
 
 ```toml
 [[server]]
-name     = "ZNC — Libera"
-host     = "znc.example.com"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
-realname = "Uplink User"
-password = "joe/libera:mysecretpassword"
-bouncer  = "znc"
-channels = "#linux"
+name            = "ZNC — Libera"
+host            = "znc.example.com"
+port            = 6697
+ssl             = true
+nick            = "yournick"
+user            = "uplink"
+realname        = "Uplink User"
+sasl_user       = "joe"
+sasl_password   = "mysecretpassword"
+bouncer         = "znc"
+bouncer_network = "libera"
+channels        = "#linux"
 
 [[server]]
-name     = "ZNC — OFTC"
-host     = "znc.example.com"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
-realname = "Uplink User"
-password = "joe/oftc:mysecretpassword"
-bouncer  = "znc"
-channels = "#debian"
+name            = "ZNC — OFTC"
+host            = "znc.example.com"
+port            = 6697
+ssl             = true
+nick            = "yournick"
+user            = "uplink"
+realname        = "Uplink User"
+sasl_user       = "joe"
+sasl_password   = "mysecretpassword"
+bouncer         = "znc"
+bouncer_network = "oftc"
+channels        = "#debian"
 ```
 
 ### Connecting to soju

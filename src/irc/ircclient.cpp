@@ -434,7 +434,19 @@ void IrcClient::onConnected()
 
     sendRaw("CAP LS 302");
 
-    if (!m_password.isEmpty()) {
+    // For ZNC with bouncer_network + SASL credentials, assemble the ZNC PASS format
+    // so users don't have to embed it manually as "user/network:password".
+    const bool zncAssembled = m_bouncerType == BouncerType::ZNC
+                              && !m_bouncerNetwork.isEmpty()
+                              && !m_saslUser.isEmpty()
+                              && !m_saslPassword.isEmpty();
+    if (zncAssembled) {
+        if (!m_ssl)
+            emit serverMessage(m_host, "Warning: sending server password over unencrypted connection");
+        sendRaw("PASS :" + stripCrlf(m_saslUser) + "/"
+                         + stripCrlf(m_bouncerNetwork) + ":"
+                         + stripCrlf(m_saslPassword));
+    } else if (!m_password.isEmpty()) {
         if (!m_ssl)
             emit serverMessage(m_host, "Warning: sending server password over unencrypted connection");
         sendRaw("PASS :" + stripCrlf(m_password));

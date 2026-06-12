@@ -122,7 +122,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_bouncerType->addItem("ZNC",   static_cast<int>(BouncerType::ZNC));
     m_bouncerType->addItem("Soju",  static_cast<int>(BouncerType::Soju));
     m_bouncerNetwork = new QLineEdit;
-    m_bouncerNetwork->setPlaceholderText("network name");
+    m_bouncerNetwork->setPlaceholderText("e.g. libera, oftc");
 
     auto *channelNote = new QLabel(
         "⚠ To join a password-protected channel, edit <b>config.toml</b> directly:<br/>"
@@ -144,10 +144,11 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow(m_bouncerNetworkLabel, m_bouncerNetwork);
 
     auto updateNetworkRow = [this]{
-        const bool soju = m_bouncerType->currentData().toInt()
-                          == static_cast<int>(BouncerType::Soju);
-        m_bouncerNetworkLabel->setVisible(soju);
-        m_bouncerNetwork->setVisible(soju);
+        const int t = m_bouncerType->currentData().toInt();
+        const bool show = t == static_cast<int>(BouncerType::Soju)
+                       || t == static_cast<int>(BouncerType::ZNC);
+        m_bouncerNetworkLabel->setVisible(show);
+        m_bouncerNetwork->setVisible(show);
     };
     connect(m_bouncerType, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, updateNetworkRow);
