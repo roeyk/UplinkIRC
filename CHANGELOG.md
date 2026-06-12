@@ -96,6 +96,8 @@ No regressions. No known issues.
 Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
 -->
 
+## v0.25.19
+
 ### Added
 
 - Virtual scrolling — chat view renders only the most recent 150 messages on channel switch; a grey divider at the top shows how many older messages exist; scrolling to the top loads 50 more at a time with scroll position preserved
