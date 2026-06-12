@@ -555,19 +555,32 @@ Click **☰ → Manage Servers...** to open the server manager. You do not need 
 
 ### How do I ignore someone?
 
-Right-click their nick in the user list or chat view and choose **Ignore**. All PRIVMSG, NOTICE, and ACTION messages from that nick will be silently suppressed until you unignore them.
+Right-click their nick in the user list or chat view and choose **Ignore**. Their private messages, private notices, and invites will be silently suppressed. **Channel messages are always visible** — ignore only affects private communication, so you can silence someone's PMs and invites while still seeing them talk in a channel.
 
 To unignore, right-click their nick again — the menu will show **Unignore** instead.
 
-You can also use slash commands:
+For per-type control, use slash commands:
 
 ```
-/ignore spammer        # suppress all messages from that nick
-/unignore spammer      # remove from the ignore list
-/ignored               # list all currently ignored nicks
+/ignore spammer              # suppress PMs, notices, and invites (default)
+/ignore spammer pm           # suppress private messages only
+/ignore spammer invite       # suppress invites only
+/ignore spammer pm notice    # suppress PMs and private notices
+/unignore spammer            # remove from the ignore list entirely
+/ignored                     # list ignored nicks and their flags
 ```
 
-The ignore list is saved in `config.toml` under `[ignore] nicks = [...]` and persists across sessions.
+The ignore list is saved in `config.toml` and persists across sessions:
+
+```toml
+[[ignore.entry]]
+nick  = "spammer"
+flags = ["pm", "notice", "invite"]
+
+[[ignore.entry]]
+nick  = "recruiter"
+flags = ["invite"]    # invites only — their messages still visible
+```
 
 ### How do I see the full hostmask and quit reason from a join/quit line?
 
@@ -1117,7 +1130,7 @@ Use the `/monitor` command. Uplink uses the IRCv3 MONITOR system — more effici
 
 When a watched nick connects or disconnects, a status line appears in the server buffer: `Now online: alice` / `Now offline: alice`.
 
-The watch list is saved to `config.toml` under `[monitor] nicks = [...]` and is automatically resent on every reconnect.
+The watch list is saved to `config.toml` under `[monitor]` and is automatically resent on every reconnect.
 
 **Note:** if you have multiple servers configured, the same watch list is sent to all of them.
 

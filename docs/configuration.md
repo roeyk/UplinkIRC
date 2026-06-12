@@ -85,6 +85,11 @@ name = "#uplink"
 
 [[server.channel]]
 name = "#linux"
+
+# Per-type ignore — channel messages always visible
+[[ignore.entry]]
+nick  = "spammer"
+flags = ["pm", "notice", "invite"]
 ```
 
 ---
@@ -636,16 +641,66 @@ Both formats load correctly. On the next save (via **Manage Servers** or **Reloa
 
 ---
 
-## The `[ignore]` block
+## The `[[ignore.entry]]` block
 
-Stores your client-side ignore list. Nicks in this list have their PRIVMSG, NOTICE, and ACTION messages silently suppressed. The block is written automatically when you use `/ignore` or the right-click → **Ignore** menu — you do not normally edit it by hand.
+Stores your client-side ignore list. Each entry suppresses specific types of private communication from a nick — private messages, private notices, and/or invites. **Channel messages are never blocked** — you can ignore someone's PMs and invites while still seeing them talk in a channel.
+
+The block is written automatically when you use `/ignore` or the right-click → **Ignore** menu. You do not normally edit it by hand.
+
+### Format
+
+```toml
+[[ignore.entry]]
+nick  = "spammer"
+flags = ["pm", "notice", "invite"]
+
+[[ignore.entry]]
+nick  = "recruiter"
+flags = ["invite"]            # block invites only, still see PMs and channel messages
+```
+
+Each entry has two keys:
+
+| Key | Type | Description |
+|---|---|---|
+| `nick` | string | The nickname to suppress (case-insensitive) |
+| `flags` | array of strings | Which types to block. Any combination of `"pm"`, `"notice"`, `"invite"`. Omitting the key defaults to all three. |
+
+### Flag reference
+
+| Flag | What it blocks |
+|---|---|
+| `"pm"` | Private `PRIVMSG` and `/me` actions sent directly to you |
+| `"notice"` | Private `NOTICE` messages sent directly to you |
+| `"invite"` | `INVITE` requests to channels |
+
+Channel messages and actions from the ignored nick are **always visible**, regardless of flags.
+
+### Managing the ignore list
+
+Use slash commands in the input bar:
+
+```
+/ignore spammer              — suppress PMs, notices, and invites (default: all three)
+/ignore spammer pm           — suppress private messages only
+/ignore spammer invite       — suppress invites only
+/ignore spammer pm invite    — suppress PMs and invites, but not notices
+/unignore spammer            — remove spammer from the list entirely
+/ignored                     — list all ignored nicks and their flags
+```
+
+Or right-click any nick in the user list or chat and choose **Ignore**. The context menu applies all three flags by default. For per-type control, use `/ignore` directly.
+
+### Backwards compatibility
+
+Uplink still reads the old single-table format written by earlier versions:
 
 ```toml
 [ignore]
 nicks = ["spammer", "troll123"]
 ```
 
-Use `/ignore <nick>`, `/unignore <nick>`, and `/ignored` to manage the list from the input bar, or right-click any nick and choose **Ignore / Unignore**.
+Entries in this format are loaded as if all three flags (`pm`, `notice`, `invite`) were set. On the next save they are automatically rewritten in the new `[[ignore.entry]]` format.
 
 ---
 

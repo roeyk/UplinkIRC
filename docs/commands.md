@@ -28,9 +28,11 @@ Type any of these commands in the message input box and press Enter.
 | `/devoice <nick>` | Remove voice (`-v`) in the current channel |
 | `/ban <mask>` | Ban a mask (`+b`) in the current channel |
 | `/unban <mask>` | Remove a ban (`-b`) in the current channel |
-| `/ignore <nick>` | Suppress all messages from a nick (client-side) |
+| `/ignore <nick>` | Suppress private messages, notices, and invites from a nick — channel messages are never blocked |
+| `/ignore <nick> pm` | Suppress only private messages from that nick |
+| `/ignore <nick> pm notice invite` | Suppress specific types — any combination of `pm`, `notice`, `invite` |
 | `/unignore <nick>` | Stop ignoring a nick |
-| `/ignored` | List all currently ignored nicks |
+| `/ignored` | List all currently ignored nicks and which types are suppressed |
 | `/monitor add <nick>` | Add a nick to the online/offline watch list (IRCv3 MONITOR) |
 | `/monitor del <nick>` | Remove a nick from the watch list |
 | `/monitor remove <nick>` | Alias for `/monitor del` |
@@ -60,9 +62,12 @@ Type any of these commands in the message input box and press Enter.
 /voice alice
 /ban *!*@spammer.host
 /unban *!*@spammer.host
-/ignore spammer
-/unignore spammer
-/ignored
+/ignore spammer              # suppress PMs, notices, and invites (channel messages still visible)
+/ignore spammer pm           # suppress only private messages
+/ignore spammer pm notice    # suppress PMs and private notices
+/ignore spammer invite       # suppress invites only
+/unignore spammer            # remove from ignore list entirely
+/ignored                     # list: spammer [pm,notice,invite]
 /clear
 ```
 
@@ -291,7 +296,7 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 | **Version** | Sends a CTCP VERSION request. Reply appears in the active channel. |
 | **Ping** | Sends a CTCP PING. Reply shows RTT in the active buffer: `Ping reply from nick: Xms`. |
 | **Copy Nick** | Copies the nickname to the clipboard. |
-| **Ignore / Unignore** | Suppresses all messages (PRIVMSG, NOTICE, ACTION) from this nick. The label toggles to **Unignore** if the nick is already ignored. Persists in config. |
+| **Ignore / Unignore** | Suppresses private messages, notices, and invites from this nick. Channel messages are always visible — ignore only affects private communication. The label toggles to **Unignore** if the nick is already ignored. For per-type control, use `/ignore nick [pm] [notice] [invite]` in the input bar. Persists in config. |
 | **Kick** | Prompts for an optional reason, then kicks. Requires op. |
 | **Ban** | Sets `MODE #channel +b nick!*@*`. Requires op. |
 | **Kick & Ban** | Bans first, then kicks (correct order). Prompts for reason. Requires op. |
