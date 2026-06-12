@@ -199,6 +199,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Send button disabled when input empty — re-enables on non-whitespace text; matches onInputSubmit guard (2026-06-12)
 - [x] NickDelegate::sizeHint hotspot fixed — returns fixed QSize(width, 16) directly; eliminates ~17K QTextEngine::itemize calls per session found via heaptrack audit (2026-06-12)
 - [x] Virtual scrolling — refreshChatView renders last 150 messages (kRenderWindow); grey divider shows older count; scroll-to-top loads 50 more (kRenderChunk) with position restore; ~3x faster channel switches (2026-06-12)
+- [x] v0.25.19 released (2026-06-12)
 - [ ] Nick completion button — person_search icon triggers Tab completion for non-keyboard users (was added then reverted as pointless mid-message)
 - [ ] Preferences toggle for send button — same pattern as emoji button toggle
 - [x] Window state persistence — sidebar width and nick panel width saved via QSettings on quit, restored on launch; sidebar is drag-resizable; geometry clamped to available screen on startup (v0.25.1); settings path corrected to ~/.config/uplink/uplink.conf (v0.25.1)

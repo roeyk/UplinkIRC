@@ -68,6 +68,16 @@ Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack se
 ## Unreleased
 
 <!--
+SESSION SUMMARY — 2026-06-12 (v0.25.19 release)
+What changed:
+  - Bumped version to v0.25.19, promoted Unreleased → v0.25.19 in CHANGELOG.
+  - Ran sync-site.sh — docs/index.html and README.md updated to v0.25.19.
+  - Tagged and pushed. Release CI built AppImage/Windows zip/macOS DMG. All workflows green.
+No regressions. No known issues.
+Next priorities: Preferences toggle for send button; ServerId/BufferId strong types.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-12 (send button / heaptrack / virtual scrolling)
 What changed:
   - Send button now disabled when input is empty; re-enables on any non-whitespace text.
