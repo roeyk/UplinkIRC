@@ -68,6 +68,23 @@ Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack se
 ## Unreleased
 
 <!--
+SESSION SUMMARY — 2026-06-12 (send button / heaptrack / virtual scrolling)
+What changed:
+  - Send button now disabled when input is empty; re-enables on any non-whitespace text.
+  - Heaptrack audit: peak heap 24.75 MB, no Uplink-specific leaks. Found NickDelegate::sizeHint
+    calling full Qt style/text-layout pipeline (QTextEngine::itemize, QTextLayout::createLine,
+    QFusionStyle::sizeFromContents) 17,628 times per session just to measure item height. Fixed
+    by returning QSize(option.rect.width(), 16) directly, bypassing the base class entirely.
+  - Virtual scrolling: refreshChatView now renders only the last 150 messages (kRenderWindow).
+    A grey divider at the top shows how many older messages exist. Scrolling to the very top
+    loads 50 more (kRenderChunk) at a time; scroll position is restored so the user stays
+    in place. Channel switches are ~3x faster on full 500-message buffers.
+  - Docs: FAQ and howto.html updated to explain why busy channels always show a scrollbar.
+No regressions. No known issues.
+Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-12 (WHOX fallback / v0.25.18 release)
 What changed:
   - Diagnosed "Unknown command" error reported by AppImage user (KE0VVT) on Rizon.
@@ -78,6 +95,15 @@ What changed:
 No regressions. No known issues.
 Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
 -->
+
+### Added
+
+- Virtual scrolling — chat view renders only the most recent 150 messages on channel switch; a grey divider at the top shows how many older messages exist; scrolling to the top loads 50 more at a time with scroll position preserved
+
+### Fixed
+
+- Send button is now disabled when the input is empty and re-enables as soon as non-whitespace text is typed
+- `NickDelegate::sizeHint` no longer calls the full Qt style/text-layout pipeline — returns a fixed `QSize(width, 16)` directly, eliminating ~17K redundant `QTextEngine::itemize` calls per session
 
 ## v0.25.18
 
