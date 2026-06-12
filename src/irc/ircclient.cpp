@@ -307,8 +307,11 @@ void IrcClient::setNick(const QString &nick)
 void IrcClient::sendTyping(const QString &channel, const QString &state)
 {
     if (!validIrcToken(channel)) return;
-    if (!m_ackedCaps.contains("draft/typing")) return;
-    sendRaw("@+typing=" + ircv3TagEscape(state) + " TAGMSG " + channel);
+    const bool hasFinal = m_ackedCaps.contains("typing");
+    const bool hasDraft = m_ackedCaps.contains("draft/typing");
+    if (!hasFinal && !hasDraft) return;
+    const QString tag = hasFinal ? "typing=" : "+typing=";
+    sendRaw("@" + tag + ircv3TagEscape(state) + " TAGMSG " + channel);
 }
 
 void IrcClient::sendReact(const QString &target, const QString &msgid, const QString &emoji)
@@ -824,7 +827,8 @@ void IrcClient::processLine(const QString &line)
 
     if (cmd == "TAGMSG" && !msg.params.isEmpty()) {
         const QString target = msg.params[0];
-        const QString typing = msg.tags.value("+typing");
+        QString typing = msg.tags.value("typing");
+        if (typing.isEmpty()) typing = msg.tags.value("+typing");
         if (!typing.isEmpty() && msg.nick != m_nick)
             emit typingReceived(m_host, target, msg.nick, typing);
         const QString emoji = msg.tags.value("+draft/react");
@@ -1154,7 +1158,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
 
         QStringList desired = {
             "multi-prefix", "away-notify", "server-time",
-            "message-tags", "batch", "labeled-response", "draft/typing",
+            "message-tags", "batch", "labeled-response", "typing", "draft/typing",
             "chathistory", "draft/chathistory", "echo-message", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
@@ -1230,7 +1234,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         const QStringList newCaps = trailing.split(' ', Qt::SkipEmptyParts);
         QStringList desired = {
             "multi-prefix", "away-notify", "server-time",
-            "message-tags", "batch", "labeled-response", "draft/typing",
+            "message-tags", "batch", "labeled-response", "typing", "draft/typing",
             "chathistory", "draft/chathistory", "echo-message", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
