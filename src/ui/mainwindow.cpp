@@ -466,7 +466,11 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     }
     // Pre-show width cap: limits WM_NORMAL_HINTS.max_width so the WM cannot map
     // the window wider than our target.  Released in the post-show timer.
+    // Skipped on Windows — Windows uses max size to gate the maximize button,
+    // so setting it this tight would grey out the title-bar maximize control.
+#if !defined(Q_OS_WIN)
     setMaximumWidth(width() + 20);
+#endif
 
     if (settings.contains("nickSplitter"))
         m_chatSplitter->restoreState(settings.value("nickSplitter").toByteArray());

@@ -3,6 +3,7 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QApplication>
+#include <QScreen>
 #include <QPalette>
 #include <QSvgRenderer>
 
@@ -10,13 +11,16 @@
 
 namespace MenuIcons {
 
-// logicalSize: the icon size in logical pixels; rendered at 2x for crisp HiDPI output.
+// logicalSize: the icon size in logical pixels; rendered at screen DPR for crisp HiDPI output.
 inline QIcon fromSvg(const QString &path, const QColor &color = {}, int logicalSize = 16)
 {
     const QColor col = color.isValid() ? color
                                        : QApplication::palette().color(QPalette::WindowText);
+    const qreal dpr = (QApplication::primaryScreen())
+                          ? qMax(1.0, QApplication::primaryScreen()->devicePixelRatio())
+                          : 1.0;
     QSvgRenderer renderer(path);
-    const int phys = logicalSize * 2;
+    const int phys = qRound(logicalSize * dpr);
     QPixmap pix(phys, phys);
     pix.fill(Qt::transparent);
     {
@@ -26,7 +30,7 @@ inline QIcon fromSvg(const QString &path, const QColor &color = {}, int logicalS
         p.setCompositionMode(QPainter::CompositionMode_SourceIn);
         p.fillRect(pix.rect(), col);
     }
-    pix.setDevicePixelRatio(2.0);
+    pix.setDevicePixelRatio(dpr);
     return QIcon(pix);
 }
 

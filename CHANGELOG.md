@@ -152,6 +152,13 @@ What changed:
 No regressions. No known issues.
 -->
 
+## v0.25.21 — 2026-06-12
+
+### Fixed
+
+- Windows: maximize button no longer greyed out on first launch — pre-show width cap was an X11/KWin-only workaround that was incorrectly applied on Windows, disabling the native maximize control
+- Icons now render at the actual screen DPI instead of a hardcoded 2× — fixes blurry toolbar and sidebar icons on 4K / HiDPI displays running at 3× or fractional scaling
+
 ## v0.25.20
 
 ### Changed
