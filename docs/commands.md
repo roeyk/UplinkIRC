@@ -285,18 +285,36 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 | Action | What it does |
 |---|---|
 | **Message** | Opens a private message buffer in the sidebar. Equivalent to `/msg nick`. |
+| **Whois** | Sends `WHOIS nick`. The response appears in the active channel. |
+| **Copy Nick** | Copies the nickname to the clipboard. |
+| **Ignore ▶** | Opens a submenu with three checkboxes: **Private Messages**, **Notices**, **Invites**. Tick or untick each independently. Channel messages are always visible. If any type is active, **Unignore All** appears at the bottom. For keyboard control use `/ignore nick [pm] [notice] [invite]`. Persists in config. |
+| **CTCP ▶** | Submenu with CTCP commands (see below). |
+| **DCC ▶** | Submenu for file transfer (see below). |
+| **Chan Ops ▶** | Submenu for channel operator actions (see below). |
+
+### CTCP ▶
+
+| Action | What it does |
+|---|---|
+| **Ping** | Sends a CTCP PING. Reply shows RTT in the active buffer: `Ping reply from nick: Xms`. |
+| **Version** | Sends a CTCP VERSION request. Reply appears in the active channel. |
+
+### DCC ▶
+
+| Action | What it does |
+|---|---|
 | **Send File** | Opens a file picker and sends the file via active DCC. Use when you have a reachable port. |
 | **Send File (Passive)** | Same as Send File, but the recipient opens the port instead. Use when you are behind NAT. |
-| **Whois** | Sends `WHOIS nick`. The response appears in the active channel. |
-| **Invite** | Opens a dialog pre-filled with the current channel. Edit if needed and click OK to send `INVITE nick #channel`. |
+
+### Chan Ops ▶
+
+| Action | What it does |
+|---|---|
 | **Give Op** | Sets `+o` on the nick. Requires op. |
 | **Take Op** | Removes `-o` from the nick. Requires op. |
 | **Give Voice** | Sets `+v` on the nick. Requires op or half-op. |
 | **Take Voice** | Removes `-v` from the nick. Requires op or half-op. |
-| **Version** | Sends a CTCP VERSION request. Reply appears in the active channel. |
-| **Ping** | Sends a CTCP PING. Reply shows RTT in the active buffer: `Ping reply from nick: Xms`. |
-| **Copy Nick** | Copies the nickname to the clipboard. |
-| **Ignore ▶** | Opens a submenu with three checkboxes: **Private Messages**, **Notices**, **Invites**. Tick or untick each independently. Channel messages are always visible. If any type is active, **Unignore All** appears at the bottom. For keyboard control use `/ignore nick [pm] [notice] [invite]`. Persists in config. |
+| **Invite** | Opens a dialog pre-filled with the current channel. Edit if needed and click OK to send `INVITE nick #channel`. |
 | **Kick** | Prompts for an optional reason, then kicks. Requires op. |
 | **Ban** | Sets `MODE #channel +b nick!*@*`. Requires op. |
 | **Kick & Ban** | Bans first, then kicks (correct order). Prompts for reason. Requires op. |
@@ -304,17 +322,23 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 ### Examples
 
 ```
-# Right-click alice → Invite
+# Right-click alice → Chan Ops ▶ → Invite
 # Dialog pre-filled: #uplink   → click OK
 # Sends: INVITE alice #uplink
 
-# Right-click spammer → Kick & Ban
+# Right-click spammer → Chan Ops ▶ → Kick & Ban
 # Reason dialog: "flooding"
 # Sends: MODE #uplink +b spammer!*@*
 #         KICK #uplink spammer :flooding
 
-# Right-click alice → Ping
+# Right-click alice → CTCP ▶ → Ping
 # Buffer: Ping reply from alice: 42ms
+
+# Right-click alice → DCC ▶ → Send File
+# Pick a file → transfer starts
+
+# Right-click bob → Ignore ▶ → tick Private Messages
+# Bob's PMs are hidden; channel messages still visible
 ```
 
 ---

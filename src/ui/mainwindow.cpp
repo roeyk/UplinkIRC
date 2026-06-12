@@ -3589,142 +3589,15 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     title->setFont(tf);
     menu.addSeparator();
 
+    // ── Common actions ────────────────────────────────────────────────────────
     connect(menu.addAction("Message"), &QAction::triggered, this, [this, host, nick]{
         m_model->openPM(ServerId{host}, nick);
         switchToChannel(host, nick);
         if (m_input) m_input->setFocus();
     });
 
-    connect(menu.addAction("Send File"), &QAction::triggered, this, [this, host, nick]{
-        const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick);
-        if (path.isEmpty()) return;
-
-        IrcClient *client = m_model->clientFor(ServerId{host});
-        if (!client) return;
-
-        const quint32 localIp = client->localIpv4();
-        auto *dcc = new DccSend(path, this);
-        if (!dcc->listen(localIp ? QHostAddress(localIp) : QHostAddress::Any)) {
-            dcc->deleteLater(); return;
-        }
-
-        const quint32 ip   = localIp;
-        const quint16 port = dcc->port();
-        const QString fn   = dcc->filename();
-        const qint64  size = dcc->filesize();
-
-        m_model->sendRaw(ServerId{host},
-            "PRIVMSG " + nick + " :\x01""DCC SEND "
-            + fn + " " + QString::number(ip)
-            + " " + QString::number(port)
-            + " " + QString::number(size) + "\x01");
-
-        auto *prog = new QProgressDialog("Sending " + fn + " to " + nick,
-                                          "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
-        prog->setWindowModality(Qt::NonModal);
-        prog->setAttribute(Qt::WA_DeleteOnClose);
-
-        connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
-            prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
-        });
-        connect(dcc, &DccSend::finished, prog, [prog, dcc]{
-            prog->setValue(prog->maximum());
-            dcc->deleteLater();
-        });
-        connect(dcc, &DccSend::error, this, [this, prog, dcc](const QString &msg){
-            prog->close();
-            dcc->deleteLater();
-            QMessageBox::warning(this, "DCC Error", msg);
-        });
-        connect(prog, &QProgressDialog::canceled, dcc, [dcc]{ dcc->cancel(); dcc->deleteLater(); });
-
-        prog->show();
-    });
-
-    connect(menu.addAction("Send File (Passive)"), &QAction::triggered, this, [this, host, nick]{
-        const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick + " (Passive)");
-        if (path.isEmpty()) return;
-
-        auto *dcc = new DccSend(path, this);
-        const QString token = dcc->initPassive();
-        if (token.isEmpty()) { dcc->deleteLater(); return; }
-
-        const QString fn   = dcc->filename();
-        const qint64  size = dcc->filesize();
-
-        m_pendingPassiveSends.insert(token, dcc);
-        m_model->sendRaw(ServerId{host},
-            "PRIVMSG " + nick + " :\x01""DCC SEND "
-            + fn + " 0 0"
-            + " " + QString::number(size)
-            + " " + token + "\x01");
-
-        auto *prog = new QProgressDialog("Waiting for " + nick + " to accept...",
-                                          "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
-        prog->setWindowModality(Qt::NonModal);
-        prog->setAttribute(Qt::WA_DeleteOnClose);
-
-        connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
-            prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
-        });
-        connect(dcc, &DccSend::finished, prog, [prog, dcc]{
-            prog->setValue(prog->maximum());
-            dcc->deleteLater();
-        });
-        connect(dcc, &DccSend::error, this, [this, prog, dcc, token](const QString &msg){
-            prog->close();
-            m_pendingPassiveSends.remove(token);
-            dcc->deleteLater();
-            QMessageBox::warning(this, "DCC Error", msg);
-        });
-        connect(prog, &QProgressDialog::canceled, dcc, [this, dcc, token]{
-            m_pendingPassiveSends.remove(token);
-            dcc->cancel();
-            dcc->deleteLater();
-        });
-        prog->show();
-    });
-
     connect(menu.addAction("Whois"), &QAction::triggered, this, [this, host, nick]{
         m_model->sendRaw(ServerId{host}, "WHOIS " + nick);
-    });
-
-    connect(menu.addAction("Invite"), &QAction::triggered, this, [this, host, channel, nick]{
-        bool ok;
-        const QString target = QInputDialog::getText(
-            this, "Invite " + nick, "Channel:", QLineEdit::Normal,
-            (channel.isEmpty() || channel == "(server)") ? QString() : channel, &ok);
-        if (!ok || target.isEmpty()) return;
-        m_model->sendRaw(ServerId{host}, "INVITE " + nick + " " + target);
-    });
-
-    connect(menu.addAction("Give Op"), &QAction::triggered, this, [this, host, channel, nick]{
-        if (!channel.isEmpty() && channel != "(server)")
-            m_model->sendRaw(ServerId{host}, "MODE " + channel + " +o " + nick);
-    });
-
-    connect(menu.addAction("Take Op"), &QAction::triggered, this, [this, host, channel, nick]{
-        if (!channel.isEmpty() && channel != "(server)")
-            m_model->sendRaw(ServerId{host}, "MODE " + channel + " -o " + nick);
-    });
-
-    connect(menu.addAction("Give Voice"), &QAction::triggered, this, [this, host, channel, nick]{
-        if (!channel.isEmpty() && channel != "(server)")
-            m_model->sendRaw(ServerId{host}, "MODE " + channel + " +v " + nick);
-    });
-
-    connect(menu.addAction("Take Voice"), &QAction::triggered, this, [this, host, channel, nick]{
-        if (!channel.isEmpty() && channel != "(server)")
-            m_model->sendRaw(ServerId{host}, "MODE " + channel + " -v " + nick);
-    });
-
-    connect(menu.addAction("Version"), &QAction::triggered, this, [this, host, nick]{
-        m_model->sendRaw(ServerId{host}, "PRIVMSG " + nick + " :\x01VERSION\x01");
-    });
-
-    connect(menu.addAction("Ping"), &QAction::triggered, this, [this, host, nick]{
-        const qint64 ts = QDateTime::currentMSecsSinceEpoch();
-        m_model->sendRaw(ServerId{host}, "PRIVMSG " + nick + " :\x01PING " + QString::number(ts) + "\x01");
     });
 
     connect(menu.addAction("Copy Nick"), &QAction::triggered, this, [nick]{
@@ -3733,6 +3606,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
 
     menu.addSeparator();
 
+    // ── Ignore ▶ ─────────────────────────────────────────────────────────────
     {
         const QString key = nick.toLower();
         const IgnoreTypes curFlags = m_model->ignoreFlags(key);
@@ -3782,27 +3656,174 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
 
     menu.addSeparator();
 
-    connect(menu.addAction("Kick"), &QAction::triggered, this, [this, host, channel, nick]{
-        if (channel.isEmpty() || channel == "(server)") return;
-        bool ok;
-        QString reason = QInputDialog::getText(this, "Kick " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
-        if (!ok) return;
-        m_model->sendRaw(ServerId{host}, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
-    });
+    // ── CTCP ▶ ───────────────────────────────────────────────────────────────
+    {
+        auto *ctcpSub = new QMenu("CTCP", &menu);
 
-    connect(menu.addAction("Ban"), &QAction::triggered, this, [this, host, channel, nick]{
-        if (!channel.isEmpty() && channel != "(server)")
+        connect(ctcpSub->addAction("Ping"), &QAction::triggered, this, [this, host, nick]{
+            const qint64 ts = QDateTime::currentMSecsSinceEpoch();
+            m_model->sendRaw(ServerId{host}, "PRIVMSG " + nick + " :\x01PING " + QString::number(ts) + "\x01");
+        });
+
+        connect(ctcpSub->addAction("Version"), &QAction::triggered, this, [this, host, nick]{
+            m_model->sendRaw(ServerId{host}, "PRIVMSG " + nick + " :\x01VERSION\x01");
+        });
+
+        menu.addMenu(ctcpSub);
+    }
+
+    // ── DCC ▶ ────────────────────────────────────────────────────────────────
+    {
+        auto *dccSub = new QMenu("DCC", &menu);
+
+        connect(dccSub->addAction("Send File"), &QAction::triggered, this, [this, host, nick]{
+            const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick);
+            if (path.isEmpty()) return;
+
+            IrcClient *client = m_model->clientFor(ServerId{host});
+            if (!client) return;
+
+            const quint32 localIp = client->localIpv4();
+            auto *dcc = new DccSend(path, this);
+            if (!dcc->listen(localIp ? QHostAddress(localIp) : QHostAddress::Any)) {
+                dcc->deleteLater(); return;
+            }
+
+            const quint32 ip   = localIp;
+            const quint16 port = dcc->port();
+            const QString fn   = dcc->filename();
+            const qint64  size = dcc->filesize();
+
+            m_model->sendRaw(ServerId{host},
+                "PRIVMSG " + nick + " :\x01""DCC SEND "
+                + fn + " " + QString::number(ip)
+                + " " + QString::number(port)
+                + " " + QString::number(size) + "\x01");
+
+            auto *prog = new QProgressDialog("Sending " + fn + " to " + nick,
+                                              "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
+            prog->setWindowModality(Qt::NonModal);
+            prog->setAttribute(Qt::WA_DeleteOnClose);
+
+            connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
+                prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
+            });
+            connect(dcc, &DccSend::finished, prog, [prog, dcc]{
+                prog->setValue(prog->maximum());
+                dcc->deleteLater();
+            });
+            connect(dcc, &DccSend::error, this, [this, prog, dcc](const QString &msg){
+                prog->close();
+                dcc->deleteLater();
+                QMessageBox::warning(this, "DCC Error", msg);
+            });
+            connect(prog, &QProgressDialog::canceled, dcc, [dcc]{ dcc->cancel(); dcc->deleteLater(); });
+
+            prog->show();
+        });
+
+        connect(dccSub->addAction("Send File (Passive)"), &QAction::triggered, this, [this, host, nick]{
+            const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick + " (Passive)");
+            if (path.isEmpty()) return;
+
+            auto *dcc = new DccSend(path, this);
+            const QString token = dcc->initPassive();
+            if (token.isEmpty()) { dcc->deleteLater(); return; }
+
+            const QString fn   = dcc->filename();
+            const qint64  size = dcc->filesize();
+
+            m_pendingPassiveSends.insert(token, dcc);
+            m_model->sendRaw(ServerId{host},
+                "PRIVMSG " + nick + " :\x01""DCC SEND "
+                + fn + " 0 0"
+                + " " + QString::number(size)
+                + " " + token + "\x01");
+
+            auto *prog = new QProgressDialog("Waiting for " + nick + " to accept...",
+                                              "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
+            prog->setWindowModality(Qt::NonModal);
+            prog->setAttribute(Qt::WA_DeleteOnClose);
+
+            connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
+                prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
+            });
+            connect(dcc, &DccSend::finished, prog, [prog, dcc]{
+                prog->setValue(prog->maximum());
+                dcc->deleteLater();
+            });
+            connect(dcc, &DccSend::error, this, [this, prog, dcc, token](const QString &msg){
+                prog->close();
+                m_pendingPassiveSends.remove(token);
+                dcc->deleteLater();
+                QMessageBox::warning(this, "DCC Error", msg);
+            });
+            connect(prog, &QProgressDialog::canceled, dcc, [this, dcc, token]{
+                m_pendingPassiveSends.remove(token);
+                dcc->cancel();
+                dcc->deleteLater();
+            });
+            prog->show();
+        });
+
+        menu.addMenu(dccSub);
+    }
+
+    menu.addSeparator();
+
+    // ── Chan Ops ▶ ───────────────────────────────────────────────────────────
+    {
+        auto *opSub = new QMenu("Chan Ops", &menu);
+
+        connect(opSub->addAction("Give Op"), &QAction::triggered, this, [this, host, channel, nick]{
+            if (!channel.isEmpty() && channel != "(server)")
+                m_model->sendRaw(ServerId{host}, "MODE " + channel + " +o " + nick);
+        });
+        connect(opSub->addAction("Take Op"), &QAction::triggered, this, [this, host, channel, nick]{
+            if (!channel.isEmpty() && channel != "(server)")
+                m_model->sendRaw(ServerId{host}, "MODE " + channel + " -o " + nick);
+        });
+        connect(opSub->addAction("Give Voice"), &QAction::triggered, this, [this, host, channel, nick]{
+            if (!channel.isEmpty() && channel != "(server)")
+                m_model->sendRaw(ServerId{host}, "MODE " + channel + " +v " + nick);
+        });
+        connect(opSub->addAction("Take Voice"), &QAction::triggered, this, [this, host, channel, nick]{
+            if (!channel.isEmpty() && channel != "(server)")
+                m_model->sendRaw(ServerId{host}, "MODE " + channel + " -v " + nick);
+        });
+
+        opSub->addSeparator();
+
+        connect(opSub->addAction("Invite"), &QAction::triggered, this, [this, host, channel, nick]{
+            bool ok;
+            const QString target = QInputDialog::getText(
+                this, "Invite " + nick, "Channel:", QLineEdit::Normal,
+                (channel.isEmpty() || channel == "(server)") ? QString() : channel, &ok);
+            if (!ok || target.isEmpty()) return;
+            m_model->sendRaw(ServerId{host}, "INVITE " + nick + " " + target);
+        });
+        connect(opSub->addAction("Kick"), &QAction::triggered, this, [this, host, channel, nick]{
+            if (channel.isEmpty() || channel == "(server)") return;
+            bool ok;
+            QString reason = QInputDialog::getText(this, "Kick " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
+            if (!ok) return;
+            m_model->sendRaw(ServerId{host}, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
+        });
+        connect(opSub->addAction("Ban"), &QAction::triggered, this, [this, host, channel, nick]{
+            if (!channel.isEmpty() && channel != "(server)")
+                m_model->sendRaw(ServerId{host}, "MODE " + channel + " +b " + nick + "!*@*");
+        });
+        connect(opSub->addAction("Kick && Ban"), &QAction::triggered, this, [this, host, channel, nick]{
+            if (channel.isEmpty() || channel == "(server)") return;
+            bool ok;
+            QString reason = QInputDialog::getText(this, "Kick & Ban " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
+            if (!ok) return;
             m_model->sendRaw(ServerId{host}, "MODE " + channel + " +b " + nick + "!*@*");
-    });
+            m_model->sendRaw(ServerId{host}, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
+        });
 
-    connect(menu.addAction("Kick && Ban"), &QAction::triggered, this, [this, host, channel, nick]{
-        if (channel.isEmpty() || channel == "(server)") return;
-        bool ok;
-        QString reason = QInputDialog::getText(this, "Kick & Ban " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
-        if (!ok) return;
-        m_model->sendRaw(ServerId{host}, "MODE " + channel + " +b " + nick + "!*@*");
-        m_model->sendRaw(ServerId{host}, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
-    });
+        menu.addMenu(opSub);
+    }
 
     menu.exec(globalPos);
 }
