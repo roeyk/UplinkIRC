@@ -65,50 +65,6 @@ What changed:
 Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
 -->
 
-## Unreleased
-
-<!--
-SESSION SUMMARY — 2026-06-12 (ServerId/BufferId strong types)
-What changed:
-  - Added src/model/ids.h: ServerId and BufferId wrapper types with explicit construction,
-    .str() accessor, comparison operators, and qHash overloads.
-  - Refactored SessionModel public API (all public methods and signals) to use ServerId/BufferId
-    instead of const QString &. IrcClient stays as const QString & internally; conversion happens
-    in lambda wrappers in SessionModel::attachClient().
-  - Updated commanddispatcher.h/.cpp, mainwindow.cpp, trayicon.h/.cpp to wrap or adapt at
-    every call site. About 500 lines touched across 7 files.
-  - Clean build. No double-wrapping issues.
-No regressions. No known issues.
-Next priorities: Preferences toggle for send button; further audit findings.
--->
-
-<!--
-SESSION SUMMARY — 2026-06-12 (ssl = false documentation)
-What changed:
-  - Added "Plain (unencrypted) connections" section to docs/configuration.md with four annotated
-    examples: local test server (127.0.0.1:6667), LAN bouncer, localhost bouncer, Tor .onion.
-  - Updated [[server]] reference table: port row now mentions 6667 alongside 6697; ssl row
-    now explains when false is appropriate and links to the new section.
-  - Added "When should I use ssl = false?" entry to docs/faq.md with a use-case table and
-    example config block.
-  - Updated docs/howto.html: the ssl = true note now also says when false is valid; Manage
-    Servers table rows updated for port and ssl.
-No regressions. No known issues.
-Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
--->
-
-<!--
-SESSION SUMMARY — 2026-06-12 (RPL_ENDOFWHO suppression)
-What changed:
-  - Diagnosed repeated "End of /WHO list." spam in the server window on busy networks (Libera.chat).
-  - Root cause: numeric 315 (RPL_ENDOFWHO) fell through to the default handler, which emits any
-    non-empty trailing as a serverMessage. 352 and 354 were already handled silently.
-  - Fix: added case 315: break; in IrcClient::handleNumeric, matching the pattern of 333 (RPL_TOPICWHOTIME).
-  - One-line change, verified in-app — no WHO spam in server window.
-No regressions. No known issues.
-Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
--->
-
 <!--
 SESSION SUMMARY — 2026-06-12 (quit message, away message, disabled flag)
 What changed:
@@ -134,8 +90,69 @@ What changed:
   - docs/howto.html: two new sections (Disabling a server, Quit & away messages) with nav entries.
   - Fix: auto-join placeholder now shows #uplink, #linux, #archlinux format.
 No regressions. No known issues.
-Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
 -->
+
+<!--
+SESSION SUMMARY — 2026-06-12 (RPL_ENDOFWHO suppression)
+What changed:
+  - Diagnosed repeated "End of /WHO list." spam in the server window on busy networks (Libera.chat).
+  - Root cause: numeric 315 (RPL_ENDOFWHO) fell through to the default handler, which emits any
+    non-empty trailing as a serverMessage. 352 and 354 were already handled silently.
+  - Fix: added case 315: break; in IrcClient::handleNumeric, matching the pattern of 333 (RPL_TOPICWHOTIME).
+  - One-line change, verified in-app — no WHO spam in server window.
+No regressions. No known issues.
+-->
+
+<!--
+SESSION SUMMARY — 2026-06-12 (ssl = false documentation)
+What changed:
+  - Added "Plain (unencrypted) connections" section to docs/configuration.md with four annotated
+    examples: local test server (127.0.0.1:6667), LAN bouncer, localhost bouncer, Tor .onion.
+  - Updated [[server]] reference table: port row now mentions 6667 alongside 6697; ssl row
+    now explains when false is appropriate and links to the new section.
+  - Added "When should I use ssl = false?" entry to docs/faq.md with a use-case table and
+    example config block.
+  - Updated docs/howto.html: the ssl = true note now also says when false is valid; Manage
+    Servers table rows updated for port and ssl.
+No regressions. No known issues.
+-->
+
+<!--
+SESSION SUMMARY — 2026-06-12 (static analysis audit)
+What changed:
+  - Ran clang-tidy + cppcheck on full source tree.
+  - Collapsed duplicate switch branches in IrcClient::handleNumeric (372/375/376/422, 315/333, 369).
+  - Fixed performance-unnecessary-copy-initialization in hot numeric handler paths.
+  - Fixed dccsend.h listen() param from value to const ref; fontdialog.h makeSpinBox static;
+    preferencesdialog.h ctor signature alignment.
+  - All real findings addressed; false positives (Qt moc, QStringLiteral, virtual-in-constructor) noted.
+No regressions. No known issues.
+-->
+
+<!--
+SESSION SUMMARY — 2026-06-12 (ServerId/BufferId strong types)
+What changed:
+  - Added src/model/ids.h: ServerId and BufferId wrapper types with explicit construction,
+    .str() accessor, comparison operators, and qHash overloads.
+  - Refactored SessionModel public API (~35 public methods and all signals) to use ServerId/BufferId
+    instead of const QString &. IrcClient stays as const QString & internally; 9 direct
+    signal-to-signal connects replaced with lambda wrappers at the boundary in attachClient().
+  - Updated commanddispatcher.h/.cpp, mainwindow.cpp, trayicon.h/.cpp to wrap or adapt at
+    every call site. ~500 lines touched across 8 files.
+  - Clean build. No double-wrapping issues.
+No regressions. No known issues.
+-->
+
+<!--
+SESSION SUMMARY — 2026-06-12 (v0.25.20 release)
+What changed:
+  - Bumped version to v0.25.20 in CMakeLists.txt, docs/index.html, README.md.
+  - Promoted Unreleased → v0.25.20 in CHANGELOG.
+  - Tagged and pushed.
+No regressions. No known issues.
+-->
+
+## v0.25.20
 
 ### Changed
 
@@ -148,26 +165,6 @@ Next priorities: ServerId/BufferId strong types; Preferences toggle for send but
 - Per-server `disabled` flag — set `disabled = true` in a `[[server]]` block (or tick **Edit Server → Disabled**) to keep the server in config without connecting on startup; survives every config save (safe alternative to commenting out a server block, which gets permanently stripped on the next save)
 - `[profile]` block documented in `config.toml.example` — display name and avatar URL with full inline comments and usage examples
 - Docs: "Plain (unencrypted) connections" section in `configuration.md` — when `ssl = false` is appropriate, with four annotated examples (local test server, LAN, localhost bouncer, Tor .onion); `faq.md` "When should I use ssl = false?" entry with use-case table; `howto.html` Manage Servers table and ssl note updated to cover both cases
-
-<!--
-SESSION SUMMARY — 2026-06-12 (virtual scrolling blank view fix)
-What changed:
-  - Diagnosed blank chat view on busy channels when scrolling back through history.
-  - Root cause: loadOlderMessages called QApplication::processEvents(ExcludeUserInputEvents)
-    to flush Qt's document layout before reading sb->maximum() for scroll position restore.
-    processEvents did NOT guarantee the layout was complete — sb->maximum() was still 0 (from
-    the preceding m_chatView->clear()), so setValue(qMax(0, 0 - oldMax)) = setValue(0).
-    The view was left at position 0 of a content-populated-but-not-yet-laid-out document,
-    appearing blank. Because m_loadingOlder was set to false immediately after, any scroll
-    attempt re-triggered the load and the view never recovered.
-  - Fix: removed processEvents; replaced with QTimer::singleShot(0, ...) which yields to the
-    event loop and lets Qt complete the layout before the scroll restore lambda runs.
-    Also changed qMax(0, delta) to qMax(1, delta) so the restored position is never exactly 0,
-    preventing immediate re-triggering of the at-top load guard.
-  - One function changed (loadOlderMessages in mainwindow.cpp).
-No regressions. No known issues.
-Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
--->
 
 ### Fixed
 
@@ -182,7 +179,6 @@ What changed:
   - Ran sync-site.sh — docs/index.html and README.md updated to v0.25.19.
   - Tagged and pushed. Release CI built AppImage/Windows zip/macOS DMG. All workflows green.
 No regressions. No known issues.
-Next priorities: Preferences toggle for send button; ServerId/BufferId strong types.
 -->
 
 <!--
