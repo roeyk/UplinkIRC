@@ -2,7 +2,7 @@
 #include "menuicons.h"
 
 #include <QCheckBox>
-#include <QAbstractItemView>
+#include "solidcombobox.h"
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFileDialog>
@@ -118,11 +118,10 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_autoJoin = new QLineEdit;
     m_autoJoin->setPlaceholderText("#uplink, #linux, #archlinux");
 
-    m_bouncerType = new QComboBox;
+    m_bouncerType = new SolidComboBox;
     m_bouncerType->addItem("None",  static_cast<int>(BouncerType::None));
     m_bouncerType->addItem("ZNC",   static_cast<int>(BouncerType::ZNC));
     m_bouncerType->addItem("Soju",  static_cast<int>(BouncerType::Soju));
-    m_bouncerType->view()->setAutoFillBackground(true);
     m_bouncerNetwork = new QLineEdit;
     m_bouncerNetwork->setPlaceholderText("e.g. libera, oftc");
 
