@@ -152,6 +152,24 @@ What changed:
 No regressions. No known issues.
 -->
 
+## v0.25.23 — 2026-06-12
+
+### Added
+
+- ZNC `bouncer_network` support — set `sasl_user`, `sasl_password`, and `bouncer_network` separately; Uplink assembles `user/network:password` automatically at connect time. The Network field now appears in Manage Servers for ZNC (previously soju-only).
+
+### Changed
+
+- Nick right-click menu restructured into submenus: **CTCP ▶** (Ping, Version), **DCC ▶** (Send File, Send File Passive), **Chan Ops ▶** (Op, Voice, Invite, Kick, Ban, Kick & Ban)
+- Nick Brackets, Bouncer Type, and Font Family controls replaced with inline radio buttons and collapsible lists — eliminates transparent popup rendering on Wayland
+
+### Fixed
+
+- Typing indicator now works on Ergo IRCd and any server using the finalized `typing` CAP; was only handling the older `+typing` (draft) form
+- ZNC setup documentation: removed contradictory "Leave SASL blank" note that conflicted with the setup steps; added explicit callout that `host`/`port` point at the ZNC server, not the IRC network
+
+---
+
 ## v0.25.22 — 2026-06-12
 
 ### Added
