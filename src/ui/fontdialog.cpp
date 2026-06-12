@@ -1,15 +1,16 @@
 #include "fontdialog.h"
 #include "menuicons.h"
 
-#include "solidcombobox.h"
 #include <QSpinBox>
 #include <QLabel>
 #include <QFrame>
-#include <QDialogButtonBox>
+#include <QListWidget>
 #include <QPushButton>
+#include <QDialogButtonBox>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QFontDatabase>
 
 FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *parent)
     : QDialog(parent)
@@ -17,9 +18,35 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     setWindowTitle("Font Configuration");
     setMinimumWidth(380);
 
-    m_familyBox = new SolidFontComboBox;
-    m_familyBox->setCurrentFont(QFont(family));
-    m_familyBox->setMinimumHeight(30);
+    // Family — toggle button + collapsible list (no popup window)
+    m_familyBtn = new QPushButton(family);
+    m_familyBtn->setCheckable(true);
+    m_familyBtn->setAutoDefault(false);
+    m_familyBtn->setMinimumHeight(30);
+
+    m_familyList = new QListWidget;
+    m_familyList->setFrameShape(QFrame::StyledPanel);
+    m_familyList->setFixedHeight(160);
+    m_familyList->setVisible(false);
+    for (const QString &f : QFontDatabase::families())
+        m_familyList->addItem(f);
+    {
+        const auto matches = m_familyList->findItems(family, Qt::MatchExactly);
+        if (!matches.isEmpty()) {
+            m_familyList->setCurrentItem(matches.first());
+            m_familyList->scrollToItem(matches.first());
+        }
+    }
+
+    connect(m_familyBtn, &QPushButton::toggled, m_familyList, &QWidget::setVisible);
+
+    auto applyFamily = [this](QListWidgetItem *item) {
+        if (!item) return;
+        m_familyBtn->setText(item->text());
+        m_preview->setFont(QFont(item->text(), m_spChat->value()));
+    };
+    connect(m_familyList, &QListWidget::itemClicked,   this, applyFamily);
+    connect(m_familyList, &QListWidget::itemActivated, this, applyFamily);
 
     m_spToolbar      = makeSpinBox(sizes.toolbar);
     m_spServerHeader = makeSpinBox(sizes.serverHeader);
@@ -38,13 +65,11 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     m_preview->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     m_preview->setContentsMargins(8, 6, 8, 6);
     m_preview->setMinimumHeight(36);
+    m_preview->setFont(QFont(family, sizes.chat));
 
-    auto updatePreview = [this]{
-        m_preview->setFont(QFont(m_familyBox->currentFont().family(), m_spChat->value()));
-    };
-    connect(m_familyBox, &QFontComboBox::currentFontChanged, this, updatePreview);
-    connect(m_spChat, QOverload<int>::of(&QSpinBox::valueChanged), this, updatePreview);
-    updatePreview();
+    connect(m_spChat, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int pt){
+        m_preview->setFont(QFont(m_familyBtn->text(), pt));
+    });
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setIcon(MenuIcons::confirm());
@@ -55,9 +80,9 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     // Family row
     auto *familyRow = new QHBoxLayout;
     familyRow->addWidget(new QLabel("Family:"));
-    familyRow->addWidget(m_familyBox, 1);
+    familyRow->addWidget(m_familyBtn, 1);
 
-    // Sizes — two columns to halve the visual rows
+    // Sizes — two columns
     auto *grid = new QGridLayout;
     grid->setHorizontalSpacing(12);
     grid->setVerticalSpacing(6);
@@ -89,6 +114,7 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     auto *layout = new QVBoxLayout(this);
     layout->setSpacing(8);
     layout->addLayout(familyRow);
+    layout->addWidget(m_familyList);
     layout->addWidget(m_preview);
     layout->addLayout(grid);
     layout->addWidget(buttons);
@@ -103,7 +129,7 @@ QSpinBox *FontDialog::makeSpinBox(int value)
     return sb;
 }
 
-QString   FontDialog::selectedFamily() const { return m_familyBox->currentFont().family(); }
+QString   FontDialog::selectedFamily() const { return m_familyBtn->text(); }
 FontSizes FontDialog::selectedSizes()  const
 {
     return { m_spToolbar->value(), m_spServerHeader->value(), m_spSidebar->value(),

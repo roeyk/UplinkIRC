@@ -2,8 +2,8 @@
 #include <QDialog>
 #include "config/config.h"
 
+class QButtonGroup;
 class QCheckBox;
-class QComboBox;
 class QLineEdit;
 
 class PreferencesDialog : public QDialog
@@ -41,7 +41,7 @@ private:
     QCheckBox *m_hangingIndentCheck{nullptr};
     QCheckBox *m_loggingCheck{nullptr};
     QCheckBox *m_linkPreviewsCheck{nullptr};
-    QComboBox *m_bracketsCombo{nullptr};
+    QButtonGroup *m_bracketsGroup{nullptr};
     QLineEdit *m_displayNameEdit{nullptr};
     QLineEdit *m_avatarUrlEdit{nullptr};
 

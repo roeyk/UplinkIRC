@@ -3,9 +3,8 @@
 #include "ui/menuicons.h"
 #include "ui/pillbutton.h"
 
-#include "solidcombobox.h"
+#include <QButtonGroup>
 #include <QCheckBox>
-#include <QComboBox>
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QListWidget>
@@ -197,26 +196,20 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     vbox->addWidget(m_linkPreviewsCheck);
 
     vbox->addSpacing(2);
+    vbox->addWidget(new QLabel("Nick Brackets:"));
     {
-        auto *row = new QHBoxLayout;
-        row->addWidget(new QLabel("Nick Brackets:"));
-        m_bracketsCombo = new SolidComboBox;
-        m_bracketsCombo->setStyleSheet("QComboBox { font-size:11px; padding:2px 4px; }");
-        for (const auto &[key, label] : s_bracketChoices)
-            m_bracketsCombo->addItem(label);
+        m_bracketsGroup = new QButtonGroup(this);
+        m_bracketsGroup->setExclusive(true);
         for (int i = 0; i < s_bracketChoices.size(); ++i) {
-            if (s_bracketChoices[i].first == cfg.ui.nickBrackets) {
-                m_bracketsCombo->setCurrentIndex(i);
-                break;
-            }
+            auto *rb = new QRadioButton(s_bracketChoices[i].second);
+            rb->setChecked(s_bracketChoices[i].first == cfg.ui.nickBrackets);
+            m_bracketsGroup->addButton(rb, i);
+            vbox->addWidget(rb);
         }
-        connect(m_bracketsCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                this, [this](int idx){
+        connect(m_bracketsGroup, &QButtonGroup::idClicked, this, [this](int idx){
             if (idx >= 0 && idx < s_bracketChoices.size())
                 emit nickBracketsChanged(s_bracketChoices[idx].first);
         });
-        row->addWidget(m_bracketsCombo, 1);
-        vbox->addLayout(row);
     }
 
     // ── Profile ───────────────────────────────────────────────────────────────

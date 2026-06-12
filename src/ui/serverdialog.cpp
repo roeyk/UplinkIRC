@@ -2,8 +2,8 @@
 #include "menuicons.h"
 
 #include <QCheckBox>
-#include "solidcombobox.h"
-#include <QComboBox>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFormLayout>
@@ -118,10 +118,8 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_autoJoin = new QLineEdit;
     m_autoJoin->setPlaceholderText("#uplink, #linux, #archlinux");
 
-    m_bouncerType = new SolidComboBox;
-    m_bouncerType->addItem("None",  static_cast<int>(BouncerType::None));
-    m_bouncerType->addItem("ZNC",   static_cast<int>(BouncerType::ZNC));
-    m_bouncerType->addItem("Soju",  static_cast<int>(BouncerType::Soju));
+    m_bouncerGroup = new QButtonGroup(this);
+    m_bouncerGroup->setExclusive(true);
     m_bouncerNetwork = new QLineEdit;
     m_bouncerNetwork->setPlaceholderText("e.g. libera, oftc");
 
@@ -141,18 +139,32 @@ ServerDialog::ServerDialog(QWidget *parent)
     m_bouncerNetworkLabel = new QLabel("Network:");
 
     form->addRow(makeHeader("Bouncer"));
-    form->addRow("Type:",              m_bouncerType);
+    {
+        struct { const char *label; BouncerType type; } opts[] = {
+            { "None", BouncerType::None },
+            { "ZNC",  BouncerType::ZNC  },
+            { "Soju", BouncerType::Soju },
+        };
+        auto *bouncerRow = new QHBoxLayout;
+        for (auto &o : opts) {
+            auto *rb = new QRadioButton(o.label);
+            rb->setChecked(o.type == BouncerType::None);
+            m_bouncerGroup->addButton(rb, static_cast<int>(o.type));
+            bouncerRow->addWidget(rb);
+        }
+        bouncerRow->addStretch();
+        form->addRow("Type:", bouncerRow);
+    }
     form->addRow(m_bouncerNetworkLabel, m_bouncerNetwork);
 
     auto updateNetworkRow = [this]{
-        const int t = m_bouncerType->currentData().toInt();
+        const int t = m_bouncerGroup->checkedId();
         const bool show = t == static_cast<int>(BouncerType::Soju)
                        || t == static_cast<int>(BouncerType::ZNC);
         m_bouncerNetworkLabel->setVisible(show);
         m_bouncerNetwork->setVisible(show);
     };
-    connect(m_bouncerType, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, updateNetworkRow);
+    connect(m_bouncerGroup, &QButtonGroup::idClicked, this, updateNetworkRow);
     updateNetworkRow();
 
     m_proxyHost = new QLineEdit;
@@ -223,7 +235,8 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     m_clientCert->setText(existing.clientCertFile);
     m_clientKey->setText(existing.clientKeyFile);
     setupPw(m_nickservPassword, existing.nickservPassword, m_nickservPasswordKeychain);
-    m_bouncerType->setCurrentIndex(static_cast<int>(existing.bouncerType));
+    if (auto *rb = m_bouncerGroup->button(static_cast<int>(existing.bouncerType)))
+        rb->setChecked(true);
     m_bouncerNetwork->setText(existing.bouncerNetwork);
     m_proxyHost->setText(existing.proxyHost);
     m_proxyPort->setValue(existing.proxyPort ? existing.proxyPort : 1080);
@@ -261,7 +274,7 @@ ServerConfig ServerDialog::serverConfig() const
     sc.clientCertFile   = m_clientCert->text().trimmed();
     sc.clientKeyFile    = m_clientKey->text().trimmed();
     sc.nickservPassword = resolvePw(m_nickservPassword, m_nickservPasswordKeychain);
-    sc.bouncerType      = static_cast<BouncerType>(m_bouncerType->currentData().toInt());
+    sc.bouncerType      = static_cast<BouncerType>(m_bouncerGroup->checkedId());
     sc.bouncerNetwork   = m_bouncerNetwork->text().trimmed();
     sc.proxyHost        = m_proxyHost->text().trimmed();
     sc.proxyPort        = static_cast<quint16>(m_proxyPort->value());

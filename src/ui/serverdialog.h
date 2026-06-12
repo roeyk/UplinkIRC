@@ -2,7 +2,7 @@
 #include "config/config.h"
 #include <QDialog>
 
-class QComboBox;
+class QButtonGroup;
 class QLabel;
 class QLineEdit;
 class QPushButton;
@@ -33,7 +33,7 @@ private:
     QLineEdit   *m_clientCert;
     QLineEdit   *m_clientKey;
     QLineEdit   *m_nickservPassword;
-    QComboBox *m_bouncerType;
+    QButtonGroup *m_bouncerGroup{nullptr};
     QLineEdit *m_bouncerNetwork;
     QLabel    *m_bouncerNetworkLabel{nullptr};
     QCheckBox *m_disabled;

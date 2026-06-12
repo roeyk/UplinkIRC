@@ -2,7 +2,8 @@
 #include <QDialog>
 #include "config/config.h"
 
-class QFontComboBox;
+class QListWidget;
+class QPushButton;
 class QSpinBox;
 class QLabel;
 
@@ -15,7 +16,8 @@ public:
     FontSizes  selectedSizes()  const;
 
 private:
-    QFontComboBox *m_familyBox;
+    QListWidget   *m_familyList;
+    QPushButton   *m_familyBtn;
     QSpinBox      *m_spToolbar;
     QSpinBox      *m_spServerHeader;
     QSpinBox      *m_spSidebar;
