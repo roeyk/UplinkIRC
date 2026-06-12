@@ -148,7 +148,7 @@ SESSION SUMMARY — 2026-06-12 (v0.25.20 release)
 What changed:
   - Bumped version to v0.25.20 in CMakeLists.txt, docs/index.html, README.md.
   - Promoted Unreleased → v0.25.20 in CHANGELOG.
-  - Tagged and pushed.
+  - Tagged and pushed. Created GitHub release v0.25.20.
 No regressions. No known issues.
 -->
 
