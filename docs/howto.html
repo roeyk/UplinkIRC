@@ -1097,46 +1097,47 @@ sasl_password = "mysecretpassword"</pre>
     <p>A bouncer is a program that sits between you and IRC. It stays connected 24/7 so you never miss messages — when you open Uplink it replays everything that arrived while you were away. <strong>ZNC</strong> is the most widely used bouncer.</p>
 
     <h3>How ZNC authentication works</h3>
-    <p>ZNC does not use SASL. Instead it identifies you through the <strong>Server Password</strong> field, using a specific format:</p>
+    <p>ZNC identifies clients through the IRC <strong>Server Password</strong> using this format:</p>
     <pre>username/network:password</pre>
     <ul>
       <li><strong>username</strong> — your ZNC login name (set when ZNC was installed)</li>
-      <li><strong>network</strong> — the name of the IRC network inside ZNC (e.g. <code>libera</code>, <code>oftc</code>). Check your ZNC web panel or <code>/znc ListNetworks</code> to see the exact names.</li>
+      <li><strong>network</strong> — the name of the IRC network inside ZNC (e.g. <code>libera</code>, <code>oftc</code>). Check your ZNC web panel or run <code>/znc ListNetworks</code> in Uplink's server buffer to see the exact names.</li>
       <li><strong>password</strong> — your ZNC account password</li>
     </ul>
-    <p>So if your ZNC username is <code>alice</code>, your network is named <code>libera</code>, and your password is <code>hunter2</code>, the Server Password field should contain:</p>
-    <pre>alice/libera:hunter2</pre>
+    <p>Uplink assembles this string for you automatically. You just supply the three pieces separately and Uplink constructs <code>username/network:password</code> at connect time.</p>
 
     <div class="note">
-      <strong>Leave SASL blank.</strong> ZNC uses the Server Password field for authentication — do not fill in SASL User or SASL Password. Those fields are for connecting directly to IRC servers that support SASL, not for ZNC.
+      <strong>You are connecting to ZNC, not directly to IRC.</strong> The <strong>Host</strong> and <strong>Port</strong> fields must point at your ZNC server (e.g. <code>znc.example.com:6697</code>), not at the IRC network. ZNC is the middleman — it stays connected to IRC on your behalf and Uplink connects to ZNC.
     </div>
 
     <h3>Setting up ZNC in Manage Servers</h3>
     <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Preferences</strong>, then click <strong>Manage Servers</strong> and click <strong>Add</strong>.</div></div>
-    <div class="step-row"><span class="step">2</span><div>Fill in <strong>Connection</strong>: set <strong>Host</strong> to your ZNC server's hostname or IP, and <strong>Port</strong> to the port ZNC listens on (commonly <code>6697</code> for SSL or <code>6667</code> for plain). Check <strong>Use SSL/TLS</strong> if your ZNC has SSL enabled (recommended).</div></div>
-    <div class="step-row"><span class="step">3</span><div>Fill in <strong>Identity</strong>: set <strong>Nick</strong>, <strong>Username</strong>, and <strong>Real Name</strong> to whatever you normally use on IRC. These are sent to the IRC network through ZNC.</div></div>
-    <div class="step-row"><span class="step">4</span><div>Under <strong>Authentication</strong>: set <strong>SASL User</strong> to your ZNC username and <strong>SASL Password</strong> to your ZNC password. Leave the Server Password field blank.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Fill in <strong>Connection</strong>: set <strong>Host</strong> to your <strong>ZNC server's</strong> hostname or IP (not the IRC network address), and <strong>Port</strong> to the port ZNC listens on (commonly <code>6697</code> for SSL). Check <strong>Use SSL/TLS</strong> if your ZNC has SSL enabled (recommended).</div></div>
+    <div class="step-row"><span class="step">3</span><div>Fill in <strong>Identity</strong>: set <strong>Nick</strong>, <strong>Username</strong>, and <strong>Real Name</strong> to whatever you normally use on IRC. These are sent through ZNC to the IRC network.</div></div>
+    <div class="step-row"><span class="step">4</span><div>Under <strong>Authentication</strong>: set <strong>SASL User</strong> to your ZNC username and <strong>SASL Password</strong> to your ZNC password. Leave the Server Password field blank. Uplink uses these to assemble the <code>username/network:password</code> string ZNC expects.</div></div>
     <div class="step-row"><span class="step">5</span><div>Under <strong>Channels → Auto-join</strong>, list the channels you want to join: <code>#linux, #archlinux</code></div></div>
-    <div class="step-row"><span class="step">6</span><div>Under <strong>Bouncer → Type</strong>, select <strong>ZNC</strong>. A <strong>Network</strong> field appears — enter the ZNC network name here (e.g. <code>libera</code>). Uplink assembles the <code>username/network:password</code> string automatically. Click <strong>OK</strong>, then <strong>OK</strong> again in Manage Servers.</div></div>
+    <div class="step-row"><span class="step">6</span><div>Under <strong>Bouncer → Type</strong>, select <strong>ZNC</strong>. A <strong>Network</strong> field appears — enter the ZNC network name here (e.g. <code>libera</code>). Click <strong>OK</strong>, then <strong>OK</strong> again in Manage Servers.</div></div>
 
     <div class="note">
-      <strong>Old-style password format still works.</strong> If you prefer to put the full <code>username/network:password</code> string in the Server Password field and leave SASL and Network blank, that continues to work exactly as before.
+      <strong>Old-style password format still works.</strong> If you prefer, put the full <code>username/network:password</code> string directly in the Server Password field and leave SASL User, SASL Password, and Network blank. Uplink sends it as-is.
     </div>
 
     <h3>Config file equivalent</h3>
-    <p>The Manage Servers dialog writes this to <code>config.toml</code> for you, but you can also edit it directly. The recommended form uses separate fields:</p>
+    <p>The Manage Servers dialog writes this to <code>config.toml</code> for you, but you can also edit it directly. The recommended form uses separate fields — Uplink assembles the ZNC PASS string automatically:</p>
     <pre>[[server]]
+# Uplink connects to ZNC, which connects to Libera on your behalf.
+# host/port point at your ZNC server, not at irc.libera.chat.
 name            = "ZNC → Libera"
-host            = "znc.example.com"
+host            = "znc.example.com"   # your ZNC server
 port            = 6697
 ssl             = true
 nick            = "alice"
 user            = "alice"
 realname        = "Alice Smith"
-sasl_user       = "alice"
-sasl_password   = "hunter2"
+sasl_user       = "alice"             # ZNC username
+sasl_password   = "hunter2"           # ZNC password
 bouncer         = "znc"
-bouncer_network = "libera"
+bouncer_network = "libera"            # network name inside ZNC
 channels        = "#linux, #archlinux"</pre>
 
     <h3>What ZNC mode enables</h3>

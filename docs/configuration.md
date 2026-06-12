@@ -425,29 +425,31 @@ The server buffer shows `SASL authentication successful` on connect. Authenticat
 
 Uplink has first-class bouncer support. Setting `bouncer = "znc"` or `bouncer = "soju"` in the server block activates bouncer-specific IRCv3 capabilities, enabling features like chat history replay, read markers, and network enumeration.
 
-The `password` field is used for bouncer authentication and is sent as `PASS` before `NICK`/`USER`, which is what bouncers require.
+> **Important:** `host` and `port` point at your **bouncer server**, not at the IRC network. The bouncer stays connected to IRC on your behalf — Uplink connects to the bouncer.
 
 ### Connecting to ZNC
 
-ZNC identifies you via the `PASS` command using the format `username/network:password`. Set `bouncer = "znc"` to activate ZNC-specific caps.
+ZNC identifies clients via the IRC `PASS` command using the format `username/network:password`. Set `bouncer = "znc"` to activate ZNC-specific caps.
 
 When `znc.in/playback` is available, Uplink sends `PRIVMSG *playback :PLAY * 0` after the welcome message to replay all missed messages. Self-messages sent from other clients are echoed correctly via `znc.in/self-message`.
 
-**Recommended — let Uplink assemble the password:** set `sasl_user`, `sasl_password`, and `bouncer_network` separately. Uplink constructs `user/network:password` automatically:
+**Recommended — let Uplink assemble the password:** set `sasl_user`, `sasl_password`, and `bouncer_network` separately. Uplink constructs `user/network:password` automatically at connect time:
 
 ```toml
+# Uplink connects to ZNC, which connects to Libera on your behalf.
+# host/port point at your ZNC server, not at the IRC network.
 [[server]]
 name            = "ZNC — Libera"
-host            = "znc.example.com"
+host            = "znc.example.com"   # your ZNC server, not the IRC network
 port            = 6697
 ssl             = true
 nick            = "yournick"
 user            = "uplink"
 realname        = "Uplink User"
-sasl_user       = "joe"
-sasl_password   = "mysecretpassword"
+sasl_user       = "joe"               # ZNC username
+sasl_password   = "mysecretpassword"  # ZNC password
 bouncer         = "znc"
-bouncer_network = "libera"
+bouncer_network = "libera"            # network name inside ZNC
 channels        = "#linux, #archlinux"
 ```
 
