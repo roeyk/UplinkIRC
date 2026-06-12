@@ -157,7 +157,7 @@ The list is stored in `config.toml` under `[monitor] nicks = [...]`.
 
 ### `WHOX`
 
-An extended version of the `WHO` command. Uplink requests `WHO <channel> %cnfa,42` after joining each channel — fetching channel, nick, flags, and account in a single query. The server reply (`354 RPL_WHOSPCRPL`) is handled by the same bot-detection logic as the regular `WHO` reply, and any account name returned fires an `accountChanged` update to populate nick list tooltips.
+An extended version of the `WHO` command. Uplink checks the server's `ISUPPORT` tokens on connect — if `WHOX` is advertised, it sends `WHO <channel> %cnfa,42` after joining each channel, fetching channel, nick, flags, and account in a single query. The server reply (`354 RPL_WHOSPCRPL`) is handled by the same bot-detection logic as the regular `WHO` reply, and any account name returned fires an `accountChanged` update to populate nick list tooltips. On servers that do not advertise `WHOX` (e.g. Rizon), Uplink falls back to a plain `WHO <channel>` so no "Unknown command" error is produced.
 
 ### `sts` (Strict Transport Security)
 

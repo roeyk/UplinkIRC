@@ -982,7 +982,7 @@ The tooltip shows `account: <name>` when the server has reported their account. 
 - **On join** — if the server supports `extended-join`, the account name arrives with the JOIN message.
 - **Login/logout** — `account-notify` sends an `ACCOUNT` command when any nick in a shared channel authenticates or logs out.
 - **Per-message** — `account-tag` attaches the account name to every message from an authenticated user, keeping the data current even without a separate notification.
-- **WHO scan** — Uplink sends a WHOX query (`WHO #channel %cnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field.
+- **WHO scan** — Uplink sends a WHOX query (`WHO #channel %cnfa,42`) on join to bulk-populate accounts; the `354` reply includes the account field. On servers that do not advertise `WHOX` in `ISUPPORT` (e.g. Rizon), a plain `WHO #channel` is sent instead — account data is not available in that case, but no error is produced.
 
 If the tooltip is absent, the server may not support any of these capabilities, or the user has not authenticated with services.
 

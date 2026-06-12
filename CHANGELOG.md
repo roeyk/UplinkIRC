@@ -67,9 +67,12 @@ Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack se
 
 ## Unreleased
 
+## v0.25.18
+
 ### Fixed
 
 - Bot icon (alien) now appears for users with `+B` who join a channel after you — previously only users already in the channel at join time were detected via the bulk WHO sweep; late joiners were never queried
+- WHO query now falls back to plain `WHO #channel` on servers that do not advertise `WHOX` in `ISUPPORT` — fixes spurious "Unknown command" errors on networks such as Rizon
 
 ### Security
 

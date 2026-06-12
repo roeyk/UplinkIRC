@@ -1525,7 +1525,7 @@ typing_indicator = true   # set to false to disable completely</pre>
       <tr>
         <td>WHOX scan</td>
         <td>After you join a channel</td>
-        <td>Uplink sends <code>WHO #channel %cnfa,42</code> to bulk-populate all accounts for everyone already in the channel.</td>
+        <td>Uplink sends <code>WHO #channel %cnfa,42</code> to bulk-populate all accounts for everyone already in the channel. On servers that do not advertise <code>WHOX</code> in <code>ISUPPORT</code>, a plain <code>WHO</code> is sent instead.</td>
       </tr>
     </table>
 
