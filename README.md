@@ -46,7 +46,7 @@
 </p>
 
 <p align="center">
-  <a href="https://noderelay.github.io/UplinkIRC/howto.html">
+  <a href="https://uplinkirc.chat/docs/howto.html">
     <img src="https://img.shields.io/badge/📖%20How--To%20Guide-install%20→%20tweaks-0368a4?style=for-the-badge&logo=readthedocs&logoColor=white" alt="How-To Guide" />
   </a>
 </p>
@@ -419,7 +419,7 @@ Type a colon to trigger inline autocomplete:
 
 | Doc | Contents |
 |---|---|
-| [**How-To Guide**](https://noderelay.github.io/UplinkIRC/howto.html) | Step-by-step from install to tweaks — start here |
+| [**How-To Guide**](https://uplinkirc.chat/docs/howto.html) | Step-by-step from install to tweaks — start here |
 | [Configuration](docs/configuration.md) | Every config key with examples, bouncer setup, SASL |
 | [Commands](docs/commands.md) | All slash commands + emoji shortcuts |
 | [IRCv3 support](docs/ircv3.md) | Capability status and notes |
