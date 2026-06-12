@@ -1487,10 +1487,10 @@ channels  = "#uplink"</pre>
       <li>Click any URL to open it in your browser.</li>
       <li>When a URL is posted, Uplink fetches a preview card (title + thumbnail) automatically.</li>
       <li>When someone mentions your nick, it is highlighted in red and bold.</li>
-      <li>A <em>"nick is typing…"</em> line appears above the input bar when another user is composing a message and their client supports IRCv3 <code>draft/typing</code>. You never see your own typing indicator — it is only shown to others.</li>
+      <li>A <em>"nick is typing…"</em> line appears above the input bar when another user is composing a message and their client supports IRCv3 <code>typing</code> (or the earlier <code>draft/typing</code>). You never see your own typing indicator — it is only shown to others.</li>
       <li><strong>Right-click the timestamp</strong> (hh:mm) on any message for a context menu: <strong>Reply</strong>, <strong>React</strong>, and <strong>Delete</strong> (own messages only, when the server supports it). If you have text selected when you right-click the timestamp, a <strong>Copy</strong> option appears in the same menu. See <a href="#reply">Reply</a>, <a href="#reactions">Reactions</a>, and <a href="#deletion">Message deletion</a>.</li>
       <li><strong>Right-click selected text</strong> anywhere in a message to see a <strong>Copy</strong> option — and a <strong>Reply</strong> option for the message you clicked in, so you do not need to aim at the small timestamp.</li>
-      <li><strong>Right-click any nick</strong> in a message to open the nick context menu — Message, Send File, Whois, Invite, Give Op, Take Op, Give Voice, Take Voice, Version, Ping, Copy Nick, and (for ops) Kick, Ban, Kick &amp; Ban. See <a href="#nick-context-menu">Nick right-click menu</a>.</li>
+      <li><strong>Right-click any nick</strong> in a message to open the nick context menu — Message, Whois, Copy Nick, and submenus: <strong>CTCP ▶</strong> (Ping, Version), <strong>DCC ▶</strong> (Send File), <strong>Chan Ops ▶</strong> (Op, Voice, Invite, Kick, Ban…). See <a href="#nick-context-menu">Nick right-click menu</a>.</li>
       <li><strong>Hover over a nick</strong> in a message to see their NickServ account name as a tooltip (when the server reports it via <code>account-tag</code> or <code>account-notify</code>).</li>
       <li>Press <kbd>Ctrl+F</kbd> to search the current buffer. See <a href="#search">Message search</a>.</li>
     </ul>
@@ -1504,7 +1504,7 @@ channels  = "#uplink"</pre>
     <p>When they stop typing (or send their message), the line disappears automatically.</p>
 
     <h3>Requirements</h3>
-    <p>Both sides need to support IRCv3 <code>draft/typing</code>. Uplink negotiates this cap automatically on connect — if the server supports it, typing notifications are sent and received with no configuration needed. If the server does not advertise the cap, the feature is silently inactive.</p>
+    <p>Both sides need to support IRCv3 <code>typing</code> (finalized) or <code>draft/typing</code> (earlier variant — Ergo, soju, and most modern clients support one or both). Uplink negotiates both caps automatically and handles either form — no configuration needed. If the server advertises neither cap, the feature is silently inactive.</p>
 
     <h3>What you see vs. what others see</h3>
     <p>You <strong>never see your own typing indicator</strong>. The indicator is only shown to other users in the channel — you see theirs, they see yours. This is by design: seeing your own "is typing…" would be distracting and confusing.</p>
