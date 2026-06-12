@@ -114,10 +114,31 @@ Next priorities: ServerId/BufferId strong types; Preferences toggle for send but
 - Per-server `disabled` flag — set `disabled = true` in a `[[server]]` block (or tick **Edit Server → Disabled**) to keep the server in config without connecting on startup; survives every config save (safe alternative to commenting out a server block, which gets permanently stripped on the next save)
 - `[profile]` block documented in `config.toml.example` — display name and avatar URL with full inline comments and usage examples
 
+<!--
+SESSION SUMMARY — 2026-06-12 (virtual scrolling blank view fix)
+What changed:
+  - Diagnosed blank chat view on busy channels when scrolling back through history.
+  - Root cause: loadOlderMessages called QApplication::processEvents(ExcludeUserInputEvents)
+    to flush Qt's document layout before reading sb->maximum() for scroll position restore.
+    processEvents did NOT guarantee the layout was complete — sb->maximum() was still 0 (from
+    the preceding m_chatView->clear()), so setValue(qMax(0, 0 - oldMax)) = setValue(0).
+    The view was left at position 0 of a content-populated-but-not-yet-laid-out document,
+    appearing blank. Because m_loadingOlder was set to false immediately after, any scroll
+    attempt re-triggered the load and the view never recovered.
+  - Fix: removed processEvents; replaced with QTimer::singleShot(0, ...) which yields to the
+    event loop and lets Qt complete the layout before the scroll restore lambda runs.
+    Also changed qMax(0, delta) to qMax(1, delta) so the restored position is never exactly 0,
+    preventing immediate re-triggering of the at-top load guard.
+  - One function changed (loadOlderMessages in mainwindow.cpp).
+No regressions. No known issues.
+Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
+-->
+
 ### Fixed
 
 - `RPL_ENDOFWHO` (315) is now suppressed from the server window — eliminates repeated "End of /WHO list." noise on busy networks like Libera.chat
 - Auto-join placeholder text in Add/Edit Server dialog now shows the correct comma-separated format (`#uplink, #linux, #archlinux`)
+- Virtual scrolling blank view on busy channels — `loadOlderMessages` no longer calls `QApplication::processEvents` (which left the scrollbar `maximum()` stale at 0 after the view was cleared, causing `setValue(0)` and a blank, unscrollable chat). Replaced with `QTimer::singleShot(0, …)` so Qt completes the document layout before the scroll position is restored
 
 <!--
 SESSION SUMMARY — 2026-06-12 (v0.25.19 release)

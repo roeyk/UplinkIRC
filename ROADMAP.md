@@ -174,6 +174,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Per-server quit message — `quit_message` in server block; used by /quit with no arg and on normal disconnect; GUI field in Edit Server
 - [x] Per-server away message — `away_message` in server block; used by /away with no arg; GUI field in Edit Server; /back always clears
 - [x] Disabled server flag — `disabled = true` in server block keeps it in config but skips startup; GUI checkbox in Edit Server; prevents config-save data loss vs commented-out blocks
+- [x] Virtual scrolling blank view fix — replaced `processEvents` with `QTimer::singleShot(0,…)` in `loadOlderMessages`; fixes blank unscrollable chat on busy channels caused by stale `sb->maximum()` after `clear()`
 - [x] cap-notify — server can notify client of capability changes mid-session; CAP NEW triggers REQ for wanted caps, CAP DEL removes from active set; m_registered flag prevents spurious CAP END on mid-session ACK (v0.25.4)
 - [x] draft/chathistory compatibility — Ergo IRCd uses draft cap name; Uplink now requests both names and handles either on history delivery and batch recognition (v0.25.5)
 
