@@ -122,6 +122,16 @@ No regressions. No known issues.
 Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
 -->
 
+<!--
+SESSION SUMMARY — 2026-06-12 (icon refresh)
+What changed:
+  - Replaced all app icons (assets/uplink-dark.png, uplink-light.png, packaging/uplink.png) and site icons (docs/assets/favicon-32.png, uplink-icon-64.png, uplink-icon-192.png) with new uplink-icon-main design — speech bubble shape, black gloss, glowing orange U with signal arcs.
+  - Fixed transparency: source PNG had no alpha channel (white background baked in). Used ImageMagick flood-fill from corner to cut the background, producing clean RGBA output.
+  - New icon is now used in the window titlebar, taskbar/panel, system tray, applications menu, and project site.
+  - All changes committed and pushed.
+Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
+-->
+
 ## v0.25.19
 
 ### Added
