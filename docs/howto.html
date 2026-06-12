@@ -758,7 +758,9 @@ realname = "Uplink User"
 channels = "#linux, #archlinux"</pre>
 
     <div class="note">
-      <strong>Always set <code>ssl = true</code>.</strong> Uplink also supports <a href="#sts">STS (Strict Transport Security)</a> — if the server advertises it, TLS is enforced automatically and the policy is cached for future connections, even if <code>ssl</code> is missing from your config.
+      <strong>Always set <code>ssl = true</code> for public servers.</strong> Uplink also supports <a href="#sts">STS (Strict Transport Security)</a> — if the server advertises it, TLS is enforced automatically and the policy is cached for future connections, even if <code>ssl</code> is missing from your config.
+      <br/><br/>
+      Set <code>ssl = false</code> with port <code>6667</code> only when TLS is genuinely unavailable: a local test IRCd on <code>127.0.0.1</code>, a private LAN server with no certificate, a bouncer listening on loopback, or a <code>.onion</code> address where Tor provides its own encryption.
     </div>
 
     <p>Common IRC networks and their TLS hostnames:</p>

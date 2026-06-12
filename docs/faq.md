@@ -189,6 +189,31 @@ When you type `/away` with no argument, this message is sent. Users who message 
 
 Set from the GUI: **☰ → Manage Servers → Edit → Away Message**.
 
+### When should I use `ssl = false`?
+
+Almost never on a public server. All modern IRC networks support TLS — use `ssl = true` and port `6697`.
+
+Set `ssl = false` (with port `6667`) only in these cases:
+
+| Situation | Why plain is acceptable |
+|---|---|
+| Local test IRCd on `127.0.0.1` | No network exposure; traffic never leaves the machine |
+| Private LAN server with no TLS cert | Traffic stays inside a trusted network |
+| Bouncer listening on localhost | The bouncer handles TLS for its upstream; local socket is loopback-only |
+| `.onion` IRC server via Tor | Tor provides its own end-to-end encryption through the hidden service |
+
+```toml
+# Local test server — plain connection on loopback
+[[server]]
+name = "Local test"
+host = "127.0.0.1"
+port = 6667
+ssl  = false
+nick = "yournick"
+```
+
+> For any server on the public internet, always use `ssl = true`. Plaintext IRC sends your nick, password, and every message in the clear to anyone on the network path between you and the server.
+
 ---
 
 ## Connecting & IRC

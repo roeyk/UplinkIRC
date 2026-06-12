@@ -198,8 +198,8 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 |---|---|---|---|
 | `name` | string | yes | Display name shown in the sidebar |
 | `host` | string | yes | IRC server hostname or IP address |
-| `port` | integer | yes | Server port. The standard TLS port is `6697` |
-| `ssl` | bool | yes | Use TLS encryption. Strongly recommended: `true`. If the server advertises an STS policy, Uplink enforces TLS automatically regardless of this setting. |
+| `port` | integer | yes | Server port. Standard ports: `6697` for TLS (recommended), `6667` for plain (unencrypted). |
+| `ssl` | bool | yes | Use TLS encryption. Set `true` for any public server — all modern networks support it. Set `false` only for plain connections: local test servers, LAN servers, some bouncers on localhost, or `.onion` addresses where the Tor tunnel provides its own encryption. If the server advertises an STS policy, Uplink enforces TLS automatically regardless of this setting. |
 | `nick` | string | yes | Your preferred nickname |
 | `user` | string | no | Username in your hostmask (defaults to `"uplink"`) |
 | `realname` | string | no | Shown in WHOIS (defaults to `"Uplink User"`) |
@@ -237,6 +237,60 @@ realname = "Uplink User"
 [[server.channel]]
 name = "#uplink"
 ```
+
+### Plain (unencrypted) connections
+
+Set `ssl = false` and use port `6667` (the standard plaintext IRC port) when the server does not support TLS. This is uncommon on public networks — most have supported TLS for years — but it comes up in a few scenarios:
+
+**Local test server** — an IRCd running on your own machine for development or testing:
+
+```toml
+[[server]]
+name = "Local test"
+host = "127.0.0.1"
+port = 6667
+ssl  = false
+nick = "yournick"
+```
+
+**LAN server** — a private IRC server on your home or office network that has no TLS certificate:
+
+```toml
+[[server]]
+name = "Home LAN"
+host = "192.168.1.10"
+port = 6667
+ssl  = false
+nick = "yournick"
+```
+
+**Bouncer on localhost** — some bouncers (ZNC, soju) are configured to listen locally without TLS, relying on the bouncer's own TLS for the upstream connection:
+
+```toml
+[[server]]
+name     = "ZNC local"
+host     = "127.0.0.1"
+port     = 6667
+ssl      = false
+nick     = "yournick"
+password = "username/network:password"
+bouncer  = "znc"
+```
+
+**Tor hidden service** — `.onion` IRC servers route traffic through Tor, which provides its own layer of encryption. Some `.onion` servers offer only a plain port:
+
+```toml
+[[server]]
+name       = "IRC over Tor"
+host       = "exampleonionaddress.onion"
+port       = 6667
+ssl        = false
+nick       = "yournick"
+proxy_host = "127.0.0.1"
+proxy_port = 9050
+```
+
+> **Note:** For any public server on the regular internet, use `ssl = true`. Sending your nick, password, and messages in plaintext exposes them to anyone on the network path.
 
 ---
 

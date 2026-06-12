@@ -68,6 +68,21 @@ Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack se
 ## Unreleased
 
 <!--
+SESSION SUMMARY — 2026-06-12 (ssl = false documentation)
+What changed:
+  - Added "Plain (unencrypted) connections" section to docs/configuration.md with four annotated
+    examples: local test server (127.0.0.1:6667), LAN bouncer, localhost bouncer, Tor .onion.
+  - Updated [[server]] reference table: port row now mentions 6667 alongside 6697; ssl row
+    now explains when false is appropriate and links to the new section.
+  - Added "When should I use ssl = false?" entry to docs/faq.md with a use-case table and
+    example config block.
+  - Updated docs/howto.html: the ssl = true note now also says when false is valid; Manage
+    Servers table rows updated for port and ssl.
+No regressions. No known issues.
+Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-12 (RPL_ENDOFWHO suppression)
 What changed:
   - Diagnosed repeated "End of /WHO list." spam in the server window on busy networks (Libera.chat).
@@ -113,6 +128,7 @@ Next priorities: ServerId/BufferId strong types; Preferences toggle for send but
 - Per-server `away_message` — set a default away message in config or via **Edit Server → Away Message**; used when you type `/away` with no argument (if unset, `/away` with no arg clears away status as before)
 - Per-server `disabled` flag — set `disabled = true` in a `[[server]]` block (or tick **Edit Server → Disabled**) to keep the server in config without connecting on startup; survives every config save (safe alternative to commenting out a server block, which gets permanently stripped on the next save)
 - `[profile]` block documented in `config.toml.example` — display name and avatar URL with full inline comments and usage examples
+- Docs: "Plain (unencrypted) connections" section in `configuration.md` — when `ssl = false` is appropriate, with four annotated examples (local test server, LAN, localhost bouncer, Tor .onion); `faq.md` "When should I use ssl = false?" entry with use-case table; `howto.html` Manage Servers table and ssl note updated to cover both cases
 
 <!--
 SESSION SUMMARY — 2026-06-12 (virtual scrolling blank view fix)

@@ -3889,10 +3889,15 @@ void MainWindow::loadOlderMessages()
     m_renderStart[key] = qMax(0, m_renderStart[key] - kRenderChunk);
     refreshChatView(host, ch, false);
 
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    sb->setValue(qMax(0, sb->maximum() - oldMax));
-
-    m_loadingOlder = false;
+    // Yield to Qt's event loop so the document layout completes and
+    // sb->maximum() reflects the actual content height before we restore
+    // the scroll position. Using processEvents here left maximum() stale
+    // (still 0 from the clear()), causing setValue(0) which blanked the view.
+    QTimer::singleShot(0, this, [this, sb, oldMax] {
+        const int delta = sb->maximum() - oldMax;
+        sb->setValue(qMax(1, delta)); // qMax(1,...) avoids re-triggering the at-top load
+        m_loadingOlder = false;
+    });
 }
 
 QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
