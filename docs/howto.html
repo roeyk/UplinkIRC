@@ -1558,7 +1558,7 @@ typing_indicator = true   # set to false to disable completely</pre>
         <tr><td><strong>Version</strong></td><td>Sends a CTCP VERSION request. The reply (client name and version) appears in the <strong>active channel</strong>. See <a href="#user-lookup">Looking up users</a>.</td></tr>
         <tr><td><strong>Ping</strong></td><td>Sends a CTCP PING with a millisecond timestamp. The round-trip time appears in the <strong>active channel</strong> as <em>Ping reply from nick: Xms</em>. See <a href="#user-lookup">Looking up users</a>.</td></tr>
         <tr><td><strong>Copy Nick</strong></td><td>Copies the nickname to the system clipboard — paste it into the input bar or anywhere else.</td></tr>
-        <tr><td><strong>Ignore / Unignore</strong></td><td>Suppress all messages (PRIVMSG, NOTICE, ACTION) from this nick. The label changes to <strong>Unignore</strong> if they are already on your ignore list. Persists in config.</td></tr>
+        <tr><td><strong>Ignore / Unignore</strong></td><td>Suppress private messages, notices, and invites from this nick. <strong>Channel messages are always visible</strong> — ignore only affects private communication. The label changes to <strong>Unignore</strong> if they are already on your ignore list. For per-type control (e.g. invites only), use <code>/ignore nick [pm] [notice] [invite]</code>. Persists in config.</td></tr>
         <tr><td><strong>Kick</strong></td><td>Prompts for an optional reason, then sends <code>KICK #channel nick :reason</code>. Requires op.</td></tr>
         <tr><td><strong>Ban</strong></td><td>Sets <code>MODE #channel +b nick!*@*</code> — bans the nick by name. Requires op.</td></tr>
         <tr><td><strong>Kick &amp; Ban</strong></td><td>Bans first, then kicks. Prompts for an optional reason. Requires op. Both actions are sent in the correct order.</td></tr>
@@ -1781,9 +1781,9 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
       <tr><td><code>/monitor list</code></td><td>Show your current watch list</td><td></td></tr>
       <tr><td><code>/monitor clear</code></td><td>Clear all watched nicks</td><td></td></tr>
       <tr><td><code>/monitor status</code></td><td>Request current online/offline status</td><td></td></tr>
-      <tr><td><code>/ignore nick</code></td><td>Suppress all messages from a nick</td><td><code>/ignore spammer</code></td></tr>
-      <tr><td><code>/unignore nick</code></td><td>Remove a nick from the ignore list</td><td><code>/unignore spammer</code></td></tr>
-      <tr><td><code>/ignored</code></td><td>List all ignored nicks</td><td></td></tr>
+      <tr><td><code>/ignore nick [pm] [notice] [invite]</code></td><td>Suppress private messages, notices, and/or invites from a nick — channel messages always visible. Omit flags to suppress all three.</td><td><code>/ignore spammer</code> / <code>/ignore recruiter invite</code></td></tr>
+      <tr><td><code>/unignore nick</code></td><td>Remove a nick from the ignore list entirely</td><td><code>/unignore spammer</code></td></tr>
+      <tr><td><code>/ignored</code></td><td>List ignored nicks and their active flags</td><td></td></tr>
       <tr><td><code>/ns text</code></td><td>Shortcut for <code>PRIVMSG NickServ</code></td><td><code>/ns identify pass</code></td></tr>
       <tr><td><code>/cs text</code></td><td>Shortcut for <code>PRIVMSG ChanServ</code></td><td><code>/cs op #uplink</code></td></tr>
       <tr><td><code>/away message</code></td><td>Set yourself away</td><td><code>/away at lunch</code></td></tr>
@@ -2172,20 +2172,39 @@ thanks al[Tab] →  thanks alice     (mid-line — no colon)
   <!-- IGNORE LIST -->
   <section id="ignore">
     <h2>Ignore list</h2>
-    <p>The ignore list suppresses all PRIVMSG, NOTICE, and ACTION messages from specific nicks — client-side. The ignored user does not know they are being ignored.</p>
+    <p>The ignore list suppresses specific types of private communication from a nick — client-side. The ignored user does not know they are being ignored. <strong>Channel messages are never blocked</strong> — you can ignore someone's PMs and invites while still seeing them talk in a channel.</p>
 
     <h3>Ignoring a nick</h3>
-    <p>Right-click their nick in the user list or chat view and choose <strong>Ignore</strong>. Or type:</p>
-    <pre>/ignore spammer</pre>
+    <p>Right-click their nick in the user list or chat view and choose <strong>Ignore</strong>. This suppresses private messages, private notices, and invites (all three by default).</p>
+    <p>For per-type control, use the slash command with optional flags:</p>
+    <pre>/ignore spammer              # suppress PMs, notices, and invites (default)
+/ignore recruiter invite     # suppress invites only — still see their messages
+/ignore spammer pm notice    # suppress PMs and notices, allow invites</pre>
+
+    <p>Available flags:</p>
+    <table>
+      <tr><th>Flag</th><th>What it blocks</th></tr>
+      <tr><td><code>pm</code></td><td>Private PRIVMSG and /me actions sent directly to you</td></tr>
+      <tr><td><code>notice</code></td><td>Private NOTICEs sent directly to you</td></tr>
+      <tr><td><code>invite</code></td><td>INVITE requests to channels</td></tr>
+    </table>
 
     <h3>Unignoring a nick</h3>
     <p>Right-click their nick — the menu shows <strong>Unignore</strong> when they are already on your list. Or type:</p>
     <pre>/unignore spammer</pre>
 
     <h3>Listing ignored nicks</h3>
-    <pre>/ignored</pre>
+    <pre>/ignored    # example output: spammer [pm,notice,invite], recruiter [invite]</pre>
 
-    <p>The ignore list is saved in <code>config.toml</code> under <code>[ignore] nicks = [...]</code> and is restored automatically on the next launch.</p>
+    <h3>Config format</h3>
+    <p>The ignore list is saved in <code>config.toml</code> and restored automatically on the next launch:</p>
+    <pre>[[ignore.entry]]
+nick  = "spammer"
+flags = ["pm", "notice", "invite"]
+
+[[ignore.entry]]
+nick  = "recruiter"
+flags = ["invite"]    # invites only — messages still visible</pre>
   </section>
 
   <!-- MONITOR -->
