@@ -199,6 +199,7 @@ private:
     bool         m_intentionalDisconnect{false};
     bool         m_stsUpgrade{false};
     bool         m_utf8Only{false};
+    bool         m_supportsWhox{false};
     int          m_reconnectDelay{5};
 
     QSet<QString>               m_requestedCaps;

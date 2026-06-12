@@ -449,8 +449,9 @@ void IrcClient::onDisconnected()
     m_ackedCaps.clear();
     m_capLsBuffer.clear();
     m_batches.clear();
-    m_saslPending = false;
-    m_registered  = false;
+    m_saslPending  = false;
+    m_registered   = false;
+    m_supportsWhox = false;
     emit disconnected(m_host);
     if (!m_stsUpgrade)
         scheduleReconnect();
@@ -1300,6 +1301,8 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             if (params[i].compare("UTF8ONLY", Qt::CaseInsensitive) == 0) {
                 m_utf8Only = true;
                 emit serverMessage(m_host, "UTF8ONLY: server enforces UTF-8 encoding");
+            } else if (params[i].compare("WHOX", Qt::CaseInsensitive) == 0) {
+                m_supportsWhox = true;
             }
         }
         emit serverMessage(m_host, trailing);
@@ -1371,7 +1374,10 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             emit namesReceived(m_host, channel, m_namesBuffer.take(channel.toLower()));
             emit namesDone(m_host, channel);
             sendRaw("MODE " + channel);
-            sendRaw("WHO " + channel + " %cnfa,42");
+            if (m_supportsWhox)
+                sendRaw("WHO " + channel + " %cnfa,42");
+            else
+                sendRaw("WHO " + channel);
             // Request chat history on join
             if (m_ackedCaps.contains("chathistory") || m_ackedCaps.contains("draft/chathistory"))
                 requestHistory(channel, 100);
