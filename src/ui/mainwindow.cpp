@@ -135,11 +135,9 @@ public:
     }
 
     QSize sizeHint(const QStyleOptionViewItem &option,
-                   const QModelIndex &index) const override
+                   const QModelIndex &) const override
     {
-        QSize s = QStyledItemDelegate::sizeHint(option, index);
-        s.setHeight(16);
-        return s;
+        return QSize(option.rect.width(), 16);
     }
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -1498,6 +1496,7 @@ void MainWindow::setupInputBar()
     m_sendBtn->setToolTip("Send");
     m_sendBtn->setIcon(MenuIcons::send({}, 26));
     m_sendBtn->setIconSize(QSize(26, 26));
+    m_sendBtn->setEnabled(false);
     connect(m_sendBtn, &QToolButton::clicked, this, &MainWindow::onInputSubmit);
 
     // Push text content left so it doesn't flow under the floating button
@@ -1610,6 +1609,7 @@ void MainWindow::setupInputBar()
 
     connect(m_input, &QPlainTextEdit::textChanged, this, [this]{
         const QString text = m_input->toPlainText();
+        m_sendBtn->setEnabled(!text.trimmed().isEmpty());
         checkEmojiAutocomplete(text);
         // Auto-resize: 1 to 4 lines
         const int lineH = m_input->fontMetrics().lineSpacing();
