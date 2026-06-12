@@ -3733,23 +3733,51 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
 
     menu.addSeparator();
 
-    if (m_model->isIgnored(nick)) {
-        connect(menu.addAction("Unignore"), &QAction::triggered, this, [this, host, nick]{
-            const QString key = nick.toLower();
-            m_model->clearIgnore(key);
-            m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
-            Config::save(m_config, Config::defaultPath());
-            m_model->localMessage(ServerId{host}, m_model->activeChannel(), "No longer ignoring " + key);
-        });
-    } else {
-        connect(menu.addAction("Ignore"), &QAction::triggered, this, [this, host, nick]{
-            const QString key = nick.toLower();
-            m_model->setIgnore(key);
-            m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
-            m_config.ignoreList.append({key, kIgnoreAll});
-            Config::save(m_config, Config::defaultPath());
-            m_model->localMessage(ServerId{host}, m_model->activeChannel(), "Now ignoring " + key);
-        });
+    {
+        const QString key = nick.toLower();
+        const IgnoreTypes curFlags = m_model->ignoreFlags(key);
+
+        auto *ignoreSub = new QMenu("Ignore", &menu);
+        ignoreSub->setIcon(MenuIcons::eyeOff());
+
+        auto makeTypeAction = [&](const QString &label, IgnoreType type) {
+            auto *act = ignoreSub->addAction(label);
+            act->setCheckable(true);
+            act->setChecked(bool(curFlags & type));
+            connect(act, &QAction::triggered, this, [this, host, key, type](bool checked) {
+                IgnoreTypes flags = m_model->ignoreFlags(key);
+                if (checked) flags |= type;
+                else         flags &= ~IgnoreTypes(type);
+                m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
+                if (flags) {
+                    m_model->setIgnore(key, flags);
+                    m_config.ignoreList.append({key, flags});
+                } else {
+                    m_model->clearIgnore(key);
+                    m_model->localMessage(ServerId{host}, m_model->activeChannel(),
+                                          "No longer ignoring " + key);
+                }
+                Config::save(m_config, Config::defaultPath());
+            });
+        };
+
+        makeTypeAction("Private Messages", IgnoreType::PM);
+        makeTypeAction("Notices",          IgnoreType::Notice);
+        makeTypeAction("Invites",          IgnoreType::Invite);
+
+        if (curFlags) {
+            ignoreSub->addSeparator();
+            connect(ignoreSub->addAction(MenuIcons::close(), "Unignore All"),
+                    &QAction::triggered, this, [this, host, key] {
+                m_model->clearIgnore(key);
+                m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
+                Config::save(m_config, Config::defaultPath());
+                m_model->localMessage(ServerId{host}, m_model->activeChannel(),
+                                      "No longer ignoring " + key);
+            });
+        }
+
+        menu.addMenu(ignoreSub);
     }
 
     menu.addSeparator();
