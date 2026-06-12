@@ -313,9 +313,16 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
     } else if (cmd == "/quote" || cmd == "/raw") {
         m_model->sendRaw(host, args);
     } else if (cmd == "/quit") {
-        if (auto *cl = m_model->clientFor(host)) cl->quit(args.isEmpty() ? "Uplink" : args);
+        if (auto *cl = m_model->clientFor(host)) cl->quit(args);
     } else if (cmd == "/away") {
-        m_model->sendRaw(host, args.isEmpty() ? "AWAY" : "AWAY :" + args);
+        if (args.isEmpty()) {
+            QString defMsg;
+            for (const auto &sc : std::as_const(m_config->servers))
+                if (sc.host == host) { defMsg = sc.awayMessage; break; }
+            m_model->sendRaw(host, defMsg.isEmpty() ? QStringLiteral("AWAY") : "AWAY :" + defMsg);
+        } else {
+            m_model->sendRaw(host, "AWAY :" + args);
+        }
     } else if (cmd == "/back") {
         m_model->sendRaw(host, "AWAY");
     } else if (cmd == "/setname") {

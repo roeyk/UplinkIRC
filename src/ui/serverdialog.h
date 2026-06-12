@@ -36,6 +36,9 @@ private:
     QComboBox *m_bouncerType;
     QLineEdit *m_bouncerNetwork;
     QLabel    *m_bouncerNetworkLabel{nullptr};
+    QCheckBox *m_disabled;
+    QLineEdit *m_quitMessage;
+    QLineEdit *m_awayMessage;
     QLineEdit *m_autoJoin;
     QLineEdit *m_proxyHost;
     QSpinBox  *m_proxyPort;

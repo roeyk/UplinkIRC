@@ -76,6 +76,9 @@ realname = "Uplink User"
 # proxy_pass        = ""               # optional: proxy password
 # ssl_fingerprint   = ""               # pin a self-signed cert SHA-256 fingerprint (set automatically on first connect)
 # websocket         = false            # connect via WebSocket (ws:// or wss://) instead of raw TCP
+# disabled          = false            # set to true to keep in config but skip on startup
+# quit_message      = "Later!"         # shown to others when you disconnect (default: "Uplink")
+# away_message      = "AFK"            # used by /away with no argument (default: clears away)
 
 [[server.channel]]
 name = "#uplink"
@@ -215,6 +218,9 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `proxy_pass` | string | no | SOCKS5 proxy password. Only needed if your proxy requires authentication. |
 | `ssl_fingerprint` | string | no | SHA-256 fingerprint of a pinned self-signed TLS certificate. Set automatically when you choose "Pin Certificate" on first connect. Once set, the connection is rejected if the certificate changes. |
 | `websocket` | bool | no | Connect via WebSocket instead of a raw TCP socket. When `ssl = true`, uses `wss://`; when `ssl = false`, uses `ws://`. Useful for servers behind web infrastructure (e.g. The Lounge). Defaults to `false`. |
+| `quit_message` | string | no | Message broadcast to the server when you disconnect or type `/quit` with no argument. Defaults to `"Uplink"` when omitted or blank. You can always override it for a single disconnect with `/quit <message>`. |
+| `away_message` | string | no | Default away message sent when you type `/away` with no argument. When omitted or blank, `/away` with no argument clears your away status instead. You can still override for a single session with `/away <message>`. Use `/back` to return from away. |
+| `disabled` | bool | no | When `true`, the server block is kept in `config.toml` and written back on every save, but Uplink skips it completely on startup — no connection attempt, no sidebar entry. Toggle from **☰ → Manage Servers → Edit → Disabled** checkbox. Defaults to `false`. |
 
 ### Minimal server block
 
@@ -665,6 +671,130 @@ avatar_url   = "/home/alice/Pictures/avatar.png"
 ```
 
 > **Note:** `draft/metadata-2` is supported by [Ergo](https://ergo.chat/) and [soju](https://soju.im/). Most traditional networks (Libera, OFTC) do not support it. Uplink silently skips publishing if the server does not advertise the capability.
+
+---
+
+## Disabling a server
+
+Set `disabled = true` in a server block to keep it in your config without connecting to it on startup. The server block is preserved and written back on every save — nothing is lost.
+
+```toml
+[[server]]
+disabled = true
+name     = "Libera"
+host     = "irc.libera.chat"
+port     = 6697
+ssl      = true
+nick     = "yournick"
+channels = "#linux"
+```
+
+This is the safe alternative to commenting out a `[[server]]` block. Commented-out entries are not parsed by Uplink and will be **permanently removed** the next time the app writes the config file. `disabled = true` is the correct way to temporarily skip a server.
+
+**GUI:** Open **☰ → Manage Servers → Edit** and tick the **Disabled** checkbox at the top of the dialog. Uncheck it to re-enable the server — it will connect immediately.
+
+**Re-enabling:** Remove the `disabled = true` line (or set it to `false`) and reload the config with **☰ → Reload Config**, or use the GUI checkbox.
+
+---
+
+## Quit message and away message
+
+Each server block can have its own `quit_message` and `away_message`. Both are optional and work independently.
+
+### `quit_message`
+
+The message sent to the server when you disconnect — visible to other users in the channel as `*** yournick has quit (your message here)`.
+
+```toml
+[[server]]
+name         = "LinuxDojo"
+host         = "irc.linuxdojo.org"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+quit_message = "Later!"
+```
+
+**Defaults to `"Uplink"`** when omitted or left blank.
+
+You can also set it per-disconnect using `/quit`:
+
+```
+/quit                       # uses the configured quit_message (or "Uplink")
+/quit Heading to bed        # uses "Heading to bed" just this once
+```
+
+**GUI:** Open **☰ → Manage Servers → Edit** and fill in **Quit Message** in the Identity section.
+
+---
+
+### `away_message`
+
+The message sent to the server when you type `/away` with no argument. Other users who send you a message while you are away receive the away reply automatically.
+
+```toml
+[[server]]
+name         = "LinuxDojo"
+host         = "irc.linuxdojo.org"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+away_message = "Away from keyboard — back soon"
+```
+
+**When omitted or blank:** `/away` with no argument clears your away status (same as `/back`).
+
+**When set:** `/away` with no argument sets you away using the configured message.
+
+You can still pass a one-off message to override it:
+
+```
+/away                             # uses configured away_message (or clears away if none set)
+/away Back in 30 minutes          # uses "Back in 30 minutes" just this once
+/back                             # always clears away status regardless of config
+```
+
+**GUI:** Open **☰ → Manage Servers → Edit** and fill in **Away Message** in the Identity section.
+
+---
+
+### Full example with both
+
+```toml
+[[server]]
+name         = "LinuxDojo"
+host         = "irc.linuxdojo.org"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+user         = "uplink"
+realname     = "Uplink User"
+quit_message = "Later!"
+away_message = "Away from keyboard — back soon"
+channels     = "#uplink, #linux"
+```
+
+Different servers can have different messages:
+
+```toml
+[[server]]
+name         = "LinuxDojo"
+host         = "irc.linuxdojo.org"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+quit_message = "Later!"
+away_message = "AFK"
+
+[[server]]
+name         = "Libera"
+host         = "irc.libera.chat"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+quit_message = "Disconnecting"
+away_message = "Away from keyboard"
+```
 
 ---
 

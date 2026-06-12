@@ -79,9 +79,17 @@ No regressions. No known issues.
 Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
 -->
 
+### Added
+
+- Per-server `quit_message` — set a custom QUIT message in config or via **Edit Server → Quit Message**; used when you disconnect or type `/quit` with no argument (falls back to `"Uplink"`)
+- Per-server `away_message` — set a default away message in config or via **Edit Server → Away Message**; used when you type `/away` with no argument (if unset, `/away` with no arg clears away status as before)
+- Per-server `disabled` flag — set `disabled = true` in a `[[server]]` block (or tick **Edit Server → Disabled**) to keep the server in config without connecting on startup; survives every config save (safe alternative to commenting out a server block, which gets permanently stripped on the next save)
+- `[profile]` block documented in `config.toml.example` — display name and avatar URL with full inline comments and usage examples
+
 ### Fixed
 
 - `RPL_ENDOFWHO` (315) is now suppressed from the server window — eliminates repeated "End of /WHO list." noise on busy networks like Libera.chat
+- Auto-join placeholder text in Add/Edit Server dialog now shows the correct comma-separated format (`#uplink, #linux, #archlinux`)
 
 <!--
 SESSION SUMMARY — 2026-06-12 (v0.25.19 release)

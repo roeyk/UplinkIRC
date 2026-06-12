@@ -1,5 +1,5 @@
-# NodeRelay configuration example
-# Copy to ~/.config/noderelay/config.toml and set your nick.
+# Uplink configuration example
+# Copy to ~/.config/uplink/config.toml and fill in your nickname.
 # This file is created automatically on first launch if it does not exist.
 #
 # Passwords (password, sasl_password, nickserv_password) are stored in your
@@ -13,28 +13,75 @@ show_topic        = true                # show the topic bar at the top
 show_emoji_button = false               # show emoji button (picker coming soon)
 colored_nicks     = true                # give each nick a unique color
 
+# ─── Profile ──────────────────────────────────────────────────────────────────
+#
+# Your display name and avatar are published via IRCv3 draft/metadata-2 to every
+# server you connect to that supports it (Ergo, soju, and others).
+# Other users see them in the nick list tooltip.
+#
+# You can set these here OR from the GUI:
+#   ☰ → Preferences → Profile → fill in Display Name / Avatar URL → Apply
+#
+# You can also set them on the fly with slash commands:
+#   /displayname Alice Smith
+#   /avatar https://example.com/me.png
+#   /avatar /home/alice/Pictures/avatar.png   (local path — shown only to you)
+#   /displayname                              (blank arg = clear)
+#   /avatar                                   (blank arg = clear)
+#
+# Requires draft/metadata-2 support. On servers without it, these values are
+# silently skipped — nothing breaks.
+
+[profile]
+display_name = "Alice Smith"                    # friendly name shown in nick tooltip
+avatar_url   = "https://example.com/avatar.png" # https:// URL or /local/path.png
+
+# ─── Servers ──────────────────────────────────────────────────────────────────
+
 [[server]]
+# disabled = true                   # uncomment to keep this server in config but skip it on startup
 name     = "LinuxDojo"            # display name in the sidebar
 host     = "irc.linuxdojo.org"    # server hostname
 port     = 6697                   # 6697 = standard TLS port
 ssl      = true                   # always use TLS
 nick     = "yournick"             # change this to your nickname
 user     = "uplink"               # username in your hostmask
-realname = "NodeRelay User"       # shown in WHOIS
+realname = "Uplink User"          # shown in WHOIS
 channels = "#uplink, #linux"      # channels to join on connect (comma-separated)
+
+# quit_message — sent to the server when you disconnect or type /quit with no argument.
+# Leave blank (or omit) to use the default: "Uplink".
+# Override for a single disconnect: /quit See you later
+quit_message = "Later!"
+
+# away_message — sent when you type /away with no argument.
+# Leave blank (or omit) and /away with no arg will clear your away status instead.
+# You can always override it: /away Back in 10 minutes
+# To return from away: /back
+away_message = "Away from keyboard"
 
 # Optional: server password (used for bouncers like ZNC or soju)
 # password = "joe/network:mypassword"
 
-# --- Multiple servers ---
+# Optional: SASL authentication
+# sasl_user     = "yournick"
+# sasl_password = "yourpassword"
+
+# Optional: NickServ IDENTIFY on connect (use SASL if the server supports it)
+# nickserv_password = "yourpassword"
+
+# ─── Multiple servers ─────────────────────────────────────────────────────────
 # Add more [[server]] blocks to connect to additional networks.
 
 # [[server]]
-# name     = "Libera"
-# host     = "irc.libera.chat"
-# port     = 6697
-# ssl      = true
-# nick     = "yournick"
-# user     = "uplink"
-# realname = "NodeRelay User"
-# channels = "#linux, #archlinux"
+# disabled     = true               # uncomment to keep this server but not connect on startup
+# name         = "Libera"
+# host         = "irc.libera.chat"
+# port         = 6697
+# ssl          = true
+# nick         = "yournick"
+# user         = "uplink"
+# realname     = "Uplink User"
+# channels     = "#linux, #archlinux"
+# quit_message = "Disconnecting"
+# away_message = "brb"

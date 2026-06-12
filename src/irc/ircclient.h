@@ -24,7 +24,7 @@ public:
     ~IrcClient() override;
 
     void connectToServer(const ServerConfig &cfg);
-    void quit(const QString &reason = "Uplink");
+    void quit(const QString &reason = {});
     void abort();
     void reconnect();
     void setPinnedFingerprint(const QString &fp) { m_pinnedFingerprint = fp; }
@@ -191,6 +191,7 @@ private:
     quint16      m_proxyPort{1080};
     QString      m_proxyUser;
     QString      m_proxyPass;
+    QString      m_quitMessage;
 
     QTimer      *m_reconnectTimer{nullptr};
     QTimer      *m_pingTimer{nullptr};

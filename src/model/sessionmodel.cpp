@@ -87,7 +87,8 @@ void SessionModel::loadConfig(const Config &cfg)
     for (const QString &n : cfg.ignoredNicks)
         m_ignoredNicks.insert(n.toLower());
     for (const ServerConfig &sc : cfg.servers)
-        spawnSession(sc, false);
+        if (!sc.disabled)
+            spawnSession(sc, false);
 }
 
 void SessionModel::ignoreNick(const QString &nick)
@@ -208,6 +209,10 @@ void SessionModel::logMessage(const QString &host, const QString &target, const 
 
 void SessionModel::addServer(const ServerConfig &sc)
 {
+    if (sc.disabled) {
+        m_config.servers.append(sc);
+        return;
+    }
     spawnSession(sc, true);
 }
 

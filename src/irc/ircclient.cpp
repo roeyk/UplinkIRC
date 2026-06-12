@@ -88,6 +88,7 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_proxyPass           = cfg.proxyPass;
     m_pinnedFingerprint   = cfg.pinnedFingerprint;
     m_useWs               = cfg.websocket;
+    m_quitMessage         = cfg.quitMessage;
 
     if (m_useWs) {
         if (!m_wsSocket) {
@@ -218,7 +219,9 @@ void IrcClient::quit(const QString &reason)
 {
     m_intentionalDisconnect = true;
     m_reconnectTimer->stop();
-    sendRaw("QUIT :" + reason);
+    const QString msg = !reason.isEmpty() ? reason
+                        : (!m_quitMessage.isEmpty() ? m_quitMessage : QStringLiteral("Uplink"));
+    sendRaw("QUIT :" + msg);
     sockDisconnect();
 }
 

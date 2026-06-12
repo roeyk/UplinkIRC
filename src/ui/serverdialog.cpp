@@ -19,6 +19,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     setWindowTitle("Add Server");
     setMinimumWidth(380);
 
+    m_disabled = new QCheckBox("Disabled — keep in config but do not connect on startup");
     m_name     = new QLineEdit;
     m_host     = new QLineEdit;
     m_host->setPlaceholderText("irc.example.org");
@@ -69,16 +70,24 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
     form->addRow(makeHeader("Connection"));
+    form->addRow("",         m_disabled);
     form->addRow("Name:",    m_name);
     form->addRow("Host:",    m_host);
     form->addRow("Port:",    m_port);
     form->addRow("",         m_ssl);
     form->addRow("",         m_websocket);
 
+    m_quitMessage = new QLineEdit;
+    m_quitMessage->setPlaceholderText("Uplink  (default — leave blank to use this)");
+    m_awayMessage = new QLineEdit;
+    m_awayMessage->setPlaceholderText("e.g. Gone fishing — used by /away with no argument");
+
     form->addRow(makeHeader("Identity"));
-    form->addRow("Nick:",      m_nick);
-    form->addRow("Username:",  m_user);
-    form->addRow("Real Name:", m_realname);
+    form->addRow("Nick:",         m_nick);
+    form->addRow("Username:",     m_user);
+    form->addRow("Real Name:",    m_realname);
+    form->addRow("Quit Message:", m_quitMessage);
+    form->addRow("Away Message:", m_awayMessage);
 
     auto makeBrowseRow = [](QLineEdit *edit, const QString &filter, QWidget *pw) {
         auto *row    = new QWidget(pw);
@@ -105,7 +114,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     form->addRow("NickServ:",        m_nickservPassword);
 
     m_autoJoin = new QLineEdit;
-    m_autoJoin->setPlaceholderText("#channel1,#channel2");
+    m_autoJoin->setPlaceholderText("#uplink, #linux, #archlinux");
 
     m_bouncerType = new QComboBox;
     m_bouncerType->addItem("None",  static_cast<int>(BouncerType::None));
@@ -176,6 +185,7 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     : ServerDialog(parent)
 {
     setWindowTitle("Edit Server");
+    m_disabled->setChecked(existing.disabled);
     m_name->setText(existing.name);
     m_host->setText(existing.host);
     m_port->setValue(existing.port);
@@ -184,6 +194,8 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     m_nick->setText(existing.nick);
     m_user->setText(existing.user);
     m_realname->setText(existing.realname);
+    m_quitMessage->setText(existing.quitMessage);
+    m_awayMessage->setText(existing.awayMessage);
     static const QString kSentinel = QStringLiteral("<keychain>");
     static const QString kPlaceholder = QStringLiteral("Stored in keychain — type to change, clear to remove");
     auto setupPw = [&](QLineEdit *field, const QString &value, bool &flag) {
@@ -213,6 +225,7 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
 ServerConfig ServerDialog::serverConfig() const
 {
     ServerConfig sc;
+    sc.disabled         = m_disabled->isChecked();
     sc.name             = m_name->text().trimmed();
     sc.host             = m_host->text().trimmed();
     sc.port             = static_cast<quint16>(m_port->value());
@@ -221,6 +234,8 @@ ServerConfig ServerDialog::serverConfig() const
     sc.nick             = m_nick->text().trimmed();
     sc.user             = m_user->text().trimmed();
     sc.realname         = m_realname->text().trimmed();
+    sc.quitMessage      = m_quitMessage->text().trimmed();
+    sc.awayMessage      = m_awayMessage->text().trimmed();
     static const QString kSentinel = QStringLiteral("<keychain>");
     auto resolvePw = [&](QLineEdit *field, bool wasKeychain) {
         return (field->text().isEmpty() && wasKeychain) ? kSentinel : field->text();

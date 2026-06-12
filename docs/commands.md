@@ -116,7 +116,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | Command | Description |
 |---|---|
 | `/nick <name>` | Change your nickname |
-| `/away [message]` | Set yourself as away with an optional message |
+| `/away [message]` | Set yourself as away. If no message is given, uses the server's configured `away_message`; if that is also unset, clears away status (same as `/back`) |
 | `/back` | Clear your away status |
 | `/whois <nick>` | Look up info about a user — reply appears in the active channel |
 | `/whowas <nick>` | Query history for a departed nick — shows last known user@host and realname |
@@ -130,7 +130,8 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 ```
 /nick coolnick
 /away grabbing coffee
-/back
+/away                    # uses configured away_message, or clears away if none set
+/back                    # always clears away regardless of config
 /whois alice
 /whowas alice
 /setname Alice Smith
@@ -148,7 +149,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 
 | Command | Description |
 |---|---|
-| `/quit [message]` | Disconnect from the current server with an optional quit message |
+| `/quit [message]` | Disconnect from the current server. If no message is given, uses the server's configured `quit_message` (default: `"Uplink"`) |
 | `/motd [server]` | Request the message of the day |
 | `/list` | Open the channel browser — a sortable dialog showing all channels with user count and topic; type to filter, double-click or press Join to join |
 | `/stats <query>` | Request server statistics — `u`=uptime, `o`=opers, `m`=commands |
@@ -158,8 +159,8 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 ### Examples
 
 ```
-/quit
-/quit later everyone
+/quit                    # uses configured quit_message (default: "Uplink")
+/quit later everyone     # overrides for this disconnect only
 /motd
 /list
 /stats u
