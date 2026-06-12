@@ -1558,7 +1558,7 @@ typing_indicator = true   # set to false to disable completely</pre>
         <tr><td><strong>Version</strong></td><td>Sends a CTCP VERSION request. The reply (client name and version) appears in the <strong>active channel</strong>. See <a href="#user-lookup">Looking up users</a>.</td></tr>
         <tr><td><strong>Ping</strong></td><td>Sends a CTCP PING with a millisecond timestamp. The round-trip time appears in the <strong>active channel</strong> as <em>Ping reply from nick: Xms</em>. See <a href="#user-lookup">Looking up users</a>.</td></tr>
         <tr><td><strong>Copy Nick</strong></td><td>Copies the nickname to the system clipboard — paste it into the input bar or anywhere else.</td></tr>
-        <tr><td><strong>Ignore / Unignore</strong></td><td>Suppress private messages, notices, and invites from this nick. <strong>Channel messages are always visible</strong> — ignore only affects private communication. The label changes to <strong>Unignore</strong> if they are already on your ignore list. For per-type control (e.g. invites only), use <code>/ignore nick [pm] [notice] [invite]</code>. Persists in config.</td></tr>
+        <tr><td><strong>Ignore ▶</strong></td><td>Opens a submenu with three checkboxes: <strong>Private Messages</strong>, <strong>Notices</strong>, and <strong>Invites</strong>. Tick or untick each independently. <strong>Channel messages are always visible</strong> regardless of what is checked. If any type is active, an <strong>Unignore All</strong> option appears at the bottom of the submenu to clear everything at once. Changes take effect immediately and persist in config.</td></tr>
         <tr><td><strong>Kick</strong></td><td>Prompts for an optional reason, then sends <code>KICK #channel nick :reason</code>. Requires op.</td></tr>
         <tr><td><strong>Ban</strong></td><td>Sets <code>MODE #channel +b nick!*@*</code> — bans the nick by name. Requires op.</td></tr>
         <tr><td><strong>Kick &amp; Ban</strong></td><td>Bans first, then kicks. Prompts for an optional reason. Requires op. Both actions are sent in the correct order.</td></tr>
@@ -2174,23 +2174,24 @@ thanks al[Tab] →  thanks alice     (mid-line — no colon)
     <h2>Ignore list</h2>
     <p>The ignore list suppresses specific types of private communication from a nick — client-side. The ignored user does not know they are being ignored. <strong>Channel messages are never blocked</strong> — you can ignore someone's PMs and invites while still seeing them talk in a channel.</p>
 
-    <h3>Ignoring a nick</h3>
-    <p>Right-click their nick in the user list or chat view and choose <strong>Ignore</strong>. This suppresses private messages, private notices, and invites (all three by default).</p>
-    <p>For per-type control, use the slash command with optional flags:</p>
-    <pre>/ignore spammer              # suppress PMs, notices, and invites (default)
-/ignore recruiter invite     # suppress invites only — still see their messages
-/ignore spammer pm notice    # suppress PMs and notices, allow invites</pre>
-
-    <p>Available flags:</p>
+    <h3>Ignoring a nick — right-click menu</h3>
+    <p>Right-click any nick in the user list or chat view and hover over <strong>Ignore ▶</strong>. A submenu opens with three independent checkboxes:</p>
     <table>
-      <tr><th>Flag</th><th>What it blocks</th></tr>
-      <tr><td><code>pm</code></td><td>Private PRIVMSG and /me actions sent directly to you</td></tr>
-      <tr><td><code>notice</code></td><td>Private NOTICEs sent directly to you</td></tr>
-      <tr><td><code>invite</code></td><td>INVITE requests to channels</td></tr>
+      <tr><th>Checkbox</th><th>What it blocks</th></tr>
+      <tr><td><strong>Private Messages</strong></td><td>Private PRIVMSG and <code>/me</code> actions sent directly to you</td></tr>
+      <tr><td><strong>Notices</strong></td><td>Private NOTICEs sent directly to you</td></tr>
+      <tr><td><strong>Invites</strong></td><td>INVITE requests to channels</td></tr>
     </table>
+    <p>Tick or untick each type independently. Changes take effect immediately. If any type is active, <strong>Unignore All</strong> appears at the bottom of the submenu to clear everything at once.</p>
+
+    <h3>Ignoring a nick — slash command</h3>
+    <p>You can also use <code>/ignore</code> with optional type flags for the same control from the keyboard:</p>
+    <pre>/ignore spammer              # suppress PMs, notices, and invites (default: all three)
+/ignore recruiter invite     # invites only — still see their messages in chat
+/ignore spammer pm notice    # PMs and notices, but allow invites</pre>
 
     <h3>Unignoring a nick</h3>
-    <p>Right-click their nick — the menu shows <strong>Unignore</strong> when they are already on your list. Or type:</p>
+    <p>Open the <strong>Ignore ▶</strong> submenu and untick individual types, or choose <strong>Unignore All</strong> to clear everything. Or type:</p>
     <pre>/unignore spammer</pre>
 
     <h3>Listing ignored nicks</h3>

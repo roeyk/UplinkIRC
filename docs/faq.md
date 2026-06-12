@@ -555,9 +555,9 @@ Click **☰ → Manage Servers...** to open the server manager. You do not need 
 
 ### How do I ignore someone?
 
-Right-click their nick in the user list or chat view and choose **Ignore**. Their private messages, private notices, and invites will be silently suppressed. **Channel messages are always visible** — ignore only affects private communication, so you can silence someone's PMs and invites while still seeing them talk in a channel.
+Right-click their nick in the user list or chat view and hover over **Ignore ▶**. A submenu opens with three checkboxes — **Private Messages**, **Notices**, and **Invites** — tick or untick each independently. **Channel messages are always visible** — ignore only affects private communication, so you can silence someone's PMs and invites while still seeing them talk in a channel.
 
-To unignore, right-click their nick again — the menu will show **Unignore** instead.
+To unignore individual types, untick them in the submenu. To clear everything at once, choose **Unignore All** at the bottom of the submenu.
 
 For per-type control, use slash commands:
 
@@ -755,7 +755,7 @@ Right-click any nick — in the user list or directly on a nick link in the chat
 | **Version** | CTCP VERSION request (reply in server window) |
 | **Ping** | CTCP PING — shows round-trip time in the active buffer |
 | **Copy Nick** | Copy the nickname to clipboard |
-| **Ignore / Unignore** | Suppress (or restore) all messages from this nick. Persists across sessions. |
+| **Ignore ▶** | Opens a submenu with checkboxes for Private Messages, Notices, and Invites. Tick/untick independently. Unignore All clears everything. Persists across sessions. |
 | **Kick** | Kick from current channel with optional reason (requires op) |
 | **Ban** | Ban `nick!*@*` in current channel (requires op) |
 | **Kick & Ban** | Ban then kick in the correct order (requires op) |

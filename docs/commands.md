@@ -296,7 +296,7 @@ Right-clicking any nick — in the user list or directly on a nick link in the c
 | **Version** | Sends a CTCP VERSION request. Reply appears in the active channel. |
 | **Ping** | Sends a CTCP PING. Reply shows RTT in the active buffer: `Ping reply from nick: Xms`. |
 | **Copy Nick** | Copies the nickname to the clipboard. |
-| **Ignore / Unignore** | Suppresses private messages, notices, and invites from this nick. Channel messages are always visible — ignore only affects private communication. The label toggles to **Unignore** if the nick is already ignored. For per-type control, use `/ignore nick [pm] [notice] [invite]` in the input bar. Persists in config. |
+| **Ignore ▶** | Opens a submenu with three checkboxes: **Private Messages**, **Notices**, **Invites**. Tick or untick each independently. Channel messages are always visible. If any type is active, **Unignore All** appears at the bottom. For keyboard control use `/ignore nick [pm] [notice] [invite]`. Persists in config. |
 | **Kick** | Prompts for an optional reason, then kicks. Requires op. |
 | **Ban** | Sets `MODE #channel +b nick!*@*`. Requires op. |
 | **Kick & Ban** | Bans first, then kicks (correct order). Prompts for reason. Requires op. |
