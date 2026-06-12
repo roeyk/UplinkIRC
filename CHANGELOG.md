@@ -67,6 +67,18 @@ Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack se
 
 ## Unreleased
 
+<!--
+SESSION SUMMARY — 2026-06-12 (WHOX fallback / v0.25.18 release)
+What changed:
+  - Diagnosed "Unknown command" error reported by AppImage user (KE0VVT) on Rizon.
+  - Root cause: IrcClient sent WHO #channel %cnfa,42 (WHOX) unconditionally on every channel join. Rizon's IRCd does not support WHOX and returns 421 ERR_UNKNOWNCOMMAND, displayed as "!! Unknown command" by Uplink.
+  - Fix: parse the WHOX token from RPL_ISUPPORT (005); gate the WHOX query behind m_supportsWhox; fall back to plain WHO on servers that don't advertise it. Reset m_supportsWhox in onDisconnected().
+  - Released v0.25.18. All CI passed (CI + Release + Pages workflows green).
+  - Docs updated: ircv3.md WHOX section, faq.md WHO scan entry, howto.html WHOX table cell.
+No regressions. No known issues.
+Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack session audit.
+-->
+
 ## v0.25.18
 
 ### Fixed
