@@ -68,6 +68,21 @@ Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack se
 ## Unreleased
 
 <!--
+SESSION SUMMARY — 2026-06-12 (ServerId/BufferId strong types)
+What changed:
+  - Added src/model/ids.h: ServerId and BufferId wrapper types with explicit construction,
+    .str() accessor, comparison operators, and qHash overloads.
+  - Refactored SessionModel public API (all public methods and signals) to use ServerId/BufferId
+    instead of const QString &. IrcClient stays as const QString & internally; conversion happens
+    in lambda wrappers in SessionModel::attachClient().
+  - Updated commanddispatcher.h/.cpp, mainwindow.cpp, trayicon.h/.cpp to wrap or adapt at
+    every call site. About 500 lines touched across 7 files.
+  - Clean build. No double-wrapping issues.
+No regressions. No known issues.
+Next priorities: Preferences toggle for send button; further audit findings.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-12 (ssl = false documentation)
 What changed:
   - Added "Plain (unencrypted) connections" section to docs/configuration.md with four annotated
@@ -121,6 +136,10 @@ What changed:
 No regressions. No known issues.
 Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
 -->
+
+### Changed
+
+- `SessionModel` public API now uses strong `ServerId` / `BufferId` wrapper types instead of `const QString &` — passing a plain `QString` where a server host or channel name is expected is a compile error; accidental argument swaps at call sites are caught at build time
 
 ### Added
 
