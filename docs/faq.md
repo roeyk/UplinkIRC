@@ -1055,6 +1055,16 @@ rm -f ~/.config/uplink/uplink.conf
 
 Then relaunch. The window will clamp itself to the available screen area.
 
+### Why does a busy channel always have a scrollbar?
+
+Uplink renders only the most recent 150 messages when you switch to a channel. If a channel has more than 150 messages buffered, the chat view will be scrollable even before you type or receive anything — this is intentional, not a bug.
+
+Scroll to the very top to load the previous 50 messages. Keep scrolling up to go further back, up to the 500-message buffer limit.
+
+Quiet channels with fewer than 150 messages show no scrollbar until content fills the view.
+
+---
+
 ### Where does Uplink store window geometry and layout?
 
 Window geometry, sidebar width, splitter positions, and pane layout are saved in:
