@@ -67,6 +67,18 @@ Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack se
 
 ## Unreleased
 
+<!--
+SESSION SUMMARY — 2026-06-12 (RPL_ENDOFWHO suppression)
+What changed:
+  - Diagnosed repeated "End of /WHO list." spam in the server window on busy networks (Libera.chat).
+  - Root cause: numeric 315 (RPL_ENDOFWHO) fell through to the default handler, which emits any
+    non-empty trailing as a serverMessage. 352 and 354 were already handled silently.
+  - Fix: added case 315: break; in IrcClient::handleNumeric, matching the pattern of 333 (RPL_TOPICWHOTIME).
+  - One-line change, verified in-app — no WHO spam in server window.
+No regressions. No known issues.
+Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
+-->
+
 ### Fixed
 
 - `RPL_ENDOFWHO` (315) is now suppressed from the server window — eliminates repeated "End of /WHO list." noise on busy networks like Libera.chat
