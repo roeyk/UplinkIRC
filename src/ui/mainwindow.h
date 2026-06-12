@@ -101,7 +101,8 @@ private:
 
     void switchToChannel(const QString &host, const QString &channel);
     void openChannelList(const QString &host);
-    void refreshChatView(const QString &host, const QString &channel);
+    void refreshChatView(const QString &host, const QString &channel, bool resetToLatest = true);
+    void loadOlderMessages();
     void refreshNickList(const QString &host, const QString &channel);
     void scheduleNickRefresh(const QString &host, const QString &channel);
     void refreshTopicBar(const QString &host, const QString &channel);
@@ -220,6 +221,8 @@ private:
     QHash<QString, QSet<QString>> m_typingNicks;       // "host|channel" → nicks
     QHash<QString, QTimer*>       m_typingNickTimers;  // "host|channel|nick" → timeout
     QHash<QString, int>           m_botIconIdx;        // lowercased nick → 0 (robot) or 1 (alien)
+    QHash<QString, int>           m_renderStart;       // "host\tchannel" → first rendered msg index
+    bool                          m_loadingOlder{false};
 
     // Avatar image cache
     QNetworkAccessManager        *m_avatarNam{nullptr};

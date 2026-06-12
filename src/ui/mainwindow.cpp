@@ -286,6 +286,8 @@ static constexpr int kDefaultWindowW  = 900;
 static constexpr int kDefaultWindowH  = 650;
 static constexpr int kInputHistoryCap = 100;
 static constexpr int kMaxExtraPanes   = 3;
+static constexpr int kRenderWindow    = 150; // messages rendered per channel view
+static constexpr int kRenderChunk     = 50;  // messages loaded per scroll-to-top
 
 
 // Clips all child widgets to a rounded rect via a bitmap mask.
@@ -1316,6 +1318,11 @@ void MainWindow::setupChatArea()
     m_chatView->viewport()->setMouseTracking(true);
     m_chatView->viewport()->installEventFilter(this);
     m_chatView->installEventFilter(this);
+
+    connect(m_chatView->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int val) {
+        if (val == 0 && !m_loadingOlder)
+            loadOlderMessages();
+    });
 
     connect(m_linkPreview, &LinkPreview::titleReady, this, [this](const QUrl &url, const QString &title){
         if (url.toString() != m_hoveredUrl) return;
@@ -3772,11 +3779,18 @@ void MainWindow::processPreviewQueue()
     m_linkPreview->fetch(m_previewQueue.dequeue());
 }
 
-void MainWindow::refreshChatView(const QString &host, const QString &channel)
+void MainWindow::refreshChatView(const QString &host, const QString &channel, bool resetToLatest)
 {
     m_chatView->clear();
     auto *ch = m_model->channel(host, channel);
     if (!ch) return;
+
+    const QString   key   = host + '\t' + channel;
+    const qsizetype total = ch->messages.size();
+
+    if (resetToLatest || !m_renderStart.contains(key))
+        m_renderStart[key] = static_cast<int>(qMax(qsizetype(0), total - kRenderWindow));
+    const int startIdx = m_renderStart.value(key, 0);
 
     static const QRegularExpression urlRe(
         R"(https?://[^\s<>"]+)",
@@ -3795,8 +3809,15 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
     const bool hangIndent = m_config.ui.hangingIndent;
     const int  emojiPt    = m_config.ui.fontSizes.emoji;
 
+    if (startIdx > 0) {
+        insertHtmlBlock(m_chatView,
+            QStringLiteral("<center><small style='color:#888888'>"
+                           "&#x2500;&#x2500; %1 older messages &#x2500;&#x2500;"
+                           "</small></center>").arg(startIdx));
+    }
+
     const QString selfNick = m_model->selfNick(host);
-    for (int i = 0; i < ch->messages.size(); ) {
+    for (int i = startIdx; i < ch->messages.size(); ) {
         const auto &msg = ch->messages[i];
         if (isCondensable(msg, selfNick)) {
             // Collect consecutive condensable messages on the same day
@@ -3842,10 +3863,36 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
         }
     }
 
-    QTimer::singleShot(0, this, [this]{
-        auto *sb = m_chatView->verticalScrollBar();
-        sb->setValue(sb->maximum());
-    });
+    if (resetToLatest) {
+        QTimer::singleShot(0, this, [this]{
+            auto *sb = m_chatView->verticalScrollBar();
+            sb->setValue(sb->maximum());
+        });
+    }
+}
+
+void MainWindow::loadOlderMessages()
+{
+    if (m_loadingOlder) return;
+    const QString host = m_model->activeHost();
+    const QString ch   = m_model->activeChannel();
+    if (host.isEmpty() || ch.isEmpty()) return;
+
+    const QString key = host + '\t' + ch;
+    if (!m_renderStart.contains(key) || m_renderStart[key] == 0) return;
+
+    m_loadingOlder = true;
+
+    auto *sb = m_chatView->verticalScrollBar();
+    const int oldMax = sb->maximum();
+
+    m_renderStart[key] = qMax(0, m_renderStart[key] - kRenderChunk);
+    refreshChatView(host, ch, false);
+
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    sb->setValue(qMax(0, sb->maximum() - oldMax));
+
+    m_loadingOlder = false;
 }
 
 QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
