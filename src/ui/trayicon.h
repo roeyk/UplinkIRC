@@ -1,5 +1,6 @@
 #pragma once
 
+#include "model/ids.h"
 #include <QSystemTrayIcon>
 #include <QMenu>
 
@@ -20,9 +21,9 @@ public:
 
 private slots:
     void onActivated(QSystemTrayIcon::ActivationReason reason);
-    void onServerConnected(const QString &host);
-    void onServerDisconnected(const QString &host);
-    void onUnreadChanged(const QString &host, const QString &channel, int count);
+    void onServerConnected(ServerId host);
+    void onServerDisconnected(ServerId host);
+    void onUnreadChanged(ServerId host, BufferId channel, int count);
 
 private:
     void buildMenu();

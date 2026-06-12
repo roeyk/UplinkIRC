@@ -73,7 +73,7 @@ void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
     sess.host = sc.host;
     sess.nick = sc.nick;
     m_sessions.append(sess);
-    emit serverAdded(sc.host);
+    emit serverAdded(ServerId{sc.host});
 
     auto *client = new IrcClient(this);
     attachClient(client, sc);
@@ -106,41 +106,41 @@ bool SessionModel::isIgnored(const QString &nick) const
     return m_ignoredNicks.contains(nick.toLower());
 }
 
-void SessionModel::sendReact(const QString &host, const QString &target,
+void SessionModel::sendReact(ServerId host, BufferId target,
                               const QString &msgid, const QString &emoji)
 {
-    if (auto *cl = clientFor(host))
-        cl->sendReact(target, msgid, emoji);
+    if (auto *cl = clientFor(ServerId{host}))
+        cl->sendReact(target.str(), msgid, emoji);
 }
 
-void SessionModel::sendRedact(const QString &host, const QString &target,
+void SessionModel::sendRedact(ServerId host, BufferId target,
                                const QString &msgid, const QString &reason)
 {
-    if (auto *cl = clientFor(host))
-        cl->sendRedact(target, msgid, reason);
+    if (auto *cl = clientFor(ServerId{host}))
+        cl->sendRedact(target.str(), msgid, reason);
 }
 
-void SessionModel::monitorAdd(const QString &host, const QString &nick)
+void SessionModel::monitorAdd(ServerId host, const QString &nick)
 {
-    if (auto *cl = clientFor(host))
+    if (auto *cl = clientFor(ServerId{host}))
         cl->monitorAdd(nick);
 }
 
-void SessionModel::monitorRemove(const QString &host, const QString &nick)
+void SessionModel::monitorRemove(ServerId host, const QString &nick)
 {
-    if (auto *cl = clientFor(host))
+    if (auto *cl = clientFor(ServerId{host}))
         cl->monitorRemove(nick);
 }
 
-void SessionModel::monitorClear(const QString &host)
+void SessionModel::monitorClear(ServerId host)
 {
-    if (auto *cl = clientFor(host))
+    if (auto *cl = clientFor(ServerId{host}))
         cl->monitorClear();
 }
 
-void SessionModel::monitorStatus(const QString &host)
+void SessionModel::monitorStatus(ServerId host)
 {
-    if (auto *cl = clientFor(host))
+    if (auto *cl = clientFor(ServerId{host}))
         cl->monitorStatus();
 }
 
@@ -216,21 +216,21 @@ void SessionModel::addServer(const ServerConfig &sc)
     spawnSession(sc, true);
 }
 
-void SessionModel::removeServer(const QString &host)
+void SessionModel::removeServer(ServerId host)
 {
     for (int i = 0; i < m_clients.size(); ++i) {
-        if (m_clients[i]->host() == host) {
+        if (m_clients[i]->host() == host.str()) {
             m_clients[i]->quit("Removed");
             m_clients[i]->deleteLater();
             m_clients.removeAt(i);
             break;
         }
     }
-    m_sessions.removeIf([&](const ServerSession &s){ return s.host == host; });
-    m_config.servers.removeIf([&](const ServerConfig &s){ return s.host == host; });
+    m_sessions.removeIf([&](const ServerSession &s){ return s.host == host.str(); });
+    m_config.servers.removeIf([&](const ServerConfig &s){ return s.host == host.str(); });
     emit serverDisconnected(host);
 
-    const QString hostSeg = "/" + sanitizeFilename(host) + "/";
+    const QString hostSeg = "/" + sanitizeFilename(host.str()) + "/";
     for (auto it = m_logFiles.begin(); it != m_logFiles.end(); ) {
         if (it.key().contains(hostSeg)) {
             it.value()->close();
@@ -242,7 +242,7 @@ void SessionModel::removeServer(const QString &host)
     }
 }
 
-void SessionModel::updateServer(const QString &oldHost, const ServerConfig &sc)
+void SessionModel::updateServer(ServerId oldHost, const ServerConfig &sc)
 {
     removeServer(oldHost);
     addServer(sc);
@@ -260,23 +260,23 @@ void SessionModel::syncServers(const QList<ServerConfig> &servers)
     }
 }
 
-void SessionModel::closeBuffer(const QString &host, const QString &target)
+void SessionModel::closeBuffer(ServerId host, BufferId target)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
 
-    const bool isChannel = target.startsWith('#') || target.startsWith('&');
+    const bool isChannel = target.str().startsWith('#') || target.str().startsWith('&');
     if (isChannel) {
         for (IrcClient *cl : m_clients)
-            if (cl->host() == host) { cl->part(target); break; }
+            if (cl->host() == host.str()) { cl->part(target.str()); break; }
     }
 
-    sess->channels.remove(target.toLower());
+    sess->channels.remove(target.str().toLower());
 
     const QString logPath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
                             + "/.config/uplink/logs/"
-                            + sanitizeFilename(host) + "/"
-                            + sanitizeFilename(target) + ".log";
+                            + sanitizeFilename(host.str()) + "/"
+                            + sanitizeFilename(target.str()) + ".log";
     if (auto *f = m_logFiles.take(logPath)) {
         f->close();
         delete f;
@@ -285,54 +285,54 @@ void SessionModel::closeBuffer(const QString &host, const QString &target)
     emit channelRemoved(host, target);
 }
 
-ServerSession *SessionModel::session(const QString &host)
+ServerSession *SessionModel::session(ServerId host)
 {
     for (auto &s : m_sessions)
-        if (s.host == host) return &s;
+        if (s.host == host.str()) return &s;
     return nullptr;
 }
 
-Channel *SessionModel::channel(const QString &host, const QString &name)
+Channel *SessionModel::channel(ServerId host, BufferId name)
 {
-    auto *s = session(host);
-    return s ? s->get(name) : nullptr;
+    auto *s = session(ServerId{host});
+    return s ? s->get(name.str()) : nullptr;
 }
 
-IrcClient *SessionModel::clientFor(const QString &host)
+IrcClient *SessionModel::clientFor(ServerId host)
 {
     for (IrcClient *cl : m_clients)
-        if (cl->host() == host) return cl;
+        if (cl->host() == host.str()) return cl;
     return nullptr;
 }
 
-void SessionModel::openPM(const QString &host, const QString &nick)
+void SessionModel::openPM(ServerId host, const QString &nick)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess || nick.isEmpty() || nick.startsWith('#') || nick.startsWith('&')) return;
     const bool isNew = !sess->get(nick);
     sess->getOrCreate(nick);
     if (isNew)
-        emit channelAdded(host, nick);
+        emit channelAdded(host, BufferId{nick});
 }
 
-void SessionModel::sendMessage(const QString &host, const QString &target, const QString &text,
+void SessionModel::sendMessage(ServerId host, BufferId target, const QString &text,
                                const QString &replyToMsgid)
 {
-    auto *cl = clientFor(host);
+    auto *cl = clientFor(ServerId{host});
     if (!cl) return;
     if (text.contains('\n'))
-        cl->sendMultiline(target, text, replyToMsgid);
+        cl->sendMultiline(target.str(), text, replyToMsgid);
     else
-        cl->privmsg(target, text, replyToMsgid);
+        cl->privmsg(target.str(), text, replyToMsgid);
     // Open a PM tab for outgoing private messages
-    const bool isPM = !target.startsWith('#') && !target.startsWith('&')
-                      && !target.startsWith('!') && target != "(server)";
-    if (isPM) openPM(host, target);
+    const bool isPM = !target.str().startsWith('#') && !target.str().startsWith('&')
+                      && !target.str().startsWith('!') && target.str() != "(server)";
+    if (isPM) openPM(host, target.str());
     if (!cl->hasCap("echo-message")) {
-        auto *sess = session(host);
+        auto *sess = session(ServerId{host});
         if (sess) {
             QString display = text;
-            if (target.compare("NickServ", Qt::CaseInsensitive) == 0) {
+            if (target.str().compare("NickServ", Qt::CaseInsensitive) == 0) {
                 const QString svcCmd = text.section(' ', 0, 0).toUpper();
                 static const QStringList pwdCmds = {
                     "IDENTIFY", "REGISTER", "GHOST", "RECOVER", "RELEASE", "REGAIN", "SETPASS"
@@ -340,70 +340,70 @@ void SessionModel::sendMessage(const QString &host, const QString &target, const
                 if (pwdCmds.contains(svcCmd))
                     display = svcCmd + " <redacted>";
             }
-            postMessage(host, target, Message::make(MessageType::Privmsg, sess->nick, display));
+            postMessage(host.str(), target.str(), Message::make(MessageType::Privmsg, sess->nick, display));
         }
     }
 }
 
-void SessionModel::sendRaw(const QString &host, const QString &line)
+void SessionModel::sendRaw(ServerId host, const QString &line)
 {
-    auto *cl = clientFor(host);
+    auto *cl = clientFor(ServerId{host});
     if (cl) cl->sendRaw(line);
 }
 
-void SessionModel::localMessage(const QString &host, const QString &target, const QString &text)
+void SessionModel::localMessage(ServerId host, BufferId target, const QString &text)
 {
-    postMessage(host, target, Message::make(MessageType::Server, "", text));
+    postMessage(host.str(), target.str(), Message::make(MessageType::Server, "", text));
 }
 
-QString SessionModel::selfNick(const QString &host)
+QString SessionModel::selfNick(ServerId host)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     return sess ? sess->nick : QString{};
 }
 
-bool SessionModel::hasMention(const QString &host, const QString &ch)
+bool SessionModel::hasMention(ServerId host, BufferId ch)
 {
     auto *c = channel(host, ch);
     return c && c->mentions > 0;
 }
 
-void SessionModel::sendJoin(const QString &host, const QString &channel, const QString &key)
+void SessionModel::sendJoin(ServerId host, BufferId channel, const QString &key)
 {
-    auto *cl = clientFor(host);
-    if (cl) cl->join(channel, key);
+    auto *cl = clientFor(ServerId{host});
+    if (cl) cl->join(channel.str(), key);
 }
 
-void SessionModel::sendPart(const QString &host, const QString &channel, const QString &reason)
+void SessionModel::sendPart(ServerId host, BufferId channel, const QString &reason)
 {
-    auto *cl = clientFor(host);
-    if (cl) cl->part(channel, reason);
+    auto *cl = clientFor(ServerId{host});
+    if (cl) cl->part(channel.str(), reason);
 }
 
-void SessionModel::sendNick(const QString &host, const QString &nick)
+void SessionModel::sendNick(ServerId host, const QString &nick)
 {
-    auto *cl = clientFor(host);
+    auto *cl = clientFor(ServerId{host});
     if (cl) cl->setNick(nick);
 }
 
-void SessionModel::sendAction(const QString &host, const QString &target, const QString &text)
+void SessionModel::sendAction(ServerId host, BufferId target, const QString &text)
 {
-    auto *cl = clientFor(host);
+    auto *cl = clientFor(ServerId{host});
     if (!cl) return;
-    cl->privmsg(target, "\x01""ACTION " + text + "\x01");
+    cl->privmsg(target.str(), "\x01""ACTION " + text + "\x01");
     if (!cl->hasCap("echo-message")) {
-        if (auto *sess = session(host))
-            postMessage(host, target, Message::make(MessageType::Action, sess->nick, text));
+        if (auto *sess = session(ServerId{host}))
+            postMessage(host.str(), target.str(), Message::make(MessageType::Action, sess->nick, text));
     }
 }
 
-void SessionModel::sendTyping(const QString &host, const QString &channel, const QString &state)
+void SessionModel::sendTyping(ServerId host, BufferId channel, const QString &state)
 {
-    if (auto *cl = clientFor(host))
-        cl->sendTyping(channel, state);
+    if (auto *cl = clientFor(ServerId{host}))
+        cl->sendTyping(channel.str(), state);
 }
 
-void SessionModel::setActive(const QString &host, const QString &ch)
+void SessionModel::setActive(ServerId host, BufferId ch)
 {
     m_activeHost    = host;
     m_activeChannel = ch;
@@ -454,7 +454,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     });
     connect(cl, &IrcClient::readMarkerReceived, this,
             [this](const QString &host, const QString &target, const QDateTime &ts){
-        if (auto *ch = channel(host, target))
+        if (auto *ch = channel(ServerId{host}, BufferId{target}))
             ch->lastRead = ts;
     });
     connect(cl, &IrcClient::userJoined,      this, &SessionModel::onUserJoined);
@@ -475,36 +475,63 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::ctcpPingReply,     this, &SessionModel::onCtcpPingReply);
     connect(cl, &IrcClient::ctcpTimeReply,   this, &SessionModel::onCtcpTimeReply);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
-    connect(cl, &IrcClient::typingReceived,  this, &SessionModel::typingReceived);
-    connect(cl, &IrcClient::dccSendReceived,         this, &SessionModel::dccSendReceived);
-    connect(cl, &IrcClient::dccPassiveOfferReceived, this, &SessionModel::dccPassiveOfferReceived);
-    connect(cl, &IrcClient::dccPassiveSendReply,     this, &SessionModel::dccPassiveSendReply);
-    connect(cl, &IrcClient::sslFingerprintPrompt,    this, &SessionModel::sslFingerprintPrompt);
+    connect(cl, &IrcClient::typingReceived, this,
+            [this](const QString &h, const QString &ch, const QString &nick, const QString &state){
+        emit typingReceived(ServerId{h}, BufferId{ch}, nick, state);
+    });
+    connect(cl, &IrcClient::dccSendReceived, this,
+            [this](const QString &h, const QString &nick, const QString &fn,
+                   quint32 ip, quint16 port, qint64 fs){
+        emit dccSendReceived(ServerId{h}, nick, fn, ip, port, fs);
+    });
+    connect(cl, &IrcClient::dccPassiveOfferReceived, this,
+            [this](const QString &h, const QString &nick, const QString &fn,
+                   quint32 ip, qint64 fs, const QString &tok){
+        emit dccPassiveOfferReceived(ServerId{h}, nick, fn, ip, fs, tok);
+    });
+    connect(cl, &IrcClient::dccPassiveSendReply, this,
+            [this](const QString &h, const QString &nick, const QString &fn,
+                   quint32 ip, quint16 port, qint64 fs, const QString &tok){
+        emit dccPassiveSendReply(ServerId{h}, nick, fn, ip, port, fs, tok);
+    });
+    connect(cl, &IrcClient::sslFingerprintPrompt, this,
+            [this](const QString &h, const QString &fp){
+        emit sslFingerprintPrompt(ServerId{h}, fp);
+    });
+    connect(cl, &IrcClient::pingRtt, this,
+            [this](const QString &h, int ms){ emit pingRtt(ServerId{h}, ms); });
+    connect(cl, &IrcClient::reconnecting, this,
+            [this](const QString &h){ emit serverReconnecting(ServerId{h}); });
+    connect(cl, &IrcClient::channelListEntry, this,
+            [this](const QString &h, const QString &ch, int users, const QString &topic){
+        emit channelListEntry(ServerId{h}, BufferId{ch}, users, topic);
+    });
+    connect(cl, &IrcClient::channelListEnd, this,
+            [this](const QString &h, int total){ emit channelListEnd(ServerId{h}, total); });
     connect(cl, &IrcClient::hostChanged,     this, &SessionModel::onHostChanged);
     connect(cl, &IrcClient::reactReceived,   this, &SessionModel::onReactReceived);
-    connect(cl, &IrcClient::pingRtt,         this, &SessionModel::pingRtt);
-    connect(cl, &IrcClient::reconnecting,    this, &SessionModel::serverReconnecting);
     connect(cl, &IrcClient::accountChanged,  this, &SessionModel::onAccountChanged);
     connect(cl, &IrcClient::messageRedacted, this, &SessionModel::onMessageRedacted);
     connect(cl, &IrcClient::inviteNotify,    this, &SessionModel::onInviteNotify);
     connect(cl, &IrcClient::setNameReceived, this, &SessionModel::onSetNameReceived);
     connect(cl, &IrcClient::monitorOnline,   this, &SessionModel::onMonitorOnline);
     connect(cl, &IrcClient::monitorOffline,  this, &SessionModel::onMonitorOffline);
-    connect(cl, &IrcClient::channelListEntry, this, &SessionModel::channelListEntry);
-    connect(cl, &IrcClient::channelListEnd,   this, &SessionModel::channelListEnd);
-    connect(cl, &IrcClient::userMetaChanged,  this, &SessionModel::onUserMetaChanged);
+    connect(cl, &IrcClient::userMetaChanged, this,
+            [this](const QString &h, const QString &nick, const QString &key, const QString &val){
+        onUserMetaChanged(ServerId{h}, nick, key, val);
+    });
 
     if (!m_config.monitorList.isEmpty())
         cl->setMonitorList(m_config.monitorList);
 
     // Pre-create server buffer and configured channels in the session
-    auto *sess = session(cfg.host);
+    auto *sess = session(ServerId{cfg.host});
     if (!sess) return;
     sess->serverBuffer(); // ensure "(server)" exists
     for (const auto &ch : cfg.channels) {
         auto &c  = sess->getOrCreate(ch.name);
         c.name   = ch.name;
-        emit channelAdded(cfg.host, ch.name);
+        emit channelAdded(ServerId{cfg.host}, BufferId{ch.name});
     }
 }
 
@@ -514,7 +541,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
 
 void SessionModel::postMessage(const QString &host, const QString &target, const Message &msg)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
 
     auto &ch = sess->getOrCreate(target);
@@ -523,7 +550,7 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     if (m_config.ui.logMessages)
         logMessage(host, target, msg);
 
-    const bool isActive = (host == m_activeHost && target.compare(m_activeChannel, Qt::CaseInsensitive) == 0);
+    const bool isActive = (host == m_activeHost.str() && target.compare(m_activeChannel.str(), Qt::CaseInsensitive) == 0);
     const bool countsAsUnread = msg.type == MessageType::Privmsg
         || (msg.type == MessageType::Notice && target == "(server)");
     if (!isActive && !msg.isHistory && countsAsUnread) {
@@ -532,9 +559,9 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
             ++ch.mentions;
     }
 
-    emit messageAdded(host, target, msg);
+    emit messageAdded(ServerId{host}, BufferId{target}, msg);
     if (!isActive && !msg.isHistory && countsAsUnread)
-        emit unreadChanged(host, target, ch.unread);
+        emit unreadChanged(ServerId{host}, BufferId{target}, ch.unread);
 }
 
 // ---------------------------------------------------------------------------
@@ -547,10 +574,10 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
 
 void SessionModel::onConnected(const QString &host)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     sess->connected = true;
-    emit serverConnected(host);
+    emit serverConnected(ServerId{host});
 
     // Auto-join configured channels
     for (const ServerConfig &sc : m_config.servers) {
@@ -568,7 +595,7 @@ void SessionModel::onConnected(const QString &host)
 
 void SessionModel::onDisconnected(const QString &host)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     sess->connected = false;
     // Clear all nick lists
@@ -576,7 +603,7 @@ void SessionModel::onDisconnected(const QString &host)
         ch.nicks.clear();
         ch.nickIndex.clear();
     }
-    emit serverDisconnected(host);
+    emit serverDisconnected(ServerId{host});
     postMessage(host, "(server)", Message::make(MessageType::Server, "", "Disconnected."));
 }
 
@@ -591,13 +618,13 @@ void SessionModel::onMessage(const QString &host, const QString &target,
                              const QString &msgid, const QString &replyTo)
 {
     if (isIgnored(nick)) return;
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     const bool isSelf = sess && (nick.toLower() == sess->nick.toLower());
     const bool isPM = !target.startsWith('#') && !target.startsWith('&')
                       && !target.startsWith('!');
     const QString pmNick = isSelf ? target : nick;
     const QString buf = isPM ? pmNick : target;
-    if (isPM && !isHistory) openPM(host, pmNick);
+    if (isPM && !isHistory) openPM(ServerId{host}, pmNick);
     QString account;
     if (auto *ch = sess ? sess->get(buf) : nullptr) {
         const auto it = ch->nickIndex.constFind(nick.toLower());
@@ -622,7 +649,7 @@ void SessionModel::onNotice(const QString &host, const QString &target,
                             const QString &msgid, const QString &replyTo)
 {
     if (isIgnored(nick)) return;
-    auto *sess2 = session(host);
+    auto *sess2 = session(ServerId{host});
     QString dest;
     if (target.startsWith('#') || target.startsWith('&')) {
         dest = target;
@@ -646,7 +673,7 @@ void SessionModel::onAction(const QString &host, const QString &target,
                             const QString &msgid)
 {
     if (isIgnored(nick)) return;
-    auto *sessA = session(host);
+    auto *sessA = session(ServerId{host});
     QString actionAccount;
     if (auto *ch = sessA ? sessA->get(target) : nullptr) {
         const auto it = ch->nickIndex.constFind(nick.toLower());
@@ -658,7 +685,7 @@ void SessionModel::onAction(const QString &host, const QString &target,
 
 void SessionModel::onUserJoined(const QString &host, const QString &channel, const QString &nick)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     auto &ch = sess->getOrCreate(channel);
     if (ch.name.isEmpty()) ch.name = channel;
@@ -666,13 +693,13 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
     const bool isSelf = sess->nick.toLower() == nick.toLower();
     if (isSelf) {
         ch.joined = true;
-        emit channelAdded(host, channel);
+        emit channelAdded(ServerId{host}, BufferId{channel});
     }
     ch.addNick(nick);
-    emit nickAdded(host, channel, nick);
+    emit nickAdded(ServerId{host}, BufferId{channel}, nick);
 
     if (!isSelf)
-        sendRaw(host, "WHO " + nick + " %cnfa,42");
+        sendRaw(ServerId{host}, "WHO " + nick + " %cnfa,42");
 
     postMessage(host, channel, Message::make(MessageType::Join, nick,
         isSelf ? "You joined " + channel : nick + " joined"));
@@ -681,7 +708,7 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
 void SessionModel::onUserParted(const QString &host, const QString &channel,
                                 const QString &nick, const QString &reason)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     auto *ch = sess->get(channel);
 
@@ -690,10 +717,10 @@ void SessionModel::onUserParted(const QString &host, const QString &channel,
         ch->joined = false;
         ch->nicks.clear();
         ch->nickIndex.clear();
-        emit nickListChanged(host, channel);
+        emit nickListChanged(ServerId{host}, BufferId{channel});
     } else if (ch) {
         ch->removeNick(nick);
-        emit nickRemoved(host, channel, nick);
+        emit nickRemoved(ServerId{host}, BufferId{channel}, nick);
     }
     postMessage(host, channel, Message::make(MessageType::Part, nick,
         reason.isEmpty() ? nick + " left" : nick + " left (" + reason + ")"));
@@ -701,12 +728,12 @@ void SessionModel::onUserParted(const QString &host, const QString &channel,
 
 void SessionModel::onUserQuit(const QString &host, const QString &nick, const QString &reason)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     for (auto &ch : sess->channels) {
         if (!ch.nickIndex.contains(nick.toLower())) continue;
         ch.removeNick(nick);
-        emit nickRemoved(host, ch.name, nick);
+        emit nickRemoved(ServerId{host}, BufferId{ch.name}, nick);
         postMessage(host, ch.name, Message::make(MessageType::Quit, nick,
             reason.isEmpty() ? nick + " quit" : nick + " quit (" + reason + ")"));
     }
@@ -714,7 +741,7 @@ void SessionModel::onUserQuit(const QString &host, const QString &nick, const QS
 
 void SessionModel::onNetsplitDetected(const QString &host, const QString &servers, const QStringList &nicks)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
 
     QSet<QString> lowerNicks;
@@ -728,7 +755,7 @@ void SessionModel::onNetsplitDetected(const QString &host, const QString &server
             if (ch.nickIndex.contains(ln)) ++lost;
         if (lost == 0) continue;
         ch.removeNicks(lowerNicks);
-        emit nickListChanged(host, ch.name);
+        emit nickListChanged(ServerId{host}, BufferId{ch.name});
         const QString text = QString("Netsplit: %1 user%2 lost (%3)")
             .arg(lost).arg(lost == 1 ? "" : "s").arg(servers);
         postMessage(host, ch.name, Message::make(MessageType::Quit, QString(), text));
@@ -738,7 +765,7 @@ void SessionModel::onNetsplitDetected(const QString &host, const QString &server
 void SessionModel::onNetjoinDetected(const QString &host, const QString &servers,
                                      const QStringList &channels, const QStringList &nicks)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     QHash<QString, int> counts;
     for (int i = 0; i < channels.size(); ++i) {
@@ -750,7 +777,7 @@ void SessionModel::onNetjoinDetected(const QString &host, const QString &servers
         counts[channel]++;
     }
     for (auto it = counts.cbegin(); it != counts.cend(); ++it) {
-        emit nickListChanged(host, it.key());
+        emit nickListChanged(ServerId{host}, BufferId{it.key()});
         const int n = it.value();
         const QString text = QString("Netjoin: %1 user%2 returned (%3)")
             .arg(n).arg(n == 1 ? "" : "s").arg(servers);
@@ -760,12 +787,12 @@ void SessionModel::onNetjoinDetected(const QString &host, const QString &servers
 
 void SessionModel::onNickChanged(const QString &host, const QString &oldNick, const QString &newNick)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     for (auto &ch : sess->channels) {
         if (!ch.nickIndex.contains(oldNick.toLower())) continue;
         ch.renameNick(oldNick, newNick);
-        emit nickRenamed(host, ch.name, oldNick, newNick);
+        emit nickRenamed(ServerId{host}, BufferId{ch.name}, oldNick, newNick);
         postMessage(host, ch.name, Message::make(MessageType::Nick, oldNick,
             oldNick + " is now known as " + newNick, {}, false, {}, newNick));
     }
@@ -774,12 +801,12 @@ void SessionModel::onNickChanged(const QString &host, const QString &oldNick, co
 void SessionModel::onKicked(const QString &host, const QString &channel,
                             const QString &nick, const QString &by, const QString &reason)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     auto *ch = sess->get(channel);
     if (ch) {
         ch->removeNick(nick);
-        emit nickRemoved(host, channel, nick);
+        emit nickRemoved(ServerId{host}, BufferId{channel}, nick);
         postMessage(host, channel, Message::make(MessageType::Kick, nick,
             nick + " was kicked by " + by + (reason.isEmpty() ? "" : " (" + reason + ")")));
     }
@@ -787,11 +814,11 @@ void SessionModel::onKicked(const QString &host, const QString &channel,
 
 void SessionModel::onTopicReceived(const QString &host, const QString &channel, const QString &topic)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     auto &ch = sess->getOrCreate(channel);
     ch.topic = topic;
-    emit topicChanged(host, channel, topic);
+    emit topicChanged(ServerId{host}, BufferId{channel}, topic);
 }
 
 static void parseBotModes(const QString &modeStr, QSet<QString> &botSet, bool isChannel)
@@ -838,7 +865,7 @@ static QChar modeToPrefix(QChar m)
 
 void SessionModel::onModesReceived(const QString &host, const QString &channel, const QString &modes)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
 
     const bool isChannel = channel.startsWith('#') || channel.startsWith('&');
@@ -873,10 +900,10 @@ void SessionModel::onModesReceived(const QString &host, const QString &channel, 
             }
             std::sort(ch->nicks.begin(), ch->nicks.end());
             ch->rebuildNickIndex();
-            emit nickListChanged(host, channel);
+            emit nickListChanged(ServerId{host}, BufferId{channel});
         }
         postMessage(host, channel, Message::make(MessageType::Server, "", "Mode " + channel + " " + modes));
-        emit modesChanged(host, channel);
+        emit modesChanged(ServerId{host}, BufferId{channel});
     } else {
         // User mode — check for +B/-B on this nick
         const QString &modeStr = modes;
@@ -891,23 +918,23 @@ void SessionModel::onModesReceived(const QString &host, const QString &channel, 
         }
         // Also update all channel nick lists so the display refreshes
         for (auto &ch : sess->channels)
-            emit nickListChanged(host, ch.name);
+            emit nickListChanged(ServerId{host}, BufferId{ch.name});
     }
 }
 
 void SessionModel::onNamesReceived(const QString &host, const QString &channel, const QStringList &nicks)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     auto &ch = sess->getOrCreate(channel);
     ch.setNicks(nicks);
-    emit nickListChanged(host, channel);
+    emit nickListChanged(ServerId{host}, BufferId{channel});
 }
 
 void SessionModel::onWhoEntry(const QString &host, const QString &channel,
                               const QString &nick, const QString &flags)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     auto *ch = sess->get(channel);
     if (!ch) return;
@@ -921,7 +948,7 @@ void SessionModel::onWhoEntry(const QString &host, const QString &channel,
     if (isBot) ch->botNicks.insert(key);
     else        ch->botNicks.remove(key);
 
-    emit nickListChanged(host, channel);
+    emit nickListChanged(ServerId{host}, BufferId{channel});
 }
 
 void SessionModel::onServerMessage(const QString &host, const QString &text)
@@ -931,31 +958,31 @@ void SessionModel::onServerMessage(const QString &host, const QString &text)
 
 void SessionModel::onErrorMessage(const QString &host, const QString &text)
 {
-    const QString target = (host == m_activeHost && !m_activeChannel.isEmpty())
-        ? m_activeChannel : "(server)";
+    const QString target = (host == m_activeHost.str() && !m_activeChannel.isEmpty())
+        ? m_activeChannel.str() : "(server)";
     postMessage(host, target, Message::make(MessageType::Error, "", text));
 }
 
 void SessionModel::onStandardReply(const QString &host, const QString &channel,
                                    const QString &severity, const QString &text)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     // Post to the named channel if we're in it, else active channel / server buffer
     QString target;
     if (!channel.isEmpty() && sess->get(channel))
         target = channel;
     else
-        target = (host == m_activeHost && !m_activeChannel.isEmpty())
-                 ? m_activeChannel : "(server)";
+        target = (host == m_activeHost.str() && !m_activeChannel.isEmpty())
+                 ? m_activeChannel.str() : "(server)";
     const MessageType type = (severity == "FAIL") ? MessageType::Error : MessageType::Server;
     postMessage(host, target, Message::make(type, "", text));
 }
 
 void SessionModel::onContextualMessage(const QString &host, const QString &text)
 {
-    const QString target = (host == m_activeHost && !m_activeChannel.isEmpty())
-        ? m_activeChannel : "(server)";
+    const QString target = (host == m_activeHost.str() && !m_activeChannel.isEmpty())
+        ? m_activeChannel.str() : "(server)";
     postMessage(host, target, Message::make(MessageType::Server, "", text));
 }
 
@@ -964,35 +991,35 @@ void SessionModel::onCtcpPingReply(const QString &host, const QString &nick, qin
     const QString text = rttMs >= 0
         ? QString("Ping reply from %1: %2ms").arg(nick).arg(rttMs)
         : QString("Ping reply from %1").arg(nick);
-    const QString target = (host == m_activeHost && !m_activeChannel.isEmpty())
-        ? m_activeChannel : "(server)";
+    const QString target = (host == m_activeHost.str() && !m_activeChannel.isEmpty())
+        ? m_activeChannel.str() : "(server)";
     postMessage(host, target, Message::make(MessageType::Server, "", text));
 }
 
 void SessionModel::onCtcpTimeReply(const QString &host, const QString &nick, const QString &timeStr)
 {
     const QString text = QString("Time reply from %1: %2").arg(nick, timeStr);
-    const QString target = (host == m_activeHost && !m_activeChannel.isEmpty())
-        ? m_activeChannel : "(server)";
+    const QString target = (host == m_activeHost.str() && !m_activeChannel.isEmpty())
+        ? m_activeChannel.str() : "(server)";
     postMessage(host, target, Message::make(MessageType::Server, "", text));
 }
 
 void SessionModel::onSelfNickChanged(const QString &host, const QString &nick)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (sess) {
         sess->nick = nick;
         sess->mentionRe = nick.isEmpty() ? QRegularExpression{}
             : QRegularExpression("\\b" + QRegularExpression::escape(nick) + "\\b",
                                  QRegularExpression::CaseInsensitiveOption);
     }
-    emit selfNickChanged(host, nick);
+    emit selfNickChanged(ServerId{host}, nick);
 }
 
 void SessionModel::onHostChanged(const QString &host, const QString &nick,
                                   const QString &newUser, const QString &newHost)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     const QString text = nick + " changed host (" + newUser + "@" + newHost + ")";
     for (auto &ch : sess->channels) {
@@ -1008,7 +1035,7 @@ void SessionModel::onReactReceived(const QString &host, const QString &target,
     if (msgid.isEmpty() || emoji.isEmpty()) return;
     const bool isChannel = target.startsWith('#') || target.startsWith('&');
     const QString buf = isChannel ? target : nick;
-    auto *ch = channel(host, buf);
+    auto *ch = channel(ServerId{host}, BufferId{buf});
     if (!ch) return;
 
     // Drop reactions for messages that have already rolled off the buffer.
@@ -1023,42 +1050,42 @@ void SessionModel::onReactReceived(const QString &host, const QString &target,
     if (!perEmoji.contains(emoji) && perEmoji.size() >= kMaxEmojis) return;
     if (perEmoji[emoji].size() >= kMaxNicks) return;
     perEmoji[emoji].insert(nick);
-    emit reactionsChanged(host, buf, msgid);
+    emit reactionsChanged(ServerId{host}, BufferId{buf}, msgid);
 }
 
 void SessionModel::onAccountChanged(const QString &host, const QString &nick,
                                      const QString &account)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     for (auto &ch : sess->channels) {
         ch.setNickAccount(nick, account);
         if (ch.nickIndex.contains(nick.toLower()))
-            emit nickListChanged(host, ch.name);
+            emit nickListChanged(ServerId{host}, BufferId{ch.name});
     }
     // If this nick has no avatar yet and the server supports metadata, request it.
     const QString lower = nick.toLower();
     const bool noAvatar = !sess->nickMeta.contains(lower)
                        || sess->nickMeta[lower].avatarUrl.isEmpty();
     if (noAvatar) {
-        if (auto *cl = clientFor(host)) {
+        if (auto *cl = clientFor(ServerId{host})) {
             if (cl->hasCap("draft/metadata-2"))
-                sendRaw(host, "METADATA " + nick + " GET avatar display-name");
+                sendRaw(ServerId{host}, "METADATA " + nick + " GET avatar display-name");
         }
     }
 }
 
-void SessionModel::onUserMetaChanged(const QString &host, const QString &nick,
+void SessionModel::onUserMetaChanged(ServerId host, const QString &nick,
                                       const QString &key,  const QString &value)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     const QString lower = nick.toLower();
     sess->setNickMeta(lower, key, value);
-    emit userMetaChanged(host, nick, key, value);
+    emit userMetaChanged(ServerId{host}, nick, key, value);
     for (const auto &ch : std::as_const(sess->channels))
         if (ch.nickIndex.contains(lower))
-            emit nickListChanged(host, ch.name);
+            emit nickListChanged(ServerId{host}, BufferId{ch.name});
 }
 
 void SessionModel::onMessageRedacted(const QString &host, const QString &senderNick,
@@ -1066,7 +1093,7 @@ void SessionModel::onMessageRedacted(const QString &host, const QString &senderN
                                       const QString &reason)
 {
     Q_UNUSED(reason) // reason is not surfaced in the UI; keep parameter for signal compat
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     const bool isChannel = target.startsWith('#') || target.startsWith('&');
     const QString bufName = isChannel ? target : senderNick;
@@ -1078,13 +1105,13 @@ void SessionModel::onMessageRedacted(const QString &host, const QString &senderN
             break;
         }
     }
-    emit messageRedacted(host, bufName, msgid);
+    emit messageRedacted(ServerId{host}, BufferId{bufName}, msgid);
 }
 
 void SessionModel::onInviteNotify(const QString &host, const QString &inviter,
                                    const QString &channel, const QString &targetNick)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     if (targetNick.toLower() == sess->nick.toLower()) {
         postMessage(host, "(server)", Message::make(MessageType::Server, "",
@@ -1100,7 +1127,7 @@ void SessionModel::onInviteNotify(const QString &host, const QString &inviter,
 void SessionModel::onSetNameReceived(const QString &host, const QString &nick,
                                       const QString &realname)
 {
-    auto *sess = session(host);
+    auto *sess = session(ServerId{host});
     if (!sess) return;
     const QString text = nick + " changed their realname to \"" + realname + "\"";
     for (auto &ch : sess->channels) {
@@ -1121,24 +1148,24 @@ void SessionModel::onMonitorOffline(const QString &host, const QStringList &nick
         "Now offline: " + nicks.join(", ")));
 }
 
-void SessionModel::pinCertificate(const QString &host, const QString &fingerprint)
+void SessionModel::pinCertificate(ServerId host, const QString &fingerprint)
 {
     for (auto &sc : m_config.servers) {
-        if (sc.host == host) {
+        if (sc.host == host.str()) {
             sc.pinnedFingerprint = fingerprint;
             Config::save(m_config, Config::defaultPath());
             break;
         }
     }
-    if (auto *cl = clientFor(host)) {
+    if (auto *cl = clientFor(ServerId{host})) {
         cl->setPinnedFingerprint(fingerprint);
         cl->reconnect();
     }
 }
 
-void SessionModel::acceptCertificateOnce(const QString &host, const QString &fingerprint)
+void SessionModel::acceptCertificateOnce(ServerId host, const QString &fingerprint)
 {
-    if (auto *cl = clientFor(host)) {
+    if (auto *cl = clientFor(ServerId{host})) {
         cl->setPinnedFingerprint(fingerprint);
         cl->reconnect();
     }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ids.h"
 #include "serversession.h"
 #include "config/config.h"
 #include <QDateTime>
@@ -20,104 +21,104 @@ public:
     // Create a client for each server in config and start connecting
     void loadConfig(const Config &cfg);
     void addServer(const ServerConfig &sc);
-    void removeServer(const QString &host);
-    void updateServer(const QString &oldHost, const ServerConfig &sc);
+    void removeServer(ServerId host);
+    void updateServer(ServerId oldHost, const ServerConfig &sc);
     void syncServers(const QList<ServerConfig> &servers);
-    void closeBuffer(const QString &host, const QString &target);
+    void closeBuffer(ServerId host, BufferId target);
 
     // Read access for UI
     const QList<ServerSession> &sessions() const { return m_sessions; }
-    ServerSession *session(const QString &host);
-    Channel       *channel(const QString &host, const QString &name);
+    ServerSession *session(ServerId host);
+    Channel       *channel(ServerId host, BufferId name);
 
     // Active selection — UI drives this
-    void setActive(const QString &host, const QString &channel);
-    QString activeHost()    const { return m_activeHost; }
-    QString activeChannel() const { return m_activeChannel; }
+    void    setActive      (ServerId host, BufferId channel);
+    ServerId activeHost()    const { return m_activeHost; }
+    BufferId activeChannel() const { return m_activeChannel; }
 
     // Send on behalf of a session
-    void sendMessage(const QString &host, const QString &target, const QString &text,
+    void sendMessage(ServerId host, BufferId target, const QString &text,
                      const QString &replyToMsgid = {});
-    void sendRaw    (const QString &host, const QString &line);
-    void localMessage(const QString &host, const QString &target, const QString &text);
-    QString selfNick  (const QString &host);
-    bool    hasMention(const QString &host, const QString &channel);
-    void sendJoin   (const QString &host, const QString &channel, const QString &key = {});
-    void sendPart   (const QString &host, const QString &channel, const QString &reason = {});
-    void sendNick   (const QString &host, const QString &nick);
-    void sendAction (const QString &host, const QString &target, const QString &text);
-    void sendTyping (const QString &host, const QString &channel, const QString &state);
-    void openPM    (const QString &host, const QString &nick);
-    IrcClient *clientFor(const QString &host);
+    void sendRaw    (ServerId host, const QString &line);
+    void localMessage(ServerId host, BufferId target, const QString &text);
+    QString selfNick  (ServerId host);
+    bool    hasMention(ServerId host, BufferId channel);
+    void sendJoin   (ServerId host, BufferId channel, const QString &key = {});
+    void sendPart   (ServerId host, BufferId channel, const QString &reason = {});
+    void sendNick   (ServerId host, const QString &nick);
+    void sendAction (ServerId host, BufferId target, const QString &text);
+    void sendTyping (ServerId host, BufferId channel, const QString &state);
+    void openPM     (ServerId host, const QString &nick);
+    IrcClient *clientFor(ServerId host);
 
     void ignoreNick  (const QString &nick);
     void unignoreNick(const QString &nick);
     bool isIgnored   (const QString &nick) const;
 
-    void sendReact(const QString &host, const QString &target,
-                   const QString &msgid, const QString &emoji);
-    void sendRedact(const QString &host, const QString &target,
+    void sendReact (ServerId host, BufferId target,
+                    const QString &msgid, const QString &emoji);
+    void sendRedact(ServerId host, BufferId target,
                     const QString &msgid, const QString &reason = {});
 
-    void monitorAdd   (const QString &host, const QString &nick);
-    void monitorRemove(const QString &host, const QString &nick);
-    void monitorClear (const QString &host);
-    void monitorStatus(const QString &host);
-    void pinCertificate(const QString &host, const QString &fingerprint);
-    void acceptCertificateOnce(const QString &host, const QString &fingerprint);
-    void onUserMetaChanged(const QString &host, const QString &nick,
-                           const QString &key,  const QString &value);
+    void monitorAdd   (ServerId host, const QString &nick);
+    void monitorRemove(ServerId host, const QString &nick);
+    void monitorClear (ServerId host);
+    void monitorStatus(ServerId host);
+    void pinCertificate      (ServerId host, const QString &fingerprint);
+    void acceptCertificateOnce(ServerId host, const QString &fingerprint);
+    void onUserMetaChanged   (ServerId host, const QString &nick,
+                              const QString &key, const QString &value);
 
 signals:
     // Structural changes — sidebar needs a repaint
-    void serverAdded    (const QString &host);
-    void serverConnected(const QString &host);
-    void serverDisconnected(const QString &host);
-    void channelAdded   (const QString &host, const QString &channel);
-    void channelRemoved (const QString &host, const QString &channel);
+    void serverAdded       (ServerId host);
+    void serverConnected   (ServerId host);
+    void serverDisconnected(ServerId host);
+    void channelAdded  (ServerId host, BufferId channel);
+    void channelRemoved(ServerId host, BufferId channel);
 
     // Content changes — chat view needs updating
-    void messageAdded(const QString &host, const QString &channel, const Message &msg);
-    void topicChanged  (const QString &host, const QString &channel, const QString &topic);
-    void modesChanged  (const QString &host, const QString &channel);
-    void nickListChanged(const QString &host, const QString &channel);
-    void nickAdded      (const QString &host, const QString &channel, const QString &nick);
-    void nickRemoved    (const QString &host, const QString &channel, const QString &nick);
-    void nickRenamed    (const QString &host, const QString &channel,
+    void messageAdded   (ServerId host, BufferId channel, const Message &msg);
+    void topicChanged   (ServerId host, BufferId channel, const QString &topic);
+    void modesChanged   (ServerId host, BufferId channel);
+    void nickListChanged(ServerId host, BufferId channel);
+    void nickAdded      (ServerId host, BufferId channel, const QString &nick);
+    void nickRemoved    (ServerId host, BufferId channel, const QString &nick);
+    void nickRenamed    (ServerId host, BufferId channel,
                          const QString &oldNick, const QString &newNick);
-    void unreadChanged   (const QString &host, const QString &channel, int count);
-    void reactionsChanged(const QString &host, const QString &channel, const QString &msgid);
-    void messageRedacted (const QString &host, const QString &channel, const QString &msgid);
+    void unreadChanged   (ServerId host, BufferId channel, int count);
+    void reactionsChanged(ServerId host, BufferId channel, const QString &msgid);
+    void messageRedacted (ServerId host, BufferId channel, const QString &msgid);
 
     // Self
-    void selfNickChanged(const QString &host, const QString &nick);
+    void selfNickChanged(ServerId host, const QString &nick);
 
     // Connection quality
-    void pingRtt          (const QString &host, int ms);
-    void serverReconnecting(const QString &host);
+    void pingRtt          (ServerId host, int ms);
+    void serverReconnecting(ServerId host);
 
     // Typing
-    void typingReceived(const QString &host, const QString &channel,
+    void typingReceived(ServerId host, BufferId channel,
                         const QString &nick, const QString &state);
 
     // Channel list
-    void channelListEntry(const QString &host, const QString &channel, int users, const QString &topic);
-    void channelListEnd  (const QString &host, int total);
+    void channelListEntry(ServerId host, BufferId channel, int users, const QString &topic);
+    void channelListEnd  (ServerId host, int total);
 
     // User metadata
-    void userMetaChanged (const QString &host, const QString &nick,
-                          const QString &key,  const QString &value);
+    void userMetaChanged(ServerId host, const QString &nick,
+                         const QString &key, const QString &value);
 
     // TLS cert pin
-    void sslFingerprintPrompt(const QString &host, const QString &fingerprint);
+    void sslFingerprintPrompt(ServerId host, const QString &fingerprint);
 
     // DCC
-    void dccSendReceived(const QString &server, const QString &fromNick,
+    void dccSendReceived(ServerId server, const QString &fromNick,
                          const QString &filename, quint32 ip, quint16 port, qint64 filesize);
-    void dccPassiveOfferReceived(const QString &server, const QString &fromNick,
+    void dccPassiveOfferReceived(ServerId server, const QString &fromNick,
                                   const QString &filename, quint32 ip,
                                   qint64 filesize, const QString &token);
-    void dccPassiveSendReply(const QString &server, const QString &fromNick,
+    void dccPassiveSendReply(ServerId server, const QString &fromNick,
                               const QString &filename, quint32 ip, quint16 port,
                               qint64 filesize, const QString &token);
 
@@ -187,6 +188,6 @@ private:
     QSet<QString>        m_ignoredNicks;
     QHash<QString, QFile*> m_logFiles;
 
-    QString m_activeHost;
-    QString m_activeChannel;
+    ServerId m_activeHost;
+    BufferId m_activeChannel;
 };

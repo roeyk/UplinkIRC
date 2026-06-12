@@ -1,5 +1,6 @@
 #include "trayicon.h"
 #include "mainwindow.h"
+#include "model/ids.h"
 #include "model/sessionmodel.h"
 #include "ui/appicons.h"
 
@@ -81,19 +82,17 @@ void TrayIcon::onActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-void TrayIcon::onServerConnected(const QString &host)
+void TrayIcon::onServerConnected(ServerId)
 {
-    Q_UNUSED(host)
     updateTooltip();
 }
 
-void TrayIcon::onServerDisconnected(const QString &host)
+void TrayIcon::onServerDisconnected(ServerId)
 {
-    Q_UNUSED(host)
     updateTooltip();
 }
 
-void TrayIcon::onUnreadChanged(const QString &, const QString &, int)
+void TrayIcon::onUnreadChanged(ServerId, BufferId, int)
 {
     m_totalUnread = 0;
     for (const auto &sess : m_model->sessions())

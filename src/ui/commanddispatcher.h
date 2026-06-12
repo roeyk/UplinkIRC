@@ -1,5 +1,6 @@
 #pragma once
 #include "config/config.h"
+#include "model/ids.h"
 #include <QObject>
 
 class SessionModel;
@@ -13,7 +14,7 @@ public:
 
     // Returns true if a slash command was handled.
     // replyMsgid is the pending reply target (may be empty).
-    bool dispatch(const QString &text, const QString &host, const QString &channel,
+    bool dispatch(const QString &text, ServerId host, BufferId channel,
                   const QString &replyMsgid);
 
 signals:

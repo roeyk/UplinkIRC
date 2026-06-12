@@ -802,7 +802,7 @@ void MainWindow::connectPreferences()
         m_config.ui.coloredNicks = on;
         Config::save(m_config, Config::defaultPath());
         if (!m_model->activeHost().isEmpty() && !m_model->activeChannel().isEmpty())
-            refreshNickList(m_model->activeHost(), m_model->activeChannel());
+            refreshNickList(m_model->activeHost().str(), m_model->activeChannel().str());
     });
 
     connect(m_prefsDialog, &PreferencesDialog::hangingIndentToggled, this, [this](bool on){
@@ -833,7 +833,7 @@ void MainWindow::connectPreferences()
             const bool stillPresent = std::any_of(updated.begin(), updated.end(),
                 [&](const ServerConfig &s){ return s.host == old.host; });
             if (!stillPresent)
-                m_model->removeServer(old.host);
+                m_model->removeServer(ServerId{old.host});
         }
         for (const ServerConfig &sc : updated) {
             const ServerConfig *existing = nullptr;
@@ -842,7 +842,7 @@ void MainWindow::connectPreferences()
             if (!existing) {
                 m_model->addServer(sc);
             } else if (*existing != sc) {
-                m_model->updateServer(existing->host, sc);
+                m_model->updateServer(ServerId{existing->host}, sc);
             }
         }
         m_config.servers = updated;
@@ -876,31 +876,31 @@ void MainWindow::connectPreferences()
             if (!sess.connected) continue;
             // Always update local nickMeta for own nick so tooltip reflects new values
             if (!displayName.isEmpty())
-                m_model->onUserMetaChanged(sess.host, sess.nick, "display-name", displayName);
+                m_model->onUserMetaChanged(ServerId{sess.host}, sess.nick, "display-name", displayName);
             if (!avatarUrl.isEmpty())
-                m_model->onUserMetaChanged(sess.host, sess.nick, "avatar", avatarUrl);
-            auto *cl = m_model->clientFor(sess.host);
+                m_model->onUserMetaChanged(ServerId{sess.host}, sess.nick, "avatar", avatarUrl);
+            auto *cl = m_model->clientFor(ServerId{sess.host});
             if (!cl || !cl->hasCap("draft/metadata-2")) {
                 skipped << sess.name;
                 continue;
             }
-            m_model->sendRaw(sess.host, "METADATA * SET display-name :" + displayName);
+            m_model->sendRaw(ServerId{sess.host}, "METADATA * SET display-name :" + displayName);
             const bool localPath = avatarUrl.startsWith('/') || QUrl(avatarUrl).isLocalFile();
             if (!localPath)
-                m_model->sendRaw(sess.host, "METADATA * SET avatar :" + avatarUrl);
+                m_model->sendRaw(ServerId{sess.host}, "METADATA * SET avatar :" + avatarUrl);
             sent << sess.name;
         }
         if (!avatarUrl.isEmpty()) fetchAvatar(avatarUrl);
-        const QString activeHost = m_model->activeHost();
-        const QString activeChan = m_model->activeChannel();
+        const QString activeHost = m_model->activeHost().str();
+        const QString activeChan = m_model->activeChannel().str();
         if (!sent.isEmpty())
-            m_model->localMessage(activeHost, activeChan,
+            m_model->localMessage(ServerId{activeHost}, BufferId{activeChan},
                 "Profile sent to: " + sent.join(", "));
         if (!skipped.isEmpty())
-            m_model->localMessage(activeHost, activeChan,
+            m_model->localMessage(ServerId{activeHost}, BufferId{activeChan},
                 "Skipped (no draft/metadata-2 support): " + skipped.join(", "));
         if (sent.isEmpty() && skipped.isEmpty())
-            m_model->localMessage(activeHost, activeChan,
+            m_model->localMessage(ServerId{activeHost}, BufferId{activeChan},
                 "No connected servers to send profile to.");
     });
 }
@@ -1293,7 +1293,7 @@ void MainWindow::setupChatArea()
         const QString urlStr = url.toString();
         if (urlStr.startsWith(QLatin1String("evgrp:"))) {
             toggleEventGroupInView(m_chatView, urlStr.mid(6),
-                                   m_model->activeHost(), m_model->activeChannel());
+                                   m_model->activeHost().str(), m_model->activeChannel().str());
             return;
         }
         QString s = url.scheme().toLower();
@@ -1347,7 +1347,7 @@ void MainWindow::setupChatArea()
         m_previewChannels.erase(it);
         processPreviewQueue();
 
-        auto *ch = m_model->channel(host, channel);
+        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
         if (!ch) return;
 
         QString imgHtml;
@@ -1392,8 +1392,8 @@ void MainWindow::setupChatArea()
 
         ch->addPreview(urlStr, cardBase, imgHtml);
 
-        const bool isActive = (host == m_model->activeHost() &&
-                               channel.toLower() == m_model->activeChannel().toLower());
+        const bool isActive = (host == m_model->activeHost().str() &&
+                               channel.toLower() == m_model->activeChannel().str().toLower());
         if (isActive) {
             QScrollBar *sb = m_chatView->verticalScrollBar();
             const bool atBottom = sb->value() >= sb->maximum() - 4;
@@ -1456,7 +1456,7 @@ void MainWindow::ensureEmojiPicker()
     m_emojiPicker = new EmojiPicker(this);
     connect(m_emojiPicker, &EmojiPicker::emojiSelected, this, [this](const QString &emoji){
         if (!m_pendingReactMsgid.isEmpty()) {
-            m_model->sendReact(m_pendingReactHost, m_pendingReactChannel,
+            m_model->sendReact(ServerId{m_pendingReactHost}, BufferId{m_pendingReactChannel},
                                m_pendingReactMsgid, emoji);
             m_pendingReactMsgid.clear();
             m_pendingReactHost.clear();
@@ -1607,11 +1607,11 @@ void MainWindow::setupInputBar()
     m_typingOutTimer->setInterval(5000);
     connect(m_typingOutTimer, &QTimer::timeout, this, [this]{
         if (!m_config.ui.typingIndicator) return;
-        const QString host = m_model->activeHost();
-        const QString ch   = m_model->activeChannel();
+        const QString host = m_model->activeHost().str();
+        const QString ch   = m_model->activeChannel().str();
         if (ch.isEmpty() || ch == "(server)") return;
         m_typingActive = false;
-        m_model->sendTyping(host, ch, "paused");
+        m_model->sendTyping(ServerId{host}, BufferId{ch}, "paused");
     });
 
     connect(m_input, &QPlainTextEdit::textChanged, this, [this]{
@@ -1624,20 +1624,20 @@ void MainWindow::setupInputBar()
         const int lines = qMin(4, static_cast<int>(text.count('\n')) + 1);
         m_input->setFixedHeight(lines * lineH + margins);
         if (!m_config.ui.typingIndicator) return;
-        const QString host = m_model->activeHost();
-        const QString ch   = m_model->activeChannel();
+        const QString host = m_model->activeHost().str();
+        const QString ch   = m_model->activeChannel().str();
         if (ch.isEmpty() || ch == "(server)") return;
         if (!text.isEmpty()) {
             if (!m_typingActive) {
                 m_typingActive = true;
-                m_model->sendTyping(host, ch, "active");
+                m_model->sendTyping(ServerId{host}, BufferId{ch}, "active");
             }
             m_typingOutTimer->start();
         } else {
             m_typingOutTimer->stop();
             if (m_typingActive) {
                 m_typingActive = false;
-                m_model->sendTyping(host, ch, "done");
+                m_model->sendTyping(ServerId{host}, BufferId{ch}, "done");
             }
         }
     });
@@ -1647,37 +1647,53 @@ void MainWindow::setupInputBar()
 
 void MainWindow::connectModel()
 {
-    connect(m_model, &SessionModel::serverAdded,       this, &MainWindow::onServerAdded);
-    connect(m_model, &SessionModel::serverConnected,   this, &MainWindow::onServerConnected);
-    connect(m_model, &SessionModel::serverDisconnected,this, &MainWindow::onServerDisconnected);
-    connect(m_model, &SessionModel::channelAdded,      this, &MainWindow::onChannelAdded);
-    connect(m_model, &SessionModel::channelRemoved,    this, &MainWindow::onChannelRemoved);
-    connect(m_model, &SessionModel::messageAdded,      this, &MainWindow::onMessageAdded);
-    connect(m_model, &SessionModel::topicChanged,      this, &MainWindow::onTopicChanged);
-    connect(m_model, &SessionModel::modesChanged, this, [this](const QString &host, const QString &channel){
-        if (host == m_model->activeHost() && channel.toLower() == m_model->activeChannel().toLower())
-            refreshTopicBar(host, channel);
+    connect(m_model, &SessionModel::serverAdded, this,
+            [this](ServerId id){ onServerAdded(id.str()); });
+    connect(m_model, &SessionModel::serverConnected, this,
+            [this](ServerId id){ onServerConnected(id.str()); });
+    connect(m_model, &SessionModel::serverDisconnected, this,
+            [this](ServerId id){ onServerDisconnected(id.str()); });
+    connect(m_model, &SessionModel::channelAdded, this,
+            [this](ServerId h, BufferId ch){ onChannelAdded(h.str(), ch.str()); });
+    connect(m_model, &SessionModel::channelRemoved, this,
+            [this](ServerId h, BufferId ch){ onChannelRemoved(h.str(), ch.str()); });
+    connect(m_model, &SessionModel::messageAdded, this,
+            [this](ServerId h, BufferId ch, const Message &msg){ onMessageAdded(h.str(), ch.str(), msg); });
+    connect(m_model, &SessionModel::topicChanged, this,
+            [this](ServerId h, BufferId ch, const QString &t){ onTopicChanged(h.str(), ch.str(), t); });
+    connect(m_model, &SessionModel::modesChanged, this, [this](ServerId h, BufferId ch){
+        if (h == m_model->activeHost() && ch.str().toLower() == m_model->activeChannel().str().toLower())
+            refreshTopicBar(h.str(), ch.str());
     });
-    connect(m_model, &SessionModel::nickListChanged,   this, &MainWindow::onNickListChanged);
-    connect(m_model, &SessionModel::nickAdded,         this, &MainWindow::onNickAdded);
-    connect(m_model, &SessionModel::nickRemoved,       this, &MainWindow::onNickRemoved);
-    connect(m_model, &SessionModel::nickRenamed,       this, &MainWindow::onNickRenamed);
-    connect(m_model, &SessionModel::unreadChanged,     this, &MainWindow::onUnreadChanged);
-    connect(m_model, &SessionModel::reactionsChanged,  this, &MainWindow::onReactionsChanged);
-    connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
-    connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
-    connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
+    connect(m_model, &SessionModel::nickListChanged, this,
+            [this](ServerId h, BufferId ch){ onNickListChanged(h.str(), ch.str()); });
+    connect(m_model, &SessionModel::nickAdded, this,
+            [this](ServerId h, BufferId ch, const QString &n){ onNickAdded(h.str(), ch.str(), n); });
+    connect(m_model, &SessionModel::nickRemoved, this,
+            [this](ServerId h, BufferId ch, const QString &n){ onNickRemoved(h.str(), ch.str(), n); });
+    connect(m_model, &SessionModel::nickRenamed, this,
+            [this](ServerId h, BufferId ch, const QString &o, const QString &n){ onNickRenamed(h.str(), ch.str(), o, n); });
+    connect(m_model, &SessionModel::unreadChanged, this,
+            [this](ServerId h, BufferId ch, int c){ onUnreadChanged(h.str(), ch.str(), c); });
+    connect(m_model, &SessionModel::reactionsChanged, this,
+            [this](ServerId h, BufferId ch, const QString &id){ onReactionsChanged(h.str(), ch.str(), id); });
+    connect(m_model, &SessionModel::selfNickChanged, this,
+            [this](ServerId h, const QString &n){ onSelfNickChanged(h.str(), n); });
+    connect(m_model, &SessionModel::typingReceived, this,
+            [this](ServerId h, BufferId ch, const QString &n, const QString &s){ onTypingReceived(h.str(), ch.str(), n, s); });
+    connect(m_model, &SessionModel::messageRedacted, this,
+            [this](ServerId h, BufferId ch, const QString &id){ onMessageRedacted(h.str(), ch.str(), id); });
     connect(m_model, &SessionModel::userMetaChanged, this,
-            [this](const QString &, const QString &, const QString &key, const QString &value) {
+            [this](ServerId, const QString &, const QString &key, const QString &value) {
         if (key == QLatin1String("avatar")) fetchAvatar(value);
     });
 
     connect(m_model, &SessionModel::sslFingerprintPrompt, this,
-            [this](const QString &host, const QString &fp)
+            [this](ServerId host, const QString &fp)
     {
         QMessageBox box(this);
         box.setWindowTitle("Untrusted Certificate");
-        box.setText(host + " is using a self-signed certificate.");
+        box.setText(host.str() + " is using a self-signed certificate.");
         box.setInformativeText("SHA-256 fingerprint:\n" + fp + "\n\nTrust this certificate?");
         auto *pinBtn  = box.addButton("Pin Certificate", QMessageBox::AcceptRole);
         auto *onceBtn = box.addButton("Accept Once",     QMessageBox::AcceptRole);
@@ -1691,7 +1707,7 @@ void MainWindow::connectModel()
     });
 
     connect(m_model, &SessionModel::dccSendReceived, this,
-            [this](const QString &, const QString &fromNick,
+            [this](ServerId, const QString &fromNick,
                    const QString &filename, quint32 ip, quint16 port, qint64 filesize)
     {
         const QString sizeStr = filesize >= 1024*1024
@@ -1740,7 +1756,7 @@ void MainWindow::connectModel()
     });
 
     connect(m_model, &SessionModel::dccPassiveOfferReceived, this,
-            [this](const QString &server, const QString &fromNick,
+            [this](ServerId server, const QString &fromNick,
                    const QString &filename, quint32 senderIp, qint64 filesize, const QString &token)
     {
         const QString sizeStr = filesize >= 1024*1024
@@ -1803,7 +1819,7 @@ void MainWindow::connectModel()
     });
 
     connect(m_model, &SessionModel::dccPassiveSendReply, this,
-            [this](const QString &, const QString &, const QString &,
+            [this](ServerId, const QString &, const QString &,
                    quint32 ip, quint16 port, qint64, const QString &token)
     {
         DccSend *dcc = m_pendingPassiveSends.take(token);
@@ -1817,11 +1833,11 @@ void MainWindow::connectModel()
         }
     });
 
-    connect(m_model, &SessionModel::pingRtt, this, [this](const QString &host, int ms){
+    connect(m_model, &SessionModel::pingRtt, this, [this](ServerId host, int ms){
         if (m_signalBars && host == m_model->activeHost())
             m_signalBars->setLatency(ms);
     });
-    connect(m_model, &SessionModel::serverReconnecting, this, [this](const QString &host){
+    connect(m_model, &SessionModel::serverReconnecting, this, [this](ServerId host){
         if (m_signalBars && host == m_model->activeHost())
             m_signalBars->setState(SignalBars::State::Reconnecting);
     });
@@ -1869,12 +1885,12 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
             if (anchor.startsWith("msgid:")) {
                 const QString msgid   = anchor.mid(6);
-                const QString host    = m_model->activeHost();
-                const QString channel = m_model->activeChannel();
+                const QString host    = m_model->activeHost().str();
+                const QString channel = m_model->activeChannel().str();
                 QMenu menu(m_chatView->viewport());
                 connect(menu.addAction("Reply"), &QAction::triggered, this,
                         [this, msgid, host, channel]{
-                    auto *ch = m_model->channel(host, channel);
+                    auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
                     QString origNick;
                     if (ch)
                         for (const auto &m : std::as_const(ch->messages))
@@ -1894,16 +1910,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     m_emojiPicker->showAt(globalPos);
                 });
                 {
-                    auto *cl = m_model->clientFor(host);
-                    auto *ch = m_model->channel(host, channel);
+                    auto *cl = m_model->clientFor(ServerId{host});
+                    auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
                     if (cl && cl->hasCap("draft/message-redaction") && ch) {
                         QString msgNick;
                         for (const auto &m : std::as_const(ch->messages))
                             if (m.msgid == msgid) { msgNick = m.nick; break; }
-                        if (msgNick == m_model->selfNick(host)) {
+                        if (msgNick == m_model->selfNick(ServerId{host})) {
                             connect(menu.addAction("Delete"), &QAction::triggered, this,
                                     [this, msgid, host, channel]{
-                                m_model->sendRedact(host, channel, msgid);
+                                m_model->sendRedact(ServerId{host}, BufferId{channel}, msgid);
                             });
                         }
                     }
@@ -1917,8 +1933,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
             if (anchor.startsWith("preview:")) {
                 const QString url     = anchor.mid(8);
-                const QString host    = m_model->activeHost();
-                const QString channel = m_model->activeChannel();
+                const QString host    = m_model->activeHost().str();
+                const QString channel = m_model->activeChannel().str();
                 QMenu menu(m_chatView->viewport());
                 connect(menu.addAction("Open URL"), &QAction::triggered, this, [url]{
                     const QUrl u(url);
@@ -1926,11 +1942,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     if (s == "http" || s == "https")
                         QDesktopServices::openUrl(u);
                 });
-                auto *ch = m_model->channel(host, channel);
+                auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
                 if (ch && ch->previews.contains(url)) {
                     connect(menu.addAction("Hide Preview"), &QAction::triggered, this,
                             [this, url, host, channel]{
-                        auto *inner = m_model->channel(host, channel);
+                        auto *inner = m_model->channel(ServerId{host}, BufferId{channel});
                         if (inner) inner->hiddenPreviews.insert(url);
                         refreshChatView(host, channel);
                     });
@@ -1940,8 +1956,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             }
 
             if (!anchor.isEmpty()) {
-                const QString host    = m_model->activeHost();
-                const QString channel = m_model->activeChannel();
+                const QString host    = m_model->activeHost().str();
+                const QString channel = m_model->activeChannel().str();
                 QMenu menu(m_chatView->viewport());
 
                 connect(menu.addAction("Copy URL"), &QAction::triggered,
@@ -1953,13 +1969,13 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                         QDesktopServices::openUrl(u);
                 });
 
-                auto *ch = m_model->channel(host, channel);
+                auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
                 const bool isHidden  = ch && ch->hiddenPreviews.contains(anchor);
                 const bool hasPreview = ch && ch->previews.contains(anchor);
                 if (isHidden) {
                     auto *showAction = menu.addAction("Show Preview");
                     connect(showAction, &QAction::triggered, this, [this, anchor, host, channel]{
-                        auto *inner = m_model->channel(host, channel);
+                        auto *inner = m_model->channel(ServerId{host}, BufferId{channel});
                         if (inner) inner->hiddenPreviews.remove(anchor);
                         refreshChatView(host, channel);
                     });
@@ -1967,7 +1983,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     auto *hideAction = menu.addAction("Hide Preview");
                     hideAction->setEnabled(hasPreview);
                     connect(hideAction, &QAction::triggered, this, [this, anchor, host, channel]{
-                        auto *inner = m_model->channel(host, channel);
+                        auto *inner = m_model->channel(ServerId{host}, BufferId{channel});
                         if (inner) inner->hiddenPreviews.insert(anchor);
                         refreshChatView(host, channel);
                     });
@@ -1988,11 +2004,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     if (href.startsWith("msgid:")) { foundMsgid = href.mid(6); break; }
                 }
                 if (!foundMsgid.isEmpty()) {
-                    const QString host    = m_model->activeHost();
-                    const QString channel = m_model->activeChannel();
+                    const QString host    = m_model->activeHost().str();
+                    const QString channel = m_model->activeChannel().str();
                     connect(menu.addAction("Reply"), &QAction::triggered, this,
                             [this, foundMsgid, host, channel]{
-                        auto *ch = m_model->channel(host, channel);
+                        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
                         QString origNick;
                         if (ch)
                             for (const auto &m : std::as_const(ch->messages))
@@ -2035,7 +2051,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             QMenu menu(p->chatView()->viewport());
             connect(menu.addAction("Reply"), &QAction::triggered, this,
                     [this, msgid, host, chan]{
-                auto *ch = m_model->channel(host, chan);
+                auto *ch = m_model->channel(ServerId{host}, BufferId{chan});
                 QString nick;
                 if (ch) for (const auto &m : std::as_const(ch->messages))
                     if (m.msgid == msgid) { nick = m.nick; break; }
@@ -2049,16 +2065,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 m_pendingReactMsgid = msgid; m_pendingReactHost = host;
                 m_pendingReactChannel = chan; ensureEmojiPicker(); m_emojiPicker->showAt(gp);
             });
-            auto *cl = m_model->clientFor(host);
-            auto *ch = m_model->channel(host, chan);
+            auto *cl = m_model->clientFor(ServerId{host});
+            auto *ch = m_model->channel(ServerId{host}, BufferId{chan});
             if (cl && cl->hasCap("draft/message-redaction") && ch) {
                 QString msgNick;
                 for (const auto &m : std::as_const(ch->messages))
                     if (m.msgid == msgid) { msgNick = m.nick; break; }
-                if (msgNick == m_model->selfNick(host))
+                if (msgNick == m_model->selfNick(ServerId{host}))
                     connect(menu.addAction("Delete"), &QAction::triggered, this,
                             [this, host, chan, msgid]{
-                        m_model->sendRedact(host, chan, msgid, "deleted");
+                        m_model->sendRedact(ServerId{host}, BufferId{chan}, msgid, "deleted");
                     });
             }
             menu.exec(gp);
@@ -2077,7 +2093,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             if (!foundMsgid.isEmpty())
                 connect(menu.addAction("Reply"), &QAction::triggered, this,
                         [this, foundMsgid, host, chan]{
-                    auto *ch = m_model->channel(host, chan);
+                    auto *ch = m_model->channel(ServerId{host}, BufferId{chan});
                     QString nick;
                     if (ch) for (const auto &m : std::as_const(ch->messages))
                         if (m.msgid == foundMsgid) { nick = m.nick; break; }
@@ -2180,7 +2196,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 
     if (ke->key() == Qt::Key_Tab) {
-        handleTabComplete(m_input, m_model->activeHost(), m_model->activeChannel());
+        handleTabComplete(m_input, m_model->activeHost().str(), m_model->activeChannel().str());
         return true;
     }
 
@@ -2252,7 +2268,7 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, c
                 if (cmd.startsWith(prefix, Qt::CaseInsensitive))
                     m_tabCandidates << cmd;
         } else {
-            auto *ch = m_model->channel(host, channel);
+            auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
             if (ch) {
                 for (const auto &e : std::as_const(ch->nicks))
                     if (e.nick.startsWith(prefix, Qt::CaseInsensitive))
@@ -2460,7 +2476,7 @@ void MainWindow::onServerAdded(const QString &host)
     item->setFont(0, f);
     item->setForeground(0, QColor("#6c7086"));
 
-    if (m_signalBars && (m_model->activeHost().isEmpty() || host == m_model->activeHost()))
+    if (m_signalBars && (m_model->activeHost().isEmpty() || host == m_model->activeHost().str()))
         m_signalBars->setState(SignalBars::State::Connecting);
 }
 
@@ -2469,25 +2485,25 @@ void MainWindow::onServerConnected(const QString &host)
     auto *item = findServerItem(host);
     if (item)
         item->setData(0, Qt::UserRole + 2, QVariant::fromValue(makeConnectedIcon()));
-    if (m_signalBars && host == m_model->activeHost())
+    if (m_signalBars && host == m_model->activeHost().str())
         m_signalBars->setState(SignalBars::State::Connected);
 
     if (!m_config.profileDisplayName.isEmpty() || !m_config.profileAvatarUrl.isEmpty()) {
-        auto *cl = m_model->clientFor(host);
+        auto *cl = m_model->clientFor(ServerId{host});
         if (cl && cl->hasCap("draft/metadata-2")) {
-            m_model->sendRaw(host, "METADATA * SET display-name :" + m_config.profileDisplayName);
+            m_model->sendRaw(ServerId{host}, "METADATA * SET display-name :" + m_config.profileDisplayName);
             const bool localPath = m_config.profileAvatarUrl.startsWith('/')
                                    || QUrl(m_config.profileAvatarUrl).isLocalFile();
             if (!localPath)
-                m_model->sendRaw(host, "METADATA * SET avatar :" + m_config.profileAvatarUrl);
+                m_model->sendRaw(ServerId{host}, "METADATA * SET avatar :" + m_config.profileAvatarUrl);
         }
         // Local file avatars are never sent to the server, so seed nickMeta + cache manually.
         if (!m_config.profileAvatarUrl.isEmpty()) {
             const bool localPath = m_config.profileAvatarUrl.startsWith('/')
                                    || QUrl(m_config.profileAvatarUrl).isLocalFile();
             if (localPath) {
-                if (auto *sess = m_model->session(host); sess && !sess->nick.isEmpty())
-                    m_model->onUserMetaChanged(host, sess->nick, "avatar", m_config.profileAvatarUrl);
+                if (auto *sess = m_model->session(ServerId{host}); sess && !sess->nick.isEmpty())
+                    m_model->onUserMetaChanged(ServerId{host}, sess->nick, "avatar", m_config.profileAvatarUrl);
                 fetchAvatar(m_config.profileAvatarUrl);
             }
         }
@@ -2499,7 +2515,7 @@ void MainWindow::onServerDisconnected(const QString &host)
     auto *item = findServerItem(host);
     if (item)
         item->setData(0, Qt::UserRole + 2, QVariant());
-    if (m_signalBars && host == m_model->activeHost())
+    if (m_signalBars && host == m_model->activeHost().str())
         m_signalBars->setState(SignalBars::State::Disconnected);
 
     // Prune typing state for all channels on this host
@@ -2516,7 +2532,7 @@ void MainWindow::onServerDisconnected(const QString &host)
     for (auto it = m_typingNicks.begin(); it != m_typingNicks.end(); )
         it = it.key().startsWith(prefix) ? m_typingNicks.erase(it) : ++it;
 
-    if (auto *sess = m_model->session(host)) {
+    if (auto *sess = m_model->session(ServerId{host})) {
         for (const auto &ch : std::as_const(sess->channels))
             for (const QString &bn : ch.botNicks)
                 m_botIconIdx.remove(bn);
@@ -2589,11 +2605,11 @@ static QTextBlock lastTaggedBlock(QTextBrowser *view)
 void MainWindow::toggleEventGroupInView(QTextBrowser *view, const QString &groupId,
                                          const QString &host, const QString &channel)
 {
-    auto *ch = m_model->channel(host, channel);
+    auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
     if (!ch) return;
 
     const qint64 targetMs = groupId.toLongLong();
-    const QString selfNick = m_model->selfNick(host);
+    const QString selfNick = m_model->selfNick(ServerId{host});
     int start = -1;
     for (int i = 0; i < ch->messages.size(); ++i) {
         if (ch->messages[i].timestamp.toMSecsSinceEpoch() == targetMs
@@ -2651,13 +2667,13 @@ void MainWindow::toggleEventGroupInView(QTextBrowser *view, const QString &group
 
 void MainWindow::onMessageAdded(const QString &host, const QString &channel, const Message &msg)
 {
-    const QString selfNick = m_model->selfNick(host);
+    const QString selfNick = m_model->selfNick(ServerId{host});
 
-    if (host == m_model->activeHost() &&
-        channel.toLower() == m_model->activeChannel().toLower())
+    if (host == m_model->activeHost().str() &&
+        channel.toLower() == m_model->activeChannel().str().toLower())
     {
         if (isCondensable(msg, selfNick)) {
-            auto *ch = m_model->channel(host, channel);
+            auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
             if (ch) {
                 ChatRenderer::Context ctx;
                 ctx.coloredNicks = m_config.ui.coloredNicks;
@@ -2699,7 +2715,7 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
     const QString paneKey = host + "|" + channel.toLower();
     if (auto *pane = m_panes.value(paneKey)) {
         if (isCondensable(msg, selfNick)) {
-            auto *pCh = m_model->channel(host, channel);
+            auto *pCh = m_model->channel(ServerId{host}, BufferId{channel});
             if (pCh) {
                 ChatRenderer::Context ctx;
                 ctx.coloredNicks = m_config.ui.coloredNicks;
@@ -2745,7 +2761,7 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
     if (m_config.ui.notifications && m_tray && !isActiveWindow()
         && (msg.type == MessageType::Privmsg || msg.type == MessageType::Action))
     {
-        const QString myNick = m_model->selfNick(host);
+        const QString myNick = m_model->selfNick(ServerId{host});
         const bool isPM = !channel.startsWith('#') && !channel.startsWith('&');
         const bool isMention = !isPM && !myNick.isEmpty()
                                && msg.text.contains(myNick, Qt::CaseInsensitive);
@@ -2756,8 +2772,8 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
 
 void MainWindow::onTopicChanged(const QString &host, const QString &channel, const QString &topic)
 {
-    if (host == m_model->activeHost() &&
-        channel.toLower() == m_model->activeChannel().toLower())
+    if (host == m_model->activeHost().str() &&
+        channel.toLower() == m_model->activeChannel().str().toLower())
         refreshTopicBar(host, channel);
 
     const QString paneKey = host + "|" + channel.toLower();
@@ -2777,8 +2793,8 @@ void MainWindow::scheduleNickRefresh(const QString &host, const QString &channel
     m_nickRefreshPending.insert(key);
     QTimer::singleShot(50, this, [this, host, channel, key] {
         m_nickRefreshPending.remove(key);
-        const bool isActive = (host == m_model->activeHost() &&
-                               channel.toLower() == m_model->activeChannel().toLower());
+        const bool isActive = (host == m_model->activeHost().str() &&
+                               channel.toLower() == m_model->activeChannel().str().toLower());
         if (isActive) {
             refreshNickList(host, channel);
             refreshTopicBar(host, channel);
@@ -2800,7 +2816,7 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
     }
     if (channel == "(server)") {
         const bool connected = [&]{
-            auto *s = m_model->session(host); return s && s->connected;
+            auto *s = m_model->session(ServerId{host}); return s && s->connected;
         }();
         if (connected) {
             const QColor col = count > 0 ? QColor("#e06c75") : QColor();
@@ -2808,7 +2824,7 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
         }
         item->setText(0, label);
     } else {
-        if (count > 0 && m_model->hasMention(host, channel))
+        if (count > 0 && m_model->hasMention(ServerId{host}, BufferId{channel}))
             item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::mention(QColor("#FFD700"))));
         else if (count > 0)
             item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::unread()));
@@ -2820,9 +2836,9 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
 
 void MainWindow::onReactionsChanged(const QString &host, const QString &channel, const QString &msgid)
 {
-    if (host == m_model->activeHost() &&
-        channel.toLower() == m_model->activeChannel().toLower()) {
-        auto *ch = m_model->channel(host, channel);
+    if (host == m_model->activeHost().str() &&
+        channel.toLower() == m_model->activeChannel().str().toLower()) {
+        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
         if (!ch) return;
 
         QTextBlock msgBlock = findBlock(m_chatView, msgid);
@@ -2852,7 +2868,7 @@ void MainWindow::onReactionsChanged(const QString &host, const QString &channel,
     for (auto *pane : std::as_const(m_panes)) {
         if (pane->host() != host || pane->channel().toLower() != channel.toLower())
             continue;
-        auto *pCh = m_model->channel(host, channel);
+        auto *pCh = m_model->channel(ServerId{host}, BufferId{channel});
         if (!pCh) continue;
         auto *view = pane->chatView();
         QTextBlock msgBlock = findBlock(view, msgid);
@@ -2878,7 +2894,7 @@ void MainWindow::onReactionsChanged(const QString &host, const QString &channel,
 
 void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
 {
-    if (host == m_model->activeHost()) {
+    if (host == m_model->activeHost().str()) {
         m_nickPrefix->setText(nick);
         m_selfNickRe = nick.isEmpty() ? QRegularExpression{}
             : QRegularExpression("(\\b" + QRegularExpression::escape(nick) + "\\b)",
@@ -2892,9 +2908,9 @@ void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
 
 void MainWindow::onMessageRedacted(const QString &host, const QString &channel, const QString &msgid)
 {
-    if (host == m_model->activeHost() &&
-        channel.toLower() == m_model->activeChannel().toLower()) {
-        auto *ch = m_model->channel(host, channel);
+    if (host == m_model->activeHost().str() &&
+        channel.toLower() == m_model->activeChannel().str().toLower()) {
+        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
         if (!ch) return;
 
         const Message *redacted = nullptr;
@@ -2921,7 +2937,7 @@ void MainWindow::onMessageRedacted(const QString &host, const QString &channel, 
     for (auto *pane : std::as_const(m_panes)) {
         if (pane->host() != host || pane->channel().toLower() != channel.toLower())
             continue;
-        auto *pCh = m_model->channel(host, channel);
+        auto *pCh = m_model->channel(ServerId{host}, BufferId{channel});
         if (!pCh) continue;
         const Message *pRedacted = nullptr;
         for (const auto &msg : std::as_const(pCh->messages))
@@ -2985,7 +3001,7 @@ void MainWindow::onTypingReceived(const QString &host, const QString &channel,
 
 void MainWindow::updateTypingLabel()
 {
-    const QString key = m_model->activeHost() + "|" + m_model->activeChannel();
+    const QString key = m_model->activeHost().str() + "|" + m_model->activeChannel().str();
     const QSet<QString> &typers = m_typingNicks.value(key);
 
     if (!m_config.ui.typingIndicator) {
@@ -3047,15 +3063,15 @@ void MainWindow::onInputSubmit()
 
     m_input->clear();
 
-    const QString host    = m_model->activeHost();
-    const QString channel = m_model->activeChannel();
+    const QString host    = m_model->activeHost().str();
+    const QString channel = m_model->activeChannel().str();
     if (host.isEmpty() || channel.isEmpty()) return;
 
     // Stop typing notification on send
     m_typingOutTimer->stop();
     if (m_typingActive && m_config.ui.typingIndicator && channel != "(server)") {
         m_typingActive = false;
-        m_model->sendTyping(host, channel, "done");
+        m_model->sendTyping(ServerId{host}, BufferId{channel}, "done");
     }
 
     dispatchInput(raw, host, channel);
@@ -3064,7 +3080,7 @@ void MainWindow::onInputSubmit()
 void MainWindow::dispatchInput(const QString &text, const QString &host, const QString &channel)
 {
     if (text.startsWith('/')) {
-        m_dispatcher->dispatch(text, host, channel, m_pendingReplyMsgid);
+        m_dispatcher->dispatch(text, ServerId{host}, BufferId{channel}, m_pendingReplyMsgid);
         return;
     }
 
@@ -3087,7 +3103,7 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
 
     const QString replyMsgid = m_pendingReplyMsgid;
     clearReplyBar();
-    m_model->sendMessage(host, channel, outText, replyMsgid);
+    m_model->sendMessage(ServerId{host}, BufferId{channel}, outText, replyMsgid);
 }
 
 // ---------------------------------------------------------------------------
@@ -3110,12 +3126,12 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
     }
 
     clearReplyBar();
-    m_model->setActive(host, channel);
+    m_model->setActive(ServerId{host}, BufferId{channel});
     refreshChatView(host, channel);
     refreshNickList(host, channel);
     refreshTopicBar(host, channel);
 
-    if (auto *sess = m_model->session(host)) {
+    if (auto *sess = m_model->session(ServerId{host})) {
         m_nickPrefix->setText(sess->nick);
         m_selfNickRe = sess->nick.isEmpty() ? QRegularExpression{}
             : QRegularExpression("(\\b" + QRegularExpression::escape(sess->nick) + "\\b)",
@@ -3123,7 +3139,7 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
     }
 
     if (m_signalBars) {
-        auto *sess = m_model->session(host);
+        auto *sess = m_model->session(ServerId{host});
         if (!sess)
             m_signalBars->setState(SignalBars::State::None);
         else if (sess->connected)
@@ -3151,26 +3167,26 @@ void MainWindow::openChannelList(const QString &host)
     m_channelListDialog = new ChannelListDialog(host, this);
 
     connect(m_model, &SessionModel::channelListEntry,
-            m_channelListDialog, [this, host](const QString &h, const QString &ch, int u, const QString &t) {
-        if (h == host)
-            m_channelListDialog->addEntry(ch, u, t);
+            m_channelListDialog, [this, host](ServerId h, BufferId ch, int u, const QString &t) {
+        if (h.str() == host)
+            m_channelListDialog->addEntry(ch.str(), u, t);
     });
     connect(m_model, &SessionModel::channelListEnd,
-            m_channelListDialog, [this, host](const QString &h, int total) {
-        if (h == host)
+            m_channelListDialog, [this, host](ServerId h, int total) {
+        if (h.str() == host)
             m_channelListDialog->onListEnd(total);
     });
     connect(m_channelListDialog, &ChannelListDialog::joinRequested,
             this, [this](const QString &h, const QString &channel) {
-        m_model->sendRaw(h, "JOIN " + channel);
+        m_model->sendRaw(ServerId{h}, "JOIN " + channel);
     });
     connect(m_channelListDialog, &ChannelListDialog::refreshRequested,
             this, [this](const QString &h) {
         m_channelListDialog->reset();
-        m_model->sendRaw(h, "LIST");
+        m_model->sendRaw(ServerId{h}, "LIST");
     });
 
-    m_model->sendRaw(host, "LIST");
+    m_model->sendRaw(ServerId{host}, "LIST");
     m_channelListDialog->show();
 }
 
@@ -3189,15 +3205,15 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
     connect(menu, &QMenu::aboutToHide, menu, &QObject::deleteLater);
 
     if (channel == "(server)") {
-        auto *sess = m_model->session(host);
+        auto *sess = m_model->session(ServerId{host});
         if (sess && sess->connected) {
             menu->addAction("Disconnect", this, [this, host]{
-                if (auto *cl = m_model->clientFor(host))
+                if (auto *cl = m_model->clientFor(ServerId{host}))
                     cl->quit();
             });
         } else {
             menu->addAction("Reconnect", this, [this, host]{
-                auto *cl = m_model->clientFor(host);
+                auto *cl = m_model->clientFor(ServerId{host});
                 if (!cl) return;
                 for (const auto &sc : std::as_const(m_config.servers)) {
                     if (sc.host == host) { cl->connectToServer(sc); break; }
@@ -3217,21 +3233,21 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
         }
         menu->addSeparator();
         menu->addAction("Rejoin", this, [this, host, channel]{
-            m_model->sendPart(host, channel);
+            m_model->sendPart(ServerId{host}, BufferId{channel});
             QTimer::singleShot(500, this, [this, host, channel]{
-                m_model->sendJoin(host, channel);
+                m_model->sendJoin(ServerId{host}, BufferId{channel});
             });
         });
         menu->addAction("Leave", this, [this, host, channel]{
-            m_model->sendPart(host, channel);
+            m_model->sendPart(ServerId{host}, BufferId{channel});
         });
         menu->addAction("Close", this, [this, host, channel]{
-            m_model->closeBuffer(host, channel);
+            m_model->closeBuffer(ServerId{host}, BufferId{channel});
         });
     } else if (!channel.isEmpty() && channel != "(server)") {
         // PM / user query
         menu->addAction("Close Query", this, [this, host, channel]{
-            m_model->closeBuffer(host, channel);
+            m_model->closeBuffer(ServerId{host}, BufferId{channel});
         });
     }
 
@@ -3266,7 +3282,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
                                    pane->host(), pane->channel());
     });
 
-    if (auto *sess = m_model->session(host))
+    if (auto *sess = m_model->session(ServerId{host}))
         pane->setNick(sess->nick);
     pane->setNickVisible(m_showNickPrefix);
     {
@@ -3289,7 +3305,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
         pane->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
     }
 
-    if (auto *ch = m_model->channel(host, channel))
+    if (auto *ch = m_model->channel(ServerId{host}, BufferId{channel}))
         pane->setTopic(ChatRenderer::linkifyTopic(ch->topic));
 
     connect(pane, &ChannelPane::closeRequested, this, [this, host, channel]{
@@ -3469,7 +3485,7 @@ void MainWindow::rebuildPaneLayout()
 void MainWindow::refreshPaneChatView(ChannelPane *pane)
 {
     pane->chatView()->clear();
-    auto *ch = m_model->channel(pane->host(), pane->channel());
+    auto *ch = m_model->channel(ServerId{pane->host()}, BufferId{pane->channel()});
     if (!ch) return;
 
     ChatRenderer::Context ctx;
@@ -3482,7 +3498,7 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     ctx.selfNickRe   = m_selfNickRe;
     ctx.channel      = ch;
 
-    const QString selfNick = m_model->selfNick(pane->host());
+    const QString selfNick = m_model->selfNick(ServerId{pane->host()});
     const int emojiPt = m_config.ui.fontSizes.emoji;
 
     for (int i = 0; i < ch->messages.size(); ) {
@@ -3537,9 +3553,9 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
 void MainWindow::refreshPaneNickList(ChannelPane *pane)
 {
     pane->nickList()->clear();
-    auto *ch   = m_model->channel(pane->host(), pane->channel());
+    auto *ch   = m_model->channel(ServerId{pane->host()}, BufferId{pane->channel()});
     if (!ch) return;
-    auto *sess = m_model->session(pane->host());
+    auto *sess = m_model->session(ServerId{pane->host()});
 
     for (const auto &e : std::as_const(ch->nicks))
         pane->nickList()->addItem(makeNickItem(e, ch, sess));
@@ -3556,8 +3572,8 @@ void MainWindow::onNickListContextMenu(const QPoint &pos)
 
 void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPos)
 {
-    const QString host    = m_model->activeHost();
-    const QString channel = m_model->activeChannel();
+    const QString host    = m_model->activeHost().str();
+    const QString channel = m_model->activeChannel().str();
     if (nick.isEmpty() || host.isEmpty()) return;
 
     QMenu menu(this);
@@ -3570,7 +3586,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     menu.addSeparator();
 
     connect(menu.addAction("Message"), &QAction::triggered, this, [this, host, nick]{
-        m_model->openPM(host, nick);
+        m_model->openPM(ServerId{host}, nick);
         switchToChannel(host, nick);
         if (m_input) m_input->setFocus();
     });
@@ -3579,7 +3595,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
         const QString path = QFileDialog::getOpenFileName(this, "Send File to " + nick);
         if (path.isEmpty()) return;
 
-        IrcClient *client = m_model->clientFor(host);
+        IrcClient *client = m_model->clientFor(ServerId{host});
         if (!client) return;
 
         const quint32 localIp = client->localIpv4();
@@ -3593,7 +3609,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
         const QString fn   = dcc->filename();
         const qint64  size = dcc->filesize();
 
-        m_model->sendRaw(host,
+        m_model->sendRaw(ServerId{host},
             "PRIVMSG " + nick + " :\x01""DCC SEND "
             + fn + " " + QString::number(ip)
             + " " + QString::number(port)
@@ -3633,7 +3649,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
         const qint64  size = dcc->filesize();
 
         m_pendingPassiveSends.insert(token, dcc);
-        m_model->sendRaw(host,
+        m_model->sendRaw(ServerId{host},
             "PRIVMSG " + nick + " :\x01""DCC SEND "
             + fn + " 0 0"
             + " " + QString::number(size)
@@ -3666,7 +3682,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     });
 
     connect(menu.addAction("Whois"), &QAction::triggered, this, [this, host, nick]{
-        m_model->sendRaw(host, "WHOIS " + nick);
+        m_model->sendRaw(ServerId{host}, "WHOIS " + nick);
     });
 
     connect(menu.addAction("Invite"), &QAction::triggered, this, [this, host, channel, nick]{
@@ -3675,36 +3691,36 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             this, "Invite " + nick, "Channel:", QLineEdit::Normal,
             (channel.isEmpty() || channel == "(server)") ? QString() : channel, &ok);
         if (!ok || target.isEmpty()) return;
-        m_model->sendRaw(host, "INVITE " + nick + " " + target);
+        m_model->sendRaw(ServerId{host}, "INVITE " + nick + " " + target);
     });
 
     connect(menu.addAction("Give Op"), &QAction::triggered, this, [this, host, channel, nick]{
         if (!channel.isEmpty() && channel != "(server)")
-            m_model->sendRaw(host, "MODE " + channel + " +o " + nick);
+            m_model->sendRaw(ServerId{host}, "MODE " + channel + " +o " + nick);
     });
 
     connect(menu.addAction("Take Op"), &QAction::triggered, this, [this, host, channel, nick]{
         if (!channel.isEmpty() && channel != "(server)")
-            m_model->sendRaw(host, "MODE " + channel + " -o " + nick);
+            m_model->sendRaw(ServerId{host}, "MODE " + channel + " -o " + nick);
     });
 
     connect(menu.addAction("Give Voice"), &QAction::triggered, this, [this, host, channel, nick]{
         if (!channel.isEmpty() && channel != "(server)")
-            m_model->sendRaw(host, "MODE " + channel + " +v " + nick);
+            m_model->sendRaw(ServerId{host}, "MODE " + channel + " +v " + nick);
     });
 
     connect(menu.addAction("Take Voice"), &QAction::triggered, this, [this, host, channel, nick]{
         if (!channel.isEmpty() && channel != "(server)")
-            m_model->sendRaw(host, "MODE " + channel + " -v " + nick);
+            m_model->sendRaw(ServerId{host}, "MODE " + channel + " -v " + nick);
     });
 
     connect(menu.addAction("Version"), &QAction::triggered, this, [this, host, nick]{
-        m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01VERSION\x01");
+        m_model->sendRaw(ServerId{host}, "PRIVMSG " + nick + " :\x01VERSION\x01");
     });
 
     connect(menu.addAction("Ping"), &QAction::triggered, this, [this, host, nick]{
         const qint64 ts = QDateTime::currentMSecsSinceEpoch();
-        m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01PING " + QString::number(ts) + "\x01");
+        m_model->sendRaw(ServerId{host}, "PRIVMSG " + nick + " :\x01PING " + QString::number(ts) + "\x01");
     });
 
     connect(menu.addAction("Copy Nick"), &QAction::triggered, this, [nick]{
@@ -3719,7 +3735,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             const QString key = nick.toLower();
             m_config.ignoredNicks.removeAll(key);
             Config::save(m_config, Config::defaultPath());
-            m_model->localMessage(host, m_model->activeChannel(), "No longer ignoring " + key);
+            m_model->localMessage(ServerId{host}, m_model->activeChannel(), "No longer ignoring " + key);
         });
     } else {
         connect(menu.addAction("Ignore"), &QAction::triggered, this, [this, host, nick]{
@@ -3728,7 +3744,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             if (!m_config.ignoredNicks.contains(key))
                 m_config.ignoredNicks.append(key);
             Config::save(m_config, Config::defaultPath());
-            m_model->localMessage(host, m_model->activeChannel(), "Now ignoring " + key);
+            m_model->localMessage(ServerId{host}, m_model->activeChannel(), "Now ignoring " + key);
         });
     }
 
@@ -3739,12 +3755,12 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
         bool ok;
         QString reason = QInputDialog::getText(this, "Kick " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
         if (!ok) return;
-        m_model->sendRaw(host, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
+        m_model->sendRaw(ServerId{host}, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
     });
 
     connect(menu.addAction("Ban"), &QAction::triggered, this, [this, host, channel, nick]{
         if (!channel.isEmpty() && channel != "(server)")
-            m_model->sendRaw(host, "MODE " + channel + " +b " + nick + "!*@*");
+            m_model->sendRaw(ServerId{host}, "MODE " + channel + " +b " + nick + "!*@*");
     });
 
     connect(menu.addAction("Kick && Ban"), &QAction::triggered, this, [this, host, channel, nick]{
@@ -3752,8 +3768,8 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
         bool ok;
         QString reason = QInputDialog::getText(this, "Kick & Ban " + nick, "Reason:", QLineEdit::Normal, {}, &ok);
         if (!ok) return;
-        m_model->sendRaw(host, "MODE " + channel + " +b " + nick + "!*@*");
-        m_model->sendRaw(host, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
+        m_model->sendRaw(ServerId{host}, "MODE " + channel + " +b " + nick + "!*@*");
+        m_model->sendRaw(ServerId{host}, "KICK " + channel + " " + nick + (reason.isEmpty() ? QString() : " :" + reason));
     });
 
     menu.exec(globalPos);
@@ -3782,7 +3798,7 @@ void MainWindow::processPreviewQueue()
 void MainWindow::refreshChatView(const QString &host, const QString &channel, bool resetToLatest)
 {
     m_chatView->clear();
-    auto *ch = m_model->channel(host, channel);
+    auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
     if (!ch) return;
 
     const QString   key   = host + '\t' + channel;
@@ -3816,7 +3832,7 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
                            "</small></center>").arg(startIdx));
     }
 
-    const QString selfNick = m_model->selfNick(host);
+    const QString selfNick = m_model->selfNick(ServerId{host});
     for (int i = startIdx; i < ch->messages.size(); ) {
         const auto &msg = ch->messages[i];
         if (isCondensable(msg, selfNick)) {
@@ -3874,8 +3890,8 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
 void MainWindow::loadOlderMessages()
 {
     if (m_loadingOlder) return;
-    const QString host = m_model->activeHost();
-    const QString ch   = m_model->activeChannel();
+    const QString host = m_model->activeHost().str();
+    const QString ch   = m_model->activeChannel().str();
     if (host.isEmpty() || ch.isEmpty()) return;
 
     const QString key = host + '\t' + ch;
@@ -3971,15 +3987,15 @@ int MainWindow::findNickRow(QListWidget *list, const QString &nick)
 
 void MainWindow::onNickAdded(const QString &host, const QString &channel, const QString &nick)
 {
-    auto *ch   = m_model->channel(host, channel);
-    auto *sess = m_model->session(host);
+    auto *ch   = m_model->channel(ServerId{host}, BufferId{channel});
+    auto *sess = m_model->session(ServerId{host});
     if (!ch) return;
     const qsizetype row = ch->nickIndex.value(nick.toLower(), -1);
     if (row < 0) return;
     const NickEntry &e = ch->nicks[row];
 
-    const bool isActive = (host == m_model->activeHost() &&
-                           channel.toLower() == m_model->activeChannel().toLower());
+    const bool isActive = (host == m_model->activeHost().str() &&
+                           channel.toLower() == m_model->activeChannel().str().toLower());
     if (isActive) {
         m_nickList->insertItem(static_cast<int>(row), makeNickItem(e, ch, sess));
         if (m_nickCountLabel)
@@ -3993,10 +4009,10 @@ void MainWindow::onNickAdded(const QString &host, const QString &channel, const 
 
 void MainWindow::onNickRemoved(const QString &host, const QString &channel, const QString &nick)
 {
-    auto *ch = m_model->channel(host, channel);
+    auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
 
-    const bool isActive = (host == m_model->activeHost() &&
-                           channel.toLower() == m_model->activeChannel().toLower());
+    const bool isActive = (host == m_model->activeHost().str() &&
+                           channel.toLower() == m_model->activeChannel().str().toLower());
     if (isActive) {
         const int row = findNickRow(m_nickList, nick);
         if (row >= 0) delete m_nickList->takeItem(row);
@@ -4014,8 +4030,8 @@ void MainWindow::onNickRemoved(const QString &host, const QString &channel, cons
 void MainWindow::onNickRenamed(const QString &host, const QString &channel,
                                 const QString &oldNick, const QString &newNick)
 {
-    auto *ch   = m_model->channel(host, channel);
-    auto *sess = m_model->session(host);
+    auto *ch   = m_model->channel(ServerId{host}, BufferId{channel});
+    auto *sess = m_model->session(ServerId{host});
     if (!ch) return;
     const qsizetype newRow = ch->nickIndex.value(newNick.toLower(), -1);
     if (newRow < 0) return;
@@ -4028,8 +4044,8 @@ void MainWindow::onNickRenamed(const QString &host, const QString &channel,
         list->insertItem(static_cast<int>(newRow), makeNickItem(e, ch, sess));
     };
 
-    const bool isActive = (host == m_model->activeHost() &&
-                           channel.toLower() == m_model->activeChannel().toLower());
+    const bool isActive = (host == m_model->activeHost().str() &&
+                           channel.toLower() == m_model->activeChannel().str().toLower());
     if (isActive) apply(m_nickList);
 
     const QString key = host + "|" + channel.toLower();
@@ -4039,9 +4055,9 @@ void MainWindow::onNickRenamed(const QString &host, const QString &channel,
 void MainWindow::refreshNickList(const QString &host, const QString &channel)
 {
     m_nickList->clear();
-    auto *ch   = m_model->channel(host, channel);
+    auto *ch   = m_model->channel(ServerId{host}, BufferId{channel});
     if (!ch) return;
-    auto *sess = m_model->session(host);
+    auto *sess = m_model->session(ServerId{host});
 
     for (const auto &e : std::as_const(ch->nicks))
         m_nickList->addItem(makeNickItem(e, ch, sess));
@@ -4053,7 +4069,7 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
 
 void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
 {
-    auto *ch = m_model->channel(host, channel);
+    auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
 
     QString serverName = host;
     for (const auto &sc : std::as_const(m_config.servers))
@@ -4154,7 +4170,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
             }
             if (!m_previewChannels.contains(urlStr))
                 enqueuePreview(QUrl(urlStr),
-                    m_model->activeHost(), m_model->activeChannel());
+                    m_model->activeHost().str(), m_model->activeChannel().str());
         }
     }
 
@@ -4230,7 +4246,7 @@ void MainWindow::fetchAvatar(const QString &url)
         if (px.isNull()) return;
         px = px.scaled(36, 36, Qt::KeepAspectRatio, Qt::FastTransformation);
         m_avatarCache.insert(url, px);
-        scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
+        scheduleNickRefresh(m_model->activeHost().str(), m_model->activeChannel().str());
     };
 
     // Local file — load directly without network

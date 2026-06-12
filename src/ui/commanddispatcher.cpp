@@ -258,8 +258,8 @@ CommandDispatcher::CommandDispatcher(SessionModel *model, Config *config,
     , m_dialogParent(dialogParent)
 {}
 
-bool CommandDispatcher::dispatch(const QString &text, const QString &host,
-                                  const QString &channel, const QString &replyMsgid)
+bool CommandDispatcher::dispatch(const QString &text, ServerId host,
+                                  BufferId channel, const QString &replyMsgid)
 {
     if (!text.startsWith('/')) return false;
 
@@ -268,9 +268,9 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
     const QString args = trimmed.section(' ', 1);
 
     if (cmd == "/join" || cmd == "/j") {
-        m_model->sendJoin(host, args.section(' ', 0, 0), args.section(' ', 1, 1));
+        m_model->sendJoin(host, BufferId{args.section(' ', 0, 0)}, args.section(' ', 1, 1));
     } else if (cmd == "/part" || cmd == "/leave" || cmd == "/close") {
-        const bool isChannel = channel.startsWith('#') || channel.startsWith('&');
+        const bool isChannel = channel.str().startsWith('#') || channel.str().startsWith('&');
         if (isChannel)
             m_model->sendPart(host, channel, args);
         else
@@ -282,24 +282,24 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
     } else if (cmd == "/msg") {
         const QString target = args.section(' ', 0, 0);
         const QString body   = args.section(' ', 1);
-        m_model->sendMessage(host, target, body);
+        m_model->sendMessage(host, BufferId{target}, body);
         if (!target.startsWith('#') && !target.startsWith('&'))
-            emit switchChannel(host, target);
+            emit switchChannel(host.str(), target);
     } else if (cmd == "/query") {
         const QString target = args.trimmed().section(' ', 0, 0);
         if (!target.isEmpty()) {
             m_model->openPM(host, target);
-            emit switchChannel(host, target);
+            emit switchChannel(host.str(), target);
             emit focusInput();
         }
     } else if (cmd == "/ns") {
-        if (!args.isEmpty()) m_model->sendMessage(host, "NickServ", args);
+        if (!args.isEmpty()) m_model->sendMessage(host, BufferId{"NickServ"}, args);
     } else if (cmd == "/cs") {
-        if (!args.isEmpty()) m_model->sendMessage(host, "ChanServ", args);
+        if (!args.isEmpty()) m_model->sendMessage(host, BufferId{"ChanServ"}, args);
     } else if (cmd == "/bs") {
-        if (!args.isEmpty()) m_model->sendMessage(host, "BotServ", args);
+        if (!args.isEmpty()) m_model->sendMessage(host, BufferId{"BotServ"}, args);
     } else if (cmd == "/ms") {
-        if (!args.isEmpty()) m_model->sendMessage(host, "MemoServ", args);
+        if (!args.isEmpty()) m_model->sendMessage(host, BufferId{"MemoServ"}, args);
     } else if (cmd == "/oper") {
         const QString user = args.section(' ', 0, 0);
         const QString pass = args.section(' ', 1);
@@ -318,7 +318,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         if (args.isEmpty()) {
             QString defMsg;
             for (const auto &sc : std::as_const(m_config->servers))
-                if (sc.host == host) { defMsg = sc.awayMessage; break; }
+                if (sc.host == host.str()) { defMsg = sc.awayMessage; break; }
             m_model->sendRaw(host, defMsg.isEmpty() ? QStringLiteral("AWAY") : "AWAY :" + defMsg);
         } else {
             m_model->sendRaw(host, "AWAY :" + args);
@@ -357,7 +357,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
                 val.isEmpty() ? "Avatar cleared." : "Avatar URL set to: " + val);
         }
     } else if (cmd == "/list") {
-        emit openChannelList(host);
+        emit openChannelList(host.str());
     } else if (cmd == "/motd") {
         m_model->sendRaw(host, args.isEmpty() ? "MOTD" : "MOTD " + args.trimmed());
     } else if (cmd == "/stats") {
@@ -373,7 +373,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         else
             m_model->sendRaw(host, "WHOWAS " + args.trimmed());
     } else if (cmd == "/topic") {
-        QString topicTarget = channel;
+        QString topicTarget = channel.str();
         QString topicText   = args;
         if (args.startsWith('#') || args.startsWith('&')) {
             topicTarget = args.section(' ', 0, 0);
@@ -387,7 +387,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         const QString target = args.section(' ', 0, 0);
         const QString reason = args.section(' ', 1);
         if (!target.isEmpty())
-            m_model->sendRaw(host, "KICK " + channel + " " + target
+            m_model->sendRaw(host, "KICK " + channel.str() + " " + target
                              + (reason.isEmpty() ? "" : " :" + reason));
     } else if (cmd == "/caps") {
         auto *cl = m_model->clientFor(host);
@@ -414,7 +414,7 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         }
     } else if (cmd == "/sysinfo") {
         const int ret = QMessageBox::question(m_dialogParent, "Share System Info",
-            "This will post your OS, CPU, memory, GPU, and uptime to " + channel + ".\n\n"
+            "This will post your OS, CPU, memory, GPU, and uptime to " + channel.str() + ".\n\n"
             "System details can identify you. Continue?",
             QMessageBox::Yes | QMessageBox::No);
         if (ret != QMessageBox::Yes) return true;
@@ -479,34 +479,34 @@ bool CommandDispatcher::dispatch(const QString &text, const QString &host,
         const QString nick = args.section(' ', 0, 0);
         const QString chan = args.section(' ', 1, 1);
         if (!nick.isEmpty())
-            m_model->sendRaw(host, "INVITE " + nick + " " + (chan.isEmpty() ? channel : chan));
+            m_model->sendRaw(host, "INVITE " + nick + " " + (chan.isEmpty() ? channel.str() : chan));
     } else if (cmd == "/mode") {
         if (!args.isEmpty())
             m_model->sendRaw(host, "MODE " + args);
     } else if (cmd == "/op") {
         const QString nick = args.trimmed().section(' ', 0, 0);
         if (!nick.isEmpty())
-            m_model->sendRaw(host, "MODE " + channel + " +o " + nick);
+            m_model->sendRaw(host, "MODE " + channel.str() + " +o " + nick);
     } else if (cmd == "/deop") {
         const QString nick = args.trimmed().section(' ', 0, 0);
         if (!nick.isEmpty())
-            m_model->sendRaw(host, "MODE " + channel + " -o " + nick);
+            m_model->sendRaw(host, "MODE " + channel.str() + " -o " + nick);
     } else if (cmd == "/voice") {
         const QString nick = args.trimmed().section(' ', 0, 0);
         if (!nick.isEmpty())
-            m_model->sendRaw(host, "MODE " + channel + " +v " + nick);
+            m_model->sendRaw(host, "MODE " + channel.str() + " +v " + nick);
     } else if (cmd == "/devoice") {
         const QString nick = args.trimmed().section(' ', 0, 0);
         if (!nick.isEmpty())
-            m_model->sendRaw(host, "MODE " + channel + " -v " + nick);
+            m_model->sendRaw(host, "MODE " + channel.str() + " -v " + nick);
     } else if (cmd == "/ban") {
         const QString mask = args.trimmed().section(' ', 0, 0);
         if (!mask.isEmpty())
-            m_model->sendRaw(host, "MODE " + channel + " +b " + mask);
+            m_model->sendRaw(host, "MODE " + channel.str() + " +b " + mask);
     } else if (cmd == "/unban") {
         const QString mask = args.trimmed().section(' ', 0, 0);
         if (!mask.isEmpty())
-            m_model->sendRaw(host, "MODE " + channel + " -b " + mask);
+            m_model->sendRaw(host, "MODE " + channel.str() + " -b " + mask);
     } else if (cmd == "/react") {
         const QString emoji = args.trimmed();
         if (!emoji.isEmpty() && !replyMsgid.isEmpty()) {
