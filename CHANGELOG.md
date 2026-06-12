@@ -3,6 +3,18 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-11 (docs site / uplinkirc.chat)
+What changed:
+  - Purchased uplinkirc.chat; connected Porkbun GitHub static hosting to noderelay/UplinkIRC main branch.
+  - Added root index.html to redirect to docs/ (Porkbun serves from repo root, docs site lives in docs/).
+  - Updated README.md How-To Guide link from noderelay.github.io to uplinkirc.chat.
+  - Updated gruvbox theme screenshot (uplink-gruvbox.png) with a new capture.
+  - Fixed two incorrect keyboard shortcut entries on the docs site: Ctrl+W described as "close the active pane" (it minimizes to tray); Alt+1-4 listed as a shortcut that doesn't exist.
+  - All changes committed and pushed; site is live.
+Next priorities: 3 hero screenshots from user (dark, split-pane, about dialog); Send button disable-when-empty; virtual scrolling; heaptrack session audit.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-11 (bot icon late-join fix)
 What changed:
   - Diagnosed missing alien icon for bots (+B) that join a channel after the client is already in it. The bulk WHO sweep on RPL_ENDOFNAMES only covers users present at join time; late arrivals were never queried.
