@@ -3,6 +3,18 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-12 (v0.25.23 release)
+What changed:
+  - Nick right-click menu restructured into submenus: CTCP ▶ (Ping, Version), DCC ▶ (Send File, Send File Passive), Chan Ops ▶ (Op, Voice, Invite, Kick, Ban, Kick & Ban).
+  - Fixed typing indicator: Uplink now requests and handles both finalized `typing` CAP and old `draft/typing` form; was silently broken on Ergo IRCd (which uses the finalized form).
+  - Fixed transparent combo box popups on Wayland: three attempts (CSS, palette, showPopup override) all failed at the Wayland native-surface level. Final fix: replaced all popup combo boxes in Preferences/Server/Font dialogs with inline QRadioButton groups and collapsible QListWidgets.
+  - Added bouncer_network support for ZNC: sasl_user + sasl_password + bouncer_network now auto-assemble into `user/network:password` PASS string. Network field now appears in Manage Servers for ZNC (was soju-only).
+  - Fixed ZNC documentation contradictions: removed "Leave SASL blank" note that directly conflicted with setup Step 4; added explicit callout in both howto.html and configuration.md that host/port point at the ZNC server, not the IRC network. Added inline comments to config.toml examples.
+  - Bumped to v0.25.23, tagged, pushed. Both CI and Release workflows passed.
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-11 (docs site / uplinkirc.chat)
 What changed:
   - Purchased uplinkirc.chat; connected Porkbun GitHub static hosting to noderelay/UplinkIRC main branch.
