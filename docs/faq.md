@@ -126,6 +126,69 @@ channels = "#uplink, #linux"
 
 You can also set this from **☰ → Preferences → Manage Servers → Edit** using the **Auto-join** field.
 
+### How do I temporarily disable a server without removing it?
+
+Set `disabled = true` in the server block:
+
+```toml
+[[server]]
+disabled = true
+name     = "Libera"
+host     = "irc.libera.chat"
+port     = 6697
+ssl      = true
+nick     = "yournick"
+channels = "#linux"
+```
+
+Uplink will skip the server entirely on startup — no connection, no sidebar entry — but keeps the block in the file and writes it back on every save.
+
+You can also tick **☰ → Manage Servers → Edit → Disabled** and uncheck it whenever you want to reconnect.
+
+> **Why not just comment out the block?** Commented `[[server]]` entries are not parsed by Uplink. The next time the app writes `config.toml` (on any Preferences change, `/ignore`, theme switch, etc.) it does a full rewrite from memory and the commented block is permanently gone. `disabled = true` is the safe way to pause a server.
+
+### How do I set a custom quit message?
+
+Add `quit_message` to the server block:
+
+```toml
+[[server]]
+name         = "LinuxDojo"
+host         = "irc.linuxdojo.org"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+quit_message = "Later!"
+```
+
+This message is sent when you disconnect or type `/quit` with no argument. It is shown to other users as `*** yournick has quit (Later!)`.
+
+You can also set it from **☰ → Manage Servers → Edit → Quit Message**. To override for a single disconnect: `/quit See you tomorrow`.
+
+If `quit_message` is unset or blank, Uplink sends `"Uplink"`.
+
+### How do I set a default away message?
+
+Add `away_message` to the server block:
+
+```toml
+[[server]]
+name         = "LinuxDojo"
+host         = "irc.linuxdojo.org"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+away_message = "Away from keyboard — back soon"
+```
+
+When you type `/away` with no argument, this message is sent. Users who message you while you are away receive it automatically as a server reply.
+
+- `/away` — uses `away_message` (or clears away if none is configured)
+- `/away Back in 10` — overrides for this session only
+- `/back` — always clears away regardless of config
+
+Set from the GUI: **☰ → Manage Servers → Edit → Away Message**.
+
 ---
 
 ## Connecting & IRC
@@ -442,8 +505,8 @@ Click **☰ → Manage Servers...** to open the server manager. You do not need 
 
 | Section | Fields |
 |---|---|
-| **Connection** | Name (display name in sidebar), Host, Port, SSL checkbox |
-| **Identity** | Nick, Username, Real Name |
+| **Connection** | Disabled checkbox (keep in config but skip on startup), Name (display name in sidebar), Host, Port, SSL checkbox |
+| **Identity** | Nick, Username, Real Name, Quit Message, Away Message |
 | **Authentication** | Server Password (for bouncers or password-protected servers), SASL User + Password (for SASL PLAIN), SASL EXTERNAL checkbox + Client Cert + Client Key (Browse buttons available), NickServ password |
 | **Channels** | Auto-join — comma-separated list of channels (e.g. `#uplink, #linux`). For password-protected channels, see the note in the dialog and use `config.toml` directly. |
 | **Bouncer** | Type (None / ZNC / Soju) and Network name (soju only) |

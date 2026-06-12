@@ -458,6 +458,8 @@
   <div class="nav-section">Server Management</div>
   <ul>
     <li><a href="#manage-servers">Manage Servers dialog</a></li>
+    <li><a href="#disabled-server">Disabling a server</a></li>
+    <li><a href="#quit-away">Quit &amp; away messages</a></li>
   </ul>
   <div class="nav-section">Authentication</div>
   <ul>
@@ -805,8 +807,8 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
     <table>
       <thead><tr><th>Section</th><th>Fields</th></tr></thead>
       <tbody>
-        <tr><td><strong>Connection</strong></td><td>Name (display name in sidebar), Host, Port, SSL checkbox</td></tr>
-        <tr><td><strong>Identity</strong></td><td>Nick, Username, Real Name</td></tr>
+        <tr><td><strong>Connection</strong></td><td>Disabled checkbox (keep in config, skip on startup), Name (display name in sidebar), Host, Port, SSL checkbox</td></tr>
+        <tr><td><strong>Identity</strong></td><td>Nick, Username, Real Name, Quit Message, Away Message</td></tr>
         <tr><td><strong>Authentication</strong></td><td>Server Password (bouncers / password-protected servers); SASL User + SASL Password (SASL PLAIN); SASL EXTERNAL checkbox + Client Cert + Client Key — each has a Browse button to pick the file; NickServ password (auto-identifies on connect)</td></tr>
         <tr><td><strong>Channels</strong></td><td>Auto-join — comma-separated (e.g. <code>#uplink, #linux</code>). See note below for password-protected channels.</td></tr>
         <tr><td><strong>Bouncer</strong></td><td>Type: None / ZNC / Soju. Network name (soju only).</td></tr>
@@ -822,6 +824,85 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
 
     <h3>Removing a server</h3>
     <p>Select the server in the list and click <strong>Remove</strong>. The server disconnects, is removed from the sidebar, and is deleted from <code>config.toml</code>.</p>
+  </section>
+
+  <hr />
+
+  <!-- DISABLED SERVER -->
+  <section id="disabled-server">
+    <h2>Disabling a server</h2>
+    <p>If you want to keep a server in your config without connecting to it on startup, set <code>disabled = true</code> in the server block:</p>
+    <pre>[[server]]
+disabled = true
+name     = "Libera"
+host     = "irc.libera.chat"
+port     = 6697
+ssl      = true
+nick     = "yournick"
+channels = "#linux"</pre>
+    <p>Uplink skips the server completely — no connection attempt, no sidebar entry — but preserves the block and writes it back on every config save. Re-enable it any time by removing the line or setting it to <code>false</code>.</p>
+
+    <h3>Using the GUI</h3>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Manage Servers...</strong></div></div>
+    <div class="step-row"><span class="step">2</span><div>Select the server and click <strong>Edit</strong>.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Tick the <strong>Disabled</strong> checkbox at the top of the Connection section and click <strong>OK</strong>.</div></div>
+    <div class="step-row"><span class="step">4</span><div>The server disconnects immediately and disappears from the sidebar. Its config is preserved.</div></div>
+    <p>To re-enable, open Edit Server again and uncheck <strong>Disabled</strong> — the server reconnects immediately.</p>
+
+    <div class="callout callout-warning">
+      <strong>Don't comment out <code>[[server]]</code> blocks.</strong> Commented entries are not parsed by Uplink. The next time the app writes <code>config.toml</code> — which happens on any Preferences change, theme switch, or <code>/ignore</code> command — it does a full rewrite from memory and the commented block is permanently removed. Use <code>disabled = true</code> instead.
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- QUIT & AWAY MESSAGES -->
+  <section id="quit-away">
+    <h2>Quit &amp; away messages</h2>
+
+    <h3>Quit message</h3>
+    <p>The quit message is shown to other users when you disconnect: <code>*** yournick has quit (your message)</code>.</p>
+    <pre>[[server]]
+name         = "LinuxDojo"
+host         = "irc.linuxdojo.org"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+quit_message = "Later!"</pre>
+    <p>This is used when you disconnect normally or type <code>/quit</code> with no argument. To override for a single disconnect: <code>/quit See you tomorrow</code>. If unset, Uplink sends <code>"Uplink"</code>.</p>
+    <p><strong>GUI:</strong> Open <strong>☰ → Manage Servers → Edit → Quit Message</strong>.</p>
+
+    <h3>Away message</h3>
+    <p>The away message is sent when you type <code>/away</code> with no argument. Users who message you while you are away receive it as an automatic server reply.</p>
+    <pre>[[server]]
+name         = "LinuxDojo"
+host         = "irc.linuxdojo.org"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+away_message = "Away from keyboard — back soon"</pre>
+    <table>
+      <thead><tr><th>Command</th><th>Behaviour</th></tr></thead>
+      <tbody>
+        <tr><td><code>/away</code></td><td>Uses configured <code>away_message</code>; if none set, clears away status</td></tr>
+        <tr><td><code>/away Back in 10</code></td><td>Overrides for this session only</td></tr>
+        <tr><td><code>/back</code></td><td>Always clears away regardless of config</td></tr>
+      </tbody>
+    </table>
+    <p><strong>GUI:</strong> Open <strong>☰ → Manage Servers → Edit → Away Message</strong>.</p>
+
+    <h3>Full example with both</h3>
+    <pre>[[server]]
+name         = "LinuxDojo"
+host         = "irc.linuxdojo.org"
+port         = 6697
+ssl          = true
+nick         = "yournick"
+user         = "uplink"
+realname     = "Uplink User"
+quit_message = "Later!"
+away_message = "Away from keyboard — back soon"
+channels     = "#uplink, #linux"</pre>
   </section>
 
   <hr />

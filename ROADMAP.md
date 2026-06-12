@@ -171,6 +171,9 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Soju bouncer network selection — SASL AUTHENTICATE payload now sends user/network when bouncerNetwork is set; LISTNETWORKS END handled; initial network list shown as formatted summary (v0.25.2)
 - [x] IRCv3 WebSocket transport — connect to servers over wss:// in addition to plain TCP+TLS
 - [x] User metadata — IRCv3 draft/metadata-2: display-name and avatar keys; avatar image rendered inline in nick list tooltip (fetched async, cached, no upscale); local file paths supported; Preferences Profile section + /displayname /avatar commands; auto-publish on connect; avatar updates in Preferences now reflected immediately without reconnect
+- [x] Per-server quit message — `quit_message` in server block; used by /quit with no arg and on normal disconnect; GUI field in Edit Server
+- [x] Per-server away message — `away_message` in server block; used by /away with no arg; GUI field in Edit Server; /back always clears
+- [x] Disabled server flag — `disabled = true` in server block keeps it in config but skips startup; GUI checkbox in Edit Server; prevents config-save data loss vs commented-out blocks
 - [x] cap-notify — server can notify client of capability changes mid-session; CAP NEW triggers REQ for wanted caps, CAP DEL removes from active set; m_registered flag prevents spurious CAP END on mid-session ACK (v0.25.4)
 - [x] draft/chathistory compatibility — Ergo IRCd uses draft cap name; Uplink now requests both names and handles either on history delivery and batch recognition (v0.25.5)
 

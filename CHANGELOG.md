@@ -79,6 +79,34 @@ No regressions. No known issues.
 Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
 -->
 
+<!--
+SESSION SUMMARY — 2026-06-12 (quit message, away message, disabled flag)
+What changed:
+  - Added per-server quit_message: sent on disconnect or /quit with no arg; defaults to "Uplink".
+    Wired through config.h, config.cpp, serverdialog, IrcClient (m_quitMessage stored on connect),
+    commanddispatcher (/quit now delegates default to IrcClient).
+  - Added per-server away_message: used by /away with no arg; commanddispatcher looks up the
+    server config by host and sends it; /back always clears. If unset, /away with no arg clears
+    away status as before.
+  - Added per-server disabled flag: disabled = true keeps the block in config and writes it back
+    on every save but skips the server on startup (no session, no client, no sidebar entry).
+    Fixes a data-loss bug where commented-out [[server]] blocks were permanently stripped the
+    next time the app wrote config.toml (which happens on any Preferences change, theme switch,
+    /ignore command, etc.). SessionModel::loadConfig and addServer skip disabled servers.
+  - Edit Server dialog: Disabled checkbox at top of Connection section; Quit Message and Away
+    Message fields under Identity.
+  - config.toml.example: [profile] section added with display_name/avatar_url, fully commented.
+    quit_message, away_message, disabled shown as commented examples in server blocks.
+  - docs/configuration.md: Disabling a server section + Quit/away message section added.
+    [[server]] table updated with all three new keys.
+  - docs/commands.md: /away and /quit descriptions updated; examples updated.
+  - docs/faq.md: three new entries — disabling a server, quit message, away message.
+  - docs/howto.html: two new sections (Disabling a server, Quit & away messages) with nav entries.
+  - Fix: auto-join placeholder now shows #uplink, #linux, #archlinux format.
+No regressions. No known issues.
+Next priorities: ServerId/BufferId strong types; Preferences toggle for send button.
+-->
+
 ### Added
 
 - Per-server `quit_message` — set a custom QUIT message in config or via **Edit Server → Quit Message**; used when you disconnect or type `/quit` with no argument (falls back to `"Uplink"`)
