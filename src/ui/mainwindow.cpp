@@ -1345,9 +1345,9 @@ void MainWindow::setupChatArea()
         auto *ch = m_model->channel(host, channel);
         if (!ch) return;
 
-        QByteArray imgData;
         QString imgHtml;
         if (!thumbnail.isNull()) {
+            QByteArray imgData;
             QBuffer imgBuf(&imgData);
             imgBuf.open(QIODevice::WriteOnly);
             thumbnail.save(&imgBuf, "PNG");
@@ -1369,8 +1369,8 @@ void MainWindow::setupChatArea()
             ? QFontMetrics(m_chatView->font()).horizontalAdvance("00:00  ")
             : 20;
 
-        // Skeleton HTML has no image — safe to store long-term without bloat.
-        // imgData is stored separately so the full card can be reconstructed on refresh.
+        // cardBase is the open portion of the card HTML (no closing tags, no img).
+        // Stored in PreviewCard so refresh reconstructs by simple concatenation.
         const QString cardBase =
             QString("<table cellpadding=\"5\" cellspacing=\"0\" "
                     "style=\"margin:1px 0 3px %1px;"
@@ -1383,22 +1383,26 @@ void MainWindow::setupChatArea()
                       "<span style=\"color:%3;font-size:8pt\">%4</span>")
                 .arg(fg.name(), titleEsc, sub.name(), domainEsc);
 
-        const QString skeletonHtml = cardBase + "</a></td></tr></table>";
-        const QString cardHtml     = cardBase + imgHtml + "</a></td></tr></table>";
+        const QString cardHtml = cardBase + imgHtml + "</a></td></tr></table>";
 
-        ch->addPreview(urlStr, skeletonHtml, imgData);
+        ch->addPreview(urlStr, cardBase, imgHtml);
 
-        if (host != m_model->activeHost() ||
-            channel.toLower() != m_model->activeChannel().toLower())
-            return;
+        const bool isActive = (host == m_model->activeHost() &&
+                               channel.toLower() == m_model->activeChannel().toLower());
+        if (isActive) {
+            QScrollBar *sb = m_chatView->verticalScrollBar();
+            const bool atBottom = sb->value() >= sb->maximum() - 4;
+            insertHtmlBlock(m_chatView, cardHtml);
+            if (atBottom) sb->setValue(sb->maximum());
+        }
 
-        QScrollBar *sb = m_chatView->verticalScrollBar();
-        const bool atBottom = sb->value() >= sb->maximum() - 4;
-
-        insertHtmlBlock(m_chatView, cardHtml);
-
-        if (atBottom)
-            sb->setValue(sb->maximum());
+        const QString paneKey = host + "|" + channel.toLower();
+        if (auto *pane = m_panes.value(paneKey)) {
+            QScrollBar *psb = pane->chatView()->verticalScrollBar();
+            const bool atBottom = psb->value() >= psb->maximum() - 4;
+            insertHtmlBlock(pane->chatView(), cardHtml);
+            if (atBottom) psb->setValue(psb->maximum());
+        }
     });
 
     m_chatSplitter = new QSplitter(Qt::Horizontal);
@@ -3501,6 +3505,20 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
                     insertHtmlBlock(pane->chatView(),
                                     buildReactionHtml(*rxIt, emojiPt));
             }
+            if (isText && !ch->previews.isEmpty()) {
+                static const QRegularExpression urlRe(
+                    R"(https?://[^\s<>"]+)",
+                    QRegularExpression::CaseInsensitiveOption);
+                auto uit = urlRe.globalMatch(msg.text);
+                while (uit.hasNext()) {
+                    const QString urlStr = QUrl(uit.next().captured(0)).toString();
+                    const auto p = ch->previews.constFind(urlStr);
+                    if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
+                        continue;
+                    insertHtmlBlock(pane->chatView(),
+                        p->base + p->imgHtml + "</a></td></tr></table>");
+                }
+            }
             ++i;
         }
     }
@@ -3809,17 +3827,8 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel)
                     const auto p = ch->previews.constFind(urlStr);
                     if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
                         continue;
-                    QString displayHtml = p.value();
-                    const auto imgIt = ch->previewImages.constFind(urlStr);
-                    if (imgIt != ch->previewImages.constEnd() && !imgIt->isEmpty()) {
-                        const QString dataUri = "data:image/png;base64,"
-                            + QString::fromLatin1(imgIt->toBase64());
-                        const QString imgTag = "<br/><img src=\"" + dataUri + "\"/>";
-                        const qsizetype pos = displayHtml.lastIndexOf("</a></td></tr></table>");
-                        if (pos != -1)
-                            displayHtml.insert(pos, imgTag);
-                    }
-                    insertHtmlBlock(m_chatView, displayHtml);
+                    insertHtmlBlock(m_chatView,
+                        p->base + p->imgHtml + "</a></td></tr></table>");
                 }
             }
             if (!msg.msgid.isEmpty()) {
@@ -4078,12 +4087,22 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
         static const QRegularExpression urlRe(
             R"(https?://[^\s<>"]+)",
             QRegularExpression::CaseInsensitiveOption);
+        auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
         auto it = urlRe.globalMatch(msg.text);
         while (it.hasNext()) {
             const QString urlStr = QUrl(it.next().captured(0)).toString();
-            if (urlStr.isEmpty() || m_previewChannels.contains(urlStr)) continue;
-            enqueuePreview(QUrl(urlStr),
-                m_model->activeHost(), m_model->activeChannel());
+            if (urlStr.isEmpty()) continue;
+            if (ch) {
+                const auto p = ch->previews.constFind(urlStr);
+                if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr)) {
+                    insertHtmlBlock(m_chatView,
+                        p->base + p->imgHtml + "</a></td></tr></table>");
+                    continue;
+                }
+            }
+            if (!m_previewChannels.contains(urlStr))
+                enqueuePreview(QUrl(urlStr),
+                    m_model->activeHost(), m_model->activeChannel());
         }
     }
 
