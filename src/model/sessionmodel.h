@@ -51,9 +51,11 @@ public:
     void openPM     (ServerId host, const QString &nick);
     IrcClient *clientFor(ServerId host);
 
-    void ignoreNick  (const QString &nick);
-    void unignoreNick(const QString &nick);
+    void setIgnore   (const QString &nick, IgnoreTypes flags = kIgnoreAll);
+    void clearIgnore (const QString &nick);
     bool isIgnored   (const QString &nick) const;
+    bool isIgnoredFor(const QString &nick, IgnoreType type) const;
+    IgnoreTypes ignoreFlags(const QString &nick) const;
 
     void sendReact (ServerId host, BufferId target,
                     const QString &msgid, const QString &emoji);
@@ -185,7 +187,7 @@ private:
     QList<ServerSession> m_sessions;
     QList<IrcClient *>   m_clients;
     Config               m_config;
-    QSet<QString>        m_ignoredNicks;
+    QHash<QString, IgnoreTypes> m_ignoredNicks;
     QHash<QString, QFile*> m_logFiles;
 
     ServerId m_activeHost;

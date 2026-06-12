@@ -154,13 +154,38 @@ Config Config::load(const QString &path)
 
         // [ignore]
         if (auto ign = tbl["ignore"].as_table()) {
+            // Backwards compat: old nicks = [...] array
             if (auto nicks = (*ign)["nicks"].as_array()) {
                 for (auto &n : *nicks) {
                     if (auto v = n.value<std::string>()) {
                         const QString nick = QString::fromStdString(*v).trimmed().toLower();
                         if (!nick.isEmpty())
-                            cfg.ignoredNicks.append(nick);
+                            cfg.ignoreList.append({nick, kIgnoreAll});
                     }
+                }
+            }
+            // New format: [[ignore.entry]]
+            if (auto entries = (*ign)["entry"].as_array()) {
+                for (auto &enode : *entries) {
+                    auto *e = enode.as_table();
+                    if (!e) continue;
+                    const QString nick = QString::fromStdString(
+                        (*e)["nick"].value_or<std::string>("")).trimmed().toLower();
+                    if (nick.isEmpty()) continue;
+                    IgnoreTypes flags;
+                    if (auto fa = (*e)["flags"].as_array()) {
+                        for (auto &fn : *fa) {
+                            if (auto fv = fn.value<std::string>()) {
+                                if (*fv == "pm")     flags |= IgnoreType::PM;
+                                if (*fv == "notice") flags |= IgnoreType::Notice;
+                                if (*fv == "invite") flags |= IgnoreType::Invite;
+                            }
+                        }
+                    } else {
+                        flags = kIgnoreAll;
+                    }
+                    if (flags)
+                        cfg.ignoreList.append({nick, flags});
                 }
             }
         }
@@ -301,6 +326,16 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
         out << "\n";
     }
 
+    for (const auto &entry : cfg.ignoreList) {
+        out << "[[ignore.entry]]\n";
+        out << "nick  = " << tomlQuote(entry.nick) << "\n";
+        QStringList flagNames;
+        if (entry.flags & IgnoreType::PM)     flagNames << "\"pm\"";
+        if (entry.flags & IgnoreType::Notice) flagNames << "\"notice\"";
+        if (entry.flags & IgnoreType::Invite) flagNames << "\"invite\"";
+        out << "flags = [" << flagNames.join(", ") << "]\n\n";
+    }
+
     auto writeNickList = [&](const char *section, const QStringList &nicks) {
         if (nicks.isEmpty()) return;
         QStringList quoted;
@@ -308,7 +343,6 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             quoted << tomlQuote(n);
         out << "[" << section << "]\nnicks = [" << quoted.join(", ") << "]\n\n";
     };
-    writeNickList("ignore",  cfg.ignoredNicks);
     writeNickList("monitor", cfg.monitorList);
 
     for (const auto &s : cfg.servers) {

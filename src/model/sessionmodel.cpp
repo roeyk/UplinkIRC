@@ -84,19 +84,19 @@ void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
 void SessionModel::loadConfig(const Config &cfg)
 {
     m_config = cfg;
-    for (const QString &n : cfg.ignoredNicks)
-        m_ignoredNicks.insert(n.toLower());
+    for (const auto &entry : cfg.ignoreList)
+        m_ignoredNicks.insert(entry.nick, entry.flags);
     for (const ServerConfig &sc : cfg.servers)
         if (!sc.disabled)
             spawnSession(sc, false);
 }
 
-void SessionModel::ignoreNick(const QString &nick)
+void SessionModel::setIgnore(const QString &nick, IgnoreTypes flags)
 {
-    m_ignoredNicks.insert(nick.toLower());
+    m_ignoredNicks.insert(nick.toLower(), flags);
 }
 
-void SessionModel::unignoreNick(const QString &nick)
+void SessionModel::clearIgnore(const QString &nick)
 {
     m_ignoredNicks.remove(nick.toLower());
 }
@@ -104,6 +104,16 @@ void SessionModel::unignoreNick(const QString &nick)
 bool SessionModel::isIgnored(const QString &nick) const
 {
     return m_ignoredNicks.contains(nick.toLower());
+}
+
+bool SessionModel::isIgnoredFor(const QString &nick, IgnoreType type) const
+{
+    return m_ignoredNicks.value(nick.toLower()) & type;
+}
+
+IgnoreTypes SessionModel::ignoreFlags(const QString &nick) const
+{
+    return m_ignoredNicks.value(nick.toLower());
 }
 
 void SessionModel::sendReact(ServerId host, BufferId target,
@@ -617,11 +627,11 @@ void SessionModel::onMessage(const QString &host, const QString &target,
                              const QDateTime &serverTime, bool isHistory,
                              const QString &msgid, const QString &replyTo)
 {
-    if (isIgnored(nick)) return;
     auto *sess = session(ServerId{host});
     const bool isSelf = sess && (nick.toLower() == sess->nick.toLower());
     const bool isPM = !target.startsWith('#') && !target.startsWith('&')
                       && !target.startsWith('!');
+    if (isPM && !isSelf && isIgnoredFor(nick, IgnoreType::PM)) return;
     const QString pmNick = isSelf ? target : nick;
     const QString buf = isPM ? pmNick : target;
     if (isPM && !isHistory) openPM(ServerId{host}, pmNick);
@@ -648,10 +658,11 @@ void SessionModel::onNotice(const QString &host, const QString &target,
                             const QDateTime &serverTime, bool isHistory,
                             const QString &msgid, const QString &replyTo)
 {
-    if (isIgnored(nick)) return;
     auto *sess2 = session(ServerId{host});
+    const bool isChannelNotice = target.startsWith('#') || target.startsWith('&');
+    if (!isChannelNotice && isIgnoredFor(nick, IgnoreType::Notice)) return;
     QString dest;
-    if (target.startsWith('#') || target.startsWith('&')) {
+    if (isChannelNotice) {
         dest = target;
     } else if (sess2 && sess2->get(nick)) {
         dest = nick;   // route reply into the open PM tab for this sender
@@ -672,7 +683,9 @@ void SessionModel::onAction(const QString &host, const QString &target,
                             const QDateTime &serverTime, bool isHistory,
                             const QString &msgid)
 {
-    if (isIgnored(nick)) return;
+    const bool isPrivateAction = !target.startsWith('#') && !target.startsWith('&')
+                                 && !target.startsWith('!');
+    if (isPrivateAction && isIgnoredFor(nick, IgnoreType::PM)) return;
     auto *sessA = session(ServerId{host});
     QString actionAccount;
     if (auto *ch = sessA ? sessA->get(target) : nullptr) {
@@ -1113,6 +1126,7 @@ void SessionModel::onInviteNotify(const QString &host, const QString &inviter,
 {
     auto *sess = session(ServerId{host});
     if (!sess) return;
+    if (isIgnoredFor(inviter, IgnoreType::Invite)) return;
     if (targetNick.toLower() == sess->nick.toLower()) {
         postMessage(host, "(server)", Message::make(MessageType::Server, "",
             "You were invited to " + channel + " by " + inviter));

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFlags>
 #include <QString>
 #include <QStringList>
 #include <QList>
@@ -11,6 +12,21 @@ inline const char *kDefaultFontFamily = "IBM Plex Mono";
 #endif
 
 enum class BouncerType { None, ZNC, Soju };
+
+enum class IgnoreType : quint8 {
+    PM     = 0x01,   // private PRIVMSG and /me actions
+    Notice = 0x02,   // private NOTICEs
+    Invite = 0x04,   // INVITE requests
+};
+Q_DECLARE_FLAGS(IgnoreTypes, IgnoreType)
+Q_DECLARE_OPERATORS_FOR_FLAGS(IgnoreTypes)
+
+inline constexpr IgnoreTypes kIgnoreAll{IgnoreType::PM | IgnoreType::Notice | IgnoreType::Invite};
+
+struct IgnoreEntry {
+    QString     nick;
+    IgnoreTypes flags{kIgnoreAll};
+};
 
 struct ChannelConfig {
     QString name;
@@ -92,7 +108,7 @@ struct UiConfig {
 struct Config {
     QList<ServerConfig> servers;
     UiConfig            ui;
-    QStringList         ignoredNicks;
+    QList<IgnoreEntry>  ignoreList;
     QStringList         monitorList;   // nicks to watch with MONITOR
     QString             profileDisplayName; // draft/metadata-2 display-name
     QString             profileAvatarUrl;   // draft/metadata-2 avatar URL

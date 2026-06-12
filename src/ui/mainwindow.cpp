@@ -3735,18 +3735,18 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
 
     if (m_model->isIgnored(nick)) {
         connect(menu.addAction("Unignore"), &QAction::triggered, this, [this, host, nick]{
-            m_model->unignoreNick(nick);
             const QString key = nick.toLower();
-            m_config.ignoredNicks.removeAll(key);
+            m_model->clearIgnore(key);
+            m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
             Config::save(m_config, Config::defaultPath());
             m_model->localMessage(ServerId{host}, m_model->activeChannel(), "No longer ignoring " + key);
         });
     } else {
         connect(menu.addAction("Ignore"), &QAction::triggered, this, [this, host, nick]{
             const QString key = nick.toLower();
-            m_model->ignoreNick(key);
-            if (!m_config.ignoredNicks.contains(key))
-                m_config.ignoredNicks.append(key);
+            m_model->setIgnore(key);
+            m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
+            m_config.ignoreList.append({key, kIgnoreAll});
             Config::save(m_config, Config::defaultPath());
             m_model->localMessage(ServerId{host}, m_model->activeChannel(), "Now ignoring " + key);
         });

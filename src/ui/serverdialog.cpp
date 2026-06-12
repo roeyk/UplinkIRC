@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QSpinBox>
 #include <QVBoxLayout>
 
@@ -176,8 +177,19 @@ ServerDialog::ServerDialog(QWidget *parent)
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    auto *scrollWidget = new QWidget;
+    auto *scrollLayout = new QVBoxLayout(scrollWidget);
+    scrollLayout->setContentsMargins(0, 0, 0, 0);
+    scrollLayout->addLayout(form);
+
+    auto *scroll = new QScrollArea;
+    scroll->setWidget(scrollWidget);
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     auto *layout = new QVBoxLayout(this);
-    layout->addLayout(form);
+    layout->addWidget(scroll);
     layout->addWidget(buttons);
 }
 

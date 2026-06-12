@@ -518,28 +518,48 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
             m_model->localMessage(host, channel, "No message selected — right-click a timestamp to reply first");
         }
     } else if (cmd == "/ignore") {
-        const QString nick = args.trimmed().toLower();
+        const QStringList parts = args.split(' ', Qt::SkipEmptyParts);
+        const QString nick = parts.value(0).toLower();
         if (!nick.isEmpty()) {
-            m_model->ignoreNick(nick);
-            if (!m_config->ignoredNicks.contains(nick))
-                m_config->ignoredNicks.append(nick);
+            IgnoreTypes flags;
+            for (int i = 1; i < parts.size(); ++i) {
+                const QString f = parts[i].toLower();
+                if (f == "pm")     flags |= IgnoreType::PM;
+                if (f == "notice") flags |= IgnoreType::Notice;
+                if (f == "invite") flags |= IgnoreType::Invite;
+            }
+            if (!flags) flags = kIgnoreAll;
+            m_model->setIgnore(nick, flags);
+            bool found = false;
+            for (auto &entry : m_config->ignoreList) {
+                if (entry.nick == nick) { entry.flags = flags; found = true; break; }
+            }
+            if (!found)
+                m_config->ignoreList.append({nick, flags});
             Config::save(*m_config, Config::defaultPath());
             m_model->localMessage(host, channel, "Now ignoring " + nick);
         }
     } else if (cmd == "/unignore") {
         const QString nick = args.trimmed().toLower();
         if (!nick.isEmpty()) {
-            m_model->unignoreNick(nick);
-            m_config->ignoredNicks.removeAll(nick);
+            m_model->clearIgnore(nick);
+            m_config->ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == nick; });
             Config::save(*m_config, Config::defaultPath());
             m_model->localMessage(host, channel, "No longer ignoring " + nick);
         }
     } else if (cmd == "/ignored") {
-        if (m_config->ignoredNicks.isEmpty()) {
+        if (m_config->ignoreList.isEmpty()) {
             m_model->localMessage(host, channel, "Ignore list is empty.");
         } else {
-            m_model->localMessage(host, channel,
-                "Ignored nicks: " + m_config->ignoredNicks.join(", "));
+            QStringList items;
+            for (const auto &entry : m_config->ignoreList) {
+                QStringList flagNames;
+                if (entry.flags & IgnoreType::PM)     flagNames << "pm";
+                if (entry.flags & IgnoreType::Notice) flagNames << "notice";
+                if (entry.flags & IgnoreType::Invite) flagNames << "invite";
+                items << entry.nick + " [" + flagNames.join(",") + "]";
+            }
+            m_model->localMessage(host, channel, "Ignored nicks: " + items.join(", "));
         }
     } else if (cmd == "/monitor") {
         const QString sub  = args.section(' ', 0, 0).toLower();
@@ -617,9 +637,9 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
             "  /ctcp <target> <cmd> [args] — send a CTCP request",
             "  /sysinfo                    — post client/system info to channel",
             "  /react <emoji>              — react to the currently selected message",
-            "  /ignore <nick>              — suppress messages from nick",
+            "  /ignore <nick> [pm] [notice] [invite]  — suppress PMs/notices/invites (default: all)",
             "  /unignore <nick>            — stop ignoring nick",
-            "  /ignored                    — list ignored nicks",
+            "  /ignored                    — list ignored nicks and their flags",
             "  /monitor add|del|list|clear|status [nick]  — watch list (MONITOR)",
             "  /clear                      — clear the chat buffer",
             "  /quote <raw>  /raw <raw>    — send a raw IRC line",
