@@ -959,7 +959,7 @@ void IrcClient::processLine(const QString &line)
 void IrcClient::handleBatch(const QStringList &params)
 {
     if (params.isEmpty()) return;
-    const QString refArg = params[0];
+    const QString &refArg = params[0];
 
     if (refArg.startsWith('+')) {
         if (m_batches.size() >= kMaxOpenBatches) {
@@ -1315,9 +1315,6 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 265: case 266:
     case 372: // RPL_MOTD
     case 375: // RPL_MOTDSTART
-        emit serverMessage(m_host, trailing);
-        break;
-
     case 376: // RPL_ENDOFMOTD
     case 422: // ERR_NOMOTD
         emit serverMessage(m_host, trailing);
@@ -1335,12 +1332,11 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             emit topicReceived(m_host, params[1], trailing);
         break;
 
-    case 315: break; // RPL_ENDOFWHO — suppress from server window
-    case 333: break; // RPL_TOPICWHOTIME
+    case 315: case 333: break; // RPL_ENDOFWHO, RPL_TOPICWHOTIME — suppress
 
     case 353: { // RPL_NAMREPLY
         if (params.size() >= 3) {
-            const QString channel = params[2];
+            const QString &channel = params[2];
             const QStringList nicks = trailing.split(' ', Qt::SkipEmptyParts);
             m_namesBuffer[channel.toLower()] += nicks;
         }
@@ -1349,9 +1345,9 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
 
     case 352: { // RPL_WHOREPLY — <client> <channel> <user> <host> <server> <nick> <flags> :<hop> <real>
         if (params.size() >= 7) {
-            const QString channel = params[1];
-            const QString nick    = params[5];
-            const QString flags   = params[6];
+            const QString &channel = params[1];
+            const QString &nick    = params[5];
+            const QString &flags   = params[6];
             if (channel.startsWith('#') || channel.startsWith('&'))
                 emit whoEntryReceived(m_host, channel, nick, flags);
         }
@@ -1360,9 +1356,9 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
 
     case 354: { // RPL_WHOSPCRPL — Ergo format: [me, channel, nick, flags, account]
         if (params.size() >= 4) {
-            const QString channel = params[1];
-            const QString nick    = params[2];
-            const QString flags   = params[3];
+            const QString &channel = params[1];
+            const QString &nick    = params[2];
+            const QString &flags   = params[3];
             const QString account = params.size() >= 5 ? params[4] : QString();
             if (channel.startsWith('#') || channel.startsWith('&'))
                 emit whoEntryReceived(m_host, channel, nick, flags);
@@ -1374,7 +1370,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
 
     case 366: { // RPL_ENDOFNAMES
         if (params.size() >= 2) {
-            const QString channel = params[1];
+            const QString &channel = params[1];
             emit namesReceived(m_host, channel, m_namesBuffer.take(channel.toLower()));
             emit namesDone(m_host, channel);
             sendRaw("MODE " + channel);
@@ -1508,13 +1504,10 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         }
         break;
     }
-    case 369: // RPL_ENDOFWHOWAS
-        if (!trailing.isEmpty()) emit contextualMessage(m_host, trailing);
-        break;
-
-    // WHOIS replies — route to active channel/window
+    // WHOIS/WHOWAS replies — route to active channel/window
     case 301: case 307: case 311: case 312: case 313:
-    case 317: case 318: case 319: case 320: case 671:
+    case 317: case 318: case 319: case 320: case 369:
+    case 671:
         if (!trailing.isEmpty())
             emit contextualMessage(m_host, trailing);
         break;

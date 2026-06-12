@@ -10,7 +10,7 @@ class PreferencesDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit PreferencesDialog(const Config &config, QWidget *parent = nullptr);
+    explicit PreferencesDialog(const Config &cfg, QWidget *parent = nullptr);
 
 signals:
     void themeChanged(const QString &name);

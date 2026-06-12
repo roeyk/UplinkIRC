@@ -29,5 +29,5 @@ private:
     QSpinBox      *m_spEmoji;
     QLabel        *m_preview;
 
-    QSpinBox *makeSpinBox(int value);
+    static QSpinBox *makeSpinBox(int value);
 };

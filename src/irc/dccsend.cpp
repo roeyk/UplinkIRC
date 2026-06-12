@@ -13,7 +13,7 @@ DccSend::DccSend(const QString &filepath, QObject *parent)
     , m_file(filepath)
 {}
 
-bool DccSend::listen(QHostAddress bindAddr, std::optional<QHostAddress> expectedPeer)
+bool DccSend::listen(const QHostAddress &bindAddr, std::optional<QHostAddress> expectedPeer)
 {
     m_expectedPeer = expectedPeer;
     if (!m_file.open(QIODevice::ReadOnly)) {
