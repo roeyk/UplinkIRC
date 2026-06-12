@@ -152,6 +152,24 @@ What changed:
 No regressions. No known issues.
 -->
 
+## v0.25.22 — 2026-06-12
+
+### Added
+
+- Per-type ignore: `/ignore nick [pm] [notice] [invite]` suppresses private messages, notices, and invites independently — channel messages are never blocked. Right-click → Ignore applies all three by default.
+- `/ignored` now lists each nick with its active flags, e.g. `spammer [pm,notice,invite]`
+
+### Changed
+
+- Ignore config format updated to `[[ignore.entry]]` with per-entry `flags` array — old `[ignore] nicks = [...]` format is read automatically and migrated on next save
+
+### Fixed
+
+- Server Add/Edit dialog is now scrollable — no longer grows taller than the screen on smaller displays
+- Nick Brackets dropdown in Preferences no longer bleeds its popup rendering over the Profile section below it
+
+---
+
 ## v0.25.21 — 2026-06-12
 
 ### Fixed
