@@ -67,6 +67,10 @@ Next priorities: Send button disable-when-empty; virtual scrolling; heaptrack se
 
 ## Unreleased
 
+### Fixed
+
+- `RPL_ENDOFWHO` (315) is now suppressed from the server window — eliminates repeated "End of /WHO list." noise on busy networks like Libera.chat
+
 <!--
 SESSION SUMMARY — 2026-06-12 (v0.25.19 release)
 What changed:
