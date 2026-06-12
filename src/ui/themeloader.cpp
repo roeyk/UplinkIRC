@@ -345,8 +345,8 @@ QComboBox QAbstractItemView {
     background-color: {{bg}};
     color: {{text}};
     border: 1px solid {{border}};
-    border-radius: 10px;
     selection-background-color: {{accent}};
+    selection-color: {{text}};
     outline: none;
 }
 
