@@ -1290,6 +1290,7 @@ void MainWindow::setupChatArea()
     m_chatView->setOpenLinks(false);
     m_chatView->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_chatView));
     m_chatView->document()->setMaximumBlockCount(kMessageBufferCap);
+    m_chatView->document()->setUndoRedoEnabled(false);
     if (m_theme.valid)
         m_chatView->document()->setDefaultStyleSheet(
             QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));

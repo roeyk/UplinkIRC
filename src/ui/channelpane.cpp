@@ -113,6 +113,7 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
     m_chatView->setOpenLinks(false);
     m_chatView->document()->setMaximumBlockCount(kMessageBufferCap);
+    m_chatView->document()->setUndoRedoEnabled(false);
     m_chatView->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_chatView));
 
     m_nickList = new QListWidget;
