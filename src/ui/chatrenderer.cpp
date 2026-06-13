@@ -3,6 +3,7 @@
 #include <QDate>
 #include <QDateTime>
 #include <QRegularExpression>
+#include <QFont>
 
 namespace ChatRenderer {
 
@@ -415,6 +416,434 @@ QString formatEventGroup(const QList<Message> &msgs, const Context &ctx,
 
     return QString("<span style='font-size:%1pt'>%2%3  %4</span>")
         .arg(eventPt).arg(expandAnchor, tsSpan, body);
+}
+
+// ── ChatLine rendering ────────────────────────────────────────────────────────
+
+namespace {
+
+struct TextBuilder {
+    QString            text;
+    QList<ChatSegment> segs;
+
+    void append(const QString &s, const QTextCharFormat &fmt, const QString &anchor = {})
+    {
+        if (s.isEmpty()) return;
+        ChatSegment seg;
+        seg.start  = static_cast<int>(text.size());
+        seg.length = static_cast<int>(s.size());
+        seg.format = fmt;
+        seg.anchor = anchor;
+        text += s;
+        segs.append(seg);
+    }
+};
+
+} // anonymous namespace
+
+static void ircToSegments(const QString &raw, const QTextCharFormat &base, TextBuilder &tb)
+{
+    static const QColor kColors[] = {
+        QColor("#FFFFFF"), QColor("#000000"), QColor("#00007F"), QColor("#009300"),
+        QColor("#FF0000"), QColor("#7F0000"), QColor("#9C009C"), QColor("#FC7F00"),
+        QColor("#FFFF00"), QColor("#00FC00"), QColor("#009393"), QColor("#00FFFF"),
+        QColor("#0000FC"), QColor("#FF00FF"), QColor("#7F7F7F"), QColor("#D2D2D2")
+    };
+
+    struct State {
+        bool bold{false}, italic{false}, underline{false}, strike{false};
+        int  fg{-1}, bg{-1};
+    } state;
+
+    QString chunk;
+    int i = 0;
+    const int len = raw.size();
+
+    auto flushChunk = [&]() {
+        if (chunk.isEmpty()) return;
+        QTextCharFormat fmt = base;
+        if (state.bold)      fmt.setFontWeight(QFont::Bold);
+        if (state.italic)    fmt.setFontItalic(true);
+        if (state.underline) fmt.setFontUnderline(true);
+        if (state.strike)    fmt.setFontStrikeOut(true);
+        if (state.fg >= 0 && state.fg < 16) fmt.setForeground(kColors[state.fg]);
+        if (state.bg >= 0 && state.bg < 16) fmt.setBackground(kColors[state.bg]);
+        tb.append(chunk, fmt);
+        chunk.clear();
+    };
+
+    while (i < len) {
+        const ushort c = raw[i].unicode();
+        if      (c == 0x02) { flushChunk(); state.bold      = !state.bold;      ++i; }
+        else if (c == 0x1D) { flushChunk(); state.italic    = !state.italic;    ++i; }
+        else if (c == 0x1F) { flushChunk(); state.underline = !state.underline; ++i; }
+        else if (c == 0x1E) { flushChunk(); state.strike    = !state.strike;    ++i; }
+        else if (c == 0x16) { flushChunk(); std::swap(state.fg, state.bg);      ++i; }
+        else if (c == 0x0F || (c == 0x03 && i+1 < len && !raw[i+1].isDigit() && raw[i+1] != ',')) {
+            flushChunk(); state = State{}; ++i;
+        } else if (c == 0x03) {
+            flushChunk(); ++i;
+            if (i < len && raw[i].isDigit()) {
+                int fg = raw[i++].digitValue();
+                if (i < len && raw[i].isDigit()) fg = fg * 10 + raw[i++].digitValue();
+                state.fg = fg;
+                if (i < len && raw[i] == ',' && i+1 < len && raw[i+1].isDigit()) {
+                    ++i;
+                    int bg = raw[i++].digitValue();
+                    if (i < len && raw[i].isDigit()) bg = bg * 10 + raw[i++].digitValue();
+                    state.bg = bg;
+                }
+            } else {
+                state.fg = -1; state.bg = -1;
+            }
+        } else if (c == 0x11) {
+            ++i;
+        } else {
+            chunk += raw[i++];
+        }
+    }
+    flushChunk();
+}
+
+static void linkifySegments(TextBuilder &tb, int textStart)
+{
+    auto it = s_urlRe.globalMatch(tb.text, textStart);
+    while (it.hasNext()) {
+        const auto m = it.next();
+        ChatSegment seg;
+        seg.start  = static_cast<int>(m.capturedStart(1));
+        seg.length = static_cast<int>(m.capturedLength(1));
+        seg.anchor = "url:" + tb.text.mid(seg.start, seg.length);
+        tb.segs.append(seg);
+    }
+}
+
+static void addSelfNickHighlight(TextBuilder &tb, int textStart, const QRegularExpression &re)
+{
+    if (!re.isValid()) return;
+    QTextCharFormat fmt;
+    fmt.setForeground(QColor(Qt::red));
+    fmt.setFontWeight(QFont::Bold);
+    auto it = re.globalMatch(tb.text, textStart);
+    while (it.hasNext()) {
+        const auto m = it.next();
+        ChatSegment seg;
+        seg.start  = static_cast<int>(m.capturedStart(1));
+        seg.length = static_cast<int>(m.capturedLength(1));
+        seg.format = fmt;
+        tb.segs.append(seg);
+    }
+}
+
+ChatLine formatMessageLine(const Message &msg, const Context &ctx)
+{
+    const QDateTime local = msg.timestamp.toLocalTime();
+    const bool sameDay = local.date() == QDate::currentDate();
+    const QString ts = sameDay ? local.toString("hh:mm") : local.toString("MM/dd hh:mm");
+
+    const QColor dimColor("#888888");
+    const bool   isHistory = msg.isHistory;
+    TextBuilder  tb;
+    const QTextCharFormat plainFmt;
+
+    QTextCharFormat tsFmt;
+    tsFmt.setForeground(dimColor);
+    const QString tsAnchor = msg.msgid.isEmpty() ? QString() : ("msgid:" + msg.msgid);
+    tb.append(ts, tsFmt, tsAnchor);
+
+    if (msg.redacted) {
+        QTextCharFormat f;
+        f.setForeground(dimColor);
+        f.setFontItalic(true);
+        tb.append(" [message deleted]", f);
+        ChatLine line;
+        line.text       = tb.text;
+        line.segments   = tb.segs;
+        line.id         = msg.msgid;
+        line.role       = ChatLineRole::Message;
+        line.hangIndent = false;
+        return line;
+    }
+
+    const bool isText = (msg.type == MessageType::Privmsg ||
+                         msg.type == MessageType::Action  ||
+                         msg.type == MessageType::Notice);
+
+    switch (msg.type) {
+    case MessageType::Privmsg: {
+        const QColor nickCol = isHistory ? dimColor
+            : (ctx.coloredNicks ? nickColor(msg.nick)
+                                : (ctx.validTheme ? QColor(ctx.themeText) : QColor("#cccccc")));
+
+        // Reply indicator
+        if (!msg.replyTo.isEmpty() && ctx.channel) {
+            QString origNick;
+            for (const auto &orig : std::as_const(ctx.channel->messages))
+                if (orig.msgid == msg.replyTo) { origNick = orig.nick; break; }
+            QTextCharFormat f;
+            f.setForeground(QColor("#6c7086"));
+            tb.append(" ↩" + (origNick.isEmpty() ? " " : " " + origNick + " "), f);
+        } else {
+            tb.append(" ", plainFmt);
+        }
+
+        const QString &br = ctx.nickBrackets;
+        QString nickOpen, nickClose;
+        if (!br.isEmpty()) {
+            if (br.length() % 2 == 0) {
+                nickOpen  = br.left(br.length() / 2);
+                nickClose = br.mid(br.length() / 2);
+            } else {
+                nickOpen  = QString(br.front());
+                nickClose = QString(br.back());
+            }
+        }
+        QTextCharFormat nickFmt;
+        nickFmt.setFontWeight(QFont::Bold);
+        nickFmt.setForeground(nickCol);
+        tb.append(nickOpen + msg.nick + nickClose, nickFmt, "nick:" + msg.nick);
+        tb.append(" ", plainFmt);
+
+        const int textStart = static_cast<int>(tb.text.size());
+        QTextCharFormat base;
+        if (isHistory) base.setForeground(dimColor);
+        ircToSegments(msg.text, base, tb);
+        if (!isHistory) {
+            linkifySegments(tb, textStart);
+            if (ctx.selfNickRe.isValid())
+                addSelfNickHighlight(tb, textStart, ctx.selfNickRe);
+        }
+        break;
+    }
+    case MessageType::Action: {
+        tb.append(" ", plainFmt);
+        QTextCharFormat starFmt;
+        starFmt.setFontItalic(true);
+        if (isHistory) starFmt.setForeground(dimColor);
+        tb.append("* ", starFmt);
+
+        QTextCharFormat nickFmt;
+        nickFmt.setFontItalic(true);
+        if (isHistory) nickFmt.setForeground(dimColor);
+        tb.append(msg.nick + " ", nickFmt, "nick:" + msg.nick);
+
+        const int textStart = static_cast<int>(tb.text.size());
+        QTextCharFormat base;
+        base.setFontItalic(true);
+        if (isHistory) base.setForeground(dimColor);
+        ircToSegments(msg.text, base, tb);
+        if (!isHistory) linkifySegments(tb, textStart);
+        break;
+    }
+    case MessageType::Notice: {
+        const QColor col = isHistory ? dimColor : QColor("#cc8800");
+        tb.append(" ", plainFmt);
+        QTextCharFormat f;
+        f.setForeground(col);
+        tb.append("-" + msg.nick + "- ", f, "nick:" + msg.nick);
+        const int textStart = static_cast<int>(tb.text.size());
+        QTextCharFormat base;
+        base.setForeground(col);
+        ircToSegments(msg.text, base, tb);
+        if (!isHistory) linkifySegments(tb, textStart);
+        break;
+    }
+    case MessageType::Join: {
+        QTextCharFormat f;
+        f.setForeground(isHistory ? dimColor : QColor("seagreen"));
+        tb.append(" → " + msg.text, f);
+        break;
+    }
+    case MessageType::Part: {
+        QTextCharFormat f;
+        f.setForeground(isHistory ? dimColor : QColor("#e06b6b"));
+        tb.append(" ← " + msg.text, f);
+        break;
+    }
+    case MessageType::Quit: {
+        QTextCharFormat f;
+        f.setForeground(isHistory ? dimColor : QColor("#e06b6b"));
+        tb.append(" ✕ " + msg.text, f);
+        break;
+    }
+    case MessageType::Nick: {
+        QTextCharFormat f;
+        f.setForeground(isHistory ? dimColor : QColor("steelblue"));
+        tb.append(" ~ " + msg.text, f);
+        break;
+    }
+    case MessageType::Kick: {
+        QTextCharFormat f;
+        f.setForeground(isHistory ? dimColor : QColor("#e06b6b"));
+        tb.append(" ✕ " + msg.text, f);
+        break;
+    }
+    case MessageType::Topic: {
+        QTextCharFormat f;
+        f.setForeground(isHistory ? dimColor : QColor("steelblue"));
+        tb.append(" ⦁ Topic: " + msg.text, f);
+        break;
+    }
+    case MessageType::Error: {
+        QTextCharFormat f;
+        f.setForeground(isHistory ? dimColor : QColor(Qt::red));
+        tb.append(" !! " + msg.text, f);
+        break;
+    }
+    case MessageType::Server:
+    default: {
+        QTextCharFormat f;
+        f.setForeground(dimColor);
+        tb.append(" * " + msg.text, f);
+        break;
+    }
+    }
+
+    ChatLine line;
+    line.text       = tb.text;
+    line.segments   = tb.segs;
+    line.id         = msg.msgid;
+    line.role       = ChatLineRole::Message;
+    line.hangIndent = isText;
+    return line;
+}
+
+ChatLine formatEventGroupLine(const QList<Message> &msgs, const Context &ctx,
+                               const QString &groupId, bool expanded)
+{
+    if (msgs.isEmpty()) return {};
+
+    TextBuilder tb;
+    const QTextCharFormat plainFmt;
+
+    if (expanded) {
+        if (!groupId.isEmpty()) {
+            QTextCharFormat f;
+            f.setForeground(QColor(Qt::gray));
+            tb.append("▾ ", f, "evgrp:" + groupId);
+        }
+        bool first = true;
+        for (const auto &msg : msgs) {
+            if (!first) tb.append("\n", plainFmt);
+            const QDateTime mLocal = msg.timestamp.toLocalTime();
+            const QString mTs = mLocal.date() == QDate::currentDate()
+                ? mLocal.toString("hh:mm") : mLocal.toString("MM/dd hh:mm");
+            QTextCharFormat tsFmt;
+            tsFmt.setForeground(QColor(Qt::gray));
+            tb.append(mTs + " ", tsFmt);
+
+            QColor col;
+            QString sym;
+            switch (msg.type) {
+            case MessageType::Join: col = QColor("seagreen");   sym = "→"; break;
+            case MessageType::Part:
+            case MessageType::Quit: col = QColor("#e06b6b");   sym = "←"; break;
+            case MessageType::Nick: col = QColor("steelblue"); sym = "~";  break;
+            case MessageType::Kick: col = QColor("#e06b6b");   sym = "✕"; break;
+            default: continue;
+            }
+            QTextCharFormat f;
+            f.setForeground(col);
+            tb.append(sym + " " + msg.text, f);
+            first = false;
+        }
+    } else {
+        const QDateTime local = msgs.front().timestamp.toLocalTime();
+        const QString ts = local.date() == QDate::currentDate()
+            ? local.toString("hh:mm") : local.toString("MM/dd hh:mm");
+
+        if (!groupId.isEmpty()) {
+            QTextCharFormat f;
+            f.setForeground(QColor(Qt::gray));
+            tb.append("▸ ", f, "evgrp:" + groupId);
+        }
+        QTextCharFormat tsFmt;
+        tsFmt.setForeground(QColor(Qt::gray));
+        tb.append(ts + "  ", tsFmt);
+
+        QStringList joins, parts, kicks;
+        QList<QPair<QString,QString>> nickChanges;
+        for (const auto &msg : msgs) {
+            switch (msg.type) {
+            case MessageType::Join:  joins.append(msg.nick);                          break;
+            case MessageType::Part:
+            case MessageType::Quit:  parts.append(msg.nick);                          break;
+            case MessageType::Nick:  nickChanges.append({msg.nick, msg.replyTo});     break;
+            case MessageType::Kick:  kicks.append(msg.nick);                          break;
+            default: break;
+            }
+        }
+        for (qsizetype i = joins.size() - 1; i >= 0; --i) {
+            if (parts.contains(joins[i])) { parts.removeAll(joins[i]); joins.removeAt(i); }
+        }
+
+        const qsizetype total = joins.size() + parts.size() + nickChanges.size() + kicks.size();
+        const int maxNicks = 10;
+        int shown = 0;
+        bool firstSec = true;
+
+        auto addSection = [&](const QColor &col, const QString &sym, const QStringList &nicks) {
+            if (nicks.isEmpty()) return;
+            if (!firstSec) tb.append("  ", plainFmt);
+            QTextCharFormat f;
+            f.setForeground(col);
+            QString text = sym + " ";
+            for (const QString &n : nicks) {
+                if (shown >= maxNicks) break;
+                if (!text.endsWith(' ')) text += ' ';
+                text += n;
+                ++shown;
+            }
+            tb.append(text, f);
+            firstSec = false;
+        };
+
+        addSection(QColor("seagreen"),  "→", joins);
+        addSection(QColor("#e06b6b"),   "←", parts);
+
+        if (!nickChanges.isEmpty()) {
+            if (!firstSec) tb.append("  ", plainFmt);
+            QTextCharFormat f;
+            f.setForeground(QColor("steelblue"));
+            QString text = "~ ";
+            for (const auto &p : std::as_const(nickChanges)) {
+                if (shown >= maxNicks) break;
+                if (text.size() > 2) text += ' ';
+                text += p.first + "→" + p.second;
+                ++shown;
+            }
+            tb.append(text, f);
+            firstSec = false;
+        }
+
+        addSection(QColor("#e06b6b"), "✕", kicks);
+
+        const qsizetype overflow = total - shown;
+        if (overflow > 0) {
+            tb.append("  … " + QString::number(overflow) + " more", plainFmt);
+        }
+    }
+
+    ChatLine line;
+    line.text       = tb.text;
+    line.segments   = tb.segs;
+    line.id         = "evgrp:" + groupId;
+    line.role       = ChatLineRole::EventGroup;
+    line.hangIndent = false;
+    return line;
+}
+
+ChatLine makeStatusLine(const QString &text)
+{
+    TextBuilder tb;
+    QTextCharFormat f;
+    f.setForeground(QColor("#888888"));
+    tb.append(text, f);
+    ChatLine line;
+    line.text     = tb.text;
+    line.segments = tb.segs;
+    line.role     = ChatLineRole::StatusLine;
+    return line;
 }
 
 } // namespace ChatRenderer

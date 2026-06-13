@@ -1,13 +1,11 @@
 #pragma once
-#include <QHash>
 #include <QMetaObject>
-#include <QPixmap>
 #include <QWidget>
 #include <QString>
 #include <QPoint>
 #include <QIcon>
 
-class QTextBrowser;
+class ChatView;
 class QListWidget;
 class QPlainTextEdit;
 class QLabel;
@@ -16,12 +14,11 @@ class QToolButton;
 class ChannelPane : public QWidget {
     Q_OBJECT
 public:
-    explicit ChannelPane(const QString &host, const QString &channel,
-                         const QHash<int, QPixmap> *imgStore = nullptr, QWidget *parent = nullptr);
+    explicit ChannelPane(const QString &host, const QString &channel, QWidget *parent = nullptr);
     const QString &host()    const { return m_host; }
     const QString &channel() const { return m_channel; }
     QString        key()     const { return m_host + "|" + m_channel.toLower(); }
-    QTextBrowser *chatView() const { return m_chatView; }
+    ChatView     *chatView() const { return m_chatView; }
     QListWidget  *nickList() const { return m_nickList; }
     QPlainTextEdit *input()  const { return m_input; }
     void setNick(const QString &nick);
@@ -43,10 +40,10 @@ private:
     QString               m_channel;
     QMetaObject::Connection m_topicIconConn;
     QWidget      *m_header{nullptr};
-    QPoint        m_dragStartPos;   // global coords
+    QPoint        m_dragStartPos;
     bool          m_dragPending{false};
     bool          m_dragging{false};
-    QTextBrowser *m_chatView{nullptr};
+    ChatView     *m_chatView{nullptr};
     QListWidget  *m_nickList{nullptr};
     QPlainTextEdit *m_input{nullptr};
     QLabel       *m_nickPrefix{nullptr};

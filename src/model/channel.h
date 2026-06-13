@@ -2,6 +2,7 @@
 
 #include "message.h"
 #include <QDateTime>
+#include <QPixmap>
 #include <QString>
 #include <QHash>
 #include <QList>
@@ -60,8 +61,10 @@ struct Channel {
     QList<Message>   messages;
     QSet<QString>    botNicks;  // lowercased nicks with +B channel user mode
     struct PreviewCard {
-        QString base;    // open card HTML: table+anchor+text spans, no closing tags, no img
-        QString imgHtml; // <br/><img .../> with width/height, or empty
+        QString title;
+        QString domain;
+        QString pageUrl;
+        QPixmap thumbnail;
     };
     QHash<QString, PreviewCard> previews;      // url → card data
     QSet<QString>               hiddenPreviews; // urls the user manually hid
@@ -169,13 +172,13 @@ struct Channel {
 
     static constexpr int kPreviewCap = 8;
 
-    void addPreview(const QString &url, const QString &base, const QString &imgHtml = {})
+    void addPreview(const QString &url, const PreviewCard &card)
     {
         if (previews.size() >= kPreviewCap) {
             const QString evicted = previews.begin().key();
             hiddenPreviews.remove(evicted);
             previews.erase(previews.begin());
         }
-        previews.insert(url, {base, imgHtml});
+        previews.insert(url, card);
     }
 };

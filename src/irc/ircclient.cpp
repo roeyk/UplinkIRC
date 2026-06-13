@@ -309,7 +309,8 @@ void IrcClient::sendTyping(const QString &channel, const QString &state)
     if (!validIrcToken(channel)) return;
     const bool hasFinal = m_ackedCaps.contains("typing");
     const bool hasDraft = m_ackedCaps.contains("draft/typing");
-    if (!hasFinal && !hasDraft) return;
+    const bool hasTags  = m_ackedCaps.contains("message-tags");
+    if (!hasFinal && !hasDraft && !hasTags) return;
     const QString tag = hasFinal ? "typing=" : "+typing=";
     sendRaw("@" + tag + ircv3TagEscape(state) + " TAGMSG " + channel);
 }

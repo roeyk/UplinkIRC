@@ -1,13 +1,10 @@
 #include "channelpane.h"
-#include "model/channel.h"
+#include "ui/chatview.h"
 #include "ui/fadescrollbar.h"
 
-#include <QTextBrowser>
-#include <QTextDocument>
 #include <QListWidget>
 #include <QPlainTextEdit>
 #include <QKeyEvent>
-#include <QTextCursor>
 #include <QLabel>
 #include <QToolButton>
 #include <QSplitter>
@@ -21,39 +18,14 @@
 #include <QDesktopServices>
 #include <QUrl>
 
-namespace {
-class PaneBrowser : public QTextBrowser {
-public:
-    explicit PaneBrowser(const QHash<int, QPixmap> *imgStore, QWidget *parent = nullptr)
-        : QTextBrowser(parent), m_imgStore(imgStore) {}
-    QSize minimumSizeHint() const override { return QSize(1, 1); }
-protected:
-    QVariant loadResource(int type, const QUrl &name) override {
-        if (type == QTextDocument::ImageResource && m_imgStore) {
-            const QString s = name.toString();
-            if (s.startsWith("img://")) {
-                auto it = m_imgStore->constFind(s.mid(6).toInt());
-                if (it != m_imgStore->constEnd())
-                    return it.value();
-                return {};
-            }
-        }
-        return QTextBrowser::loadResource(type, name);
-    }
-private:
-    const QHash<int, QPixmap> *m_imgStore;
-};
-}
-
-ChannelPane::ChannelPane(const QString &host, const QString &channel,
-                         const QHash<int, QPixmap> *imgStore, QWidget *parent)
+ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *parent)
     : QWidget(parent), m_host(host), m_channel(channel)
 {
     auto *vbox = new QVBoxLayout(this);
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
-    // Header: topic toggle + channel name + close button
+    // Header
     m_header = new QWidget;
     m_header->setObjectName("paneHeader");
     auto *hbox = new QHBoxLayout(m_header);
@@ -87,8 +59,6 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel,
     hbox->addWidget(closeBtn);
     vbox->addWidget(m_header);
 
-    // Install event filter on header and all its direct children so any
-    // press anywhere in the header bar can initiate a drag.
     m_header->installEventFilter(this);
     for (auto *w : m_header->findChildren<QWidget*>(Qt::FindDirectChildrenOnly))
         w->installEventFilter(this);
@@ -125,14 +95,8 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel,
         m_topicBar->setVisible(on);
     });
 
-    // Chat view + nick list
-    m_chatView = new PaneBrowser(imgStore);
-    m_chatView->setReadOnly(true);
-    m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
-    m_chatView->setOpenLinks(false);
-    m_chatView->document()->setMaximumBlockCount(kMessageBufferCap);
-    m_chatView->document()->setUndoRedoEnabled(false);
-    m_chatView->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_chatView));
+    // Chat view
+    m_chatView = new ChatView;
 
     m_nickList = new QListWidget;
     m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
@@ -231,10 +195,6 @@ void ChannelPane::setDragHighlight(bool on)
     m_header->setStyleSheet(on ? "background: palette(highlight);" : "");
 }
 
-// ---------------------------------------------------------------------------
-// Drag-to-rearrange — pure mouse tracking, no QDrag
-// ---------------------------------------------------------------------------
-
 bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == m_input && event->type() == QEvent::KeyPress) {
@@ -272,8 +232,6 @@ bool ChannelPane::eventFilter(QObject *obj, QEvent *event)
             if (!(me->buttons() & Qt::LeftButton)) { m_dragPending = false; return false; }
             if ((gp - m_dragStartPos).manhattanLength() < QApplication::startDragDistance())
                 return false;
-            // Threshold exceeded — activate drag and grab mouse so we track
-            // movement outside the header widget.
             m_dragPending = false;
             m_dragging    = true;
             m_header->grabMouse(Qt::ClosedHandCursor);

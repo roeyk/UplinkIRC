@@ -21,6 +21,7 @@
 #include "ui/fadescrollbar.h"
 #include "ui/channelpane.h"
 #include "ui/chatrenderer.h"
+#include "ui/chatview.h"
 #include "config/config.h"
 #include "net/addresscheck.h"
 
@@ -308,106 +309,27 @@ protected:
     }
 };
 
-class ChatBrowser : public QTextBrowser {
-public:
-    explicit ChatBrowser(const QHash<int, QPixmap> *imgStore, QWidget *parent = nullptr)
-        : QTextBrowser(parent), m_imgStore(imgStore) {}
-    QSize minimumSizeHint() const override { return QSize(1, 1); }
-protected:
-    QVariant loadResource(int type, const QUrl &name) override {
-        if (type == QTextDocument::ImageResource && m_imgStore) {
-            const QString s = name.toString();
-            if (s.startsWith("img://")) {
-                auto it = m_imgStore->constFind(s.mid(6).toInt());
-                if (it != m_imgStore->constEnd())
-                    return it.value();
-                return {};
-            }
-        }
-        return QTextBrowser::loadResource(type, name);
+static ChatLine buildReactionLine(const QHash<QString, QSet<QString>> &rx, const QString &msgid)
+{
+    QTextCharFormat fmt;
+    fmt.setForeground(QColor("#888888"));
+    QString text;
+    QList<ChatSegment> segs;
+    for (auto it = rx.constBegin(); it != rx.constEnd(); ++it) {
+        ChatSegment seg;
+        seg.start  = static_cast<int>(text.size());
+        const QString piece = it.key() + "(" + QString::number(it.value().size()) + ") ";
+        seg.length = static_cast<int>(piece.size());
+        seg.format = fmt;
+        text += piece;
+        segs.append(seg);
     }
-private:
-    const QHash<int, QPixmap> *m_imgStore;
-};
-
-static QString buildReactionHtml(const QHash<QString, QSet<QString>> &rx, int emojiPt)
-{
-    QString html = QString("<span style='font-size:%1pt; color:#888;'>").arg(emojiPt);
-    for (auto it = rx.constBegin(); it != rx.constEnd(); ++it)
-        html += it.key().toHtmlEscaped()
-                + QStringLiteral("<span style='font-size:8pt'>(")
-                + QString::number(it.value().size())
-                + QStringLiteral(")</span> ");
-    return html + QStringLiteral("</span>");
-}
-
-static void insertHtmlBlock(QTextBrowser *view, const QString &html, bool hangIndent = false)
-{
-    QTextCursor cursor(view->document());
-    cursor.beginEditBlock();
-    cursor.movePosition(QTextCursor::End);
-    if (view->document()->characterCount() > 1)
-        cursor.insertBlock();
-    if (hangIndent) {
-        const QFontMetrics fm(view->font());
-        const int indent = fm.horizontalAdvance("00:00  ");
-        QTextBlockFormat fmt;
-        fmt.setLeftMargin(indent);
-        fmt.setTextIndent(-indent);
-        cursor.setBlockFormat(fmt);
-    }
-    cursor.insertHtml(html);
-    cursor.endEditBlock();
-}
-
-
-class BlockMsgid : public QTextBlockUserData {
-public:
-    explicit BlockMsgid(const QString &i) : id(i) {}
-    QString id;
-};
-
-static QTextBlock findBlock(QTextBrowser *view, const QString &id)
-{
-    QTextBlock b = view->document()->begin();
-    while (b.isValid()) {
-        if (auto *d = static_cast<BlockMsgid*>(b.userData()))
-            if (d->id == id) return b;
-        b = b.next();
-    }
-    return {};
-}
-
-static void replaceBlockHtml(QTextBrowser *view, const QTextBlock &block, const QString &html)
-{
-    Q_UNUSED(view)
-    QTextCursor c(view->document());
-    c.setPosition(block.position());
-    c.setPosition(block.position() + block.length() - 1, QTextCursor::KeepAnchor);
-    c.insertHtml(html);
-}
-
-static void removeBlock(QTextBrowser *view, const QTextBlock &block)
-{
-    Q_UNUSED(view)
-    if (!block.isValid()) return;
-    QTextCursor c(view->document());
-    c.setPosition(block.position());
-    c.setPosition(block.position() + block.length(), QTextCursor::KeepAnchor);
-    c.removeSelectedText();
-}
-
-static void insertBlockAfter(QTextBrowser *view, const QTextBlock &anchor,
-                              const QString &html, QTextBlockUserData *data = nullptr)
-{
-    Q_UNUSED(view)
-    QTextCursor c(view->document());
-    c.setPosition(anchor.position());
-    c.movePosition(QTextCursor::EndOfBlock);
-    c.insertBlock();
-    c.insertHtml(html);
-    if (data)
-        c.block().setUserData(data);
+    ChatLine line;
+    line.text     = text;
+    line.segments = segs;
+    line.id       = "rx:" + msgid;
+    line.role     = ChatLineRole::Reaction;
+    return line;
 }
 
 // ---------------------------------------------------------------------------
@@ -450,6 +372,9 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     connect(ctrlW, &QShortcut::activated, this, [this]{
         if (m_tray && m_tray->isVisible()) hide();
     });
+
+    auto *ctrlF = new QShortcut(QKeySequence::Find, this);
+    connect(ctrlF, &QShortcut::activated, this, &MainWindow::showSearchBar);
 
     statusBar()->hide();
 
@@ -700,8 +625,10 @@ void MainWindow::connectPreferences()
         ThemeLoader::apply(name);
         m_theme = ThemeLoader::load(name);
         if (m_chatView && m_theme.valid)
-            m_chatView->document()->setDefaultStyleSheet(
-                QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
+            m_chatView->setColors(QColor(m_theme.text), QColor(m_theme.background),
+                                  QColor(m_theme.accent),
+                                  QColor(m_theme.background).darker(110),
+                                  QColor(m_theme.border));
         if (m_sidebarDelegate && m_theme.valid)
             m_sidebarDelegate->setColors(QColor(m_theme.accent),
                                          QColor(m_theme.border),
@@ -1001,7 +928,6 @@ void MainWindow::applyFontSizes()
     for (auto *p : std::as_const(m_orderedPanes)) {
         const QFont chatFont = makeFont(fs.chat);
         p->chatView()->setFont(chatFont);
-        p->chatView()->document()->setDefaultFont(chatFont);
         p->nickList()->setFont(makeFont(fs.nickList));
         p->setTopicFont(makeFont(fs.topicBar));
         p->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
@@ -1284,32 +1210,52 @@ void MainWindow::setupChatArea()
     primaryVbox->addWidget(m_topicDisplay);
 
     // Chat view
-    m_chatView = new ChatBrowser(&m_previewImages);
-    m_chatView->setReadOnly(true);
-    m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
-    m_chatView->setOpenLinks(false);
-    m_chatView->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_chatView));
-    m_chatView->document()->setMaximumBlockCount(kMessageBufferCap);
-    m_chatView->document()->setUndoRedoEnabled(false);
+    m_chatView = new ChatView;
     if (m_theme.valid)
-        m_chatView->document()->setDefaultStyleSheet(
-            QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
-    connect(m_chatView, &QTextBrowser::anchorClicked, this, [this](const QUrl &url){
-        const QString urlStr = url.toString();
-        if (urlStr.startsWith(QLatin1String("evgrp:"))) {
-            toggleEventGroupInView(m_chatView, urlStr.mid(6),
-                                   m_model->activeHost().str(), m_model->activeChannel().str());
+        m_chatView->setColors(QColor(m_theme.text), QColor(m_theme.background),
+                              QColor(m_theme.accent), QColor(m_theme.background).darker(110),
+                              QColor(m_theme.border));
+    connect(m_chatView, &ChatView::anchorActivated,
+            this, [this](const QString &anchor, const QPoint &gp, Qt::MouseButton btn){
+        if (btn == Qt::LeftButton) {
+            if (anchor.startsWith(QLatin1String("evgrp:"))) {
+                toggleEventGroupInView(m_chatView, anchor.mid(6),
+                                       m_model->activeHost().str(), m_model->activeChannel().str());
+                return;
+            }
+            QString href = anchor;
+            if (href.startsWith("url:"))  href = href.mid(4);
+            if (href.startsWith("preview:")) href = href.mid(8);
+            const QUrl u(href);
+            const QString s = u.scheme().toLower();
+            if (s == "http" || s == "https") QDesktopServices::openUrl(u);
+        } else if (btn == Qt::RightButton) {
+            handleChatViewContextMenu(m_chatView, anchor, gp,
+                                      m_model->activeHost().str(), m_model->activeChannel().str());
+        }
+    });
+    connect(m_chatView, &ChatView::anchorHovered, this, [this](const QString &anchor){
+        if (anchor.isEmpty() || anchor.startsWith("nick:")) {
+            if (!m_hoveredUrl.isEmpty()) {
+                m_hoveredUrl.clear();
+                QToolTip::hideText();
+                statusBar()->clearMessage();
+            }
             return;
         }
-        QString s = url.scheme().toLower();
-        QUrl target = url;
-        if (s == "preview") {
-            target = QUrl(url.toString().mid(8));
-            s = target.scheme().toLower();
-        }
-        if (s == "http" || s == "https")
-            QDesktopServices::openUrl(target);
+        QString href = anchor;
+        if (href.startsWith("url:"))     href = href.mid(4);
+        if (href.startsWith("preview:")) href = href.mid(8);
+        if (href == m_hoveredUrl) return;
+        m_hoveredUrl = href;
+        const QUrl url(href);
+        statusBar()->showMessage(url.host());
+        m_hoverGlobalPos = QCursor::pos();
+        QToolTip::showText(m_hoverGlobalPos, url.host(), m_chatView->viewport());
+        if (m_config.ui.linkPreviews) m_linkPreview->fetchHover(url);
     });
+    connect(m_chatView, &ChatView::loadOlderRequested, this, &MainWindow::loadOlderMessages);
+    m_chatView->installEventFilter(this);
 
     m_linkPreview = new LinkPreview(this);
 
@@ -1318,15 +1264,6 @@ void MainWindow::setupChatArea()
     connect(m_previewWatchdog, &QTimer::timeout, this, [this]{
         m_previewFetchBusy = false;
         processPreviewQueue();
-    });
-
-    m_chatView->viewport()->setMouseTracking(true);
-    m_chatView->viewport()->installEventFilter(this);
-    m_chatView->installEventFilter(this);
-
-    connect(m_chatView->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int val) {
-        if (val == 0 && !m_loadingOlder)
-            loadOlderMessages();
     });
 
     connect(m_linkPreview, &LinkPreview::titleReady, this, [this](const QUrl &url, const QString &title){
@@ -1355,58 +1292,56 @@ void MainWindow::setupChatArea()
         auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
         if (!ch) return;
 
-        QString imgHtml;
-        if (!thumbnail.isNull()) {
-            const int imgId = storePreviewImage(thumbnail);
-            imgHtml = QString("<br/><img src=\"img://%1\" width=\"%2\" height=\"%3\"/>")
-                .arg(imgId).arg(thumbnail.width()).arg(thumbnail.height());
-        }
+        // Thumbnail scaled to max 100 px wide
+        QPixmap thumb;
+        if (!thumbnail.isNull())
+            thumb = thumbnail.scaledToWidth(qMin(thumbnail.width(), 100),
+                                            Qt::SmoothTransformation);
 
-        const QColor bg = m_chatView->palette().color(QPalette::Base);
-        const QColor border(m_theme.border);
-        const QColor fg(m_theme.text);
-        const QColor sub(m_theme.timestamp);
+        Channel::PreviewCard card;
+        card.title     = title.left(120);
+        card.domain    = pageUrl.host();
+        card.pageUrl   = urlStr;
+        card.thumbnail = thumb;
+        ch->addPreview(urlStr, card);
 
-        const QString titleEsc  = title.toHtmlEscaped().left(120);
-        const QString domainEsc = pageUrl.host().toHtmlEscaped();
-
-        const int cardLeft = m_config.ui.hangingIndent
-            ? QFontMetrics(m_chatView->font()).horizontalAdvance("00:00  ")
-            : 20;
-
-        // cardBase is the open portion of the card HTML (no closing tags, no img).
-        // Stored in PreviewCard so refresh reconstructs by simple concatenation.
-        const QString cardBase =
-            QString("<table cellpadding=\"5\" cellspacing=\"0\" "
-                    "style=\"margin:1px 0 3px %1px;"
-                    "border-left:3px solid %2;"
-                    "background-color:%3\"><tr><td>")
-                .arg(cardLeft).arg(border.name(), bg.name())
-            + "<a href=\"preview:" + urlStr.toHtmlEscaped()
-            + "\" style=\"text-decoration:none\">"
-            + QString("<span style=\"color:%1;font-weight:bold\">%2</span><br/>"
-                      "<span style=\"color:%3;font-size:8pt\">%4</span>")
-                .arg(fg.name(), titleEsc, sub.name(), domainEsc);
-
-        const QString cardHtml = cardBase + imgHtml + "</a></td></tr></table>";
-
-        ch->addPreview(urlStr, cardBase, imgHtml);
+        auto makeCardLine = [&]() -> ChatLine {
+            ChatLine line;
+            // Build text: "title\ndomain" with URL segment for the preview anchor
+            line.text = card.title + "\n" + card.domain;
+            QTextCharFormat titleFmt;
+            titleFmt.setFontWeight(QFont::Bold);
+            ChatSegment titleSeg;
+            titleSeg.start  = 0;
+            titleSeg.length = static_cast<int>(card.title.size());
+            titleSeg.format = titleFmt;
+            titleSeg.anchor = "preview:" + urlStr;
+            line.segments.append(titleSeg);
+            QTextCharFormat domainFmt;
+            domainFmt.setForeground(QColor("#888888"));
+            ChatSegment domainSeg;
+            domainSeg.start  = static_cast<int>(card.title.size()) + 1;
+            domainSeg.length = static_cast<int>(card.domain.size());
+            domainSeg.format = domainFmt;
+            line.segments.append(domainSeg);
+            line.role  = ChatLineRole::PreviewCard;
+            line.image = thumb;
+            return line;
+        };
 
         const bool isActive = (host == m_model->activeHost().str() &&
                                channel.toLower() == m_model->activeChannel().str().toLower());
         if (isActive) {
-            QScrollBar *sb = m_chatView->verticalScrollBar();
-            const bool atBottom = sb->value() >= sb->maximum() - 4;
-            insertHtmlBlock(m_chatView, cardHtml);
-            if (atBottom) sb->setValue(sb->maximum());
+            const bool atBottom = m_chatView->isAtBottom();
+            m_chatView->appendLine(makeCardLine());
+            if (atBottom) m_chatView->scrollToBottom();
         }
 
         const QString paneKey = host + "|" + channel.toLower();
         if (auto *pane = m_panes.value(paneKey)) {
-            QScrollBar *psb = pane->chatView()->verticalScrollBar();
-            const bool atBottom = psb->value() >= psb->maximum() - 4;
-            insertHtmlBlock(pane->chatView(), cardHtml);
-            if (atBottom) psb->setValue(psb->maximum());
+            const bool atBottom = pane->chatView()->isAtBottom();
+            pane->chatView()->appendLine(makeCardLine());
+            if (atBottom) pane->chatView()->scrollToBottom();
         }
     });
 
@@ -1535,14 +1470,8 @@ void MainWindow::setupInputBar()
         m_searchInput->setPlaceholderText("Search in buffer…");
         m_searchInput->installEventFilter(this);
         connect(m_searchInput, &QLineEdit::textChanged, this, [this](const QString &text){
-            if (!text.isEmpty()) {
-                QTextCursor c(m_chatView->document());
-                c.movePosition(QTextCursor::Start);
-                m_chatView->setTextCursor(c);
-                m_chatView->find(text);
-            } else {
-                m_chatView->setTextCursor(QTextCursor(m_chatView->document()));
-            }
+            if (text.isEmpty()) m_chatView->clearFind();
+            else m_chatView->findText(text, false);
         });
         auto *closeBtn = new QToolButton;
         closeBtn->setText("✕");
@@ -1550,7 +1479,7 @@ void MainWindow::setupInputBar()
         closeBtn->setAutoRaise(true);
         connect(closeBtn, &QToolButton::clicked, this, [this]{
             m_searchBar->hide();
-            m_chatView->setTextCursor(QTextCursor(m_chatView->document()));
+            m_chatView->clearFind();
             m_input->setFocus();
         });
         shbox->addWidget(m_searchInput, 1);
@@ -1852,276 +1781,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     if (!m_chatView)
         return QMainWindow::eventFilter(obj, event);
 
-    if (obj == m_chatView->viewport()) {
-        if (event->type() == QEvent::MouseMove) {
-            auto *me = static_cast<QMouseEvent *>(event);
-            const QString anchor = m_chatView->anchorAt(me->position().toPoint());
-            const bool isNick = anchor.startsWith("nick:");
-            if (anchor != m_hoveredUrl) {
-                m_hoveredUrl = anchor;
-                if (anchor.isEmpty() || isNick) {
-                    QToolTip::hideText();
-                    statusBar()->clearMessage();
-                } else {
-                    m_hoverGlobalPos = m_chatView->viewport()->mapToGlobal(
-                        me->position().toPoint());
-                    const QUrl url(anchor);
-                    statusBar()->showMessage(url.host());
-                    QToolTip::showText(m_hoverGlobalPos, url.host(),
-                                       m_chatView->viewport());
-                    if (m_config.ui.linkPreviews)
-                        m_linkPreview->fetchHover(url);
-                }
-            }
-        } else if (event->type() == QEvent::ContextMenu) {
-            auto *ce = static_cast<QContextMenuEvent *>(event);
-            const QString anchor = m_chatView->anchorAt(ce->pos());
-            const QPoint globalPos = ce->globalPos();
-
-            if (anchor.startsWith("nick:")) {
-                showNickContextMenu(anchor.mid(5), globalPos);
-                return true;
-            }
-
-            if (anchor.startsWith("msgid:")) {
-                const QString msgid   = anchor.mid(6);
-                const QString host    = m_model->activeHost().str();
-                const QString channel = m_model->activeChannel().str();
-                QMenu menu(m_chatView->viewport());
-                connect(menu.addAction("Reply"), &QAction::triggered, this,
-                        [this, msgid, host, channel]{
-                    auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
-                    QString origNick;
-                    if (ch)
-                        for (const auto &m : std::as_const(ch->messages))
-                            if (m.msgid == msgid) { origNick = m.nick; break; }
-                    m_pendingReplyMsgid = msgid;
-                    if (m_replyLabel)
-                        m_replyLabel->setText("↩ " + (origNick.isEmpty() ? msgid : origNick));
-                    if (m_replyBar) m_replyBar->show();
-                    if (m_input)    m_input->setFocus();
-                });
-                connect(menu.addAction("React"), &QAction::triggered, this,
-                        [this, msgid, host, channel, globalPos]{
-                    m_pendingReactMsgid    = msgid;
-                    m_pendingReactHost     = host;
-                    m_pendingReactChannel  = channel;
-                    ensureEmojiPicker();
-                    m_emojiPicker->showAt(globalPos);
-                });
-                {
-                    auto *cl = m_model->clientFor(ServerId{host});
-                    auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
-                    if (cl && cl->hasCap("draft/message-redaction") && ch) {
-                        QString msgNick;
-                        for (const auto &m : std::as_const(ch->messages))
-                            if (m.msgid == msgid) { msgNick = m.nick; break; }
-                        if (msgNick == m_model->selfNick(ServerId{host})) {
-                            connect(menu.addAction("Delete"), &QAction::triggered, this,
-                                    [this, msgid, host, channel]{
-                                m_model->sendRedact(ServerId{host}, BufferId{channel}, msgid);
-                            });
-                        }
-                    }
-                }
-                if (m_chatView->textCursor().hasSelection())
-                    connect(menu.addAction("Copy"), &QAction::triggered,
-                            this, [this]{ m_chatView->copy(); });
-                menu.exec(globalPos);
-                return true;
-            }
-
-            if (anchor.startsWith("preview:")) {
-                const QString url     = anchor.mid(8);
-                const QString host    = m_model->activeHost().str();
-                const QString channel = m_model->activeChannel().str();
-                QMenu menu(m_chatView->viewport());
-                connect(menu.addAction("Open URL"), &QAction::triggered, this, [url]{
-                    const QUrl u(url);
-                    const QString s = u.scheme().toLower();
-                    if (s == "http" || s == "https")
-                        QDesktopServices::openUrl(u);
-                });
-                auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
-                if (ch && ch->previews.contains(url)) {
-                    connect(menu.addAction("Hide Preview"), &QAction::triggered, this,
-                            [this, url, host, channel]{
-                        auto *inner = m_model->channel(ServerId{host}, BufferId{channel});
-                        if (inner) inner->hiddenPreviews.insert(url);
-                        refreshChatView(host, channel);
-                    });
-                }
-                menu.exec(globalPos);
-                return true;
-            }
-
-            if (!anchor.isEmpty()) {
-                const QString host    = m_model->activeHost().str();
-                const QString channel = m_model->activeChannel().str();
-                QMenu menu(m_chatView->viewport());
-
-                connect(menu.addAction("Copy URL"), &QAction::triggered,
-                        this, [anchor]{ QApplication::clipboard()->setText(anchor); });
-                connect(menu.addAction("Open URL"), &QAction::triggered, this, [anchor]{
-                    const QUrl u(anchor);
-                    const QString s = u.scheme().toLower();
-                    if (s == "http" || s == "https")
-                        QDesktopServices::openUrl(u);
-                });
-
-                auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
-                const bool isHidden  = ch && ch->hiddenPreviews.contains(anchor);
-                const bool hasPreview = ch && ch->previews.contains(anchor);
-                if (isHidden) {
-                    auto *showAction = menu.addAction("Show Preview");
-                    connect(showAction, &QAction::triggered, this, [this, anchor, host, channel]{
-                        auto *inner = m_model->channel(ServerId{host}, BufferId{channel});
-                        if (inner) inner->hiddenPreviews.remove(anchor);
-                        refreshChatView(host, channel);
-                    });
-                } else {
-                    auto *hideAction = menu.addAction("Hide Preview");
-                    hideAction->setEnabled(hasPreview);
-                    connect(hideAction, &QAction::triggered, this, [this, anchor, host, channel]{
-                        auto *inner = m_model->channel(ServerId{host}, BufferId{channel});
-                        if (inner) inner->hiddenPreviews.insert(anchor);
-                        refreshChatView(host, channel);
-                    });
-                }
-
-                menu.exec(globalPos);
-            } else if (m_chatView->textCursor().hasSelection()) {
-                QMenu menu(m_chatView->viewport());
-                connect(menu.addAction("Copy"), &QAction::triggered,
-                        this, [this]{ m_chatView->copy(); });
-
-                // Find the msgid anchor in the clicked paragraph so Reply
-                // is available even when right-clicking on message body text.
-                QString foundMsgid;
-                const QTextBlock block = m_chatView->cursorForPosition(ce->pos()).block();
-                for (auto it = block.begin(); !it.atEnd(); ++it) {
-                    const QString href = it.fragment().charFormat().anchorHref();
-                    if (href.startsWith("msgid:")) { foundMsgid = href.mid(6); break; }
-                }
-                if (!foundMsgid.isEmpty()) {
-                    const QString host    = m_model->activeHost().str();
-                    const QString channel = m_model->activeChannel().str();
-                    connect(menu.addAction("Reply"), &QAction::triggered, this,
-                            [this, foundMsgid, host, channel]{
-                        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
-                        QString origNick;
-                        if (ch)
-                            for (const auto &m : std::as_const(ch->messages))
-                                if (m.msgid == foundMsgid) { origNick = m.nick; break; }
-                        m_pendingReplyMsgid = foundMsgid;
-                        if (m_replyLabel)
-                            m_replyLabel->setText("↩ " + (origNick.isEmpty() ? foundMsgid : origNick));
-                        if (m_replyBar) m_replyBar->show();
-                        if (m_input)    m_input->setFocus();
-                    });
-                }
-
-                menu.exec(globalPos);
-            }
-            return true;
-        } else if (event->type() == QEvent::Leave) {
-            m_hoveredUrl.clear();
-            QToolTip::hideText();
-            statusBar()->clearMessage();
-        }
-        return false;
-    }
-
-    // Pane chat view viewports — ContextMenu only (no hover/link preview in panes)
-    for (auto *p : std::as_const(m_orderedPanes)) {
-        if (obj != p->chatView()->viewport()) continue;
-        if (event->type() != QEvent::ContextMenu) return false;
-        auto *ce           = static_cast<QContextMenuEvent *>(event);
-        const QString anch = p->chatView()->anchorAt(ce->pos());
-        const QPoint gp    = ce->globalPos();
-        const QString host = p->host();
-        const QString chan  = p->channel();
-
-        if (anch.startsWith("nick:")) {
-            showNickContextMenu(anch.mid(5), gp);
-            return true;
-        }
-        if (anch.startsWith("msgid:")) {
-            const QString msgid = anch.mid(6);
-            QMenu menu(p->chatView()->viewport());
-            connect(menu.addAction("Reply"), &QAction::triggered, this,
-                    [this, msgid, host, chan]{
-                auto *ch = m_model->channel(ServerId{host}, BufferId{chan});
-                QString nick;
-                if (ch) for (const auto &m : std::as_const(ch->messages))
-                    if (m.msgid == msgid) { nick = m.nick; break; }
-                m_pendingReplyMsgid = msgid;
-                if (m_replyLabel) m_replyLabel->setText("↩ " + (nick.isEmpty() ? msgid : nick));
-                if (m_replyBar)   m_replyBar->show();
-                if (m_input)      m_input->setFocus();
-            });
-            connect(menu.addAction("React"), &QAction::triggered, this,
-                    [this, msgid, host, chan, gp]{
-                m_pendingReactMsgid = msgid; m_pendingReactHost = host;
-                m_pendingReactChannel = chan; ensureEmojiPicker(); m_emojiPicker->showAt(gp);
-            });
-            auto *cl = m_model->clientFor(ServerId{host});
-            auto *ch = m_model->channel(ServerId{host}, BufferId{chan});
-            if (cl && cl->hasCap("draft/message-redaction") && ch) {
-                QString msgNick;
-                for (const auto &m : std::as_const(ch->messages))
-                    if (m.msgid == msgid) { msgNick = m.nick; break; }
-                if (msgNick == m_model->selfNick(ServerId{host}))
-                    connect(menu.addAction("Delete"), &QAction::triggered, this,
-                            [this, host, chan, msgid]{
-                        m_model->sendRedact(ServerId{host}, BufferId{chan}, msgid, "deleted");
-                    });
-            }
-            menu.exec(gp);
-            return true;
-        }
-        if (p->chatView()->textCursor().hasSelection()) {
-            QMenu menu(p->chatView()->viewport());
-            connect(menu.addAction("Copy"), &QAction::triggered, this,
-                    [p]{ p->chatView()->copy(); });
-            QString foundMsgid;
-            const QTextBlock blk = p->chatView()->cursorForPosition(ce->pos()).block();
-            for (auto it = blk.begin(); !it.atEnd(); ++it) {
-                const QString href = it.fragment().charFormat().anchorHref();
-                if (href.startsWith("msgid:")) { foundMsgid = href.mid(6); break; }
-            }
-            if (!foundMsgid.isEmpty())
-                connect(menu.addAction("Reply"), &QAction::triggered, this,
-                        [this, foundMsgid, host, chan]{
-                    auto *ch = m_model->channel(ServerId{host}, BufferId{chan});
-                    QString nick;
-                    if (ch) for (const auto &m : std::as_const(ch->messages))
-                        if (m.msgid == foundMsgid) { nick = m.nick; break; }
-                    m_pendingReplyMsgid = foundMsgid;
-                    if (m_replyLabel) m_replyLabel->setText("↩ " + (nick.isEmpty() ? foundMsgid : nick));
-                    if (m_replyBar)   m_replyBar->show();
-                    if (m_input)      m_input->setFocus();
-                });
-            menu.exec(gp);
-            return true;
-        }
-        return false;
-    }
-
-    if (obj == m_chatView && event->type() == QEvent::KeyPress) {
-        auto *ke = static_cast<QKeyEvent *>(event);
-        if (ke->key() == Qt::Key_F && (ke->modifiers() & Qt::ControlModifier)) {
-            showSearchBar();
-            return true;
-        }
-        return false;
-    }
-
     if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
         auto *ke = static_cast<QKeyEvent *>(event);
         if (ke->key() == Qt::Key_Escape) {
             m_searchBar->hide();
-            m_chatView->setTextCursor(QTextCursor(m_chatView->document()));
+            m_chatView->clearFind();
             m_input->setFocus();
             return true;
         }
@@ -2593,16 +2257,7 @@ static QList<Message> collectEventGroup(const Channel *ch, const QString &selfNi
     return group;
 }
 
-// Find last block in view that has userData (skip trailing empty blocks).
-static QTextBlock lastTaggedBlock(QTextBrowser *view)
-{
-    QTextBlock b = view->document()->lastBlock();
-    while (b.isValid() && !b.userData())
-        b = b.previous();
-    return b;
-}
-
-void MainWindow::toggleEventGroupInView(QTextBrowser *view, const QString &groupId,
+void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
                                          const QString &host, const QString &channel)
 {
     auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
@@ -2645,117 +2300,170 @@ void MainWindow::toggleEventGroupInView(QTextBrowser *view, const QString &group
     ctx.selfNickRe   = m_selfNickRe;
     ctx.channel      = ch;
 
-    const QString html = ChatRenderer::formatEventGroup(group, ctx, groupId, expand);
+    const bool atBottom = view->isAtBottom();
+    view->replaceLine("evgrp:" + groupId,
+                      ChatRenderer::formatEventGroupLine(group, ctx, groupId, expand));
+    if (atBottom) view->scrollToBottom();
+}
 
-    QScrollBar *sb = view->verticalScrollBar();
-    const int scrollPos = sb->value();
-    const bool atBottom = scrollPos >= sb->maximum() - 4;
+void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor,
+                                            const QPoint &globalPos,
+                                            const QString &host, const QString &channel)
+{
+    if (anchor.startsWith("nick:")) {
+        showNickContextMenu(anchor.mid(5), globalPos);
+        return;
+    }
 
-    QTextBlock block = findBlock(view, "evgrp:" + groupId);
-    if (!block.isValid()) return;
+    if (anchor.startsWith("msgid:")) {
+        const QString msgid = anchor.mid(6);
+        QMenu menu(view->viewport());
+        connect(menu.addAction("Reply"), &QAction::triggered, this,
+                [this, msgid, host, channel]{
+            auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
+            QString origNick;
+            if (ch) for (const auto &m : std::as_const(ch->messages))
+                if (m.msgid == msgid) { origNick = m.nick; break; }
+            m_pendingReplyMsgid = msgid;
+            if (m_replyLabel) m_replyLabel->setText("↩ " + (origNick.isEmpty() ? msgid : origNick));
+            if (m_replyBar) m_replyBar->show();
+            if (m_input)    m_input->setFocus();
+        });
+        connect(menu.addAction("React"), &QAction::triggered, this,
+                [this, msgid, host, channel, globalPos]{
+            m_pendingReactMsgid    = msgid;
+            m_pendingReactHost     = host;
+            m_pendingReactChannel  = channel;
+            ensureEmojiPicker();
+            m_emojiPicker->showAt(globalPos);
+        });
+        {
+            auto *cl = m_model->clientFor(ServerId{host});
+            auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
+            if (cl && cl->hasCap("draft/message-redaction") && ch) {
+                QString msgNick;
+                for (const auto &m : std::as_const(ch->messages))
+                    if (m.msgid == msgid) { msgNick = m.nick; break; }
+                if (msgNick == m_model->selfNick(ServerId{host})) {
+                    connect(menu.addAction("Delete"), &QAction::triggered, this,
+                            [this, msgid, host, channel]{
+                        m_model->sendRedact(ServerId{host}, BufferId{channel}, msgid);
+                    });
+                }
+            }
+        }
+        menu.exec(globalPos);
+        return;
+    }
 
-    const int blockPos = block.position();
-    replaceBlockHtml(view, block, html);
+    if (anchor.startsWith("preview:")) {
+        const QString url = anchor.mid(8);
+        QMenu menu(view->viewport());
+        connect(menu.addAction("Open URL"), &QAction::triggered, this, [url]{
+            const QUrl u(url);
+            if (u.scheme().toLower() == "http" || u.scheme().toLower() == "https")
+                QDesktopServices::openUrl(u);
+        });
+        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
+        if (ch && ch->previews.contains(url)) {
+            connect(menu.addAction("Hide Preview"), &QAction::triggered, this,
+                    [this, url, host, channel]{
+                auto *inner = m_model->channel(ServerId{host}, BufferId{channel});
+                if (inner) inner->hiddenPreviews.insert(url);
+                refreshChatView(host, channel);
+            });
+        }
+        menu.exec(globalPos);
+        return;
+    }
 
-    QTextBlock refreshed = view->document()->findBlock(blockPos);
-    if (refreshed.isValid())
-        refreshed.setUserData(new BlockMsgid("evgrp:" + groupId));
-
-    if (!atBottom)
-        sb->setValue(scrollPos);
+    if (!anchor.isEmpty()) {
+        // URL or other anchor
+        QString href = anchor;
+        if (href.startsWith("url:")) href = href.mid(4);
+        QMenu menu(view->viewport());
+        connect(menu.addAction("Copy URL"), &QAction::triggered,
+                this, [href]{ QApplication::clipboard()->setText(href); });
+        connect(menu.addAction("Open URL"), &QAction::triggered, this, [href]{
+            const QUrl u(href);
+            if (u.scheme().toLower() == "http" || u.scheme().toLower() == "https")
+                QDesktopServices::openUrl(u);
+        });
+        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
+        const bool isHidden   = ch && ch->hiddenPreviews.contains(href);
+        const bool hasPreview = ch && ch->previews.contains(href);
+        if (isHidden) {
+            connect(menu.addAction("Show Preview"), &QAction::triggered, this,
+                    [this, href, host, channel]{
+                auto *inner = m_model->channel(ServerId{host}, BufferId{channel});
+                if (inner) inner->hiddenPreviews.remove(href);
+                refreshChatView(host, channel);
+            });
+        } else {
+            auto *hideAction = menu.addAction("Hide Preview");
+            hideAction->setEnabled(hasPreview);
+            connect(hideAction, &QAction::triggered, this, [this, href, host, channel]{
+                auto *inner = m_model->channel(ServerId{host}, BufferId{channel});
+                if (inner) inner->hiddenPreviews.insert(href);
+                refreshChatView(host, channel);
+            });
+        }
+        menu.exec(globalPos);
+    }
 }
 
 void MainWindow::onMessageAdded(const QString &host, const QString &channel, const Message &msg)
 {
     const QString selfNick = m_model->selfNick(ServerId{host});
 
+    auto makeCtx = [&](Channel *ch) {
+        ChatRenderer::Context ctx;
+        ctx.coloredNicks = m_config.ui.coloredNicks;
+        ctx.nickBrackets = m_config.ui.nickBrackets;
+        ctx.emojiPt      = m_config.ui.fontSizes.emoji;
+        ctx.chatPt       = m_config.ui.fontSizes.chat;
+        ctx.validTheme   = m_theme.valid;
+        ctx.themeText    = m_theme.text;
+        ctx.selfNickRe   = m_selfNickRe;
+        ctx.channel      = ch;
+        return ctx;
+    };
+
+    auto appendToView = [&](ChatView *view, Channel *ch) {
+        if (isCondensable(msg, selfNick)) {
+            const QList<Message> group = collectEventGroup(ch, selfNick);
+            if (group.isEmpty()) return;
+            const QString groupId = QString::number(group.first().timestamp.toMSecsSinceEpoch());
+            const bool grpExpanded = m_expandedEventGroups.contains(groupId);
+            const QString blockId  = "evgrp:" + groupId;
+            const ChatLine line    = ChatRenderer::formatEventGroupLine(group, makeCtx(ch), groupId, grpExpanded);
+            if (view->findLine(blockId) >= 0)
+                view->replaceLine(blockId, line);
+            else
+                view->appendLine(line);
+        } else {
+            view->appendLine(ChatRenderer::formatMessageLine(msg, makeCtx(ch)));
+        }
+        view->scrollToBottom();
+    };
+
     if (host == m_model->activeHost().str() &&
         channel.toLower() == m_model->activeChannel().str().toLower())
     {
-        if (isCondensable(msg, selfNick)) {
-            auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
-            if (ch) {
-                ChatRenderer::Context ctx;
-                ctx.coloredNicks = m_config.ui.coloredNicks;
-                ctx.nickBrackets = m_config.ui.nickBrackets;
-                ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-                ctx.chatPt       = m_config.ui.fontSizes.chat;
-                ctx.validTheme   = m_theme.valid;
-                ctx.themeText    = m_theme.text;
-                ctx.selfNickRe   = m_selfNickRe;
-                ctx.channel      = ch;
-
-                const QList<Message> group = collectEventGroup(ch, selfNick);
-                const QString groupId = group.isEmpty() ? QString()
-                    : QString::number(group.first().timestamp.toMSecsSinceEpoch());
-                const bool grpExpanded = m_expandedEventGroups.contains(groupId);
-                const QString html = ChatRenderer::formatEventGroup(group, ctx, groupId, grpExpanded);
-
-                QTextBlock last = lastTaggedBlock(m_chatView);
-                auto *d = last.isValid() ? static_cast<BlockMsgid*>(last.userData()) : nullptr;
-                const QString blockId = "evgrp:" + groupId;
-                if (d && d->id == blockId) {
-                    const int lastPos = last.position();
-                    replaceBlockHtml(m_chatView, last, html);
-                    QTextBlock refreshed = m_chatView->document()->findBlock(lastPos);
-                    if (refreshed.isValid())
-                        refreshed.setUserData(new BlockMsgid(blockId));
-                } else {
-                    insertHtmlBlock(m_chatView, html);
-                    m_chatView->document()->lastBlock().setUserData(new BlockMsgid(blockId));
-                }
-                auto *sb = m_chatView->verticalScrollBar();
-                sb->setValue(sb->maximum());
+        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
+        if (ch) {
+            if (isCondensable(msg, selfNick)) {
+                appendToView(m_chatView, ch);
+            } else {
+                appendMessage(msg, m_config.ui.linkPreviews);
             }
-        } else {
-            appendMessage(msg, m_config.ui.linkPreviews);
         }
     }
 
     const QString paneKey = host + "|" + channel.toLower();
     if (auto *pane = m_panes.value(paneKey)) {
-        if (isCondensable(msg, selfNick)) {
-            auto *pCh = m_model->channel(ServerId{host}, BufferId{channel});
-            if (pCh) {
-                ChatRenderer::Context ctx;
-                ctx.coloredNicks = m_config.ui.coloredNicks;
-                ctx.nickBrackets = m_config.ui.nickBrackets;
-                ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-                ctx.chatPt       = m_config.ui.fontSizes.chat;
-                ctx.validTheme   = m_theme.valid;
-                ctx.themeText    = m_theme.text;
-                ctx.selfNickRe   = m_selfNickRe;
-                ctx.channel      = pCh;
-                const QList<Message> group = collectEventGroup(pCh, selfNick);
-                const QString groupId = group.isEmpty() ? QString()
-                    : QString::number(group.first().timestamp.toMSecsSinceEpoch());
-                const bool grpExpanded = m_expandedEventGroups.contains(groupId);
-                const QString html = ChatRenderer::formatEventGroup(group, ctx, groupId, grpExpanded);
-                const QString blockId = "evgrp:" + groupId;
-                QTextBlock last = lastTaggedBlock(pane->chatView());
-                auto *d = last.isValid() ? static_cast<BlockMsgid*>(last.userData()) : nullptr;
-                if (d && d->id == blockId) {
-                    const int lastPos = last.position();
-                    replaceBlockHtml(pane->chatView(), last, html);
-                    QTextBlock refreshed = pane->chatView()->document()->findBlock(lastPos);
-                    if (refreshed.isValid())
-                        refreshed.setUserData(new BlockMsgid(blockId));
-                } else {
-                    insertHtmlBlock(pane->chatView(), html);
-                    pane->chatView()->document()->lastBlock().setUserData(new BlockMsgid(blockId));
-                }
-            }
-        } else {
-            const bool isText = (msg.type == MessageType::Privmsg ||
-                                 msg.type == MessageType::Action  ||
-                                 msg.type == MessageType::Notice);
-            insertHtmlBlock(pane->chatView(), formatMessage(msg),
-                            isText && m_config.ui.hangingIndent);
-            if (!msg.msgid.isEmpty())
-                pane->chatView()->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
-        }
-        auto *sb = pane->chatView()->verticalScrollBar();
-        sb->setValue(sb->maximum());
+        auto *pCh = m_model->channel(ServerId{host}, BufferId{channel});
+        if (pCh) appendToView(pane->chatView(), pCh);
     }
 
     if (m_config.ui.notifications && m_tray && !isActiveWindow()
@@ -2836,59 +2544,32 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
 
 void MainWindow::onReactionsChanged(const QString &host, const QString &channel, const QString &msgid)
 {
+    auto updateView = [&](ChatView *view, Channel *ch) {
+        if (view->findLine(msgid) < 0) return;
+        const auto rxIt = ch->reactions.constFind(msgid);
+        const bool hasReactions = rxIt != ch->reactions.constEnd() && !rxIt->isEmpty();
+        const QString rxId = "rx:" + msgid;
+        if (!hasReactions) {
+            view->removeLine(rxId);
+            return;
+        }
+        const ChatLine rxLine = buildReactionLine(*rxIt, msgid);
+        if (view->findLine(rxId) >= 0)
+            view->replaceLine(rxId, rxLine);
+        else
+            view->insertAfter(msgid, rxLine);
+    };
+
     if (host == m_model->activeHost().str() &&
         channel.toLower() == m_model->activeChannel().str().toLower()) {
         auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
-        if (!ch) return;
-
-        QTextBlock msgBlock = findBlock(m_chatView, msgid);
-        if (!msgBlock.isValid()) return;
-
-        const QTextBlock nextBlock = msgBlock.next();
-        auto *nextData = nextBlock.isValid()
-            ? static_cast<BlockMsgid*>(nextBlock.userData()) : nullptr;
-        const bool rxBlockExists = nextData && nextData->id == "rx:" + msgid;
-
-        auto rxIt = ch->reactions.constFind(msgid);
-        const bool hasReactions = rxIt != ch->reactions.constEnd() && !rxIt->isEmpty();
-
-        if (!hasReactions) {
-            if (rxBlockExists)
-                removeBlock(m_chatView, nextBlock);
-            return;
-        }
-
-        const QString rxHtml = buildReactionHtml(*rxIt, m_config.ui.fontSizes.emoji);
-        if (rxBlockExists)
-            replaceBlockHtml(m_chatView, nextBlock, rxHtml);
-        else
-            insertBlockAfter(m_chatView, msgBlock, rxHtml, new BlockMsgid("rx:" + msgid));
+        if (ch) updateView(m_chatView, ch);
     }
 
     for (auto *pane : std::as_const(m_panes)) {
-        if (pane->host() != host || pane->channel().toLower() != channel.toLower())
-            continue;
+        if (pane->host() != host || pane->channel().toLower() != channel.toLower()) continue;
         auto *pCh = m_model->channel(ServerId{host}, BufferId{channel});
-        if (!pCh) continue;
-        auto *view = pane->chatView();
-        QTextBlock msgBlock = findBlock(view, msgid);
-        if (!msgBlock.isValid()) continue;
-        const QTextBlock nextBlock = msgBlock.next();
-        auto *nextData = nextBlock.isValid()
-            ? static_cast<BlockMsgid*>(nextBlock.userData()) : nullptr;
-        const bool rxBlockExists = nextData && nextData->id == "rx:" + msgid;
-        auto rxIt = pCh->reactions.constFind(msgid);
-        const bool hasReactions = rxIt != pCh->reactions.constEnd() && !rxIt->isEmpty();
-        if (!hasReactions) {
-            if (rxBlockExists)
-                removeBlock(view, nextBlock);
-            continue;
-        }
-        const QString rxHtml = buildReactionHtml(*rxIt, m_config.ui.fontSizes.emoji);
-        if (rxBlockExists)
-            replaceBlockHtml(view, nextBlock, rxHtml);
-        else
-            insertBlockAfter(view, msgBlock, rxHtml, new BlockMsgid("rx:" + msgid));
+        if (pCh) updateView(pane->chatView(), pCh);
     }
 }
 
@@ -2908,19 +2589,7 @@ void MainWindow::onSelfNickChanged(const QString &host, const QString &nick)
 
 void MainWindow::onMessageRedacted(const QString &host, const QString &channel, const QString &msgid)
 {
-    if (host == m_model->activeHost().str() &&
-        channel.toLower() == m_model->activeChannel().str().toLower()) {
-        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
-        if (!ch) return;
-
-        const Message *redacted = nullptr;
-        for (const auto &msg : std::as_const(ch->messages))
-            if (msg.msgid == msgid) { redacted = &msg; break; }
-        if (!redacted) return;
-
-        QTextBlock msgBlock = findBlock(m_chatView, msgid);
-        if (!msgBlock.isValid()) return;
-
+    auto makeCtx = [&](Channel *ch) {
         ChatRenderer::Context ctx;
         ctx.coloredNicks = m_config.ui.coloredNicks;
         ctx.nickBrackets = m_config.ui.nickBrackets;
@@ -2930,32 +2599,29 @@ void MainWindow::onMessageRedacted(const QString &host, const QString &channel, 
         ctx.themeText    = m_theme.text;
         ctx.selfNickRe   = m_selfNickRe;
         ctx.channel      = ch;
+        return ctx;
+    };
 
-        replaceBlockHtml(m_chatView, msgBlock, ChatRenderer::formatMessage(*redacted, ctx));
+    auto updateView = [&](ChatView *view, Channel *ch) {
+        if (view->findLine(msgid) < 0) return;
+        for (const auto &msg : std::as_const(ch->messages)) {
+            if (msg.msgid == msgid) {
+                view->replaceLine(msgid, ChatRenderer::formatMessageLine(msg, makeCtx(ch)));
+                break;
+            }
+        }
+    };
+
+    if (host == m_model->activeHost().str() &&
+        channel.toLower() == m_model->activeChannel().str().toLower()) {
+        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
+        if (ch) updateView(m_chatView, ch);
     }
 
     for (auto *pane : std::as_const(m_panes)) {
-        if (pane->host() != host || pane->channel().toLower() != channel.toLower())
-            continue;
+        if (pane->host() != host || pane->channel().toLower() != channel.toLower()) continue;
         auto *pCh = m_model->channel(ServerId{host}, BufferId{channel});
-        if (!pCh) continue;
-        const Message *pRedacted = nullptr;
-        for (const auto &msg : std::as_const(pCh->messages))
-            if (msg.msgid == msgid) { pRedacted = &msg; break; }
-        if (!pRedacted) continue;
-        auto *view = pane->chatView();
-        QTextBlock msgBlock = findBlock(view, msgid);
-        if (!msgBlock.isValid()) continue;
-        ChatRenderer::Context ctx;
-        ctx.coloredNicks = m_config.ui.coloredNicks;
-        ctx.nickBrackets = m_config.ui.nickBrackets;
-        ctx.emojiPt      = m_config.ui.fontSizes.emoji;
-        ctx.chatPt       = m_config.ui.fontSizes.chat;
-        ctx.validTheme   = m_theme.valid;
-        ctx.themeText    = m_theme.text;
-        ctx.selfNickRe   = m_selfNickRe;
-        ctx.channel      = pCh;
-        replaceBlockHtml(view, msgBlock, ChatRenderer::formatMessage(*pRedacted, ctx));
+        if (pCh) updateView(pane->chatView(), pCh);
     }
 }
 
@@ -3267,19 +2933,21 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     if (m_panes.contains(key)) return;
     if (m_orderedPanes.size() >= kMaxExtraPanes) return;
 
-    auto *pane = new ChannelPane(host, channel, &m_previewImages, this);
+    auto *pane = new ChannelPane(host, channel, this);
     if (m_theme.valid)
-        pane->chatView()->document()->setDefaultStyleSheet(
-            QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
+        pane->chatView()->setColors(QColor(m_theme.text), QColor(m_theme.background),
+                                    QColor(m_theme.accent), QColor(m_theme.background).darker(110),
+                                    QColor(m_theme.border));
 
-    pane->chatView()->viewport()->installEventFilter(this);
     pane->input()->installEventFilter(this);
-    connect(pane->chatView(), &QTextBrowser::anchorClicked, this,
-            [this, pane](const QUrl &url){
-        const QString urlStr = url.toString();
-        if (urlStr.startsWith(QLatin1String("evgrp:")))
-            toggleEventGroupInView(pane->chatView(), urlStr.mid(6),
+    connect(pane->chatView(), &ChatView::anchorActivated, this,
+            [this, pane](const QString &anchor, const QPoint &gp, Qt::MouseButton /*btn*/){
+        if (anchor.startsWith(QLatin1String("evgrp:")))
+            toggleEventGroupInView(pane->chatView(), anchor.mid(6),
                                    pane->host(), pane->channel());
+        else
+            handleChatViewContextMenu(pane->chatView(), anchor, gp,
+                                      pane->host(), pane->channel());
     });
 
     if (auto *sess = m_model->session(ServerId{host}))
@@ -3291,7 +2959,6 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
         auto makeFont = [&](int pt){ QFont f(fam,pt); f.setStyleHint(QFont::Monospace); return f; };
         const QFont chatFont = makeFont(fs.chat);
         pane->chatView()->setFont(chatFont);
-        pane->chatView()->document()->setDefaultFont(chatFont);
         pane->nickList()->setFont(makeFont(fs.nickList));
         {
             auto *nd = new NickDelegate(pane->nickList());
@@ -3499,7 +3166,10 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     ctx.channel      = ch;
 
     const QString selfNick = m_model->selfNick(ServerId{pane->host()});
-    const int emojiPt = m_config.ui.fontSizes.emoji;
+
+    static const QRegularExpression urlRe(
+        R"(https?://[^\s<>"]+)",
+        QRegularExpression::CaseInsensitiveOption);
 
     for (int i = 0; i < ch->messages.size(); ) {
         const auto &msg = ch->messages[i];
@@ -3513,41 +3183,42 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
             QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
             const QString groupId = QString::number(group.first().timestamp.toMSecsSinceEpoch());
             const bool grpExpanded = m_expandedEventGroups.contains(groupId);
-            insertHtmlBlock(pane->chatView(), ChatRenderer::formatEventGroup(group, ctx, groupId, grpExpanded));
-            pane->chatView()->document()->lastBlock().setUserData(new BlockMsgid("evgrp:" + groupId));
+            pane->chatView()->appendLine(
+                ChatRenderer::formatEventGroupLine(group, ctx, groupId, grpExpanded));
             i = j;
         } else {
+            pane->chatView()->appendLine(ChatRenderer::formatMessageLine(msg, ctx));
+            if (!msg.msgid.isEmpty()) {
+                auto rxIt = ch->reactions.constFind(msg.msgid);
+                if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
+                    pane->chatView()->appendLine(buildReactionLine(*rxIt, msg.msgid));
+            }
             const bool isText = (msg.type == MessageType::Privmsg ||
                                  msg.type == MessageType::Action  ||
                                  msg.type == MessageType::Notice);
-            insertHtmlBlock(pane->chatView(), formatMessage(msg),
-                            isText && m_config.ui.hangingIndent);
-            if (!msg.msgid.isEmpty()) {
-                auto rxIt = ch->reactions.constFind(msg.msgid);
-                if (rxIt != ch->reactions.constEnd())
-                    insertHtmlBlock(pane->chatView(),
-                                    buildReactionHtml(*rxIt, emojiPt));
-            }
             if (isText && !ch->previews.isEmpty()) {
-                static const QRegularExpression urlRe(
-                    R"(https?://[^\s<>"]+)",
-                    QRegularExpression::CaseInsensitiveOption);
                 auto uit = urlRe.globalMatch(msg.text);
                 while (uit.hasNext()) {
                     const QString urlStr = QUrl(uit.next().captured(0)).toString();
                     const auto p = ch->previews.constFind(urlStr);
                     if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
                         continue;
-                    insertHtmlBlock(pane->chatView(),
-                        p->base + p->imgHtml + "</a></td></tr></table>");
+                    ChatLine card;
+                    card.role   = ChatLineRole::PreviewCard;
+                    card.id     = "preview:" + urlStr;
+                    card.image  = p->thumbnail;
+                    card.text   = p->title + "\n" + p->domain;
+                    ChatSegment seg; seg.start = 0; seg.length = card.text.size();
+                    seg.anchor = "preview:" + urlStr;
+                    card.segments.append(seg);
+                    pane->chatView()->appendLine(card);
                 }
             }
             ++i;
         }
     }
 
-    auto *sb = pane->chatView()->verticalScrollBar();
-    sb->setValue(sb->maximum());
+    pane->chatView()->scrollToBottom();
 }
 
 void MainWindow::refreshPaneNickList(ChannelPane *pane)
@@ -3824,17 +3495,6 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     menu.exec(globalPos);
 }
 
-int MainWindow::storePreviewImage(const QPixmap &px)
-{
-    static constexpr int kImgStoreCap = 100;
-    const int id = m_previewImageNext++;
-    if (m_previewImageOrder.size() >= kImgStoreCap)
-        m_previewImages.remove(m_previewImageOrder.takeFirst());
-    m_previewImages.insert(id, px);
-    m_previewImageOrder.append(id);
-    return id;
-}
-
 void MainWindow::enqueuePreview(const QUrl &url, const QString &host, const QString &channel)
 {
     const QString key = url.toString();
@@ -3882,21 +3542,17 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
     ctx.selfNickRe   = m_selfNickRe;
     ctx.channel      = ch;
 
-    const bool hangIndent = m_config.ui.hangingIndent;
-    const int  emojiPt    = m_config.ui.fontSizes.emoji;
-
     if (startIdx > 0) {
-        insertHtmlBlock(m_chatView,
-            QStringLiteral("<center><small style='color:#888888'>"
-                           "&#x2500;&#x2500; %1 older messages &#x2500;&#x2500;"
-                           "</small></center>").arg(startIdx));
+        ChatLine status = ChatRenderer::makeStatusLine(
+            QString("── %1 older messages ──").arg(startIdx));
+        status.id = "status:older";
+        m_chatView->appendLine(status);
     }
 
     const QString selfNick = m_model->selfNick(ServerId{host});
     for (int i = startIdx; i < ch->messages.size(); ) {
         const auto &msg = ch->messages[i];
         if (isCondensable(msg, selfNick)) {
-            // Collect consecutive condensable messages on the same day
             const QDate day = msg.timestamp.toLocalTime().date();
             int j = i + 1;
             while (j < ch->messages.size()
@@ -3906,17 +3562,18 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
             QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
             const QString groupId = QString::number(group.first().timestamp.toMSecsSinceEpoch());
             const bool grpExpanded = m_expandedEventGroups.contains(groupId);
-            insertHtmlBlock(m_chatView, ChatRenderer::formatEventGroup(group, ctx, groupId, grpExpanded));
-            m_chatView->document()->lastBlock().setUserData(new BlockMsgid("evgrp:" + groupId));
+            m_chatView->appendLine(ChatRenderer::formatEventGroupLine(group, ctx, groupId, grpExpanded));
             i = j;
         } else {
+            m_chatView->appendLine(ChatRenderer::formatMessageLine(msg, ctx));
+            if (!msg.msgid.isEmpty()) {
+                auto rxIt = ch->reactions.constFind(msg.msgid);
+                if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
+                    m_chatView->appendLine(buildReactionLine(*rxIt, msg.msgid));
+            }
             const bool isText = (msg.type == MessageType::Privmsg ||
                                  msg.type == MessageType::Action  ||
                                  msg.type == MessageType::Notice);
-            insertHtmlBlock(m_chatView, ChatRenderer::formatMessage(msg, ctx),
-                            isText && hangIndent);
-            if (!msg.msgid.isEmpty())
-                m_chatView->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
             if (isText && !ch->previews.isEmpty()) {
                 auto it = urlRe.globalMatch(msg.text);
                 while (it.hasNext()) {
@@ -3924,56 +3581,94 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
                     const auto p = ch->previews.constFind(urlStr);
                     if (p == ch->previews.constEnd() || ch->hiddenPreviews.contains(urlStr))
                         continue;
-                    insertHtmlBlock(m_chatView,
-                        p->base + p->imgHtml + "</a></td></tr></table>");
-                }
-            }
-            if (!msg.msgid.isEmpty()) {
-                auto rxIt = ch->reactions.constFind(msg.msgid);
-                if (rxIt != ch->reactions.constEnd()) {
-                    insertHtmlBlock(m_chatView, buildReactionHtml(*rxIt, emojiPt));
-                    m_chatView->document()->lastBlock().setUserData(new BlockMsgid("rx:" + msg.msgid));
+                    ChatLine card;
+                    card.role   = ChatLineRole::PreviewCard;
+                    card.id     = "preview:" + urlStr;
+                    card.image  = p->thumbnail;
+                    card.text   = p->title + "\n" + p->domain;
+                    ChatSegment seg; seg.start = 0; seg.length = card.text.size();
+                    seg.anchor = "preview:" + urlStr;
+                    card.segments.append(seg);
+                    m_chatView->appendLine(card);
                 }
             }
             ++i;
         }
     }
 
-    if (resetToLatest) {
-        QTimer::singleShot(0, this, [this]{
-            auto *sb = m_chatView->verticalScrollBar();
-            sb->setValue(sb->maximum());
-        });
-    }
+    if (resetToLatest)
+        QTimer::singleShot(0, this, [this]{ m_chatView->scrollToBottom(); });
 }
 
 void MainWindow::loadOlderMessages()
 {
     if (m_loadingOlder) return;
-    const QString host = m_model->activeHost().str();
-    const QString ch   = m_model->activeChannel().str();
-    if (host.isEmpty() || ch.isEmpty()) return;
+    const QString host    = m_model->activeHost().str();
+    const QString chName  = m_model->activeChannel().str();
+    if (host.isEmpty() || chName.isEmpty()) return;
 
-    const QString key = host + '\t' + ch;
+    const QString key = host + '\t' + chName;
     if (!m_renderStart.contains(key) || m_renderStart[key] == 0) return;
+
+    auto *ch = m_model->channel(ServerId{host}, BufferId{chName});
+    if (!ch) return;
 
     m_loadingOlder = true;
 
-    auto *sb = m_chatView->verticalScrollBar();
-    const int oldMax = sb->maximum();
+    const int prevStart = m_renderStart[key];
+    m_renderStart[key]  = qMax(0, prevStart - kRenderChunk);
+    const int newStart  = m_renderStart[key];
 
-    m_renderStart[key] = qMax(0, m_renderStart[key] - kRenderChunk);
-    refreshChatView(host, ch, false);
+    ChatRenderer::Context ctx;
+    ctx.coloredNicks = m_config.ui.coloredNicks;
+    ctx.nickBrackets = m_config.ui.nickBrackets;
+    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
+    ctx.chatPt       = m_config.ui.fontSizes.chat;
+    ctx.validTheme   = m_theme.valid;
+    ctx.themeText    = m_theme.text;
+    ctx.selfNickRe   = m_selfNickRe;
+    ctx.channel      = ch;
 
-    // Yield to Qt's event loop so the document layout completes and
-    // sb->maximum() reflects the actual content height before we restore
-    // the scroll position. Using processEvents here left maximum() stale
-    // (still 0 from the clear()), causing setValue(0) which blanked the view.
-    QTimer::singleShot(0, this, [this, sb, oldMax] {
-        const int delta = sb->maximum() - oldMax;
-        sb->setValue(qMax(1, delta)); // qMax(1,...) avoids re-triggering the at-top load
-        m_loadingOlder = false;
-    });
+    const QString selfNick = m_model->selfNick(ServerId{host});
+    QList<ChatLine> older;
+
+    if (newStart > 0) {
+        ChatLine status = ChatRenderer::makeStatusLine(
+            QString("── %1 older messages ──").arg(newStart));
+        status.id = "status:older";
+        older.append(status);
+    }
+
+    for (int i = newStart; i < prevStart; ) {
+        const auto &msg = ch->messages[i];
+        if (isCondensable(msg, selfNick)) {
+            const QDate day = msg.timestamp.toLocalTime().date();
+            int j = i + 1;
+            while (j < prevStart
+                   && isCondensable(ch->messages[j], selfNick)
+                   && ch->messages[j].timestamp.toLocalTime().date() == day)
+                ++j;
+            QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
+            const QString groupId    = QString::number(group.first().timestamp.toMSecsSinceEpoch());
+            const bool    grpExpanded = m_expandedEventGroups.contains(groupId);
+            older.append(ChatRenderer::formatEventGroupLine(group, ctx, groupId, grpExpanded));
+            i = j;
+        } else {
+            older.append(ChatRenderer::formatMessageLine(msg, ctx));
+            if (!msg.msgid.isEmpty()) {
+                auto rxIt = ch->reactions.constFind(msg.msgid);
+                if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
+                    older.append(buildReactionLine(*rxIt, msg.msgid));
+            }
+            ++i;
+        }
+    }
+
+    // Remove the existing "older messages" sentinel before prepending new batch
+    m_chatView->removeLine("status:older");
+    m_chatView->prependLines(std::move(older));
+
+    QTimer::singleShot(0, this, [this]{ m_loadingOlder = false; });
 }
 
 QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
@@ -4155,34 +3850,17 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
     }
 }
 
-QString MainWindow::msgidAtViewPos(const QPoint &viewPos) const
+QString MainWindow::msgidAtViewPos(const QPoint & /*viewPos*/) const
 {
-    QTextCursor cur = m_chatView->cursorForPosition(viewPos);
-    QTextBlock block = cur.block();
-    for (auto it = block.begin(); !it.atEnd(); ++it) {
-        const QTextFragment frag = it.fragment();
-        const QTextCharFormat fmt = frag.charFormat();
-        if (fmt.isAnchor()) {
-            const QString href = fmt.anchorHref();
-            if (href.startsWith("msgid:"))
-                return href.mid(6);
-        }
-    }
+    // Phase 3: implement via ChatView hit-test
     return {};
 }
 
 void MainWindow::doSearch(bool backward)
 {
-    const QString text = m_searchInput->text();
-    if (text.isEmpty()) return;
-    QTextDocument::FindFlags flags;
-    if (backward) flags |= QTextDocument::FindBackward;
-    if (!m_chatView->find(text, flags)) {
-        QTextCursor c(m_chatView->document());
-        c.movePosition(backward ? QTextCursor::End : QTextCursor::Start);
-        m_chatView->setTextCursor(c);
-        m_chatView->find(text, flags);
-    }
+    const QString text = m_searchInput ? m_searchInput->text() : QString{};
+    if (text.isEmpty()) { m_chatView->clearFind(); return; }
+    m_chatView->findText(text, backward);
 }
 
 void MainWindow::showSearchBar()
@@ -4201,21 +3879,29 @@ void MainWindow::clearReplyBar()
 
 void MainWindow::appendMessage(const Message &msg, bool autoPreview)
 {
+    const QString host    = m_model->activeHost().str();
+    const QString channel = m_model->activeChannel().str();
+    auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
+
+    ChatRenderer::Context ctx;
+    ctx.coloredNicks = m_config.ui.coloredNicks;
+    ctx.nickBrackets = m_config.ui.nickBrackets;
+    ctx.emojiPt      = m_config.ui.fontSizes.emoji;
+    ctx.chatPt       = m_config.ui.fontSizes.chat;
+    ctx.validTheme   = m_theme.valid;
+    ctx.themeText    = m_theme.text;
+    ctx.selfNickRe   = m_selfNickRe;
+    ctx.channel      = ch;
+
+    m_chatView->appendLine(ChatRenderer::formatMessageLine(msg, ctx));
+
     const bool isText = (msg.type == MessageType::Privmsg ||
                          msg.type == MessageType::Action  ||
                          msg.type == MessageType::Notice);
-    insertHtmlBlock(m_chatView, formatMessage(msg), isText && m_config.ui.hangingIndent);
-    if (!msg.msgid.isEmpty())
-        m_chatView->document()->lastBlock().setUserData(new BlockMsgid(msg.msgid));
-
-    if (autoPreview &&
-        (msg.type == MessageType::Privmsg ||
-         msg.type == MessageType::Action  ||
-         msg.type == MessageType::Notice)) {
+    if (autoPreview && isText) {
         static const QRegularExpression urlRe(
             R"(https?://[^\s<>"]+)",
             QRegularExpression::CaseInsensitiveOption);
-        auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
         auto it = urlRe.globalMatch(msg.text);
         while (it.hasNext()) {
             const QString urlStr = QUrl(it.next().captured(0)).toString();
@@ -4223,19 +3909,24 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
             if (ch) {
                 const auto p = ch->previews.constFind(urlStr);
                 if (p != ch->previews.constEnd() && !ch->hiddenPreviews.contains(urlStr)) {
-                    insertHtmlBlock(m_chatView,
-                        p->base + p->imgHtml + "</a></td></tr></table>");
+                    ChatLine card;
+                    card.role   = ChatLineRole::PreviewCard;
+                    card.id     = "preview:" + urlStr;
+                    card.image  = p->thumbnail;
+                    card.text   = p->title + "\n" + p->domain;
+                    ChatSegment seg; seg.start = 0; seg.length = card.text.size();
+                    seg.anchor = "preview:" + urlStr;
+                    card.segments.append(seg);
+                    m_chatView->appendLine(card);
                     continue;
                 }
             }
             if (!m_previewChannels.contains(urlStr))
-                enqueuePreview(QUrl(urlStr),
-                    m_model->activeHost().str(), m_model->activeChannel().str());
+                enqueuePreview(QUrl(urlStr), host, channel);
         }
     }
 
-    auto *sb = m_chatView->verticalScrollBar();
-    sb->setValue(sb->maximum());
+    m_chatView->scrollToBottom();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

@@ -330,6 +330,10 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
         const QString msg    = args.section(' ', 1);
         if (!target.isEmpty() && !msg.isEmpty())
             m_model->sendRaw(host, "NOTICE " + target + " :" + msg);
+    } else if (cmd == "/caps") {
+        auto *cl = m_model->clientFor(host);
+        const QString caps = cl ? cl->ackedCaps().join(", ") : "(not connected)";
+        m_model->localMessage(host, channel, "Acked CAPs: " + caps);
     } else if (cmd == "/quote" || cmd == "/raw") {
         m_model->sendRaw(host, args);
     } else if (cmd == "/quit") {

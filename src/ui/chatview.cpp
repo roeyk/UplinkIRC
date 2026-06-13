@@ -1,0 +1,706 @@
+#include "chatview.h"
+#include "ui/fadescrollbar.h"
+#include <QApplication>
+#include <QClipboard>
+#include <QContextMenuEvent>
+#include <QKeyEvent>
+#include <QMenu>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QScrollBar>
+#include <QTextLayout>
+#include <QTextLine>
+#include <algorithm>
+#include <cmath>
+
+ChatView::ChatView(QWidget *parent)
+    : QAbstractScrollArea(parent)
+{
+    setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, this));
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    setFrameShape(QFrame::NoFrame);
+    viewport()->setMouseTracking(true);
+    viewport()->setAutoFillBackground(false);
+
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int val) {
+        m_atBottom = (val >= verticalScrollBar()->maximum() - 4);
+        viewport()->update();
+        if (val == 0 && !m_lines.isEmpty())
+            emit loadOlderRequested();
+    });
+
+    connect(verticalScrollBar(), &QScrollBar::rangeChanged, this,
+        [this](int, int max) {
+            if (m_atBottom)
+                verticalScrollBar()->setValue(max);
+        });
+}
+
+// ── Public API ───────────────────────────────────────────────────────────────
+
+void ChatView::appendLine(const ChatLine &line)
+{
+    const int prevTotal = totalHeight();
+    m_lines.append(line);
+    layoutLine(m_lines.last());
+    m_cumH.append(prevTotal);
+    updateScrollRange();
+    viewport()->update();
+}
+
+void ChatView::prependLines(QList<ChatLine> lines)
+{
+    if (lines.isEmpty()) return;
+    for (auto &l : lines) layoutLine(l);
+    m_lines = lines + m_lines;
+    rebuildCumH();
+    updateScrollRange();
+    viewport()->update();
+}
+
+void ChatView::replaceLine(const QString &id, const ChatLine &line)
+{
+    const int idx = findLine(id);
+    if (idx < 0) return;
+    m_lines[idx] = line;
+    layoutLine(m_lines[idx]);
+    // Rebuild cumH from idx onward (heights before idx are unchanged)
+    for (int i = idx + 1; i < m_lines.size(); ++i)
+        m_cumH[i] = m_cumH[i-1] + m_lines[i-1].cachedH;
+    updateScrollRange();
+    viewport()->update();
+}
+
+void ChatView::insertAfter(const QString &id, const ChatLine &line)
+{
+    ChatLine newLine = line;
+    layoutLine(newLine);
+    const int idx = findLine(id);
+    const int insertIdx = (idx >= 0) ? idx + 1 : m_lines.size();
+    m_lines.insert(insertIdx, newLine);
+    m_cumH.insert(insertIdx, 0);
+    rebuildCumH();
+    updateScrollRange();
+    viewport()->update();
+}
+
+void ChatView::removeLine(const QString &id)
+{
+    const int idx = findLine(id);
+    if (idx < 0) return;
+    m_lines.removeAt(idx);
+    m_cumH.removeAt(idx);
+    // Rebuild cumH from idx onward
+    for (int i = idx; i < m_lines.size(); ++i)
+        m_cumH[i] = (i == 0) ? 0 : m_cumH[i-1] + m_lines[i-1].cachedH;
+    updateScrollRange();
+    viewport()->update();
+}
+
+void ChatView::clear()
+{
+    m_lines.clear();
+    m_cumH.clear();
+    m_atBottom = true;
+    verticalScrollBar()->setRange(0, 0);
+    viewport()->update();
+}
+
+void ChatView::setFont(const QFont &f)
+{
+    m_font = f;
+    QWidget::setFont(f);
+    viewport()->setFont(f);
+    invalidateHeights();
+    for (auto &l : m_lines) layoutLine(l);
+    rebuildCumH();
+    updateScrollRange();
+    viewport()->update();
+}
+
+void ChatView::setColors(const QColor &text, const QColor &bg,
+                          const QColor &link, const QColor &cardBg, const QColor &cardBorder)
+{
+    QPalette pal = viewport()->palette();
+    if (text.isValid())  pal.setColor(QPalette::Text, text);
+    if (bg.isValid())    pal.setColor(QPalette::Base, bg);
+    viewport()->setPalette(pal);
+    if (link.isValid())        m_linkColor   = link;
+    if (cardBg.isValid())      m_cardBg      = cardBg;
+    if (cardBorder.isValid())  m_cardBorder  = cardBorder;
+    viewport()->update();
+}
+
+bool ChatView::isAtBottom() const
+{
+    const auto *sb = verticalScrollBar();
+    return sb->value() >= sb->maximum() - 4;
+}
+
+void ChatView::scrollToBottom()
+{
+    m_atBottom = true;
+    verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+}
+
+int ChatView::findLine(const QString &id) const
+{
+    if (id.isEmpty()) return -1;
+    for (int i = m_lines.size() - 1; i >= 0; --i)
+        if (m_lines[i].id == id) return i;
+    return -1;
+}
+
+// ── Protected events ─────────────────────────────────────────────────────────
+
+void ChatView::paintEvent(QPaintEvent *)
+{
+    QPainter p(viewport());
+    p.setFont(m_font);
+    p.fillRect(viewport()->rect(), viewport()->palette().color(QPalette::Base));
+
+    if (m_lines.isEmpty()) return;
+
+    const int scrollY = verticalScrollBar()->value();
+    const int vpH     = viewport()->height();
+
+    // Compute ordered selection range
+    SelPoint selLo = m_selAnchor, selHi = m_selActive;
+    if (selHi < selLo) std::swap(selLo, selHi);
+
+    int i = lineAt(scrollY);
+    if (i < 0) i = 0;
+
+    for (; i < m_lines.size(); ++i) {
+        const int screenY = m_cumH[i] - scrollY;
+        if (screenY >= vpH) break;
+
+        int selFrom = -1, selTo = -1;
+        if (selLo.valid() && i >= selLo.line && i <= selHi.line) {
+            selFrom = (i == selLo.line) ? selLo.pos : 0;
+            selTo   = (i == selHi.line) ? selHi.pos : (int)m_lines[i].text.size();
+            if (selFrom >= selTo) { selFrom = -1; selTo = -1; }
+        }
+        int findFrom = -1, findTo = -1;
+        if (i == m_findLine) { findFrom = m_findFrom; findTo = m_findTo; }
+        drawLine(p, m_lines[i], screenY, selFrom, selTo, findFrom, findTo);
+    }
+}
+
+void ChatView::resizeEvent(QResizeEvent *e)
+{
+    QAbstractScrollArea::resizeEvent(e);
+    invalidateHeights();
+    for (auto &l : m_lines) layoutLine(l);
+    rebuildCumH();
+    updateScrollRange();
+}
+
+void ChatView::keyPressEvent(QKeyEvent *e)
+{
+    if (e->matches(QKeySequence::Copy)) {
+        const QString text = selectedText();
+        if (!text.isEmpty())
+            QApplication::clipboard()->setText(text);
+    } else {
+        QAbstractScrollArea::keyPressEvent(e);
+    }
+}
+
+void ChatView::mousePressEvent(QMouseEvent *e)
+{
+    if (e->button() == Qt::LeftButton) {
+        const QString anc = anchorAt(e->pos());
+        if (!anc.isEmpty()) {
+            m_selAnchor = {};
+            m_selActive = {};
+            m_selecting = false;
+            viewport()->update();
+            emit anchorActivated(anc, e->globalPosition().toPoint(), Qt::LeftButton);
+        } else {
+            m_selAnchor = hitTest(e->pos());
+            m_selActive = m_selAnchor;
+            m_selecting = true;
+            viewport()->update();
+        }
+    }
+}
+
+void ChatView::mouseReleaseEvent(QMouseEvent *e)
+{
+    if (e->button() == Qt::LeftButton && m_selecting) {
+        m_selecting = false;
+        m_selActive = hitTest(e->pos());
+        if (selectedText().isEmpty()) {
+            m_selAnchor = {};
+            m_selActive = {};
+        }
+        viewport()->update();
+    }
+}
+
+void ChatView::mouseMoveEvent(QMouseEvent *e)
+{
+    if (m_selecting && (e->buttons() & Qt::LeftButton)) {
+        m_selActive = hitTest(e->pos());
+        viewport()->update();
+    }
+
+    const QString anc = m_selecting ? QString{} : anchorAt(e->pos());
+    if (anc != m_hoveredAnchor) {
+        m_hoveredAnchor = anc;
+        emit anchorHovered(anc);
+    }
+    viewport()->setCursor(m_selecting || anc.isEmpty() ? Qt::IBeamCursor : Qt::PointingHandCursor);
+}
+
+void ChatView::leaveEvent(QEvent *)
+{
+    if (!m_hoveredAnchor.isEmpty()) {
+        m_hoveredAnchor.clear();
+        emit anchorHovered({});
+    }
+    viewport()->setCursor(Qt::ArrowCursor);
+}
+
+void ChatView::contextMenuEvent(QContextMenuEvent *e)
+{
+    const QString sel = selectedText();
+    if (!sel.isEmpty()) {
+        QMenu menu(viewport());
+        connect(menu.addAction("Copy"), &QAction::triggered,
+                this, [sel]{ QApplication::clipboard()->setText(sel); });
+        menu.exec(e->globalPos());
+    } else {
+        const QString anc = anchorAt(e->pos());
+        emit anchorActivated(anc, e->globalPos(), Qt::RightButton);
+    }
+    e->accept();
+}
+
+// ── Private helpers ──────────────────────────────────────────────────────────
+
+int ChatView::wrapWidth() const
+{
+    return qMax(1, viewport()->width() - kHPad * 2);
+}
+
+int ChatView::hangWidth() const
+{
+    return QFontMetrics(m_font).horizontalAdvance("00:00  ");
+}
+
+int ChatView::totalHeight() const
+{
+    if (m_lines.isEmpty()) return 0;
+    return m_cumH.last() + m_lines.last().cachedH;
+}
+
+void ChatView::invalidateHeights()
+{
+    for (auto &l : m_lines) {
+        l.cachedH = 0;
+        l.visLines.clear();
+    }
+}
+
+void ChatView::rebuildCumH()
+{
+    m_cumH.resize(m_lines.size());
+    if (m_lines.isEmpty()) return;
+    m_cumH[0] = 0;
+    for (int i = 1; i < m_lines.size(); ++i)
+        m_cumH[i] = m_cumH[i-1] + m_lines[i-1].cachedH;
+}
+
+void ChatView::updateScrollRange()
+{
+    const int vh    = viewport()->height();
+    const int total = totalHeight();
+    verticalScrollBar()->setRange(0, qMax(0, total - vh));
+    verticalScrollBar()->setPageStep(vh);
+}
+
+int ChatView::lineAt(int docY) const
+{
+    if (m_cumH.isEmpty()) return -1;
+    // upper_bound finds first element > docY; step back one
+    auto it = std::upper_bound(m_cumH.constBegin(), m_cumH.constEnd(), docY);
+    if (it == m_cumH.constBegin()) return 0;
+    --it;
+    return static_cast<int>(it - m_cumH.constBegin());
+}
+
+QString ChatView::anchorAt(const QPoint &vpPos) const
+{
+    const int scrollY = verticalScrollBar()->value();
+    const int docY    = vpPos.y() + scrollY;
+    const int idx     = lineAt(docY);
+    if (idx < 0 || idx >= m_lines.size()) return {};
+
+    const ChatLine &line = m_lines[idx];
+    if (line.text.isEmpty() || line.visLines.isEmpty()) return {};
+
+    const qreal relY = docY - m_cumH[idx] - kVPad;
+
+    // Find which visual sub-line was clicked
+    int visIdx = line.visLines.size() - 1; // default to last
+    for (int v = 0; v < line.visLines.size(); ++v) {
+        const auto &vl = line.visLines[v];
+        if (relY < vl.y + vl.h) { visIdx = v; break; }
+    }
+
+    // Recreate the QTextLayout to do proper char hit-testing
+    QTextLayout layout;
+    layout.setFont(m_font);
+    layout.setText(line.text);
+    layout.setFormats(buildFormatRanges(line));
+    QTextOption opt;
+    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    layout.setTextOption(opt);
+
+    const int wrap  = wrapWidth();
+    const int hangW = line.hangIndent ? hangWidth() : 0;
+    layout.beginLayout();
+    bool first = true;
+    for (int v = 0; v < line.visLines.size(); ++v) {
+        QTextLine tl = layout.createLine();
+        if (!tl.isValid()) break;
+        const int indent = (!first && line.hangIndent) ? hangW : 0;
+        tl.setLineWidth(qMax(1, wrap - indent));
+        tl.setPosition(QPointF(kHPad + indent, line.visLines[v].y));
+        first = false;
+    }
+    layout.endLayout();
+
+    const QTextLine tl = layout.lineAt(visIdx);
+    if (!tl.isValid()) return {};
+
+    const qreal relX  = vpPos.x() - line.visLines[visIdx].x;
+    const int charPos = tl.xToCursor(relX, QTextLine::CursorBetweenCharacters);
+
+    for (const auto &seg : line.segments) {
+        if (!seg.anchor.isEmpty()
+            && charPos >= seg.start
+            && charPos < seg.start + seg.length)
+            return seg.anchor;
+    }
+    return {};
+}
+
+ChatView::SelPoint ChatView::hitTest(const QPoint &vpPos) const
+{
+    const int scrollY = verticalScrollBar()->value();
+    const int docY    = vpPos.y() + scrollY;
+    const int idx     = lineAt(docY);
+    if (idx < 0 || idx >= m_lines.size()) return {};
+
+    const ChatLine &line = m_lines[idx];
+    if (line.text.isEmpty() || line.visLines.isEmpty())
+        return {idx, 0};
+
+    const qreal relY = docY - m_cumH[idx] - kVPad;
+    int visIdx = (int)line.visLines.size() - 1;
+    for (int v = 0; v < (int)line.visLines.size(); ++v) {
+        if (relY < line.visLines[v].y + line.visLines[v].h) { visIdx = v; break; }
+    }
+
+    QTextLayout layout;
+    layout.setFont(m_font);
+    layout.setText(line.text);
+    QTextOption opt;
+    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    layout.setTextOption(opt);
+
+    const int wrap  = wrapWidth();
+    const int hangW = line.hangIndent ? hangWidth() : 0;
+    layout.beginLayout();
+    bool first = true;
+    for (int v = 0; v < (int)line.visLines.size(); ++v) {
+        QTextLine tl = layout.createLine();
+        if (!tl.isValid()) break;
+        const int indent = (!first && line.hangIndent) ? hangW : 0;
+        tl.setLineWidth(qMax(1, wrap - indent));
+        tl.setPosition(QPointF(kHPad + indent, line.visLines[v].y));
+        first = false;
+    }
+    layout.endLayout();
+
+    const QTextLine tl = layout.lineAt(visIdx);
+    if (!tl.isValid()) return {idx, 0};
+
+    const qreal relX  = vpPos.x() - line.visLines[visIdx].x;
+    const int charPos = tl.xToCursor(relX, QTextLine::CursorBetweenCharacters);
+    return {idx, charPos};
+}
+
+QString ChatView::selectedText() const
+{
+    SelPoint lo = m_selAnchor, hi = m_selActive;
+    if (!lo.valid()) return {};
+    if (hi < lo) std::swap(lo, hi);
+    QString result;
+    for (int i = lo.line; i <= hi.line && i < m_lines.size(); ++i) {
+        const QString &text = m_lines[i].text;
+        const int from = (i == lo.line) ? lo.pos : 0;
+        const int to   = (i == hi.line) ? hi.pos : (int)text.size();
+        if (to <= from) continue;
+        if (!result.isEmpty()) result += '\n';
+        result += text.mid(from, to - from);
+    }
+    return result;
+}
+
+bool ChatView::findText(const QString &text, bool backward)
+{
+    if (text.isEmpty() || m_lines.isEmpty()) { clearFind(); return false; }
+
+    const int n         = m_lines.size();
+    const int startLine = (m_findLine >= 0 && m_findLine < n)
+        ? m_findLine
+        : qBound(0, lineAt(verticalScrollBar()->value()), n - 1);
+
+    if (backward) {
+        for (int k = 0; k < n; ++k) {
+            const int i    = ((startLine - k) % n + n) % n;
+            const int upTo = (k == 0 && m_findFrom > 0) ? m_findFrom - 1 : m_lines[i].text.size();
+            const int pos  = m_lines[i].text.lastIndexOf(text, upTo, Qt::CaseInsensitive);
+            if (pos >= 0) { setFind(i, pos, pos + (int)text.size()); return true; }
+        }
+    } else {
+        for (int k = 0; k < n; ++k) {
+            const int i    = (startLine + k) % n;
+            const int from = (k == 0 && m_findTo > 0) ? m_findTo : 0;
+            const int pos  = m_lines[i].text.indexOf(text, from, Qt::CaseInsensitive);
+            if (pos >= 0) { setFind(i, pos, pos + (int)text.size()); return true; }
+        }
+    }
+
+    clearFind();
+    return false;
+}
+
+void ChatView::clearFind()
+{
+    m_findLine = -1;
+    m_findFrom = -1;
+    m_findTo   = -1;
+    viewport()->update();
+}
+
+void ChatView::setFind(int lineIdx, int from, int to)
+{
+    m_findLine = lineIdx;
+    m_findFrom = from;
+    m_findTo   = to;
+
+    if (lineIdx >= 0 && lineIdx < m_cumH.size()) {
+        const int lineTop    = m_cumH[lineIdx];
+        const int lineBottom = lineTop + m_lines[lineIdx].cachedH;
+        const int vpH        = viewport()->height();
+        const int scrollY    = verticalScrollBar()->value();
+        if (lineTop < scrollY || lineBottom > scrollY + vpH)
+            verticalScrollBar()->setValue(qMax(0, lineTop - vpH / 3));
+    }
+    viewport()->update();
+}
+
+void ChatView::layoutLine(ChatLine &line) const
+{
+    if (line.cachedH > 0) return;
+
+    const int fh = QFontMetrics(m_font).height();
+
+    if (line.role == ChatLineRole::PreviewCard) {
+        const int imgH  = line.image.isNull() ? 0 : line.image.height();
+        const int textH = fh * 2 + 4;
+        line.cachedH = qMax(imgH, textH) + kVPad * 2;
+        line.visLines = { {0, (int)line.text.size(), (qreal)(kHPad + kCardIndent + 3 + 4),
+                            0, (qreal)(wrapWidth() - kCardIndent - 20), (qreal)line.cachedH} };
+        return;
+    }
+
+    if (line.text.isEmpty()) {
+        line.cachedH = fh + kVPad * 2;
+        line.visLines = { {0, 0, (qreal)kHPad, (qreal)kVPad, (qreal)wrapWidth(), (qreal)fh} };
+        return;
+    }
+
+    QTextLayout layout;
+    layout.setFont(m_font);
+    layout.setText(line.text);
+    layout.setFormats(buildFormatRanges(line));
+    QTextOption opt;
+    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    layout.setTextOption(opt);
+
+    const int wrap  = wrapWidth();
+    const int hangW = line.hangIndent ? hangWidth() : 0;
+
+    line.visLines.clear();
+    layout.beginLayout();
+    qreal y    = kVPad;
+    bool  first = true;
+    while (true) {
+        QTextLine tl = layout.createLine();
+        if (!tl.isValid()) break;
+        const int indent = (!first && line.hangIndent) ? hangW : 0;
+        tl.setLineWidth(qMax(1, wrap - indent));
+        tl.setPosition(QPointF(kHPad + indent, y));
+
+        ChatLine::VisLine vl;
+        vl.charStart = tl.textStart();
+        vl.charEnd   = tl.textStart() + tl.textLength();
+        vl.x = kHPad + indent;
+        vl.y = y;
+        vl.w = tl.width();
+        vl.h = tl.height();
+        line.visLines.append(vl);
+
+        y    += tl.height();
+        first = false;
+    }
+    layout.endLayout();
+
+    line.cachedH = qMax(1, (int)std::ceil(y)) + kVPad;
+}
+
+QList<QTextLayout::FormatRange> ChatView::buildFormatRanges(const ChatLine &line) const
+{
+    QList<QTextLayout::FormatRange> result;
+    result.reserve(line.segments.size());
+    for (const auto &seg : line.segments) {
+        if (seg.length <= 0) continue;
+        QTextLayout::FormatRange fr;
+        fr.start  = seg.start;
+        fr.length = seg.length;
+        fr.format = seg.format;
+        // URLs and preview links get link color + underline if not already set
+        if (!seg.anchor.isEmpty()
+            && (seg.anchor.startsWith("url:")     ||
+                seg.anchor.startsWith("preview:"))) {
+            if (!fr.format.hasProperty(QTextFormat::ForegroundBrush))
+                fr.format.setForeground(m_linkColor);
+            fr.format.setFontUnderline(true);
+        } else if (!seg.anchor.isEmpty()
+                   && (seg.anchor.startsWith("nick:")  ||
+                       seg.anchor.startsWith("evgrp:"))) {
+            // Nicks and event group toggles get link color if no explicit color set
+            if (!fr.format.hasProperty(QTextFormat::ForegroundBrush))
+                fr.format.setForeground(m_linkColor);
+        }
+        result.append(fr);
+    }
+    return result;
+}
+
+void ChatView::drawLine(QPainter &p, const ChatLine &line, int screenY,
+                         int selFrom, int selTo, int findFrom, int findTo) const
+{
+    if (line.role == ChatLineRole::PreviewCard) {
+        drawPreviewCard(p, line, screenY);
+        return;
+    }
+
+    if (line.text.isEmpty()) return;
+
+    QTextLayout layout;
+    layout.setFont(m_font);
+    layout.setText(line.text);
+    layout.setFormats(buildFormatRanges(line));
+    QTextOption opt;
+    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    if (line.role == ChatLineRole::StatusLine)
+        opt.setAlignment(Qt::AlignCenter);
+    layout.setTextOption(opt);
+
+    const int wrap  = wrapWidth();
+    const int hangW = line.hangIndent ? hangWidth() : 0;
+
+    layout.beginLayout();
+    qreal y    = kVPad;
+    bool  first = true;
+    while (true) {
+        QTextLine tl = layout.createLine();
+        if (!tl.isValid()) break;
+        const int indent = (!first && line.hangIndent) ? hangW : 0;
+        tl.setLineWidth(qMax(1, wrap - indent));
+        tl.setPosition(QPointF(kHPad + indent, y));
+        y    += tl.height();
+        first = false;
+    }
+    layout.endLayout();
+
+    QList<QTextLayout::FormatRange> selections;
+    if (selFrom >= 0 && selTo > selFrom) {
+        QTextLayout::FormatRange sr;
+        sr.start  = selFrom;
+        sr.length = selTo - selFrom;
+        sr.format.setBackground(viewport()->palette().color(QPalette::Highlight));
+        sr.format.setForeground(viewport()->palette().color(QPalette::HighlightedText));
+        selections.append(sr);
+    }
+    if (findFrom >= 0 && findTo > findFrom) {
+        QTextLayout::FormatRange fr;
+        fr.start  = findFrom;
+        fr.length = findTo - findFrom;
+        fr.format.setBackground(QColor("#ffdd57"));
+        fr.format.setForeground(QColor("#000000"));
+        selections.append(fr);
+    }
+
+    p.setPen(viewport()->palette().color(QPalette::Text));
+    layout.draw(&p, QPointF(0, screenY), selections);
+}
+
+void ChatView::drawPreviewCard(QPainter &p, const ChatLine &line, int screenY) const
+{
+    const int leftX  = kHPad + kCardIndent;
+    const int h      = line.cachedH;
+    const int right  = viewport()->width() - kHPad;
+
+    // Background
+    if (m_cardBg.isValid())
+        p.fillRect(QRect(leftX, screenY + 1, right - leftX, h - 2), m_cardBg);
+
+    // Left border
+    if (m_cardBorder.isValid())
+        p.fillRect(QRect(leftX, screenY + 1, 3, h - 2), m_cardBorder);
+
+    // Thumbnail on right
+    int textRight = right - 8;
+    if (!line.image.isNull()) {
+        const int imgX = right - line.image.width() - 4;
+        const int imgY = screenY + (h - line.image.height()) / 2;
+        p.drawPixmap(imgX, imgY, line.image);
+        textRight = imgX - 4;
+    }
+
+    if (line.text.isEmpty()) return;
+
+    const int innerX = leftX + 3 + 4; // border + padding
+    const int textW  = qMax(1, textRight - innerX);
+
+    QTextLayout layout;
+    layout.setFont(m_font);
+    layout.setText(line.text);
+    layout.setFormats(buildFormatRanges(line));
+    QTextOption opt;
+    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    layout.setTextOption(opt);
+
+    layout.beginLayout();
+    qreal y = kVPad;
+    while (true) {
+        QTextLine tl = layout.createLine();
+        if (!tl.isValid()) break;
+        tl.setLineWidth(textW);
+        tl.setPosition(QPointF(innerX, y));
+        y += tl.height();
+    }
+    layout.endLayout();
+
+    p.setPen(viewport()->palette().color(QPalette::Text));
+    layout.draw(&p, QPointF(0, screenY));
+}

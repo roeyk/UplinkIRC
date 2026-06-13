@@ -5,6 +5,7 @@
 #include <QRegularExpression>
 #include <QString>
 #include "model/message.h"
+#include "ui/chatline.h"
 
 struct Channel;
 
@@ -21,6 +22,13 @@ struct Context {
     const Channel    *channel{nullptr}; // for reply-reference lookup
 };
 
+// ChatLine-based rendering (used by ChatView)
+ChatLine formatMessageLine    (const Message &msg, const Context &ctx);
+ChatLine formatEventGroupLine (const QList<Message> &msgs, const Context &ctx,
+                               const QString &groupId = {}, bool expanded = false);
+ChatLine makeStatusLine       (const QString &text);
+
+// HTML rendering (kept for topic bar QLabel)
 QString formatMessage    (const Message &msg, const Context &ctx);
 QString formatEventGroup (const QList<Message> &msgs, const Context &ctx,
                           const QString &groupId = {}, bool expanded = false);
