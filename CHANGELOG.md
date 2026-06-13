@@ -3,6 +3,15 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-12 (memory investigation + undo stack fix)
+What changed:
+  - Investigated high RSS (~500MB). Root cause split: baseline overhead is Mesa 26.1.x loading LLVM for shader compilation on KDE Wayland (not fixable in app); steady post-launch growth (~2MB/5s) was the QTextDocument undo stack accumulating every insert/removal on read-only chat views.
+  - Fixed: disabled undo/redo on both chat view documents (mainwindow.cpp + channelpane.cpp). QTextBrowser is read-only; the undo stack was pure waste. Committed fc89b79.
+  - No version bump; patch-only fix.
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-12 (v0.25.23 release)
 What changed:
   - Nick right-click menu restructured into submenus: CTCP ▶ (Ping, Version), DCC ▶ (Send File, Send File Passive), Chan Ops ▶ (Op, Voice, Invite, Kick, Ban, Kick & Ban).
