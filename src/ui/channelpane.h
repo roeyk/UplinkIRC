@@ -1,5 +1,7 @@
 #pragma once
+#include <QHash>
 #include <QMetaObject>
+#include <QPixmap>
 #include <QWidget>
 #include <QString>
 #include <QPoint>
@@ -14,7 +16,8 @@ class QToolButton;
 class ChannelPane : public QWidget {
     Q_OBJECT
 public:
-    explicit ChannelPane(const QString &host, const QString &channel, QWidget *parent = nullptr);
+    explicit ChannelPane(const QString &host, const QString &channel,
+                         const QHash<int, QPixmap> *imgStore = nullptr, QWidget *parent = nullptr);
     const QString &host()    const { return m_host; }
     const QString &channel() const { return m_channel; }
     QString        key()     const { return m_host + "|" + m_channel.toLower(); }

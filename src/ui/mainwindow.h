@@ -244,6 +244,10 @@ private:
     QTimer       *m_previewWatchdog{nullptr};
     void enqueuePreview(const QUrl &url, const QString &host, const QString &channel);
     void processPreviewQueue();
+    QHash<int, QPixmap> m_previewImages;
+    QList<int>          m_previewImageOrder;
+    int                 m_previewImageNext{0};
+    int storePreviewImage(const QPixmap &px);
     QMap<QString, DccSend*> m_pendingPassiveSends;
     Config        m_config;
     Theme         m_theme;

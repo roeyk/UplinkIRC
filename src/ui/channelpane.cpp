@@ -3,6 +3,7 @@
 #include "ui/fadescrollbar.h"
 
 #include <QTextBrowser>
+#include <QTextDocument>
 #include <QListWidget>
 #include <QPlainTextEdit>
 #include <QKeyEvent>
@@ -23,12 +24,29 @@
 namespace {
 class PaneBrowser : public QTextBrowser {
 public:
-    using QTextBrowser::QTextBrowser;
+    explicit PaneBrowser(const QHash<int, QPixmap> *imgStore, QWidget *parent = nullptr)
+        : QTextBrowser(parent), m_imgStore(imgStore) {}
     QSize minimumSizeHint() const override { return QSize(1, 1); }
+protected:
+    QVariant loadResource(int type, const QUrl &name) override {
+        if (type == QTextDocument::ImageResource && m_imgStore) {
+            const QString s = name.toString();
+            if (s.startsWith("img://")) {
+                auto it = m_imgStore->constFind(s.mid(6).toInt());
+                if (it != m_imgStore->constEnd())
+                    return it.value();
+                return {};
+            }
+        }
+        return QTextBrowser::loadResource(type, name);
+    }
+private:
+    const QHash<int, QPixmap> *m_imgStore;
 };
 }
 
-ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *parent)
+ChannelPane::ChannelPane(const QString &host, const QString &channel,
+                         const QHash<int, QPixmap> *imgStore, QWidget *parent)
     : QWidget(parent), m_host(host), m_channel(channel)
 {
     auto *vbox = new QVBoxLayout(this);
@@ -108,7 +126,7 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     });
 
     // Chat view + nick list
-    m_chatView = new PaneBrowser;
+    m_chatView = new PaneBrowser(imgStore);
     m_chatView->setReadOnly(true);
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
     m_chatView->setOpenLinks(false);

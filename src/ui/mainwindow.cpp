@@ -310,24 +310,24 @@ protected:
 
 class ChatBrowser : public QTextBrowser {
 public:
-    using QTextBrowser::QTextBrowser;
+    explicit ChatBrowser(const QHash<int, QPixmap> *imgStore, QWidget *parent = nullptr)
+        : QTextBrowser(parent), m_imgStore(imgStore) {}
     QSize minimumSizeHint() const override { return QSize(1, 1); }
 protected:
     QVariant loadResource(int type, const QUrl &name) override {
-        if (type == QTextDocument::ImageResource) {
+        if (type == QTextDocument::ImageResource && m_imgStore) {
             const QString s = name.toString();
-            if (s.startsWith("data:image/")) {
-                const qsizetype comma = s.indexOf(',');
-                if (comma >= 0) {
-                    QImage img;
-                    img.loadFromData(QByteArray::fromBase64(s.mid(comma + 1).toLatin1()));
-                    if (!img.isNull())
-                        return QPixmap::fromImage(std::move(img));
-                }
+            if (s.startsWith("img://")) {
+                auto it = m_imgStore->constFind(s.mid(6).toInt());
+                if (it != m_imgStore->constEnd())
+                    return it.value();
+                return {};
             }
         }
         return QTextBrowser::loadResource(type, name);
     }
+private:
+    const QHash<int, QPixmap> *m_imgStore;
 };
 
 static QString buildReactionHtml(const QHash<QString, QSet<QString>> &rx, int emojiPt)
@@ -1284,7 +1284,7 @@ void MainWindow::setupChatArea()
     primaryVbox->addWidget(m_topicDisplay);
 
     // Chat view
-    m_chatView = new ChatBrowser;
+    m_chatView = new ChatBrowser(&m_previewImages);
     m_chatView->setReadOnly(true);
     m_chatView->setLineWrapMode(QTextEdit::WidgetWidth);
     m_chatView->setOpenLinks(false);
@@ -1357,14 +1357,9 @@ void MainWindow::setupChatArea()
 
         QString imgHtml;
         if (!thumbnail.isNull()) {
-            QByteArray imgData;
-            QBuffer imgBuf(&imgData);
-            imgBuf.open(QIODevice::WriteOnly);
-            thumbnail.save(&imgBuf, "PNG");
-            const QString dataUri = "data:image/png;base64,"
-                                  + QString::fromLatin1(imgData.toBase64());
-            imgHtml = QString("<br/><img src=\"%1\" width=\"%2\" height=\"%3\"/>")
-                .arg(dataUri).arg(thumbnail.width()).arg(thumbnail.height());
+            const int imgId = storePreviewImage(thumbnail);
+            imgHtml = QString("<br/><img src=\"img://%1\" width=\"%2\" height=\"%3\"/>")
+                .arg(imgId).arg(thumbnail.width()).arg(thumbnail.height());
         }
 
         const QColor bg = m_chatView->palette().color(QPalette::Base);
@@ -3272,7 +3267,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     if (m_panes.contains(key)) return;
     if (m_orderedPanes.size() >= kMaxExtraPanes) return;
 
-    auto *pane = new ChannelPane(host, channel, this);
+    auto *pane = new ChannelPane(host, channel, &m_previewImages, this);
     if (m_theme.valid)
         pane->chatView()->document()->setDefaultStyleSheet(
             QString("a { color: %1; text-decoration: underline; }").arg(m_theme.accent));
@@ -3827,6 +3822,17 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     }
 
     menu.exec(globalPos);
+}
+
+int MainWindow::storePreviewImage(const QPixmap &px)
+{
+    static constexpr int kImgStoreCap = 100;
+    const int id = m_previewImageNext++;
+    if (m_previewImageOrder.size() >= kImgStoreCap)
+        m_previewImages.remove(m_previewImageOrder.takeFirst());
+    m_previewImages.insert(id, px);
+    m_previewImageOrder.append(id);
+    return id;
 }
 
 void MainWindow::enqueuePreview(const QUrl &url, const QString &host, const QString &channel)
