@@ -30,6 +30,7 @@ theme             = "catppuccin-mocha"  # omit or set "default" for native look 
 show_nick_prefix  = true
 show_topic        = true
 show_emoji_button = true               # shows 😊 button next to input bar
+show_send_button  = true               # shows paper-plane send button in the input box
 colored_nicks     = true
 typing_indicator  = true
 hanging_indent    = true               # wrap long messages past the timestamp+nick column
@@ -104,6 +105,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `show_nick_prefix` | bool | `true` | Show your nickname label next to the message input box |
 | `show_topic` | bool | `true` | Show the channel topic bar below the info bar |
 | `show_emoji_button` | bool | `false` | Show the 😊 emoji picker button next to the input box. Also works via `:shortcode:` typing. |
+| `show_send_button` | bool | `true` | Show the paper-plane send button inside the input box. Equivalent to pressing Enter. Disable if you prefer a cleaner input area. Toggle live from **Preferences → Show Send Button**. |
 | `colored_nicks` | bool | `true` | Give each nickname a unique color in chat and the nick list |
 | `typing_indicator` | bool | `true` | Show "nick is typing…" notifications (IRCv3 `draft/typing`) and send your own |
 | `hanging_indent` | bool | `true` | Indent wrapped message lines past the timestamp+nick column so they align with the message text. Toggle live from **Preferences → Hanging Indent**. |

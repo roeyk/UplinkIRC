@@ -608,7 +608,7 @@ void MainWindow::setupToolbar()
         });
 
         menu->addSeparator();
-        menu->addAction(MenuIcons::exit(ic), "Exit", menu, &QMenu::close);
+        menu->addAction(MenuIcons::exit(ic), "Quit Uplink", this, []{ QCoreApplication::quit(); });
 
         QPoint pos = m_hamburger->mapToGlobal(QPoint(0, m_hamburger->height()));
         menu->exec(pos);
@@ -702,6 +702,12 @@ void MainWindow::connectPreferences()
         m_showEmojiBtn = on;
         m_config.ui.showEmojiButton = on;
         m_emojiBtn->setVisible(on);
+        Config::save(m_config, Config::defaultPath());
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::sendBtnToggled, this, [this](bool on){
+        m_config.ui.showSendButton = on;
+        m_sendBtn->setVisible(on);
         Config::save(m_config, Config::defaultPath());
     });
 
@@ -1235,11 +1241,22 @@ void MainWindow::setupChatArea()
         }
     });
     connect(m_chatView, &ChatView::anchorHovered, this, [this](const QString &anchor){
-        if (anchor.isEmpty() || anchor.startsWith("nick:")) {
+        if (anchor.isEmpty()) {
             if (!m_hoveredUrl.isEmpty()) {
                 m_hoveredUrl.clear();
                 QToolTip::hideText();
                 statusBar()->clearMessage();
+            }
+            return;
+        }
+        if (anchor.startsWith("nick:")) {
+            if (m_hoveredUrl == anchor) return;
+            m_hoveredUrl = anchor;
+            const QString nick = anchor.mid(5);
+            const QString tip = nickTooltip(nick, m_model->activeHost().str());
+            if (!tip.isEmpty()) {
+                m_hoverGlobalPos = QCursor::pos();
+                QToolTip::showText(m_hoverGlobalPos, tip, m_chatView->viewport());
             }
             return;
         }
@@ -1447,6 +1464,7 @@ void MainWindow::setupInputBar()
     m_sendBtn->setIcon(MenuIcons::send({}, 26));
     m_sendBtn->setIconSize(QSize(26, 26));
     m_sendBtn->setEnabled(false);
+    m_sendBtn->setVisible(m_config.ui.showSendButton);
     connect(m_sendBtn, &QToolButton::clicked, this, &MainWindow::onInputSubmit);
 
     // Push text content left so it doesn't flow under the floating button
@@ -2957,6 +2975,17 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
             handleChatViewContextMenu(pane->chatView(), anchor, gp,
                                       pane->host(), pane->channel());
     });
+    connect(pane->chatView(), &ChatView::anchorHovered, this,
+            [this, pane](const QString &anchor){
+        if (anchor.startsWith("nick:")) {
+            const QString nick = anchor.mid(5);
+            const QString tip = nickTooltip(nick, pane->host());
+            if (!tip.isEmpty())
+                QToolTip::showText(QCursor::pos(), tip, pane->chatView()->viewport());
+        } else {
+            QToolTip::hideText();
+        }
+    });
 
     if (auto *sess = m_model->session(ServerId{host}))
         pane->setNick(sess->nick);
@@ -3718,8 +3747,8 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
                 lines << "Account: " + e.account.toHtmlEscaped();
             item->setToolTip(
                 QString("<html><body><table><tr>"
-                        "<td><img src='data:image/png;base64,%1'></td>"
-                        "<td style='padding-left:8px;vertical-align:middle'>%2</td>"
+                        "<td><img src='data:image/png;base64,%1' width='32' height='32'></td>"
+                        "<td style='padding-left:6px;vertical-align:middle'>%2</td>"
                         "</tr></table></body></html>")
                     .arg(b64, lines.join("<br>")));
         } else {
@@ -3737,6 +3766,45 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
     if (m_config.ui.coloredNicks)
         item->setForeground(ChatRenderer::nickColor(e.nick));
     return item;
+}
+
+QString MainWindow::nickTooltip(const QString &nick, const QString &host) const
+{
+    const ServerSession *sess = const_cast<SessionModel *>(m_model)->session(ServerId{host});
+    const NickMeta *meta = nullptr;
+    QString account;
+    if (sess) {
+        auto it = sess->nickMeta.constFind(nick.toLower());
+        if (it != sess->nickMeta.constEnd()) meta = &it.value();
+        // account comes from Channel's nicks list
+        for (const auto &ch : std::as_const(sess->channels)) {
+            auto ni = std::find_if(ch.nicks.cbegin(), ch.nicks.cend(),
+                                   [&](const NickEntry &e){ return e.nick.toLower() == nick.toLower(); });
+            if (ni != ch.nicks.cend()) { account = ni->account; break; }
+        }
+    }
+    const bool hasImage = meta && !meta->avatarUrl.isEmpty() && m_avatarCache.contains(meta->avatarUrl);
+    if (hasImage) {
+        QByteArray bytes;
+        QBuffer buf(const_cast<QByteArray *>(&bytes));
+        buf.open(QIODevice::WriteOnly);
+        m_avatarCache[meta->avatarUrl].save(&buf, "PNG");
+        const QString b64 = QString::fromLatin1(bytes.toBase64());
+        QStringList lines;
+        if (!meta->displayName.isEmpty())
+            lines << meta->displayName.toHtmlEscaped();
+        if (!account.isEmpty())
+            lines << account.toHtmlEscaped();
+        return QString("<html><body><table><tr>"
+                       "<td><img src='data:image/png;base64,%1' width='32' height='32'></td>"
+                       "<td style='padding-left:6px;vertical-align:middle'>%2</td>"
+                       "</tr></table></body></html>")
+                   .arg(b64, lines.join("<br>"));
+    }
+    QStringList tips;
+    if (meta && !meta->displayName.isEmpty()) tips << meta->displayName;
+    if (!account.isEmpty())                   tips << account;
+    return tips.join('\n');
 }
 
 int MainWindow::findNickRow(QListWidget *list, const QString &nick)

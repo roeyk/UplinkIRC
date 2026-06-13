@@ -165,6 +165,11 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     connect(m_emojiCheck, &QCheckBox::toggled, this, [this](bool on){ emit emojiBtnToggled(on); });
     vbox->addWidget(m_emojiCheck);
 
+    m_sendBtnCheck = new QCheckBox("Show Send Button");
+    m_sendBtnCheck->setChecked(cfg.ui.showSendButton);
+    connect(m_sendBtnCheck, &QCheckBox::toggled, this, [this](bool on){ emit sendBtnToggled(on); });
+    vbox->addWidget(m_sendBtnCheck);
+
     m_typingCheck = new QCheckBox("Typing Indicator");
     m_typingCheck->setChecked(cfg.ui.typingIndicator);
     connect(m_typingCheck, &QCheckBox::toggled, this, [this](bool on){ emit typingIndicatorToggled(on); });

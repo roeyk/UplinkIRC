@@ -187,6 +187,35 @@ What changed:
 No regressions. No known issues.
 -->
 
+<!--
+SESSION SUMMARY — 2026-06-13 (send button toggle, nick hover tooltips, Quit Uplink, tooltip polish)
+What changed:
+  - Send button Preferences toggle: new "Show Send Button" checkbox in ☰ → Preferences, same pattern as
+    the emoji button. Stored as show_send_button in [ui] config. Default: true (visible). Persists across restarts.
+  - Nick hover tooltips in chat: hovering any nick link in the primary chat view or a split pane now shows
+    the full tooltip — display name, account name, and avatar (32×32 px) when available via draft/metadata-2
+    or account-tag. Previously the anchorHovered handler silently discarded nick: anchors; only the nick list
+    had working tooltips. Chat hover now matches nick list behaviour exactly.
+  - Quit Uplink: hamburger "Exit" renamed to "Quit Uplink" and wired to QCoreApplication::quit().
+    Previously it called QMenu::close() — closing only the menu without exiting the app.
+  - Tooltip avatar capped at 32×32 px in both the nick list and chat hover tooltip HTML. Large cached
+    avatars were inflating tooltip windows. Now compact regardless of source image size.
+  - Bug discovered (not introduced): running binary was compiled with -fsanitize=address even though
+    CMakeCache had UPLINK_ENABLE_SANITIZERS=OFF. The stale binary was never rebuilt after the flag was
+    cleared. ASan shadow memory accounted for the reported 500MB+ RSS. A clean rebuild eliminates it.
+No regressions. No known issues.
+-->
+
+## v0.25.24 — 2026-06-13
+
+### Added
+- **Send button toggle** — Preferences now has a "Show Send Button" checkbox. Persists as `show_send_button = true/false` in `[ui]`. Default is `true` (visible). Same implementation pattern as the emoji button toggle.
+
+### Fixed
+- **Nick hover tooltips in chat** — hovering any nick link in the main chat view or a split pane now shows the full tooltip (display name + account + 32×32 avatar), matching the nick list. The handler was previously discarding nick anchors silently.
+- **Quit Uplink** — hamburger menu "Exit" renamed to "Quit Uplink" and now correctly calls `QCoreApplication::quit()`. Previously it only closed the menu.
+- **Tooltip avatar size** — avatars in all tooltips (nick list + chat hover) capped at 32×32 px. Large cached images were making tooltip windows oversized.
+
 ## v0.25.23 — 2026-06-12
 
 ### Added

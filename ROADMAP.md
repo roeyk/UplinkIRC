@@ -206,7 +206,10 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] v0.25.19 released (2026-06-12)
 - [x] RPL_ENDOFWHO (315) suppressed from server window — eliminates WHO list spam on busy networks like Libera.chat (2026-06-12)
 - [ ] Nick completion button — person_search icon triggers Tab completion for non-keyboard users (was added then reverted as pointless mid-message)
-- [ ] Preferences toggle for send button — same pattern as emoji button toggle
+- [x] Preferences toggle for send button — "Show Send Button" in Preferences; show_send_button in [ui]; default true (2026-06-13)
+- [x] Nick hover tooltips in chat — hovering any nick link in chat now shows display name + account + 32×32 avatar, same as nick list; primary view and all split panes (2026-06-13)
+- [x] Quit Uplink — hamburger "Exit" renamed, wired to QCoreApplication::quit() (2026-06-13)
+- [x] Tooltip avatar capped at 32×32 px — was showing full-size cached images (2026-06-13)
 - [x] Window state persistence — sidebar width and nick panel width saved via QSettings on quit, restored on launch; sidebar is drag-resizable; geometry clamped to available screen on startup (v0.25.1); settings path corrected to ~/.config/uplink/uplink.conf (v0.25.1)
 - [x] Nick panel width persistence — QSplitter position saved via QSettings on quit, restored on launch
 - [x] Config editor UI — Manage Servers dialog covers server-level editing

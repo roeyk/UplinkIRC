@@ -10,7 +10,8 @@
 theme             = "catppuccin-mocha"  # theme name from themes/ folder
 show_nick_prefix  = true                # show your nick next to the input box
 show_topic        = true                # show the topic bar at the top
-show_emoji_button = false               # show emoji button (picker coming soon)
+show_emoji_button = false               # show emoji picker button (😊) next to input box
+show_send_button  = true                # show send button (paper-plane) in the input box
 colored_nicks     = true                # give each nick a unique color
 
 # ─── Profile ──────────────────────────────────────────────────────────────────

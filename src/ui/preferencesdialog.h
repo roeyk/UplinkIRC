@@ -19,6 +19,7 @@ signals:
     void topicBarToggled(bool on);
     void nickPrefixToggled(bool on);
     void emojiBtnToggled(bool on);
+    void sendBtnToggled(bool on);
     void typingIndicatorToggled(bool on);
     void notificationsToggled(bool on);
     void coloredNicksToggled(bool on);
@@ -35,6 +36,7 @@ private:
     QCheckBox *m_topicCheck{nullptr};
     QCheckBox *m_nickPrefixCheck{nullptr};
     QCheckBox *m_emojiCheck{nullptr};
+    QCheckBox *m_sendBtnCheck{nullptr};
     QCheckBox *m_typingCheck{nullptr};
     QCheckBox *m_notificationsCheck{nullptr};
     QCheckBox *m_coloredNicksCheck{nullptr};

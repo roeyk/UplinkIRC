@@ -1358,7 +1358,7 @@ channels  = "#uplink"</pre>
       <li><strong>Right side</strong> — shows the signal bars, current channel name, channel modes, and user count.</li>
     </ul>
 
-    <p><strong>☰ Hamburger</strong> — opens a menu with: About Uplink, <strong>Check for Updates</strong> (fetches the latest release from GitHub and shows whether a newer version is available), Documentation, Preferences, Open Config, Reload Config, and Exit.</p>
+    <p><strong>☰ Hamburger</strong> — opens a menu with: About Uplink, <strong>Check for Updates</strong> (fetches the latest release from GitHub and shows whether a newer version is available), Documentation, Preferences, Open Config, Reload Config, and <strong>Quit Uplink</strong>.</p>
     <p><strong>⚙ Gear (left)</strong> — collapses or expands the server/channel sidebar below it. The gear and hamburger stay pinned — only the list underneath disappears.</p>
   </section>
 
@@ -1585,16 +1585,21 @@ typing_indicator = true   # set to false to disable completely</pre>
     <p>Uplink tracks each user's NickServ account name in real time. This lets you see who is actually behind a nickname — even if someone changes their nick — as long as they're authenticated with services.</p>
 
     <h3>Where to see it</h3>
-    <p>Account names appear as tooltips in two places. Simply hover over any nick:</p>
+    <p>Hover over any nick to see their full profile. Both locations show identical information:</p>
 
     <ul>
-      <li><strong>Chat view</strong> — hover over a nick link in any message. The tooltip appears after a brief pause showing:
-        <pre>account: alice_libera</pre>
-      </li>
-      <li><strong>Nick list panel</strong> — hover over any nick in the right-side user list. Same tooltip format.</li>
+      <li><strong>Chat view</strong> — hover over any coloured nick link in a message. Works in the primary chat view and all split panes.</li>
+      <li><strong>Nick list panel</strong> — hover over any nick in the right-side user list.</li>
     </ul>
 
-    <p>If the tooltip is absent, the user is either not authenticated with services or the server does not report account names for that nick.</p>
+    <p>The tooltip shows whatever the server has reported for that user:</p>
+    <ul>
+      <li><strong>Display name</strong> — their friendly name set via <code>draft/metadata-2</code> (e.g. <em>Alice Smith</em>).</li>
+      <li><strong>Account</strong> — their NickServ account name (e.g. <code>alice_libera</code>), reported via <code>account-tag</code>, <code>account-notify</code>, or <code>extended-join</code>.</li>
+      <li><strong>Avatar</strong> — a 32×32 thumbnail if they have set an avatar URL via <code>draft/metadata-2</code> and Uplink has fetched it.</li>
+    </ul>
+
+    <p>If the tooltip is absent, the server has not reported any of those values for that nick — either they are not authenticated or the server does not support the relevant capabilities.</p>
 
     <h3>How it stays current</h3>
     <p>Uplink pulls account data from four sources so the information is always up to date without any manual queries:</p>
@@ -1643,12 +1648,12 @@ typing_indicator = true   # set to false to disable completely</pre>
 
     <h3>Where it displays</h3>
     <p>
-      Hover over any nick in the <strong>right-side nick list panel</strong>. A tooltip appears showing that user's profile. If they have set an avatar, the image appears inline on the left:
+      Hover over any nick — in the <strong>right-side nick list panel</strong> or directly over a <strong>coloured nick link in any message</strong>. A tooltip appears showing that user's profile:
     </p>
-    <pre>[avatar image]  Name: Alice Smith
-                Account: alice</pre>
+    <pre>[avatar image]  Alice Smith
+                alice</pre>
     <p>
-      Uplink fetches the avatar image in the background as soon as the metadata arrives. Images are displayed at their native size, capped at 32×32 — no upscaling, so small icons like favicons stay crisp. The image is cached for the session; subsequent hovers are instant.
+      Both locations show identical information. Uplink fetches the avatar image in the background as soon as the metadata arrives and caches it for the session; subsequent hovers are instant. Avatars are displayed at 32×32 — no upscaling, so small icons like favicons stay crisp.
     </p>
     <p>
       Metadata follows a nick across all channels on the same server. If Alice sets her display name, you will see it in <code>#general</code>, <code>#linux</code>, and every other channel you share with her.
@@ -2043,6 +2048,17 @@ show_emoji_button = true</pre>
     <h3>Emoji size</h3>
     <p>Emoji in chat are rendered at their own independent font size so they stay readable even if you use a small chat font. The default is 16 pt. Change it in <strong>Preferences → Font Config… → Chat Emoji</strong>, or set it directly in config:</p>
     <pre>font_emoji = 16   # pt, independent of font_chat</pre>
+
+    <h3>4. Send button</h3>
+    <p>The paper-plane button that floats inside the right edge of the input box sends the current message — identical to pressing <kbd>Enter</kbd>. It is enabled when the input is non-empty and disabled when blank.</p>
+    <p>If you prefer a cleaner input bar without the button, toggle it off:</p>
+    <ul>
+      <li><strong>GUI:</strong> Open <strong>☰ → Preferences</strong> and uncheck <strong>Show Send Button</strong>.</li>
+      <li><strong>Config:</strong></li>
+    </ul>
+    <pre>[ui]
+show_send_button = false   # hide the paper-plane button; press Enter to send</pre>
+    <p>The setting persists across restarts. You can turn it back on the same way.</p>
   </section>
 
   <!-- MULTI-LINE MESSAGES -->

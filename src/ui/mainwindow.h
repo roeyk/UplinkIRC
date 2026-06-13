@@ -233,6 +233,7 @@ private:
     QList<QString>                m_avatarCacheOrder; // FIFO eviction order
     QSet<QString>                 m_avatarFetching;   // in-flight URLs
     void fetchAvatar(const QString &url);
+    QString nickTooltip(const QString &nick, const QString &host) const;
 
     QRegularExpression m_selfNickRe; // pre-compiled highlight regex for active host's nick
 
