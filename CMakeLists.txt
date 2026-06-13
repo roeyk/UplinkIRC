@@ -155,7 +155,32 @@ add_custom_command(TARGET Uplink POST_BUILD
 )
 
 if(APPLE)
-    set_target_properties(Uplink PROPERTIES MACOSX_BUNDLE TRUE)
+    set(UPLINK_ICONSET_DIR "${CMAKE_CURRENT_BINARY_DIR}/uplink.iconset")
+    set(UPLINK_ICNS        "${CMAKE_CURRENT_BINARY_DIR}/uplink.icns")
+    set(UPLINK_ICON_SRC    "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/uplink-dark.png")
+    add_custom_command(
+        OUTPUT "${UPLINK_ICNS}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${UPLINK_ICONSET_DIR}"
+        COMMAND sips -z 16  16  "${UPLINK_ICON_SRC}" --out "${UPLINK_ICONSET_DIR}/icon_16x16.png"
+        COMMAND sips -z 32  32  "${UPLINK_ICON_SRC}" --out "${UPLINK_ICONSET_DIR}/icon_16x16@2x.png"
+        COMMAND sips -z 32  32  "${UPLINK_ICON_SRC}" --out "${UPLINK_ICONSET_DIR}/icon_32x32.png"
+        COMMAND sips -z 64  64  "${UPLINK_ICON_SRC}" --out "${UPLINK_ICONSET_DIR}/icon_32x32@2x.png"
+        COMMAND sips -z 128 128 "${UPLINK_ICON_SRC}" --out "${UPLINK_ICONSET_DIR}/icon_128x128.png"
+        COMMAND sips -z 256 256 "${UPLINK_ICON_SRC}" --out "${UPLINK_ICONSET_DIR}/icon_128x128@2x.png"
+        COMMAND sips -z 256 256 "${UPLINK_ICON_SRC}" --out "${UPLINK_ICONSET_DIR}/icon_256x256.png"
+        COMMAND sips -z 512 512 "${UPLINK_ICON_SRC}" --out "${UPLINK_ICONSET_DIR}/icon_256x256@2x.png"
+        COMMAND sips -z 512 512 "${UPLINK_ICON_SRC}" --out "${UPLINK_ICONSET_DIR}/icon_512x512.png"
+        COMMAND iconutil -c icns "${UPLINK_ICONSET_DIR}" -o "${UPLINK_ICNS}"
+        DEPENDS "${UPLINK_ICON_SRC}"
+        COMMENT "Generating macOS app icon"
+        VERBATIM
+    )
+    set_source_files_properties("${UPLINK_ICNS}" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    target_sources(Uplink PRIVATE "${UPLINK_ICNS}")
+    set_target_properties(Uplink PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_ICON_FILE uplink.icns
+    )
 endif()
 
 install(TARGETS Uplink DESTINATION bin)

@@ -126,6 +126,14 @@ static QString sysinfoMEM()
     if (total > 0)
         return QString("%1 GB").arg((total + 512ULL*1024*1024) / (1024ULL*1024*1024));
     return "Unknown";
+#elif defined(Q_OS_DARWIN)
+    QProcess p;
+    p.start("sysctl", {"-n", "hw.memsize"});
+    p.waitForFinished(2000);
+    const quint64 total = QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed().toULongLong();
+    if (total > 0)
+        return QString("%1 GB").arg((total + 512ULL*1024*1024) / (1024ULL*1024*1024));
+    return "Unknown";
 #elif defined(Q_OS_WIN)
     MEMORYSTATUSEX ms{};
     ms.dwLength = sizeof(ms);
@@ -172,6 +180,18 @@ static QString sysinfoGPU()
                 if (c2 != -1)
                     return line.mid(c2 + 1).section('(', 0, 0).trimmed();
             }
+        }
+    }
+    return "Unknown";
+#elif defined(Q_OS_DARWIN)
+    QProcess p;
+    p.start("system_profiler", {"SPDisplaysDataType"});
+    if (p.waitForFinished(8000)) {
+        const QString out = QString::fromLocal8Bit(p.readAllStandardOutput());
+        for (const QString &line : out.split('\n')) {
+            const QString t = line.trimmed();
+            if (t.startsWith("Chipset Model:"))
+                return t.mid(15).trimmed();
         }
     }
     return "Unknown";
