@@ -662,7 +662,7 @@ When you send a message to a service, Uplink opens a PM tab for that service (e.
 
 ### How do I copy text from the chat?
 
-Select the text with your mouse — click and drag to highlight it — then right-click the selection and choose **Copy**. Standard keyboard shortcuts (`Ctrl+C` after selecting) also work.
+Select the text with your mouse — click and drag to highlight it — then right-click the selection and choose **Copy**. Standard keyboard shortcuts (`Ctrl+C` after selecting) also work. You can start a selection from anywhere in the message including the timestamp; nick and URL clicks still work as normal on a plain click (no drag).
 
 The right-click menu for selected text also shows a **Reply** option for the message you clicked on, so you can select a quote and reply to the same message without two separate clicks.
 
@@ -854,7 +854,7 @@ link_previews = true
 
 When enabled, any live message containing an `http://` or `https://` URL causes Uplink to fetch the link in the background and append a preview card below the message.
 
-**Card layout** — the card shows the page title and domain name on top, with the thumbnail image below. The card is anchored to the left edge with a colored border.
+**Card layout** — the card appears directly below the message that contained the URL, aligned with the message body text. It shows the page title (bold, single line) and domain name below it, with the thumbnail image stacked beneath. The card background matches your current theme.
 
 **Web pages** — Uplink fetches up to 32 KB of HTML using a messaging-app user-agent (the same trick used by Halloy and WhatsApp). This causes sites like YouTube to serve a compact metadata page with `og:title` and `og:image` tags early in the response, rather than a full JavaScript-heavy document.
 

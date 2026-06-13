@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QWheelEvent>
 #include <QPainter>
 #include <QScrollBar>
 #include <QTextLayout>
@@ -126,9 +127,14 @@ void ChatView::setColors(const QColor &text, const QColor &bg,
     if (text.isValid())  pal.setColor(QPalette::Text, text);
     if (bg.isValid())    pal.setColor(QPalette::Base, bg);
     viewport()->setPalette(pal);
-    if (link.isValid())        m_linkColor   = link;
-    if (cardBg.isValid())      m_cardBg      = cardBg;
-    if (cardBorder.isValid())  m_cardBorder  = cardBorder;
+    if (link.isValid())        m_linkColor  = link;
+    if (cardBg.isValid())      m_cardBg     = cardBg;
+    if (cardBorder.isValid())  m_cardBorder = cardBorder;
+    // Subdued text = 50% blend of text and bg for domain line in preview cards
+    if (text.isValid() && bg.isValid())
+        m_subColor = QColor::fromRgb((text.red()   + bg.red())   / 2,
+                                     (text.green() + bg.green()) / 2,
+                                     (text.blue()  + bg.blue())  / 2);
     viewport()->update();
 }
 
@@ -197,6 +203,18 @@ void ChatView::resizeEvent(QResizeEvent *e)
     updateScrollRange();
 }
 
+void ChatView::wheelEvent(QWheelEvent *e)
+{
+    const int lineH = QFontMetrics(m_font).height() + kVPad * 2;
+    const int step  = lineH * 3;
+    const int delta = e->angleDelta().y();
+    if (delta == 0) { e->ignore(); return; }
+    const int pixels = -delta * step / 120;
+    auto *sb = verticalScrollBar();
+    sb->setValue(sb->value() + pixels);
+    e->accept();
+}
+
 void ChatView::keyPressEvent(QKeyEvent *e)
 {
     if (e->matches(QKeySequence::Copy)) {
@@ -211,19 +229,12 @@ void ChatView::keyPressEvent(QKeyEvent *e)
 void ChatView::mousePressEvent(QMouseEvent *e)
 {
     if (e->button() == Qt::LeftButton) {
-        const QString anc = anchorAt(e->pos());
-        if (!anc.isEmpty()) {
-            m_selAnchor = {};
-            m_selActive = {};
-            m_selecting = false;
-            viewport()->update();
-            emit anchorActivated(anc, e->globalPosition().toPoint(), Qt::LeftButton);
-        } else {
-            m_selAnchor = hitTest(e->pos());
-            m_selActive = m_selAnchor;
-            m_selecting = true;
-            viewport()->update();
-        }
+        // Always start a selection; fire the anchor on release if the mouse didn't move
+        m_clickAnchor = anchorAt(e->pos());
+        m_selAnchor   = hitTest(e->pos());
+        m_selActive   = m_selAnchor;
+        m_selecting   = true;
+        viewport()->update();
     }
 }
 
@@ -233,9 +244,13 @@ void ChatView::mouseReleaseEvent(QMouseEvent *e)
         m_selecting = false;
         m_selActive = hitTest(e->pos());
         if (selectedText().isEmpty()) {
+            // No drag: treat as a plain click — fire anchor if one was under the press
             m_selAnchor = {};
             m_selActive = {};
+            if (!m_clickAnchor.isEmpty())
+                emit anchorActivated(m_clickAnchor, e->globalPosition().toPoint(), Qt::LeftButton);
         }
+        m_clickAnchor.clear();
         viewport()->update();
     }
 }
@@ -291,6 +306,14 @@ int ChatView::hangWidth() const
     return QFontMetrics(m_font).horizontalAdvance("00:00  ");
 }
 
+int ChatView::lineHangW(const ChatLine &line) const
+{
+    if (!line.hangIndent) return 0;
+    if (line.cachedHangPx > 0) return line.cachedHangPx;
+    // Fallback: global timestamp width (used before layoutLine runs)
+    return hangWidth();
+}
+
 int ChatView::totalHeight() const
 {
     if (m_lines.isEmpty()) return 0;
@@ -300,7 +323,8 @@ int ChatView::totalHeight() const
 void ChatView::invalidateHeights()
 {
     for (auto &l : m_lines) {
-        l.cachedH = 0;
+        l.cachedH    = 0;
+        l.cachedHangPx = 0;
         l.visLines.clear();
     }
 }
@@ -320,6 +344,8 @@ void ChatView::updateScrollRange()
     const int total = totalHeight();
     verticalScrollBar()->setRange(0, qMax(0, total - vh));
     verticalScrollBar()->setPageStep(vh);
+    const int lineH = QFontMetrics(m_font).height() + kVPad * 2;
+    verticalScrollBar()->setSingleStep(lineH * 3);
 }
 
 int ChatView::lineAt(int docY) const
@@ -361,7 +387,7 @@ QString ChatView::anchorAt(const QPoint &vpPos) const
     layout.setTextOption(opt);
 
     const int wrap  = wrapWidth();
-    const int hangW = line.hangIndent ? hangWidth() : 0;
+    const int hangW = lineHangW(line);
     layout.beginLayout();
     bool first = true;
     for (int v = 0; v < line.visLines.size(); ++v) {
@@ -377,8 +403,7 @@ QString ChatView::anchorAt(const QPoint &vpPos) const
     const QTextLine tl = layout.lineAt(visIdx);
     if (!tl.isValid()) return {};
 
-    const qreal relX  = vpPos.x() - line.visLines[visIdx].x;
-    const int charPos = tl.xToCursor(relX, QTextLine::CursorBetweenCharacters);
+    const int charPos = tl.xToCursor((qreal)vpPos.x(), QTextLine::CursorBetweenCharacters);
 
     for (const auto &seg : line.segments) {
         if (!seg.anchor.isEmpty()
@@ -414,7 +439,7 @@ ChatView::SelPoint ChatView::hitTest(const QPoint &vpPos) const
     layout.setTextOption(opt);
 
     const int wrap  = wrapWidth();
-    const int hangW = line.hangIndent ? hangWidth() : 0;
+    const int hangW = lineHangW(line);
     layout.beginLayout();
     bool first = true;
     for (int v = 0; v < (int)line.visLines.size(); ++v) {
@@ -430,8 +455,7 @@ ChatView::SelPoint ChatView::hitTest(const QPoint &vpPos) const
     const QTextLine tl = layout.lineAt(visIdx);
     if (!tl.isValid()) return {idx, 0};
 
-    const qreal relX  = vpPos.x() - line.visLines[visIdx].x;
-    const int charPos = tl.xToCursor(relX, QTextLine::CursorBetweenCharacters);
+    const int charPos = tl.xToCursor((qreal)vpPos.x(), QTextLine::CursorBetweenCharacters);
     return {idx, charPos};
 }
 
@@ -513,11 +537,12 @@ void ChatView::layoutLine(ChatLine &line) const
     const int fh = QFontMetrics(m_font).height();
 
     if (line.role == ChatLineRole::PreviewCard) {
-        const int imgH  = line.image.isNull() ? 0 : line.image.height();
+        const int imgH  = line.image.isNull() ? 0 : (line.image.height() + 4);
         const int textH = fh * 2 + 4;
-        line.cachedH = qMax(imgH, textH) + kVPad * 2;
-        line.visLines = { {0, (int)line.text.size(), (qreal)(kHPad + kCardIndent + 3 + 4),
-                            0, (qreal)(wrapWidth() - kCardIndent - 20), (qreal)line.cachedH} };
+        const int cardX = kHPad + hangWidth();
+        line.cachedH = kVPad + textH + imgH + kVPad;
+        line.visLines = { {0, (int)line.text.size(), (qreal)cardX,
+                            0, (qreal)(wrapWidth() - hangWidth()), (qreal)line.cachedH} };
         return;
     }
 
@@ -535,8 +560,32 @@ void ChatView::layoutLine(ChatLine &line) const
     opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
     layout.setTextOption(opt);
 
+    // Compute per-message hang indent (respects bold nick width)
+    if (line.hangIndent && line.hangIndentChars > 0 && line.cachedHangPx == 0) {
+        QTextLayout pl;
+        pl.setFont(m_font);
+        pl.setText(line.text.left(line.hangIndentChars));
+        QList<QTextLayout::FormatRange> pfmts;
+        for (const auto &seg : line.segments) {
+            if (seg.start >= line.hangIndentChars) break;
+            QTextLayout::FormatRange fr;
+            fr.start  = seg.start;
+            fr.length = qMin(seg.length, line.hangIndentChars - seg.start);
+            fr.format = seg.format;
+            pfmts.append(fr);
+        }
+        pl.setFormats(pfmts);
+        pl.beginLayout();
+        QTextLine ptl = pl.createLine();
+        if (ptl.isValid()) {
+            ptl.setNumColumns(line.hangIndentChars);
+            line.cachedHangPx = (int)std::ceil(ptl.naturalTextWidth());
+        }
+        pl.endLayout();
+    }
+
     const int wrap  = wrapWidth();
-    const int hangW = line.hangIndent ? hangWidth() : 0;
+    const int hangW = lineHangW(line);
 
     line.visLines.clear();
     layout.beginLayout();
@@ -616,7 +665,7 @@ void ChatView::drawLine(QPainter &p, const ChatLine &line, int screenY,
     layout.setTextOption(opt);
 
     const int wrap  = wrapWidth();
-    const int hangW = line.hangIndent ? hangWidth() : 0;
+    const int hangW = lineHangW(line);
 
     layout.beginLayout();
     qreal y    = kVPad;
@@ -656,51 +705,38 @@ void ChatView::drawLine(QPainter &p, const ChatLine &line, int screenY,
 
 void ChatView::drawPreviewCard(QPainter &p, const ChatLine &line, int screenY) const
 {
-    const int leftX  = kHPad + kCardIndent;
-    const int h      = line.cachedH;
-    const int right  = viewport()->width() - kHPad;
+    const int x    = kHPad + hangWidth();
+    const int maxW = viewport()->width() - kHPad - x;
+    if (line.text.isEmpty() && line.image.isNull()) return;
 
-    // Background
-    if (m_cardBg.isValid())
-        p.fillRect(QRect(leftX, screenY + 1, right - leftX, h - 2), m_cardBg);
+    QFont boldFont = m_font;
+    boldFont.setBold(true);
+    const QFontMetrics fmB(boldFont);
+    const QFontMetrics fm(m_font);
 
-    // Left border
-    if (m_cardBorder.isValid())
-        p.fillRect(QRect(leftX, screenY + 1, 3, h - 2), m_cardBorder);
+    const int newline = line.text.indexOf('\n');
+    const QString titleStr  = newline >= 0 ? line.text.left(newline) : line.text;
+    const QString domainStr = newline >= 0 ? line.text.mid(newline + 1) : QString();
 
-    // Thumbnail on right
-    int textRight = right - 8;
-    if (!line.image.isNull()) {
-        const int imgX = right - line.image.width() - 4;
-        const int imgY = screenY + (h - line.image.height()) / 2;
-        p.drawPixmap(imgX, imgY, line.image);
-        textRight = imgX - 4;
-    }
+    int y = screenY + kVPad;
 
-    if (line.text.isEmpty()) return;
-
-    const int innerX = leftX + 3 + 4; // border + padding
-    const int textW  = qMax(1, textRight - innerX);
-
-    QTextLayout layout;
-    layout.setFont(m_font);
-    layout.setText(line.text);
-    layout.setFormats(buildFormatRanges(line));
-    QTextOption opt;
-    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-    layout.setTextOption(opt);
-
-    layout.beginLayout();
-    qreal y = kVPad;
-    while (true) {
-        QTextLine tl = layout.createLine();
-        if (!tl.isValid()) break;
-        tl.setLineWidth(textW);
-        tl.setPosition(QPointF(innerX, y));
-        y += tl.height();
-    }
-    layout.endLayout();
-
+    // Title: bold, text color, one line, elided
+    p.setFont(boldFont);
     p.setPen(viewport()->palette().color(QPalette::Text));
-    layout.draw(&p, QPointF(0, screenY));
+    p.drawText(x, y + fmB.ascent(), fmB.elidedText(titleStr, Qt::ElideRight, maxW));
+    y += fmB.height() + 2;
+
+    // Domain: subdued, one line, elided
+    if (!domainStr.isEmpty()) {
+        p.setFont(m_font);
+        p.setPen(m_subColor.isValid() ? m_subColor : viewport()->palette().color(QPalette::Text));
+        p.drawText(x, y + fm.ascent(), fm.elidedText(domainStr, Qt::ElideRight, maxW));
+        y += fm.height() + 4;
+    }
+
+    // Thumbnail: stacked below text, left-aligned
+    if (!line.image.isNull())
+        p.drawPixmap(x, y, line.image);
+
+    p.setFont(m_font);
 }

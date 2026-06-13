@@ -132,7 +132,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 ## Planned — Medium Term
 
-- [x] Hanging indent — wrapped message lines align past the timestamp+nick column; toggleable from Preferences and `hanging_indent` config key; uses QTextBlockFormat for correct Qt rendering
+- [x] Hanging indent — wrapped message lines align past the timestamp+nick column; per-message pixel-accurate alignment via QTextLayout prefix measurement (2026-06-13 rewrite; original used QTextBlockFormat)
 - [x] Message search — Ctrl+F opens search bar; Enter/Shift+Enter next/prev with wrap; Escape closes
 - [x] Hamburger Close Menu button — explicit dismiss action at bottom of ☰ menu
 - [x] Logging — per-channel log files at `~/.config/uplink/logs/<server>/<channel>.log`; `log_messages` config key; Preferences toggle (v0.15.0)
@@ -312,6 +312,9 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] Keychain operations async — remove nested `QEventLoop` in `KeychainHelper`; load non-secret config first, then resolve secrets before connecting; avoids reentrancy hazard
 - [x] Targeted chat block updates — `BlockMsgid` userData tags each QTextBlock; onReactionsChanged and onMessageRedacted do targeted insert/replace/remove instead of full rebuild (v0.23.3)
 - [x] IrcParser fuzz target — libFuzzer harness around `IrcParser::parseLine()` for parser regression coverage
+- [x] Custom painter ChatView — replaced QTextBrowser/QTextDocument with QAbstractScrollArea + QTextLayout-per-visible-line; eliminates persistent off-screen layout trees; O(log n) scroll mapping via cumulative height prefix sum; full text selection (click-drag, Ctrl+C), Ctrl+F find with yellow highlight, link preview cards, event group toggle, reactions, load-older pagination (2026-06-13)
+- [x] glibc arena cap — `mallopt(M_ARENA_MAX, 2)` in main(); default 8×cores = 96 arenas × 3–4 MiB each = ~275 MiB wasted RSS on idle; cap brings cold-start RSS from ~538 MiB to ~263 MiB (2026-06-13)
+- [x] Per-message hang indent — `ChatLine::hangIndentChars` stores char offset of body start; `layoutLine` measures prefix pixel width via QTextLayout (bold-nick-accurate); continuation lines align with the first letter of the message body, not just the timestamp column (2026-06-13)
 - [ ] `ServerId` / `BufferId` strong types — replace stringly-typed host/channel routing; prerequisite for robust multi-network and bouncer support
 - [x] `selfNickRe` (`QRegularExpression`): verify compiled once per nick change at call site, not reconstructed per `formatMessage` call (`chatrenderer.cpp`) — already correct
 - [x] DCC ACK coalescing: send ACK every 64 KB and on completion, not every `readyRead` — reduces write syscalls on fast links (`dccreceive.cpp`)

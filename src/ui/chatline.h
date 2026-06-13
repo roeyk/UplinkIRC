@@ -19,10 +19,12 @@ struct ChatLine {
     QString             id;        // msgid | "evgrp:G" | "rx:M" | ""
     ChatLineRole        role{ChatLineRole::Message};
     bool                hangIndent{false};
+    int                 hangIndentChars{0}; // char count of prefix before body text (0 = global ts width)
     QPixmap             image;     // non-null for PreviewCard lines
 
     // Layout cache — invalidated on resize/font change
     mutable int     cachedH{0};
+    mutable int     cachedHangPx{0}; // pixel width of prefix, computed from hangIndentChars
     struct VisLine {
         int    charStart;
         int    charEnd;

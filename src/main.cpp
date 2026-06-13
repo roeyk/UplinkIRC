@@ -1,3 +1,4 @@
+#include <malloc.h>
 #include <QApplication>
 #include <QFont>
 #include <QInputDialog>
@@ -10,6 +11,7 @@
 
 int main(int argc, char *argv[])
 {
+    mallopt(M_ARENA_MAX, 2); // cap glibc arenas; default (8×cores) wastes ~300 MiB RSS
     QApplication app(argc, argv);
     QPixmapCache::setCacheLimit(4096); // 4 MB — default is unlimited
     app.setApplicationName("Uplink");

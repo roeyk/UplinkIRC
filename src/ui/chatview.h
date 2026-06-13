@@ -38,6 +38,7 @@ signals:
 protected:
     void paintEvent(QPaintEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
+    void wheelEvent(QWheelEvent *e) override;
     void keyPressEvent(QKeyEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
@@ -63,11 +64,13 @@ private:
     QColor           m_linkColor{QColor("#61afef")};
     QColor           m_cardBg;
     QColor           m_cardBorder;
+    QColor           m_subColor;    // subdued text (domain line in preview cards)
     bool             m_atBottom{true};
     QString          m_hoveredAnchor;
     SelPoint         m_selAnchor;
     SelPoint         m_selActive;
     bool             m_selecting{false};
+    QString          m_clickAnchor;  // anchor under the press point; fired on release if no drag
     int              m_findLine{-1};
     int              m_findFrom{-1};
     int              m_findTo{-1};
@@ -78,6 +81,7 @@ private:
 
     int      wrapWidth()  const;
     int      hangWidth()  const;
+    int      lineHangW(const ChatLine &line) const;
     int      totalHeight() const;
     void     layoutLine(ChatLine &line) const;
     void     invalidateHeights();

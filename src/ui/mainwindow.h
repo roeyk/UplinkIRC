@@ -242,11 +242,12 @@ private:
     LinkPreview  *m_linkPreview{nullptr};
     QString       m_hoveredUrl;
     QPoint        m_hoverGlobalPos;
-    QHash<QString, QPair<QString,QString>> m_previewChannels; // url → {host, channel}
+    struct PreviewCtx { QString host, channel, msgid; };
+    QHash<QString, PreviewCtx> m_previewChannels; // url → {host, channel, msgid}
     QQueue<QUrl>  m_previewQueue;
     bool          m_previewFetchBusy{false};
     QTimer       *m_previewWatchdog{nullptr};
-    void enqueuePreview(const QUrl &url, const QString &host, const QString &channel);
+    void enqueuePreview(const QUrl &url, const QString &host, const QString &channel, const QString &msgid);
     void processPreviewQueue();
     QMap<QString, DccSend*> m_pendingPassiveSends;
     Config        m_config;

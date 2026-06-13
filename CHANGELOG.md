@@ -3,6 +3,20 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-13 (custom painter ChatView polish + memory / selection fixes)
+What changed:
+  - Memory: mallopt(M_ARENA_MAX, 2) in main.cpp caps glibc thread arenas at 2 (default is 8×cores = 96 on this 12-core machine). Each empty arena holds 3–4 MiB of dirty pages; the cap eliminates ~275 MiB of RSS waste. Measured before/after: 538 MiB → 263 MiB cold start.
+  - Scroll speed: ChatView was using singleStep=1px (QAbstractScrollArea default). Added wheelEvent override and setSingleStep(lineH*3) in updateScrollRange — each notch now scrolls 3 lines.
+  - Preview card positioning: cardReady handler now stores msgid in PreviewCtx alongside host/channel; when the card arrives it calls insertAfter(msgid, card) so it appears directly below the URL message rather than at the bottom of chat.
+  - Preview card layout: removed left border line; title (bold, single line, elided) + domain (subdued) stacked vertically at hangWidth x-position, thumbnail stacked below; background matches theme (QPalette::Base, same as chat).
+  - Per-message hang indent: ChatLine gains hangIndentChars (char offset where body text starts); layoutLine measures exact pixel width via QTextLayout including bold nick weight, stores in cachedHangPx; all four hangW sites in chatview.cpp use lineHangW(line) instead of the fixed global timestamp width. Continuation lines now align precisely with the first character of the message body regardless of nick length.
+  - Text selection fixes: (1) mousePressEvent now always starts a selection; anchors fire on release only if no drag occurred (m_clickAnchor); eliminates the "can't start selection from timestamp" bug. (2) xToCursor was receiving vpPos.x() − visLine.x (relative coords) but expects full layout x coordinates; changed to pass vpPos.x() directly in both anchorAt and hitTest. Fixes reverse-selection missing the last word.
+  - Preview thumbnail bumped to 240px max.
+No version bump (polish/fix pass, no user-facing feature additions).
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-12 (memory investigation + undo stack fix)
 What changed:
   - Investigated high RSS (~500MB). Root cause split: baseline overhead is Mesa 26.1.x loading LLVM for shader compilation on KDE Wayland (not fixable in app); steady post-launch growth (~2MB/5s) was the QTextDocument undo stack accumulating every insert/removal on read-only chat views.

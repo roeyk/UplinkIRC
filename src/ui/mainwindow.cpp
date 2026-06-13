@@ -627,7 +627,7 @@ void MainWindow::connectPreferences()
         if (m_chatView && m_theme.valid)
             m_chatView->setColors(QColor(m_theme.text), QColor(m_theme.background),
                                   QColor(m_theme.accent),
-                                  QColor(m_theme.background).darker(110),
+                                  QColor(m_theme.background),
                                   QColor(m_theme.border));
         if (m_sidebarDelegate && m_theme.valid)
             m_sidebarDelegate->setColors(QColor(m_theme.accent),
@@ -1213,7 +1213,7 @@ void MainWindow::setupChatArea()
     m_chatView = new ChatView;
     if (m_theme.valid)
         m_chatView->setColors(QColor(m_theme.text), QColor(m_theme.background),
-                              QColor(m_theme.accent), QColor(m_theme.background).darker(110),
+                              QColor(m_theme.accent), QColor(m_theme.background),
                               QColor(m_theme.border));
     connect(m_chatView, &ChatView::anchorActivated,
             this, [this](const QString &anchor, const QPoint &gp, Qt::MouseButton btn){
@@ -1284,8 +1284,9 @@ void MainWindow::setupChatArea()
             processPreviewQueue();
             return;
         }
-        const QString host    = it->first;
-        const QString channel = it->second;
+        const QString host    = it->host;
+        const QString channel = it->channel;
+        const QString msgid   = it->msgid;
         m_previewChannels.erase(it);
         processPreviewQueue();
 
@@ -1295,7 +1296,7 @@ void MainWindow::setupChatArea()
         // Thumbnail scaled to max 100 px wide
         QPixmap thumb;
         if (!thumbnail.isNull())
-            thumb = thumbnail.scaledToWidth(qMin(thumbnail.width(), 100),
+            thumb = thumbnail.scaledToWidth(qMin(thumbnail.width(), 240),
                                             Qt::SmoothTransformation);
 
         Channel::PreviewCard card;
@@ -1307,7 +1308,9 @@ void MainWindow::setupChatArea()
 
         auto makeCardLine = [&]() -> ChatLine {
             ChatLine line;
-            // Build text: "title\ndomain" with URL segment for the preview anchor
+            line.id   = "preview:" + urlStr;
+            line.role = ChatLineRole::PreviewCard;
+            line.image = thumb;
             line.text = card.title + "\n" + card.domain;
             QTextCharFormat titleFmt;
             titleFmt.setFontWeight(QFont::Bold);
@@ -1324,8 +1327,6 @@ void MainWindow::setupChatArea()
             domainSeg.length = static_cast<int>(card.domain.size());
             domainSeg.format = domainFmt;
             line.segments.append(domainSeg);
-            line.role  = ChatLineRole::PreviewCard;
-            line.image = thumb;
             return line;
         };
 
@@ -1333,14 +1334,21 @@ void MainWindow::setupChatArea()
                                channel.toLower() == m_model->activeChannel().str().toLower());
         if (isActive) {
             const bool atBottom = m_chatView->isAtBottom();
-            m_chatView->appendLine(makeCardLine());
+            if (!msgid.isEmpty() && m_chatView->findLine(msgid) >= 0)
+                m_chatView->insertAfter(msgid, makeCardLine());
+            else
+                m_chatView->appendLine(makeCardLine());
             if (atBottom) m_chatView->scrollToBottom();
         }
 
         const QString paneKey = host + "|" + channel.toLower();
         if (auto *pane = m_panes.value(paneKey)) {
             const bool atBottom = pane->chatView()->isAtBottom();
-            pane->chatView()->appendLine(makeCardLine());
+            ChatView *cv = pane->chatView();
+            if (!msgid.isEmpty() && cv->findLine(msgid) >= 0)
+                cv->insertAfter(msgid, makeCardLine());
+            else
+                cv->appendLine(makeCardLine());
             if (atBottom) pane->chatView()->scrollToBottom();
         }
     });
@@ -2936,7 +2944,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
     auto *pane = new ChannelPane(host, channel, this);
     if (m_theme.valid)
         pane->chatView()->setColors(QColor(m_theme.text), QColor(m_theme.background),
-                                    QColor(m_theme.accent), QColor(m_theme.background).darker(110),
+                                    QColor(m_theme.accent), QColor(m_theme.background),
                                     QColor(m_theme.border));
 
     pane->input()->installEventFilter(this);
@@ -3495,14 +3503,14 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
     menu.exec(globalPos);
 }
 
-void MainWindow::enqueuePreview(const QUrl &url, const QString &host, const QString &channel)
+void MainWindow::enqueuePreview(const QUrl &url, const QString &host, const QString &channel, const QString &msgid)
 {
     const QString key = url.toString();
     if (key.isEmpty()) return;
     if (m_previewChannels.contains(key)) return;
     if (m_previewQueue.size() >= 10) return;
     if (m_previewChannels.size() >= 100) return;
-    m_previewChannels.insert(key, {host, channel});
+    m_previewChannels.insert(key, {host, channel, msgid});
     m_previewQueue.enqueue(url);
     processPreviewQueue();
 }
@@ -3922,7 +3930,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
                 }
             }
             if (!m_previewChannels.contains(urlStr))
-                enqueuePreview(QUrl(urlStr), host, channel);
+                enqueuePreview(QUrl(urlStr), host, channel, msg.msgid);
         }
     }
 

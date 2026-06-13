@@ -569,6 +569,7 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
                          msg.type == MessageType::Action  ||
                          msg.type == MessageType::Notice);
 
+    int prefixEnd = 0; // char offset where body text starts
     switch (msg.type) {
     case MessageType::Privmsg: {
         const QColor nickCol = isHistory ? dimColor
@@ -604,14 +605,14 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
         tb.append(nickOpen + msg.nick + nickClose, nickFmt, "nick:" + msg.nick);
         tb.append(" ", plainFmt);
 
-        const int textStart = static_cast<int>(tb.text.size());
+        prefixEnd = static_cast<int>(tb.text.size());
         QTextCharFormat base;
         if (isHistory) base.setForeground(dimColor);
         ircToSegments(msg.text, base, tb);
         if (!isHistory) {
-            linkifySegments(tb, textStart);
+            linkifySegments(tb, prefixEnd);
             if (ctx.selfNickRe.isValid())
-                addSelfNickHighlight(tb, textStart, ctx.selfNickRe);
+                addSelfNickHighlight(tb, prefixEnd, ctx.selfNickRe);
         }
         break;
     }
@@ -627,12 +628,12 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
         if (isHistory) nickFmt.setForeground(dimColor);
         tb.append(msg.nick + " ", nickFmt, "nick:" + msg.nick);
 
-        const int textStart = static_cast<int>(tb.text.size());
+        prefixEnd = static_cast<int>(tb.text.size());
         QTextCharFormat base;
         base.setFontItalic(true);
         if (isHistory) base.setForeground(dimColor);
         ircToSegments(msg.text, base, tb);
-        if (!isHistory) linkifySegments(tb, textStart);
+        if (!isHistory) linkifySegments(tb, prefixEnd);
         break;
     }
     case MessageType::Notice: {
@@ -641,11 +642,11 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
         QTextCharFormat f;
         f.setForeground(col);
         tb.append("-" + msg.nick + "- ", f, "nick:" + msg.nick);
-        const int textStart = static_cast<int>(tb.text.size());
+        prefixEnd = static_cast<int>(tb.text.size());
         QTextCharFormat base;
         base.setForeground(col);
         ircToSegments(msg.text, base, tb);
-        if (!isHistory) linkifySegments(tb, textStart);
+        if (!isHistory) linkifySegments(tb, prefixEnd);
         break;
     }
     case MessageType::Join: {
@@ -704,7 +705,8 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
     line.segments   = tb.segs;
     line.id         = msg.msgid;
     line.role       = ChatLineRole::Message;
-    line.hangIndent = isText;
+    line.hangIndent      = isText;
+    line.hangIndentChars = prefixEnd;
     return line;
 }
 
