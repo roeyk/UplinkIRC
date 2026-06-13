@@ -3,6 +3,27 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-13 (sidebar integrated into floating chat card)
+What changed:
+  - setupChatArea() restructured: a new intermediate chatSection widget wraps primaryHeader +
+    topicDisplay + chatSplitter. m_mainSplitter now holds [sidebarPanel | chatSection] inside
+    primaryPanel, which is already inside the RoundedPane chatWrapper. Result: the sidebar is
+    physically inside the same floating rounded card as the chat area and nick list.
+  - The inputBar (added by setupInputBar) sits in primaryVbox below m_mainSplitter, so it spans
+    the full card width including the sidebar column — this eliminates the interior square corner
+    that would otherwise appear at the bottom-left of the sidebar column.
+  - themeloader.cpp: sidebar and QTreeWidget branch backgrounds changed from {{sidebarBg}} to
+    {{bufferBg}}. The nick panel already uses bufferBg; this makes the sidebar match, so all three
+    columns (sidebar, chat, nick list) share the same background inside the card.
+  - mainwindow.cpp: rightContent vbox left margin restored to 8 px in both the initial setup and
+    the sidebar toggle expanded branch. The correctStartupGeometry() function already had a +8 px
+    compensation on topicLeft's fixed width; the two values now match, keeping the hamburger and
+    gear buttons horizontally aligned with the sidebar column.
+No version bump from v0.25.24 — this is a pure visual polish pass.
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-13 (custom painter ChatView polish + memory / selection fixes)
 What changed:
   - Memory: mallopt(M_ARENA_MAX, 2) in main.cpp caps glibc thread arenas at 2 (default is 8×cores = 96 on this 12-core machine). Each empty arena holds 3–4 MiB of dirty pages; the cap eliminates ~275 MiB of RSS waste. Measured before/after: 538 MiB → 263 MiB cold start.
@@ -205,6 +226,11 @@ What changed:
     cleared. ASan shadow memory accounted for the reported 500MB+ RSS. A clean rebuild eliminates it.
 No regressions. No known issues.
 -->
+
+## v0.25.25 — 2026-06-13
+
+### Changed
+- **Sidebar integrated into the floating chat card** — the server/channel list now lives inside the same rounded floating panel as the chat area and nick list. Previously the sidebar was a flat left panel sitting outside the card. Now all three columns (sidebar, chat, nick list) share one unified rounded card. The sidebar background is set to match the chat buffer background (`bufferBg`) so the interior feels like a single seamless surface. The input bar spans the full card width at the bottom, anchoring all three columns visually.
 
 ## v0.25.24 — 2026-06-13
 

@@ -187,7 +187,7 @@ QToolButton#sidebarToggleBtn {
 }
 QToolButton#sidebarToggleBtn:hover { color: {{accent}}; }
 QWidget#sidebarPanel {
-    background-color: {{sidebarBg}};
+    background-color: {{bufferBg}};
 }
 
 QSizeGrip {
@@ -231,7 +231,7 @@ QMenu::separator {
 
 /* ── Sidebar ── */
 QTreeWidget {
-    background-color: {{sidebarBg}};
+    background-color: {{bufferBg}};
     color: {{sidebarText}};
     border: none;
     outline: none;
@@ -248,7 +248,7 @@ QTreeWidget::item:hover {
     background: transparent;
 }
 QTreeWidget::branch {
-    background-color: {{sidebarBg}};
+    background-color: {{bufferBg}};
     border: none;
     image: none;
     width: 0px;

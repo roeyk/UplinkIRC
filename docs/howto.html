@@ -1365,7 +1365,7 @@ channels  = "#uplink"</pre>
   <!-- SIDEBAR -->
   <section id="sidebar">
     <h2>Sidebar — server &amp; channel list</h2>
-    <p>The sidebar on the left shows all your servers and channels. Each server is a heading; its channels are listed beneath it.</p>
+    <p>The sidebar on the left shows all your servers and channels. It lives <strong>inside the same rounded floating card</strong> as the chat area and the nick list — all three columns share one seamless surface with a matching background color. Each server is a heading; its channels are listed beneath it.</p>
 
     <ul>
       <li>Click a channel to open it in the chat area.</li>
@@ -1373,9 +1373,11 @@ channels  = "#uplink"</pre>
       <li>The server heading shows a <strong>globe icon</strong> when connected. The globe turns <strong>red</strong> when the server status pane has unread messages — click the server name to open it and clear the indicator.</li>
       <li>Right-click a channel for options: <strong>Open in Pane</strong> (view it alongside the current channel), Rejoin, Leave, Close. See <a href="#channel-panes">Channel panes</a>.</li>
       <li>Right-click a server for: Disconnect, Reconnect.</li>
-      <li>Drag the divider between the sidebar and chat area to resize it — the width is saved and restored on the next launch.</li>
-      <li>Click the <code>⚙</code> gear in the topic bar (top-left) to collapse the sidebar entirely so the chat fills the window. Click it again to bring it back.</li>
+      <li>Drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.</li>
+      <li>Click the <code>⚙</code> gear in the topic bar (top-left) to collapse the sidebar entirely so the chat fills the card. Click it again to bring it back. The hamburger menu and gear button remain visible at all times in the top-left even when the sidebar is fully collapsed.</li>
     </ul>
+
+    <div class="note"><strong>Layout:</strong> The floating card has a small gap around three sides (right, bottom, and left). The top edge of the card meets the topic bar directly. Inside the card, from left to right: sidebar → chat messages → nick list. The input bar at the bottom of the card always spans the full width, anchoring all three columns.</div>
   </section>
 
   <!-- CHANNEL PANES -->

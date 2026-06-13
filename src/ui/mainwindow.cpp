@@ -504,7 +504,7 @@ void MainWindow::correctStartupGeometry()
     const int total = m_mainSplitter->width();
     if (total > 0)
         m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-    if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
+    if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth + 8);
 }
 
 // ---------------------------------------------------------------------------
@@ -1001,7 +1001,7 @@ void MainWindow::setupSidebar()
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
             if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
             if (auto *l = qobject_cast<QVBoxLayout *>(m_rightContent->layout()))
-                l->setContentsMargins(0, 0, 8, 8);
+                l->setContentsMargins(8, 0, 8, 8);
         } else {
             m_mainSplitter->setSizes({0, total});
             if (m_topicLeft) m_topicLeft->setFixedWidth(kBtnZoneMinW);
@@ -1133,7 +1133,7 @@ void MainWindow::setupChatArea()
     m_rightContent = new QWidget;
     m_rightContent->setObjectName("rightContent");
     auto *vbox     = new QVBoxLayout(m_rightContent);
-    vbox->setContentsMargins(0, 0, 8, 8);
+    vbox->setContentsMargins(8, 0, 8, 8);
     vbox->setSpacing(0);
 
     // Primary panel — first column in the panes splitter
@@ -1192,7 +1192,14 @@ void MainWindow::setupChatArea()
         hbox->addWidget(m_primaryPaneLabel, 1);
         hbox->addWidget(m_primaryCloseBtn);
     }
-    primaryVbox->addWidget(primaryHeader);
+    // chatSection holds the header, topic, and chat+nick splitter.
+    // It lives to the right of the sidebar in m_mainSplitter so those
+    // widgets only span the chat column, not the sidebar column.
+    auto *chatSection = new QWidget;
+    auto *chatVbox    = new QVBoxLayout(chatSection);
+    chatVbox->setContentsMargins(0, 0, 0, 0);
+    chatVbox->setSpacing(0);
+    chatVbox->addWidget(primaryHeader);
 
     // Topic display — shown below header when Show Topic is on
     m_topicDisplay = new QWidget;
@@ -1213,7 +1220,7 @@ void MainWindow::setupChatArea()
     tdHbox->addWidget(m_topicText);
     m_topicDisplay->setObjectName("topicDisplay");
     m_topicDisplay->setVisible(m_showTopic);
-    primaryVbox->addWidget(m_topicDisplay);
+    chatVbox->addWidget(m_topicDisplay);
 
     // Chat view
     m_chatView = new ChatView;
@@ -1376,7 +1383,19 @@ void MainWindow::setupChatArea()
     m_chatSplitter->addWidget(m_nickPanel);
     m_chatSplitter->setStretchFactor(0, 1);
     m_chatSplitter->setStretchFactor(1, 0);
-    primaryVbox->addWidget(m_chatSplitter, 1);
+    chatVbox->addWidget(m_chatSplitter, 1);
+
+    // Sidebar sits alongside chatSection so header/topic stay in the chat
+    // column while only the inputBar (added by setupInputBar) spans full width,
+    // letting the RoundedPane clip only outer corners.
+    m_mainSplitter = new QSplitter(Qt::Horizontal);
+    m_mainSplitter->setHandleWidth(0);
+    m_mainSplitter->addWidget(m_sidebarPanel);
+    m_mainSplitter->addWidget(chatSection);
+    m_mainSplitter->setStretchFactor(0, 0);
+    m_mainSplitter->setStretchFactor(1, 1);
+    m_mainSplitter->setMinimumSize(1, 1);
+    primaryVbox->addWidget(m_mainSplitter, 1);
 
     // setupInputBar will append search/reply/typing/input into primaryVbox
 
@@ -1392,20 +1411,12 @@ void MainWindow::setupChatArea()
     cwLayout->addWidget(m_panesSplitter);
     vbox->addWidget(chatWrapper, 1);
 
-    m_mainSplitter = new QSplitter(Qt::Horizontal);
-    m_mainSplitter->setHandleWidth(0);
-    m_mainSplitter->addWidget(m_sidebarPanel);
-    m_mainSplitter->addWidget(m_rightContent);
-    m_mainSplitter->setStretchFactor(0, 0);
-    m_mainSplitter->setStretchFactor(1, 1);
-    m_mainSplitter->setMinimumSize(1, 1);
-
     auto *outer      = new QWidget;
     auto *outerVbox  = new QVBoxLayout(outer);
     outerVbox->setContentsMargins(0, 0, 0, 0);
     outerVbox->setSpacing(0);
     outerVbox->addWidget(m_topicBar);
-    outerVbox->addWidget(m_mainSplitter, 1);
+    outerVbox->addWidget(m_rightContent, 1);
 
     setCentralWidget(outer);
 }

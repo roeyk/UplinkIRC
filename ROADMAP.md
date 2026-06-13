@@ -240,6 +240,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Topic button speech bubble icon — custom QPainter icon replaces text label; muted when collapsed, accent when open; ChannelPane::setTopicIcon() API; updates on theme change (v0.19.1)
 - [x] Floating rounded input bar — separator line removed; bar blends into chat area via bufferBg; QLineEdit gets border-radius pill shape (v0.19.1)
 - [x] Rounded chat panel with padding — RoundedPane widget clips all chat content (panes splitter + children) to a 10 px rounded rect via setMask(); 8 px right/bottom padding shows sidebarBg for contrast; sidebar toggle balances left margin to match (v0.19.2)
+- [x] Sidebar unified with chat card — server/channel sidebar moved inside the RoundedPane floating card alongside the chat area and nick list; sidebar background changed from sidebarBg to bufferBg so all three columns share one seamless surface; inputBar spans the full card width at the bottom, anchoring all columns; 8 px left margin restored on both expanded and collapsed states (v0.25.25, 2026-06-13)
 - [x] MD3-inspired UI pass — pill buttons (20px radius via PillButton QPainter subclass), rounder inputs/menus/tooltips, Material Symbols SVG icons for hamburger/gear/all menu items, sidebar pill highlight padding fixed, row heights via sizeHint delegates (v0.20.0)
 - [x] Self-signed cert fingerprint pinning — per-server accept/reject/pin dialog on first connect; SHA-256 fingerprint saved to config; mismatch disconnects with warning; IrcClient::abort() for clean reject (v0.20.0)
 
