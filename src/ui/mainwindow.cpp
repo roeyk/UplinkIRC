@@ -4305,6 +4305,12 @@ void MainWindow::fetchAvatar(const QString &url)
     auto cacheAndRefresh = [this, url](QPixmap px) {
         if (px.isNull()) return;
         px = px.scaled(36, 36, Qt::KeepAspectRatio, Qt::FastTransformation);
+        static constexpr int kAvatarCacheCap = 200;
+        if (!m_avatarCache.contains(url)) {
+            if (m_avatarCacheOrder.size() >= kAvatarCacheCap)
+                m_avatarCache.remove(m_avatarCacheOrder.takeFirst());
+            m_avatarCacheOrder.append(url);
+        }
         m_avatarCache.insert(url, px);
         scheduleNickRefresh(m_model->activeHost().str(), m_model->activeChannel().str());
     };

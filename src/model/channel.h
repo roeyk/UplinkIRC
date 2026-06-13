@@ -8,7 +8,7 @@
 #include <QSet>
 #include <QStringList>
 
-static constexpr int kMessageBufferCap = 500;
+static constexpr int kMessageBufferCap = 200;
 
 // Nick prefix rank: ~ & @ % + (owner → admin → op → halfop → voice)
 inline int prefixRank(QChar p)
@@ -167,7 +167,7 @@ struct Channel {
         rebuildNickIndex();
     }
 
-    static constexpr int kPreviewCap = 20;
+    static constexpr int kPreviewCap = 8;
 
     void addPreview(const QString &url, const QString &base, const QString &imgHtml = {})
     {

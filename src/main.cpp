@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QFont>
 #include <QInputDialog>
+#include <QPixmapCache>
 #include "config/config.h"
 #include "model/sessionmodel.h"
 #include "ui/mainwindow.h"
@@ -10,6 +11,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    QPixmapCache::setCacheLimit(4096); // 4 MB — default is unlimited
     app.setApplicationName("Uplink");
     app.setApplicationVersion(UPLINK_VERSION);
 

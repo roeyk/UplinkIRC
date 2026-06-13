@@ -226,8 +226,9 @@ private:
 
     // Avatar image cache
     QNetworkAccessManager        *m_avatarNam{nullptr};
-    QHash<QString, QPixmap>       m_avatarCache;    // URL → scaled pixmap
-    QSet<QString>                 m_avatarFetching; // in-flight URLs
+    QHash<QString, QPixmap>       m_avatarCache;      // URL → scaled pixmap
+    QList<QString>                m_avatarCacheOrder; // FIFO eviction order
+    QSet<QString>                 m_avatarFetching;   // in-flight URLs
     void fetchAvatar(const QString &url);
 
     QRegularExpression m_selfNickRe; // pre-compiled highlight regex for active host's nick
