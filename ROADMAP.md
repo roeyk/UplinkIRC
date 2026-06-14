@@ -70,7 +70,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Nick list right-click menu — Message, Send File, Whois, Invite, Give Op, Take Op, Give Voice, Take Voice, Version, Ping (CTCP RTT), Copy Nick, Kick, Ban, Kick & Ban
 - [x] Right-click nick in chat view — same context menu as nick list; nicks rendered as nick: anchors in HTML
 - [x] Tray icon left-click toggles window visibility
-- [x] Unread dot indicator in sidebar — 🔥 for activity, 💡 red for nick mentions; clears on focus
+- [x] Unread dot indicator in sidebar — 🔥 for activity, ⚡ yellow bolt for nick mentions; clears on focus
 - [x] Sidebar flat list — Halloy-style: no arrows, servers as section headers, connected icon, dock titles removed
 - [x] Font Config: Network Name and Typing Indicator size controls
 - [x] Info bar always visible with channel, modes, network, user count
@@ -95,7 +95,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Link preview redesigned (v0.12.0) — title+domain on top, image below; 360×220 scale; ChatBrowser subclass decodes data: URIs so images actually render; WhatsApp/2 UA fixes YouTube and heavy sites
 - [x] Link right-click menu (v0.12.0) — Copy URL / Open URL / Hide Preview; left-click opens browser; double-menu bug fixed by moving handler to QContextMenu event
 - [x] Link preview show/hide toggle (v0.12.1) — right-click a hidden-preview URL shows "Show Preview"; card restores from cache without re-fetch; hiddenPreviews QSet tracks state per channel
-- [x] Notification icon-only indicators (v0.12.0) — removed color changes on channel names; 💡/🔥 icons are the sole unread indicators; eliminates layout shift
+- [x] Notification icon-only indicators (v0.12.0) — removed color changes on channel names; ⚡/🔥 icons are the sole unread indicators; eliminates layout shift
 - [x] Dark banner — uplink-top-banner-dark.svg used in README and About dialog
 - [x] `/nick` label update — changing nick now immediately reflects in the input bar nick label
 - [x] Direct image URL preview — `.png/.jpg/.jpeg/.gif/.webp` links show a thumbnail card without HTML parsing
@@ -125,7 +125,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Multiple servers — Manage Servers dialog: add, edit, remove with live connect/disconnect
 - [x] Reconnect logic — auto-reconnect with backoff on disconnect
 - [x] Connection status indicator — signal bars widget in topic bar; latency-based bar count (4=<50ms … 1=>300ms); blue flash=connecting, red flash=disconnected
-- [x] Mention notifications — 💡 red sidebar indicator when nick is mentioned in inactive channel; 🔥 for general activity; self-nick highlighted red bold in chat
+- [x] Mention notifications — ⚡ yellow bolt sidebar indicator when nick is mentioned in inactive channel; 🔥 for general activity; self-nick highlighted red bold in chat
 - [x] Desktop notifications — green dot on tray icon on mention/PM when window not focused; clears on window focus; toggle in Preferences
 
 ---
@@ -182,7 +182,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 
 ## Planned — Polish + Distribution
 
-- [x] Material Design sidebar indicators — lightbulb_2 (yellow) for mentions, forum for unread; drawn after channel name by SidebarDelegate; text position stable
+- [x] Material Design sidebar indicators — mi-bolt.svg (yellow) for mentions, mi-forum.svg for unread; drawn after channel name by SidebarDelegate; text position stable (icon changed from lightbulb_2 to bolt in v0.25.29)
 - [x] Server globe icon — Material Symbols "public" replaces hand-drawn dot; stored in UserRole+2 so SidebarDelegate renders it; turns red on server status pane unread
 - [x] METADATA SUBSCRIBE removed — Ergo does not support the subcommand; metadata is pushed automatically; fixes [FAIL] SUBCOMMAND_INVALID on ergo.chat
 - [x] Mention detection fix — emit selfNickChanged on RPL_WELCOME so mentionRe is built on connect, not only on mid-session NICK change
@@ -244,7 +244,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] MD3-inspired UI pass — pill buttons (20px radius via PillButton QPainter subclass), rounder inputs/menus/tooltips, Material Symbols SVG icons for hamburger/gear/all menu items, sidebar pill highlight padding fixed, row heights via sizeHint delegates (v0.20.0)
 - [x] Self-signed cert fingerprint pinning — per-server accept/reject/pin dialog on first connect; SHA-256 fingerprint saved to config; mismatch disconnects with warning; IrcClient::abort() for clean reject (v0.20.0)
 - [x] Unified channel header — standalone top bar removed; hamburger (☰) and sidebar toggle (⊞) move into the primary header row inline with #channel (+modes); floating card gains symmetric 8 px margins on all four sides (v0.25.27, 2026-06-14)
-- [x] Server name in nick panel header — "* NetworkName" moves from top bar into the nick panel header row, inline with the close-panel button (▦) and groups icon (v0.25.27, 2026-06-14)
+- [x] Server name in nick panel header — "* NetworkName" moved from top bar into the nick panel header row in v0.25.27; removed entirely in v0.25.29 (header is cleaner without it; network is identifiable from the sidebar tree)
 - [x] Sidebar tree alignment — dynamic sidebarHeader spacer at top of sidebar panel keeps server tree items vertically aligned with the nick panel header; spacer height updated reactively via eventFilter on topicDisplay resize/show/hide (v0.25.27, 2026-06-14)
 - [x] Topic + input anchored to chatSection — channel header, topic display, and input bar are all inside chatSection (right of the draggable sidebar divider); they no longer span the full card width including the sidebar column (v0.25.27, 2026-06-14)
 - [x] IRC mask in join/part/quit messages — user and host fields threaded through userJoined/userParted/userQuit signals; membership events display as "nick (~user@host) has joined/left the channel" (v0.25.28, 2026-06-14)
@@ -252,6 +252,12 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] soju no-implicit-names support — explicit NAMES request on self-join when soju.im/no-implicit-names is active so the nick list populates correctly (v0.25.28, 2026-06-14)
 - [x] Reconnect credential bug fixed — "Reconnect" context menu now calls cl->reconnect() to reuse the already-resolved in-memory SASL password instead of re-passing the raw "<keychain>" sentinel to connectToServer() (v0.25.28, 2026-06-14)
 - [x] soju documentation rewritten — configuration.md soju section now covers SASL-based setup with single and multi-network examples, Option A/B for network selection, and a BouncerServ tip (v0.25.28, 2026-06-14)
+- [x] Bolt mention icon — mi-bolt.svg replaces mi-lightbulb-2.svg for the nick mention indicator; shown in yellow (#FFD700) in the sidebar; MenuIcons::mention() updated (v0.25.29, 2026-06-14)
+- [x] Nick panel server label removed — "* NetworkName" label cleared from the nick panel header in all channel/query views; header only shows the toggle button, groups icon, and user count (v0.25.29, 2026-06-14)
+- [x] Nick panel user count repositioned — user count sits directly right of the groups icon with addSpacing(4); consistent visual gap between all three header elements (v0.25.29, 2026-06-14)
+- [x] Single-word PRIVMSG/NOTICE text fix — ircclient.cpp reads msg.params.last() when msg.trailing is empty; fixes invisible body text and missed mention detection for messages where the server omits the colon prefix on a single-word trailing parameter (v0.25.29, 2026-06-14)
+- [x] Body text foreground always explicit — chatrenderer.cpp Privmsg and Action handlers unconditionally set QTextCharFormat foreground (themeText or #cccccc fallback); prevents invisible text when addSelfNickHighlight overlaps a body segment that had no foreground set (v0.25.29, 2026-06-14)
+- [x] Mention detection rewritten — postMessage() uses msg.text.contains(sess->nick, Qt::CaseInsensitive) instead of QRegularExpression; simpler and consistent with the tray notification path (v0.25.29, 2026-06-14)
 
 ---
 

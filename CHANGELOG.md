@@ -3,6 +3,31 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-14 (bolt icon, mention detection rewrite, single-word message parsing fix) v0.25.29
+What changed:
+  - Bolt mention icon: mi-bolt.svg replaces mi-lightbulb-2.svg for nick mention indicator in sidebar.
+    Displayed in yellow (#FFD700) via MenuIcons::mention(). resources.qrc and menuicons.h updated.
+  - Mention detection rewritten in sessionmodel.cpp::postMessage(): replaced QRegularExpression
+    match against mentionRe with msg.text.contains(sess->nick, Qt::CaseInsensitive). Simpler and
+    consistent with the tray notification logic already in mainwindow.cpp.
+  - Server label removed from nick panel header: m_userInfoLabel cleared (instead of showing
+    "* NetworkName") in refreshTopicBar() for channel/query views. Nick panel header no longer
+    shows any server label.
+  - User count repositioned: addSpacing(4) between the groups icon and m_nickCountLabel; count
+    now sits directly right of the icon with consistent visual gap.
+  - Body text foreground always set: chatrenderer.cpp Privmsg and Action handlers now unconditionally
+    set QTextCharFormat foreground on body text (themeText when valid, #cccccc fallback). Previously
+    used else-if(validTheme) which left format unset when theme was unavailable, causing invisible
+    text after addSelfNickHighlight overlapped the segment.
+  - Single-word PRIVMSG/NOTICE parsing fixed: ircclient.cpp now reads
+    msg.params.last() (falling back to msg.trailing) for PRIVMSG and NOTICE text. Some IRC servers
+    omit the colon prefix for single-word trailing parameters; the parser only sets msg.trailing
+    when a colon is present, so bare single-word messages arrived with empty text. Fix applied to
+    real-time PRIVMSG, real-time NOTICE, and batched (history) PRIVMSG/NOTICE handlers.
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-14 (soju fixes, IRC mask display, reconnect credential bug) v0.25.28
 What changed:
   - IRC mask in membership events: userJoined/userParted/userQuit signals now carry user and host
@@ -254,6 +279,18 @@ What changed:
     cleared. ASan shadow memory accounted for the reported 500MB+ RSS. A clean rebuild eliminates it.
 No regressions. No known issues.
 -->
+
+## v0.25.29 — 2026-06-14
+
+### Changed
+- **Bolt mention icon** — the yellow sidebar indicator for nick mentions is now a lightning bolt (`mi-bolt.svg`) instead of the lightbulb. Displayed in gold (#FFD700) next to the channel name when your nick is mentioned in an inactive channel.
+- **Nick panel: server label removed** — the `* NetworkName` label that previously appeared in the nick panel header is no longer shown. The network is identifiable from the sidebar tree; the nick panel header is now cleaner.
+- **Nick panel: user count repositioned** — the user count number sits directly to the right of the groups icon with a consistent 4 px gap, matching the spacing between the other header elements.
+
+### Fixed
+- **Single-word message body invisible / mentions not detected** — IRC servers may omit the colon prefix for single-word trailing parameters (e.g. `PRIVMSG #channel sig` instead of `PRIVMSG #channel :sig`). The IRC parser only sets `msg.trailing` when a colon is present, so single-word messages arrived with an empty text field. Body text was invisible and mention detection never fired. `ircclient.cpp` now reads `msg.params.last()` (with `msg.trailing` as fallback) for PRIVMSG and NOTICE text in all three handlers: real-time, batched history, and notice.
+- **Body text invisible after self-nick highlight** — when your nick appears in a message, `addSelfNickHighlight` overlays a red+bold segment. Previously the base body format had no explicit foreground colour under the `else if (validTheme)` guard, so text rendered invisibly when the theme was not yet loaded. Both `Privmsg` and `Action` formatters now always set an explicit foreground (`themeText` when available, `#cccccc` otherwise).
+- **Mention detection** — replaced the `QRegularExpression` match in `sessionmodel.cpp::postMessage()` with `msg.text.contains(sess->nick, Qt::CaseInsensitive)`, matching the tray notification logic and correctly handling short messages.
 
 ## v0.25.25 — 2026-06-13
 
