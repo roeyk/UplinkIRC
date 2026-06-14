@@ -247,6 +247,11 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Server name in nick panel header — "* NetworkName" moves from top bar into the nick panel header row, inline with the close-panel button (▦) and groups icon (v0.25.27, 2026-06-14)
 - [x] Sidebar tree alignment — dynamic sidebarHeader spacer at top of sidebar panel keeps server tree items vertically aligned with the nick panel header; spacer height updated reactively via eventFilter on topicDisplay resize/show/hide (v0.25.27, 2026-06-14)
 - [x] Topic + input anchored to chatSection — channel header, topic display, and input bar are all inside chatSection (right of the draggable sidebar divider); they no longer span the full card width including the sidebar column (v0.25.27, 2026-06-14)
+- [x] IRC mask in join/part/quit messages — user and host fields threaded through userJoined/userParted/userQuit signals; membership events display as "nick (~user@host) has joined/left the channel" (v0.25.28, 2026-06-14)
+- [x] soju FAIL noise suppressed — METADATA KEY_INVALID, BOUNCER UNKNOWN_COMMAND, and ACCOUNT_REQUIRED FAIL replies silently dropped instead of appearing in channel buffers (v0.25.28, 2026-06-14)
+- [x] soju no-implicit-names support — explicit NAMES request on self-join when soju.im/no-implicit-names is active so the nick list populates correctly (v0.25.28, 2026-06-14)
+- [x] Reconnect credential bug fixed — "Reconnect" context menu now calls cl->reconnect() to reuse the already-resolved in-memory SASL password instead of re-passing the raw "<keychain>" sentinel to connectToServer() (v0.25.28, 2026-06-14)
+- [x] soju documentation rewritten — configuration.md soju section now covers SASL-based setup with single and multi-network examples, Option A/B for network selection, and a BouncerServ tip (v0.25.28, 2026-06-14)
 
 ---
 

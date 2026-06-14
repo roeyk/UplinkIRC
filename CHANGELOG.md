@@ -3,6 +3,34 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-14 (soju fixes, IRC mask display, reconnect credential bug) v0.25.28
+What changed:
+  - IRC mask in membership events: userJoined/userParted/userQuit signals now carry user and host
+    fields from IrcParser. Messages display as "nick (~user@host) has joined/left the channel" and
+    "nick (~user@host) has quit (reason)". User and host are omitted gracefully if empty.
+  - FAIL message suppression: METADATA KEY_INVALID, BOUNCER UNKNOWN_COMMAND, and ACCOUNT_REQUIRED
+    FAIL replies no longer appear in channel buffers. UNKNOWN_COMMAND also sets a persistent
+    m_bouncerListingUnsupported flag so BOUNCER LISTNETWORKS is not retried.
+  - soju no-implicit-names: when soju.im/no-implicit-names is active, Uplink now sends an explicit
+    NAMES request on self-join so the nick list populates correctly.
+  - BOUNCER LISTNETWORKS guarded: flag check added to CAP ACK handler prevents sending LISTNETWORKS
+    while SASL is in-flight or the command was already rejected this session.
+  - m_bouncerListing and m_bouncerNetBuf reset on disconnect to prevent stale state on reconnect.
+  - Socket abort before connectToServer: added sockAbort() when socket is not already disconnected,
+    eliminating a race condition on rapid reconnects.
+  - Bouncer network name fallback: fall back to network id when BOUNCER LISTNETWORKS omits the
+    name attribute.
+  - Reconnect credential bug fixed: "Reconnect" context menu was calling connectToServer(sc) with
+    sc.saslPassword still set to the literal "<keychain>" sentinel, causing SASL to send that string
+    as the password. Menu now calls cl->reconnect() which reuses the already-resolved m_saslPassword.
+    IrcClient::reconnect() also clears m_intentionalDisconnect and resets the backoff delay.
+  - soju documentation rewritten: configuration.md soju section now has SASL-based examples,
+    single vs multi-network configs, Option A (bouncer_network) vs Option B (embed in sasl_user),
+    explicit warning not to combine both, and a BouncerServ tip for finding the correct network name.
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-13 (sidebar integrated into floating chat card)
 What changed:
   - setupChatArea() restructured: a new intermediate chatSection widget wraps primaryHeader +
