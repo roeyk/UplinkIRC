@@ -506,13 +506,6 @@ void IrcClient::onReadyRead()
     }
     m_buffer += raw;
 
-    if (m_buffer.size() > kMaxPendingBuffer) {
-        emit socketError(m_host, "Server sent oversized unterminated data; disconnecting");
-        m_socket->disconnectFromHost();
-        m_buffer.clear();
-        return;
-    }
-
     qsizetype start = 0, idx;
     while ((idx = m_buffer.indexOf('\n', start)) != -1) {
         QByteArray lineBytes = m_buffer.mid(start, idx - start);
@@ -530,6 +523,13 @@ void IrcClient::onReadyRead()
     }
     if (start > 0)
         m_buffer = m_buffer.mid(start);
+
+    // Only disconnect if the *remaining* partial line (no newline yet) is absurdly large
+    if (m_buffer.size() > kMaxPendingBuffer) {
+        emit socketError(m_host, "Server sent oversized unterminated data; disconnecting");
+        m_socket->disconnectFromHost();
+        m_buffer.clear();
+    }
 }
 
 void IrcClient::onSslErrors(const QList<QSslError> &errors)
