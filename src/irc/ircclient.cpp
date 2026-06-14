@@ -592,6 +592,9 @@ void IrcClient::abort()
 
 void IrcClient::reconnect()
 {
+    m_intentionalDisconnect = false;
+    m_reconnectTimer->stop();
+    m_reconnectDelay = 5;
     doReconnect();
 }
 

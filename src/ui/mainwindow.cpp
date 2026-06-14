@@ -2965,11 +2965,8 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
             });
         } else {
             menu->addAction("Reconnect", this, [this, host]{
-                auto *cl = m_model->clientFor(ServerId{host});
-                if (!cl) return;
-                for (const auto &sc : std::as_const(m_config.servers)) {
-                    if (sc.host == host) { cl->connectToServer(sc); break; }
-                }
+                if (auto *cl = m_model->clientFor(ServerId{host}))
+                    cl->reconnect();
             });
         }
     } else if (channel.startsWith('#') || channel.startsWith('&')) {
