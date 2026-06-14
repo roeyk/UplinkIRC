@@ -169,7 +169,6 @@ private:
     QToolButton  *m_sendBtn{nullptr};
     QWidget      *m_sidebarPanel{nullptr};
     QWidget      *m_sidebarHeader{nullptr};
-    QWidget      *m_topicLeft{nullptr};
     QToolButton  *m_sidebarToggleBtn{nullptr};
     bool          m_sidebarExpanded{true};
     int           m_sidebarExpandedWidth{180};
@@ -196,9 +195,8 @@ private:
     ChannelPane                 *m_dragHighlighted{nullptr};
     int                          m_primarySlot{0}; // position of primary panel in layout order
     bool          m_nickExpanded{true};
-    QWidget      *m_topicBar;               // info bar — always visible
     QLabel       *m_topicLabel{nullptr};    // #channel (modes)
-    QLabel       *m_userInfoLabel{nullptr}; // * network
+    QLabel       *m_userInfoLabel{nullptr}; // * network (in nick panel header)
     QWidget      *m_topicDisplay{nullptr};  // topic text — shown when showTopic
     QLabel       *m_topicText{nullptr};
     QToolButton  *m_hamburger;

@@ -413,17 +413,17 @@ theme = "nord"
 
 ### How do I hide or show the server/channel list?
 
-Click the ⚙ gear button at the **left end of the info bar** (just left of the ☰ hamburger). The sidebar collapses completely; the chat panel expands to fill the window with equal padding on both sides. Click the gear again to bring it back. The gear stays visible in the info bar at all times, so you can always get the sidebar back.
+Click the **sidebar toggle button** (⊞) in the **channel header row**, just right of the ☰ hamburger. The sidebar collapses completely; the chat panel expands to fill the window. Click it again to bring the sidebar back. The toggle is always visible in the channel header, so you can restore the sidebar at any time.
 
 You can also drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.
 
 ### How do I hide or show the user list?
 
-Click the ⚙ button in the **header above the user list** (right side of the window). The gear animates a brief spin, then the list collapses. The gear button and user count stay visible so you can click again to expand. Drag the splitter between the chat view and the user list to resize the panel — the width is saved and restored on the next launch.
+Click the **close panel button** (▦) in the **nick panel header** (top-right corner, left of the groups icon). The list collapses and a reveal button appears at the top-right of the chat area so you can bring it back with one click. Drag the splitter between the chat view and the user list to resize the panel — the width is saved and restored on the next launch.
 
 ### How do I show the channel topic?
 
-The info bar at the top of the chat area always shows `#channel (modes) * NetworkName — N users`. To see the actual channel topic text:
+The channel header row at the top of the chat area shows `#channel (+modes)`. The connected network name appears inline in the nick panel header (`* NetworkName`). To see the actual channel topic text:
 
 - **Global toggle:** click ☰ → **Preferences** → check **Show Topic Bar**. Or set in config:
   ```toml

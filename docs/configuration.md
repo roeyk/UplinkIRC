@@ -103,7 +103,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 |---|---|---|---|
 | `theme` | string | `"default"` | Theme name — must match a `.toml` file in `themes/` without the extension. On Windows, `"default"` uses the native Windows style with no custom colors. |
 | `show_nick_prefix` | bool | `true` | Show your nickname label next to the message input box |
-| `show_topic` | bool | `true` | Show the channel topic bar below the info bar |
+| `show_topic` | bool | `true` | Show the channel topic bar below the channel header row |
 | `show_emoji_button` | bool | `false` | Show the 😊 emoji picker button next to the input box. Also works via `:shortcode:` typing. |
 | `show_send_button` | bool | `true` | Show the paper-plane send button inside the input box. Equivalent to pressing Enter. Disable if you prefer a cleaner input area. Toggle live from **Preferences → Show Send Button**. |
 | `colored_nicks` | bool | `true` | Give each nickname a unique color in chat and the nick list |
@@ -118,8 +118,8 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
 | `font_chat` | integer | `10` | Font size (pt) for the message area |
 | `font_nick_list` | integer | `10` | Font size (pt) for the user list |
-| `font_nick_dock` | integer | `10` | Font size (pt) for the nick panel header (gear button and user count) |
-| `font_topic_bar` | integer | `10` | Font size (pt) for the channel info bar |
+| `font_nick_dock` | integer | `10` | Font size (pt) for the nick panel header (close button, groups icon, and user count) |
+| `font_topic_bar` | integer | `10` | Font size (pt) for the channel header and topic bar |
 | `font_input_nick` | integer | `10` | Font size (pt) for your nick label next to the input |
 | `font_input` | integer | `10` | Font size (pt) for the message input box |
 | `font_typing` | integer | `9` | Font size (pt) for the "nick is typing…" indicator |

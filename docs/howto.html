@@ -682,7 +682,7 @@ cmake --build build</pre>
 
     <p>The app then connects to <strong>irc.linuxdojo.org</strong> and joins <strong>#uplink</strong> automatically. You'll see the server list on the left, the chat area in the middle, and the user list on the right.</p>
 
-    <p>To open the hamburger menu (the <code>☰</code> button in the top-left), click it to reach Preferences, Documentation, and other settings.</p>
+    <p>To open the hamburger menu (the <code>☰</code> button in the channel header), click it to reach Preferences, Documentation, and other settings.</p>
 
     <div class="tip">
       <strong>Nothing appeared?</strong> The config file might still have the placeholder nick <code>yournick</code>. Click <strong>☰ → Open Config</strong>, set <code>nick = "yournick"</code> to your actual nick, save, and click <strong>☰ → Reload Config</strong> — Uplink will restart and connect.
@@ -1348,18 +1348,19 @@ channels  = "#uplink"</pre>
 
   <hr />
 
-  <!-- TOPIC BAR -->
+  <!-- CHANNEL HEADER -->
   <section id="topic-bar">
-    <h2>The topic bar</h2>
-    <p>The bar across the very top of the window is the <strong>topic bar</strong>. It spans the full window width.</p>
+    <h2>The channel header</h2>
+    <p>The channel header row runs across the top of the chat area (right of the sidebar divider). From left to right:</p>
 
     <ul>
-      <li><strong>Left side</strong> — always shows the <code>☰</code> hamburger menu and the <code>⚙</code> gear. These are always visible regardless of sidebar state.</li>
-      <li><strong>Right side</strong> — shows the signal bars, current channel name, channel modes, and user count.</li>
+      <li><strong>☰ Hamburger</strong> — opens a menu with: About Uplink, <strong>Check for Updates</strong> (fetches the latest release from GitHub and shows whether a newer version is available), Documentation, Preferences, Open Config, Reload Config, and <strong>Quit Uplink</strong>.</li>
+      <li><strong>⊞ Sidebar toggle</strong> — collapses or expands the server/channel sidebar. The toggle stays visible in the header at all times so you can always restore the sidebar.</li>
+      <li><strong>▸ Topic button</strong> — shows or hides the topic text below the header. Icon is grey when topic is hidden, accent-colored when visible.</li>
+      <li><strong>#channel (+modes)</strong> — the active channel name and its mode string.</li>
+      <li><strong>🔍 Search</strong> — opens the search bar (same as Ctrl+F).</li>
+      <li><strong>✕ Close</strong> — closes the primary channel pane.</li>
     </ul>
-
-    <p><strong>☰ Hamburger</strong> — opens a menu with: About Uplink, <strong>Check for Updates</strong> (fetches the latest release from GitHub and shows whether a newer version is available), Documentation, Preferences, Open Config, Reload Config, and <strong>Quit Uplink</strong>.</p>
-    <p><strong>⚙ Gear (left)</strong> — collapses or expands the server/channel sidebar below it. The gear and hamburger stay pinned — only the list underneath disappears.</p>
   </section>
 
   <!-- SIDEBAR -->
@@ -1374,10 +1375,10 @@ channels  = "#uplink"</pre>
       <li>Right-click a channel for options: <strong>Open in Pane</strong> (view it alongside the current channel), Rejoin, Leave, Close. See <a href="#channel-panes">Channel panes</a>.</li>
       <li>Right-click a server for: Disconnect, Reconnect.</li>
       <li>Drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.</li>
-      <li>Click the <code>⚙</code> gear in the topic bar (top-left) to collapse the sidebar entirely so the chat fills the card. Click it again to bring it back. The hamburger menu and gear button remain visible at all times in the top-left even when the sidebar is fully collapsed.</li>
+      <li>Click the <strong>⊞ sidebar toggle</strong> in the channel header (just right of ☰) to collapse the sidebar entirely so the chat fills the card. Click it again to bring it back. The toggle is always visible in the channel header.</li>
     </ul>
 
-    <div class="note"><strong>Layout:</strong> The floating card has a small gap around three sides (right, bottom, and left). The top edge of the card meets the topic bar directly. Inside the card, from left to right: sidebar → chat messages → nick list. The input bar at the bottom of the card always spans the full width, anchoring all three columns.</div>
+    <div class="note"><strong>Layout:</strong> The floating card has an 8 px gap on all four sides. Inside the card, from left to right: sidebar → chat messages → nick list. The channel header, topic bar, and input bar are anchored to the chat area (right of the sidebar divider). The sidebar tree items align vertically with the nick panel header.</div>
   </section>
 
   <!-- CHANNEL PANES -->
@@ -1538,10 +1539,10 @@ typing_indicator = true   # set to false to disable completely</pre>
   <!-- NICK PANEL -->
   <section id="nick-panel">
     <h2>Nick list panel</h2>
-    <p>The user list sits in a panel on the right side of the chat. The header shows a <code>⚙</code> gear and the user count.</p>
+    <p>The user list sits in a panel on the right side of the chat. The header shows the network name (<code>* Network</code>), a groups icon, the user count, and a close button (▦).</p>
 
     <ul>
-      <li>Click the <code>⚙</code> gear to collapse or expand the panel. The gear animates a full spin before toggling.</li>
+      <li>Click the <strong>▦ close button</strong> in the nick panel header to collapse the panel. A reveal button appears at the top-right of the chat area — click it to expand the panel again.</li>
       <li>Drag the divider between the chat and the nick panel to resize it — width is saved.</li>
       <li>Nicks are sorted by prefix rank: <code>~</code> owner, <code>&amp;</code> admin, <code>@</code> op, <code>%</code> halfop, <code>+</code> voice, then alphabetical.</li>
       <li>Nicks with <code>+B</code> (bot mode) show a small icon drawn inline to the right of their name — either a robot or an alien, randomly assigned per nick for the session. The icon is colorized to your active theme's accent color and does not depend on any emoji font.</li>
@@ -2437,15 +2438,15 @@ nick_brackets = "[]"   # square brackets</pre>
     <h2>Show and hide panels</h2>
 
     <h3>Sidebar (server/channel list)</h3>
-    <p>Click the <code>⚙</code> gear at the <strong>top-left</strong> of the topic bar. The sidebar collapses; the hamburger and gear stay pinned. Click again to restore. When the sidebar is closed, the chat panel gains equal padding on both sides so the layout stays balanced.</p>
+    <p>Click the <strong>⊞ sidebar toggle</strong> in the channel header (just right of ☰). The sidebar collapses; the toggle stays pinned in the header. Click again to restore. The chat area maintains balanced padding on both sides when the sidebar is hidden.</p>
     <p>Drag the divider between the sidebar and the chat to resize it. Width is saved on quit.</p>
 
     <h3>Nick list (user list)</h3>
-    <p>Click the <code>⚙</code> gear in the <strong>header above the user list</strong>. The gear spins, then the list collapses. The header and user count stay visible. Click again to expand.</p>
+    <p>Click the <strong>▦ close button</strong> in the <strong>nick panel header</strong> (top-right corner). The panel collapses. A floating reveal button appears at the top-right of the chat area — click it to expand again.</p>
     <p>Drag the divider between the chat and the nick panel to resize it. Width is saved on quit.</p>
 
     <h3>Topic display</h3>
-    <p>A text bar showing the full channel topic drops below the info bar. Toggle it three ways:</p>
+    <p>A text bar showing the full channel topic drops below the channel header row. Toggle it three ways:</p>
     <ul>
       <li><strong>Globally</strong> — <strong>☰ → Preferences → Show Topic Bar</strong>, or set <code>show_topic = true</code> in config. Applies to the main channel view.</li>
       <li><strong>Per pane</strong> — each channel pane has a <strong>▸ topic / ▾ topic</strong> oval button in its header. Click to show or hide that pane's topic independently. The topic bar appears automatically when a pane first opens if the channel has a topic set.</li>

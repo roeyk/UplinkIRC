@@ -282,7 +282,6 @@ public:
 
 // Minimum width of the topic bar left zone — wide enough to always show the
 // hamburger (22) + gear (22) + right margin (4) even when the sidebar is closed.
-static constexpr int kBtnZoneMinW    = 60;
 static constexpr int kDefaultWindowW  = 900;
 static constexpr int kDefaultWindowH  = 650;
 static constexpr int kInputHistoryCap = 100;
@@ -441,7 +440,9 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         const int total = m_mainSplitter->width();
         if (total > 0)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-        if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
+        if (m_sidebarHeader && m_primaryHeader)
+            m_sidebarHeader->setFixedHeight(
+                m_primaryHeader->height() + m_topicDisplay->height());
     });
 
     if (!savedPanes.isEmpty()) {
@@ -460,7 +461,6 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         const int w = m_mainSplitter->sizes().value(0);
         if (m_sidebarExpanded && w > 0)
             m_sidebarExpandedWidth = w;
-        if (m_topicLeft) m_topicLeft->setFixedWidth(qMax(kBtnZoneMinW, w));
     });
 
     connect(qApp, &QApplication::aboutToQuit, this, [this]{
@@ -504,7 +504,6 @@ void MainWindow::correctStartupGeometry()
     const int total = m_mainSplitter->width();
     if (total > 0)
         m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-    if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth + 8);
 }
 
 // ---------------------------------------------------------------------------
@@ -1037,9 +1036,6 @@ void MainWindow::setupSidebar()
         if (m_sidebarExpanded) {
             const int total = m_mainSplitter->width();
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-            if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
-        } else {
-            if (m_topicLeft) m_topicLeft->setFixedWidth(kBtnZoneMinW);
         }
     });
 
@@ -1049,6 +1045,10 @@ void MainWindow::setupSidebar()
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
+    m_sidebarHeader = new QWidget;
+    m_sidebarHeader->setObjectName("sidebarHeader");
+    m_sidebarHeader->setFixedHeight(34); // synced to primaryHeader+topicDisplay after show
+    vbox->addWidget(m_sidebarHeader);
     vbox->addWidget(m_sidebar, 1);
 }
 
@@ -1106,6 +1106,10 @@ void MainWindow::setupNickPanel()
 
     connect(m_nickToggleBtn, &QToolButton::clicked, this, toggleNickPanel);
 
+    m_userInfoLabel = new QLabel;
+    m_userInfoLabel->setObjectName("userInfoLabel");
+    m_userInfoLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+
     auto *header = new QWidget;
     header->setObjectName("nickPanelHeader");
     auto *hbox = new QHBoxLayout(header);
@@ -1114,7 +1118,8 @@ void MainWindow::setupNickPanel()
     hbox->addWidget(m_nickToggleBtn);
     hbox->addWidget(m_nickGroupsIconLabel);
     hbox->addSpacing(4);
-    hbox->addWidget(m_nickCountLabel, 1);
+    hbox->addWidget(m_userInfoLabel, 1);
+    hbox->addWidget(m_nickCountLabel);
 
     m_nickPanel = new QWidget;
     m_nickPanel->setObjectName("nickPanel");
@@ -1129,47 +1134,13 @@ void MainWindow::setupNickPanel()
 
 void MainWindow::setupChatArea()
 {
-    // Single full-width bar spanning above sidebar AND chat, with border below
-    m_topicBar = new QWidget;
-    m_topicBar->setObjectName("topicBar");
-    auto *tHbox = new QHBoxLayout(m_topicBar);
-    tHbox->setContentsMargins(0, 0, 0, 0);
-    tHbox->setSpacing(0);
-
-    // Left zone — mirrors sidebar width: hamburger left, gear right
-    m_topicLeft = new QWidget;
-    m_topicLeft->setObjectName("topicLeftZone");
-    m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
-    auto *tlHbox = new QHBoxLayout(m_topicLeft);
-    tlHbox->setContentsMargins(0, 4, 4, 4);
-    tlHbox->setSpacing(0);
-    tlHbox->addWidget(m_hamburger);
-    tlHbox->addStretch(1);
-    tlHbox->addWidget(m_sidebarToggleBtn);
-
-    // Right zone — mirrors chat area: signal bars + channel info
-    auto *topicRight = new QWidget;
-    topicRight->setObjectName("topicRightZone");
-    auto *trHbox = new QHBoxLayout(topicRight);
-    trHbox->setContentsMargins(8, 4, 8, 4);
-    trHbox->setSpacing(6);
-
-    m_topicLabel = new QLabel;
-    m_topicLabel->setObjectName("channelLabel");
-    m_userInfoLabel = new QLabel;
-    m_userInfoLabel->setObjectName("userInfoLabel");
-    m_signalBars = new SignalBars;
-
-    trHbox->addStretch(1);
-
-    tHbox->addWidget(m_topicLeft);
-    tHbox->addWidget(topicRight, 1);
+    m_signalBars = new SignalBars(this); // orphaned; placement TBD
 
     // Right content — holds the panes splitter only
     m_rightContent = new QWidget;
     m_rightContent->setObjectName("rightContent");
     auto *vbox     = new QVBoxLayout(m_rightContent);
-    vbox->setContentsMargins(8, 0, 8, 8);
+    vbox->setContentsMargins(8, 8, 8, 8);
     vbox->setSpacing(0);
 
     // Primary panel — first column in the panes splitter
@@ -1202,6 +1173,11 @@ void MainWindow::setupChatArea()
             if (m_theme.valid)
                 m_primaryTopicBtn->setIcon(makeTopicIcon(
                     QColor(on ? m_theme.accent : m_theme.placeholder)));
+            if (m_sidebarHeader && m_primaryHeader)
+                QTimer::singleShot(0, this, [this]{
+                    m_sidebarHeader->setFixedHeight(
+                        m_primaryHeader->height() + m_topicDisplay->height());
+                });
         });
 
         m_primaryCloseBtn = new QToolButton;
@@ -1229,23 +1205,17 @@ void MainWindow::setupChatArea()
             QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
         connect(m_searchBtn, &QToolButton::clicked, this, &MainWindow::showSearchBar);
 
+        m_topicLabel = new QLabel;
+        m_topicLabel->setObjectName("channelLabel");
+
+        hbox->addWidget(m_hamburger);
+        hbox->addWidget(m_sidebarToggleBtn);
         hbox->addWidget(m_primaryTopicBtn);
         hbox->addWidget(m_topicLabel);
-        hbox->addWidget(m_userInfoLabel);
         hbox->addStretch(1);
         hbox->addWidget(m_searchBtn);
         hbox->addWidget(m_primaryCloseBtn);
     }
-    // chatSection holds the header, topic, and chat+nick splitter.
-    // It lives to the right of the sidebar in m_mainSplitter so those
-    // widgets only span the chat column, not the sidebar column.
-    m_chatSection     = new QWidget;
-    auto *chatSection = m_chatSection;
-    auto *chatVbox    = new QVBoxLayout(chatSection);
-    chatVbox->setContentsMargins(0, 0, 0, 0);
-    chatVbox->setSpacing(0);
-    chatVbox->addWidget(primaryHeader);
-
     // Topic display — shown below header when Show Topic is on
     m_topicDisplay = new QWidget;
     auto *tdHbox   = new QHBoxLayout(m_topicDisplay);
@@ -1265,6 +1235,14 @@ void MainWindow::setupChatArea()
     tdHbox->addWidget(m_topicText);
     m_topicDisplay->setObjectName("topicDisplay");
     m_topicDisplay->setVisible(m_showTopic);
+    m_topicDisplay->installEventFilter(this);
+
+    m_chatSection     = new QWidget;
+    auto *chatSection = m_chatSection;
+    auto *chatVbox    = new QVBoxLayout(chatSection);
+    chatVbox->setContentsMargins(0, 0, 0, 0);
+    chatVbox->setSpacing(0);
+    chatVbox->addWidget(primaryHeader);
     chatVbox->addWidget(m_topicDisplay);
 
     // Chat view
@@ -1452,9 +1430,6 @@ void MainWindow::setupChatArea()
     });
     m_chatSection->installEventFilter(this);
 
-    // Sidebar sits alongside chatSection so header/topic stay in the chat
-    // column while only the inputBar (added by setupInputBar) spans full width,
-    // letting the RoundedPane clip only outer corners.
     m_mainSplitter = new QSplitter(Qt::Horizontal);
     m_mainSplitter->setHandleWidth(0);
     m_mainSplitter->addWidget(m_sidebarPanel);
@@ -1464,7 +1439,7 @@ void MainWindow::setupChatArea()
     m_mainSplitter->setMinimumSize(1, 1);
     primaryVbox->addWidget(m_mainSplitter, 1);
 
-    // setupInputBar will append search/reply/typing/input into primaryVbox
+    // setupInputBar will append search/reply/typing/input into chatSection
 
     m_panesSplitter = new QSplitter(Qt::Horizontal);
     m_panesSplitter->setHandleWidth(2);
@@ -1478,14 +1453,7 @@ void MainWindow::setupChatArea()
     cwLayout->addWidget(m_panesSplitter);
     vbox->addWidget(chatWrapper, 1);
 
-    auto *outer      = new QWidget;
-    auto *outerVbox  = new QVBoxLayout(outer);
-    outerVbox->setContentsMargins(0, 0, 0, 0);
-    outerVbox->setSpacing(0);
-    outerVbox->addWidget(m_topicBar);
-    outerVbox->addWidget(m_rightContent, 1);
-
-    setCentralWidget(outer);
+    setCentralWidget(m_rightContent);
 }
 
 void MainWindow::ensureEmojiPicker()
@@ -1614,7 +1582,7 @@ void MainWindow::setupInputBar()
     }
     m_replyBar->hide();
 
-    auto *layout = qobject_cast<QVBoxLayout *>(m_primaryPanel->layout());
+    auto *layout = qobject_cast<QVBoxLayout *>(m_chatSection->layout());
     layout->addWidget(m_searchBar);
     layout->addWidget(m_replyBar);
     layout->addWidget(m_typingLabel);
@@ -1900,6 +1868,18 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) {
             doSearch(ke->modifiers() & Qt::ShiftModifier);
             return true;
+        }
+    }
+
+    if (obj == m_topicDisplay && m_sidebarHeader && m_primaryHeader) {
+        const auto t = event->type();
+        if (t == QEvent::Resize || t == QEvent::Show || t == QEvent::Hide) {
+            QTimer::singleShot(0, this, [this]{
+                if (m_sidebarHeader && m_primaryHeader)
+                    m_sidebarHeader->setFixedHeight(
+                        m_primaryHeader->height() +
+                        (m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0));
+            });
         }
     }
 
@@ -3996,8 +3976,8 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
         if (sc.host == host && !sc.name.isEmpty()) { serverName = sc.name; break; }
 
     if (channel == "(server)") {
-        m_topicLabel->setText(serverName);
-        m_userInfoLabel->clear();
+        m_topicLabel->clear();
+        m_userInfoLabel->setText(serverName);
         if (m_topicText) m_topicText->clear();
     } else {
         const QString modes   = ch ? ch->modes : QString();

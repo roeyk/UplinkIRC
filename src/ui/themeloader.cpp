@@ -189,6 +189,9 @@ QToolButton#sidebarToggleBtn:hover { color: {{accent}}; }
 QWidget#sidebarPanel {
     background-color: {{bufferBg}};
 }
+QWidget#sidebarHeader {
+    background-color: {{bufferBg}};
+}
 
 QSizeGrip {
     width: 0px;
@@ -542,17 +545,6 @@ QWidget#rightContent {
     background-color: {{sidebarBg}};
 }
 
-/* ── Topic / info bar ── */
-QWidget#topicBar {
-    background-color: {{inputBg}};
-    border-bottom: 1px solid {{border}};
-}
-QWidget#topicLeftZone {
-    background-color: {{inputBg}};
-}
-QWidget#topicRightZone {
-    background-color: {{inputBg}};
-}
 QLabel#channelLabel {
     color: {{accent}};
     font-weight: bold;

@@ -4254,6 +4254,17 @@ Next priorities: /list dialog, window full-width bug on FreeBSD X11 (diagnostic
 build still on main — needs output from user on X11).
 -->
 
+## [0.25.27] — 2026-06-13
+
+### Changed
+- **Hamburger and sidebar toggle in channel header** — hamburger (`☰`) and sidebar toggle (`⊞`) are now inline with the `#channel (+modes)` label in the primary header row; the standalone top bar is removed.
+- **Server name in nick panel header** — `* ServerName` now appears inline with the nick panel close button and groups icon, replacing the old top-bar placement.
+- **Floating card symmetric margins** — the rounded chat card now has 8 px margins on all four sides (was 0 top); the card floats evenly within the window.
+- **Topic and input stay right of sidebar border** — the channel header, topic display, and text input are all anchored inside `chatSection` (right of the draggable sidebar divider), not spanning the full card width.
+- **Sidebar tree alignment** — a dynamic spacer at the top of the sidebar panel keeps the server tree items vertically aligned with the nick panel header row, updating reactively when the topic bar is shown or hidden.
+
+---
+
 ## [0.25.26] — 2026-06-13
 
 ### Fixed (post-release patch)
