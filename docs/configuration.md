@@ -505,11 +505,34 @@ channels        = "#debian"
 
 ### Connecting to soju
 
-soju expects the password in the format `username:password`. Set `bouncer = "soju"` to activate soju-specific caps.
+Set `bouncer = "soju"` to activate soju-specific IRCv3 capabilities. `soju.im/read` is negotiated automatically, keeping your read position in sync across all clients connected to the same soju instance.
 
-When `soju.im/bouncer-networks` is available, Uplink sends `BOUNCER LISTNETWORKS` after CAP negotiation and lists all attached networks in the server buffer. Use `bouncer_network` to specify which network to attach to when your soju instance carries more than one.
+soju supports two authentication approaches: SASL PLAIN (preferred) or a `username:password` string in `PASS`. The examples below use SASL, which is the recommended method.
 
-`soju.im/read` is negotiated automatically, keeping your read position in sync across all clients connected to the same soju instance.
+#### Single-network soju
+
+If your soju instance only carries one network, no network selection is needed:
+
+```toml
+[[server]]
+name          = "soju"
+host          = "soju.example.com"
+port          = 6697
+ssl           = true
+nick          = "yournick"
+user          = "yournick"
+realname      = "Uplink User"
+sasl_user     = "yournick"
+sasl_password = "yourpassword"
+bouncer       = "soju"
+channels      = "#uplink"
+```
+
+#### Multi-network soju
+
+When your soju instance carries multiple networks (Libera, OFTC, a self-hosted Ergo, etc.), you need to tell soju which network to attach to. There are two ways to do this — pick one, do not combine them.
+
+**Option A — `bouncer_network`** (Uplink appends the network to the SASL username automatically):
 
 ```toml
 [[server]]
@@ -518,29 +541,45 @@ host            = "soju.example.com"
 port            = 6697
 ssl             = true
 nick            = "yournick"
-user            = "uplink"
+user            = "yournick"
 realname        = "Uplink User"
-password        = "joe:mysecretpassword"
+sasl_user       = "yournick"
+sasl_password   = "yourpassword"
 bouncer         = "soju"
 bouncer_network = "libera"
 channels        = "#linux"
 ```
 
-If your soju instance only carries one network, omit `bouncer_network`:
+Uplink sends `yournick/libera` as the SASL username. Add one `[[server]]` block per network, changing only `bouncer_network` and `channels`.
+
+**Option B — embed the network in `sasl_user` directly** (useful if your SASL username already includes the network, e.g. when soju is configured that way or when migrating from another client):
 
 ```toml
 [[server]]
-name     = "soju"
-host     = "soju.example.com"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
-realname = "Uplink User"
-password = "joe:mysecretpassword"
-bouncer  = "soju"
-channels = "#uplink"
+name          = "soju — Libera"
+host          = "soju.example.com"
+port          = 6697
+ssl           = true
+nick          = "yournick"
+user          = "yournick"
+realname      = "Uplink User"
+sasl_user     = "yournick/libera"
+sasl_password = "yourpassword"
+bouncer       = "soju"
+channels      = "#linux"
 ```
+
+> **Do not combine both options.** If `sasl_user` already contains `username/network`, leave `bouncer_network` unset. Setting both causes Uplink to produce `username/network/network` as the SASL username, which soju will reject.
+
+#### Finding your soju network name
+
+The name in `bouncer_network` (or after the `/` in `sasl_user`) must exactly match the network identifier in soju's own configuration — not necessarily the `name =` label you give the server in Uplink. To find it, message BouncerServ while connected:
+
+```
+/msg BouncerServ network status
+```
+
+The name in the first column of the response is what to use.
 
 ### Chat history replay
 

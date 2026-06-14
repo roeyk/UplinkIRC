@@ -692,7 +692,7 @@ void SessionModel::onAction(const QString &host, const QString &target,
     postMessage(host, target, Message::make(MessageType::Action, nick, text, serverTime, isHistory, msgid, {}, actionAccount));
 }
 
-void SessionModel::onUserJoined(const QString &host, const QString &channel, const QString &nick)
+void SessionModel::onUserJoined(const QString &host, const QString &channel, const QString &nick, const QString &user, const QString &hostAddr)
 {
     auto *sess = session(ServerId{host});
     if (!sess) return;
@@ -710,12 +710,14 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
     if (!isSelf)
         sendRaw(ServerId{host}, "WHO " + nick + " %cnfa,42");
 
+    const QString mask = (!user.isEmpty() && !hostAddr.isEmpty())
+        ? " (" + user + "@" + hostAddr + ")" : QString();
     postMessage(host, channel, Message::make(MessageType::Join, nick,
-        isSelf ? "You joined " + channel : nick + " joined"));
+        isSelf ? "You joined " + channel : nick + mask + " has joined the channel"));
 }
 
 void SessionModel::onUserParted(const QString &host, const QString &channel,
-                                const QString &nick, const QString &reason)
+                                const QString &nick, const QString &user, const QString &hostAddr, const QString &reason)
 {
     auto *sess = session(ServerId{host});
     if (!sess) return;
@@ -731,20 +733,24 @@ void SessionModel::onUserParted(const QString &host, const QString &channel,
         ch->removeNick(nick);
         emit nickRemoved(ServerId{host}, BufferId{channel}, nick);
     }
-    postMessage(host, channel, Message::make(MessageType::Part, nick,
-        reason.isEmpty() ? nick + " left" : nick + " left (" + reason + ")"));
+    const QString mask = (!user.isEmpty() && !hostAddr.isEmpty())
+        ? " (" + user + "@" + hostAddr + ")" : QString();
+    const QString text = nick + mask + (reason.isEmpty() ? " has left the channel" : " has left the channel (" + reason + ")");
+    postMessage(host, channel, Message::make(MessageType::Part, nick, text));
 }
 
-void SessionModel::onUserQuit(const QString &host, const QString &nick, const QString &reason)
+void SessionModel::onUserQuit(const QString &host, const QString &nick, const QString &user, const QString &hostAddr, const QString &reason)
 {
     auto *sess = session(ServerId{host});
     if (!sess) return;
+    const QString mask = (!user.isEmpty() && !hostAddr.isEmpty())
+        ? " (" + user + "@" + hostAddr + ")" : QString();
+    const QString text = nick + mask + (reason.isEmpty() ? " has quit" : " has quit (" + reason + ")");
     for (auto &ch : sess->channels) {
         if (!ch.nickIndex.contains(nick.toLower())) continue;
         ch.removeNick(nick);
         emit nickRemoved(ServerId{host}, BufferId{ch.name}, nick);
-        postMessage(host, ch.name, Message::make(MessageType::Quit, nick,
-            reason.isEmpty() ? nick + " quit" : nick + " quit (" + reason + ")"));
+        postMessage(host, ch.name, Message::make(MessageType::Quit, nick, text));
     }
 }
 

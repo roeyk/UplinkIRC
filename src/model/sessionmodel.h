@@ -144,10 +144,10 @@ private:
                            const QString &nick, const QString &text,
                            const QDateTime &serverTime, bool isHistory,
                            const QString &msgid);
-    void onUserJoined     (const QString &host, const QString &channel, const QString &nick);
+    void onUserJoined     (const QString &host, const QString &channel, const QString &nick, const QString &user, const QString &hostAddr);
     void onUserParted     (const QString &host, const QString &channel,
-                           const QString &nick, const QString &reason);
-    void onUserQuit       (const QString &host, const QString &nick, const QString &reason);
+                           const QString &nick, const QString &user, const QString &hostAddr, const QString &reason);
+    void onUserQuit       (const QString &host, const QString &nick, const QString &user, const QString &hostAddr, const QString &reason);
     void onNetsplitDetected(const QString &host, const QString &servers, const QStringList &nicks);
     void onNetjoinDetected (const QString &host, const QString &servers,
                             const QStringList &channels, const QStringList &nicks);

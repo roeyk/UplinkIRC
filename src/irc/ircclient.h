@@ -76,9 +76,9 @@ signals:
                          const QDateTime &serverTime, bool isHistory,
                          const QString &msgid);
 
-    void userJoined   (const QString &server, const QString &channel, const QString &nick);
-    void userParted   (const QString &server, const QString &channel, const QString &nick, const QString &reason);
-    void userQuit     (const QString &server, const QString &nick,    const QString &reason);
+    void userJoined   (const QString &server, const QString &channel, const QString &nick, const QString &user, const QString &host);
+    void userParted   (const QString &server, const QString &channel, const QString &nick, const QString &user, const QString &host, const QString &reason);
+    void userQuit     (const QString &server, const QString &nick,    const QString &user, const QString &host, const QString &reason);
     void nickChanged  (const QString &server, const QString &oldNick, const QString &newNick);
     void kicked       (const QString &server, const QString &channel, const QString &nick,
                        const QString &by,     const QString &reason);
@@ -211,6 +211,7 @@ private:
     QList<QStringList>          m_listBuffer;         // [channel, count, topic] per entry
     QList<QStringList>          m_bouncerNetBuf;      // [id, name, state] per soju network
     bool                        m_bouncerListing{false};
+    bool                        m_bouncerListingUnsupported{false}; // persists across reconnects
 
     // Batch tracking
     struct BatchInfo {

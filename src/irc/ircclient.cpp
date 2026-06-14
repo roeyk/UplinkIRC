@@ -142,6 +142,9 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
         }
     }
 
+    if (sockState() != QAbstractSocket::UnconnectedState)
+        sockAbort();
+
     applyProxy();
     if (m_ssl)
         m_socket->connectToHostEncrypted(m_host, m_port);
@@ -468,9 +471,11 @@ void IrcClient::onDisconnected()
     m_ackedCaps.clear();
     m_capLsBuffer.clear();
     m_batches.clear();
-    m_saslPending  = false;
-    m_registered   = false;
-    m_supportsWhox = false;
+    m_saslPending    = false;
+    m_registered     = false;
+    m_supportsWhox   = false;
+    m_bouncerListing = false;
+    m_bouncerNetBuf.clear();
     emit disconnected(m_host);
     if (!m_stsUpgrade)
         scheduleReconnect();
@@ -894,9 +899,12 @@ void IrcClient::processLine(const QString &line)
 
     if (cmd == "JOIN") {
         const QString channel = msg.params.isEmpty() ? msg.trailing : msg.params[0];
-        if (msg.nick == m_nick)
+        if (msg.nick == m_nick) {
             emit serverMessage(m_host, "Joined " + channel);
-        emit userJoined(m_host, channel, msg.nick);
+            if (m_ackedCaps.contains("soju.im/no-implicit-names"))
+                sendRaw("NAMES " + channel);
+        }
+        emit userJoined(m_host, channel, msg.nick, msg.user, msg.host);
         // extended-join: params[1] = account, trailing = realname
         if (msg.params.size() > 1) {
             const QString account = msg.params[1];
@@ -907,12 +915,12 @@ void IrcClient::processLine(const QString &line)
     }
 
     if (cmd == "PART" && !msg.params.isEmpty()) {
-        emit userParted(m_host, msg.params[0], msg.nick, msg.trailing);
+        emit userParted(m_host, msg.params[0], msg.nick, msg.user, msg.host, msg.trailing);
         return;
     }
 
     if (cmd == "QUIT") {
-        emit userQuit(m_host, msg.nick, msg.trailing);
+        emit userQuit(m_host, msg.nick, msg.user, msg.host, msg.trailing);
         return;
     }
 
@@ -947,6 +955,17 @@ void IrcClient::processLine(const QString &line)
         // params: [0]=command [1]=code [2..n-1]=context  trailing=description
         const QString triggeredBy = msg.params.value(0);
         const QString code        = msg.params.value(1);
+        // Silently drop benign probe failures — these are expected on servers that
+        // advertise the capability but don't support our specific keys/subcommands
+        if (triggeredBy == "BOUNCER" && code == "UNKNOWN_COMMAND") {
+            m_bouncerListingUnsupported = true;
+            return;
+        }
+        if (triggeredBy == "METADATA" && code == "KEY_INVALID")
+            return;
+        // ACCOUNT_REQUIRED is informational — route to server buffer only, not channels
+        if (code == "ACCOUNT_REQUIRED")
+            return;
         const QString desc        = msg.trailing.isEmpty() ? msg.params.value(msg.params.size() - 1)
                                                            : msg.trailing;
         // Look for a channel name in the context parameters
@@ -1086,7 +1105,7 @@ void IrcClient::handleBouncer(const QStringList &params, const QString &trailing
             if (eq != -1) attrs.insert(part.left(eq), part.mid(eq+1));
         }
         const QString id    = attrs.value("id");
-        const QString name  = attrs.value("name");
+        const QString name  = attrs.value("name").isEmpty() ? id : attrs.value("name");
         const QString state = attrs.value("state");
         if (!id.isEmpty())
             m_bouncerNetBuf.append({id, name, state});
@@ -1227,9 +1246,11 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         }
 
 
-        // Request soju network list once caps are acked
+        // Request soju network list once caps are acked and SASL is not in-flight.
+        // Skip if BOUNCER LISTNETWORKS was already rejected this session.
         if (m_bouncerType == BouncerType::Soju &&
-            m_ackedCaps.contains("soju.im/bouncer-networks")) {
+            m_ackedCaps.contains("soju.im/bouncer-networks") &&
+            !m_saslPending && !m_bouncerListing && !m_bouncerListingUnsupported) {
             m_bouncerListing = true;
             sendRaw("BOUNCER LISTNETWORKS");
         }
