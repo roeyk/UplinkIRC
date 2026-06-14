@@ -4256,6 +4256,12 @@ build still on main — needs output from user on X11).
 
 ## [0.25.26] — 2026-06-13
 
+### Fixed (post-release patch)
+- **FreeBSD build** — `mallopt(M_ARENA_MAX, 2)` and `#include <malloc.h>` are now guarded with `#if defined(__linux__) && !defined(__MUSL__)`. FreeBSD uses jemalloc which has no `M_ARENA_MAX`; macOS libmalloc likewise. No functional change on Linux (glibc arena cap still applies).
+
+---
+
+
 ### Added
 - **Search button** — magnifying glass icon in the channel bar opens the search bar (same as Ctrl+F).
 - **Nick panel open/close icons** — replaced spinning gear with Material Symbols `right_panel_close` / `left_panel_close` icons; toggle is instant instead of animated.
