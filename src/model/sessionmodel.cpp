@@ -338,20 +338,18 @@ void SessionModel::sendMessage(ServerId host, BufferId target, const QString &te
     const bool isPM = !target.str().startsWith('#') && !target.str().startsWith('&')
                       && !target.str().startsWith('!') && target.str() != "(server)";
     if (isPM) openPM(host, target.str());
-    if (!cl->hasCap("echo-message")) {
-        auto *sess = session(ServerId{host});
-        if (sess) {
-            QString display = text;
-            if (target.str().compare("NickServ", Qt::CaseInsensitive) == 0) {
-                const QString svcCmd = text.section(' ', 0, 0).toUpper();
-                static const QStringList pwdCmds = {
-                    "IDENTIFY", "REGISTER", "GHOST", "RECOVER", "RELEASE", "REGAIN", "SETPASS"
-                };
-                if (pwdCmds.contains(svcCmd))
-                    display = svcCmd + " <redacted>";
-            }
-            postMessage(host.str(), target.str(), Message::make(MessageType::Privmsg, sess->nick, display));
+    auto *sess = session(ServerId{host});
+    if (sess) {
+        QString display = text;
+        if (target.str().compare("NickServ", Qt::CaseInsensitive) == 0) {
+            const QString svcCmd = text.section(' ', 0, 0).toUpper();
+            static const QStringList pwdCmds = {
+                "IDENTIFY", "REGISTER", "GHOST", "RECOVER", "RELEASE", "REGAIN", "SETPASS"
+            };
+            if (pwdCmds.contains(svcCmd))
+                display = svcCmd + " <redacted>";
         }
+        postMessage(host.str(), target.str(), Message::make(MessageType::Privmsg, sess->nick, display));
     }
 }
 
@@ -401,10 +399,8 @@ void SessionModel::sendAction(ServerId host, BufferId target, const QString &tex
     auto *cl = clientFor(ServerId{host});
     if (!cl) return;
     cl->privmsg(target.str(), "\x01""ACTION " + text + "\x01");
-    if (!cl->hasCap("echo-message")) {
-        if (auto *sess = session(ServerId{host}))
-            postMessage(host.str(), target.str(), Message::make(MessageType::Action, sess->nick, text));
-    }
+    if (auto *sess = session(ServerId{host}))
+        postMessage(host.str(), target.str(), Message::make(MessageType::Action, sess->nick, text));
 }
 
 void SessionModel::sendTyping(ServerId host, BufferId channel, const QString &state)

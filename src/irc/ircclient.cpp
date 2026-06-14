@@ -1172,7 +1172,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         QStringList desired = {
             "multi-prefix", "away-notify", "server-time",
             "message-tags", "batch", "labeled-response", "typing", "draft/typing",
-            "chathistory", "draft/chathistory", "echo-message", "chghost", "draft/react",
+            "chathistory", "draft/chathistory", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
             "draft/metadata-2", "cap-notify",
@@ -1248,7 +1248,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
         QStringList desired = {
             "multi-prefix", "away-notify", "server-time",
             "message-tags", "batch", "labeled-response", "typing", "draft/typing",
-            "chathistory", "draft/chathistory", "echo-message", "chghost", "draft/react",
+            "chathistory", "draft/chathistory", "chghost", "draft/react",
             "account-notify", "account-tag", "extended-join", "invite-notify", "setname",
             "userhost-in-names", "draft/message-redaction", "draft/multiline",
             "draft/metadata-2", "cap-notify",

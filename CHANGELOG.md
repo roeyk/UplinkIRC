@@ -4254,6 +4254,24 @@ Next priorities: /list dialog, window full-width bug on FreeBSD X11 (diagnostic
 build still on main — needs output from user on X11).
 -->
 
+## [0.25.26] — 2026-06-13
+
+### Added
+- **Search button** — magnifying glass icon in the channel bar opens the search bar (same as Ctrl+F).
+- **Nick panel open/close icons** — replaced spinning gear with Material Symbols `right_panel_close` / `left_panel_close` icons; toggle is instant instead of animated.
+- **Floating nick reveal button** — when the nick panel is hidden, a `left_panel_close` button appears at the top-right of the chat area (below the topic divider) to restore it.
+- **Groups icon in nick panel header** — Material Symbols groups icon displayed next to the user count.
+
+### Changed
+- **Channel info moved to channel bar** — `#channel (+modes)` and `* ServerName` now appear inline in the primary header row instead of the top bar.
+- **Search bar close button** — transparent background, consistent with other icon buttons.
+- **Lag meter removed from channel bar** — `SignalBars` is de-parented for now; placement TBD.
+
+### Fixed
+- **Sent messages not appearing** — Ergo IRCd acks `echo-message` but does not reliably echo PRIVMSG back to the sender. Removed `echo-message` from the desired CAP list; local echo now always fires immediately on send. `/me` actions also affected and fixed.
+
+---
+
 ## [0.25.1] — 2026-06-08
 
 ### Added

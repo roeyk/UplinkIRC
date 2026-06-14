@@ -77,13 +77,7 @@ Incoming typing notifications from other users appear as "nick is typing…" abo
 
 ### `labeled-response`
 
-CAP is negotiated. Labels tie server responses to outgoing commands; used together with `echo-message` to confirm message delivery.
-
-### `echo-message`
-
-When negotiated, the server echoes every message you send back to you as a first-class incoming message — with accurate `server-time` and `msgid` tags. This means your sent messages are timestamped by the server rather than the local clock, and carry a proper message ID for deduplication and reply threading.
-
-Uplink suppresses the local preview echo when `echo-message` is active so messages appear exactly once. Self-echoed private messages route to the correct PM buffer (the conversation partner's buffer, not a buffer named after your own nick).
+CAP is negotiated. Labels tie server responses to outgoing commands.
 
 ### `msgid`
 

@@ -884,6 +884,32 @@ static QIcon makeGearIcon(int angleDeg, const QColor &color)
     return QIcon(pix);
 }
 
+static QPixmap makeGroupsIcon(const QColor &color, int size = 16)
+{
+    QSvgRenderer renderer(QStringLiteral(":/icons/mi-groups.svg"));
+    QPixmap pix(size, size);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    renderer.render(&p);
+    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    p.fillRect(pix.rect(), color);
+    p.end();
+    return pix;
+}
+
+static QIcon makeSvgIcon(const QString &svgPath, const QColor &color, int size = 20)
+{
+    QSvgRenderer renderer(svgPath);
+    QPixmap pix(size, size);
+    pix.fill(Qt::transparent);
+    QPainter p(&pix);
+    renderer.render(&p);
+    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    p.fillRect(pix.rect(), color);
+    p.end();
+    return QIcon(pix);
+}
+
 void MainWindow::applyFontSizes()
 {
     const QString &fam = m_config.ui.fontFamily;
@@ -917,17 +943,28 @@ void MainWindow::applyFontSizes()
     if (m_chatView)       m_chatView->setFont(makeFont(fs.chat));
     if (m_nickList)       m_nickList->setFont(makeFont(fs.nickList));
     if (m_nickPanel)      m_nickPanel->setFont(makeFont(fs.nickDock));
+    if (m_searchBtn)
+        m_searchBtn->setIcon(makeSvgIcon(
+            QStringLiteral(":/icons/mi-search.svg"),
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
     if (m_nickToggleBtn)
-        m_nickToggleBtn->setIcon(
-            makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
+        m_nickToggleBtn->setIcon(makeSvgIcon(
+            QStringLiteral(":/icons/mi-right-panel-close.svg"),
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
+    if (m_nickRevealBtn)
+        m_nickRevealBtn->setIcon(makeSvgIcon(
+            QStringLiteral(":/icons/mi-left-panel-close.svg"),
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
     if (m_sidebarToggleBtn)
         m_sidebarToggleBtn->setIcon(
             makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
+    if (m_nickGroupsIconLabel)
+        m_nickGroupsIconLabel->setPixmap(
+            makeGroupsIcon(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
     if (m_hamburger)
         m_hamburger->setIcon(
             makeMenuIcon(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
-    if (m_modesLabel)    m_modesLabel->setFont(makeFont(fs.topicBar));
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
     if (m_nickPrefix)   m_nickPrefix->setFont(makeFont(fs.inputNick));
     if (m_input)        m_input->setFont(makeFont(fs.input));
@@ -1030,38 +1067,44 @@ void MainWindow::setupNickPanel()
     connect(m_nickList, &QListWidget::customContextMenuRequested,
             this, &MainWindow::onNickListContextMenu);
 
-    m_nickCountLabel = new QLabel(QStringLiteral("0 users"));
+    m_nickGroupsIconLabel = new QLabel;
+    m_nickGroupsIconLabel->setObjectName("nickGroupsIcon");
+    m_nickGroupsIconLabel->setContentsMargins(4, 0, 2, 0);
+    m_nickGroupsIconLabel->setPixmap(makeGroupsIcon(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
+    m_nickGroupsIconLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+
+    m_nickCountLabel = new QLabel(QStringLiteral("0"));
     m_nickCountLabel->setObjectName("nickCountLabel");
-    m_nickCountLabel->setContentsMargins(4, 0, 4, 0);
+    m_nickCountLabel->setContentsMargins(0, 0, 4, 0);
+    m_nickCountLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
     m_nickToggleBtn = new QToolButton;
     m_nickToggleBtn->setFixedSize(28, 28);
     m_nickToggleBtn->setAutoRaise(true);
-    m_nickToggleBtn->setToolTip(tr("Toggle user list"));
-    m_nickToggleBtn->setIcon(makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
+    m_nickToggleBtn->setToolTip(tr("Hide user list"));
+    m_nickToggleBtn->setIcon(makeSvgIcon(
+        QStringLiteral(":/icons/mi-right-panel-close.svg"),
+        QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
 
-    m_gearTimer = new QTimer(this);
-    m_gearTimer->setInterval(16);
-    connect(m_gearTimer, &QTimer::timeout, this, [this]{
-        m_gearAngle += 12;
-        m_nickToggleBtn->setIcon(
-            makeGearIcon(m_gearAngle, m_nickToggleBtn->palette().color(QPalette::WindowText)));
-        if (m_gearAngle < 360) return;
+    auto positionRevealBtn = [this]{
+        if (!m_nickRevealBtn || !m_chatSection) return;
+        const int topY = m_primaryHeader->height()
+                       + (m_topicDisplay && m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0)
+                       + 4;
+        m_nickRevealBtn->move(m_chatSection->width() - m_nickRevealBtn->width() - 4, topY);
+        m_nickRevealBtn->raise();
+    };
 
-        m_gearTimer->stop();
-        m_gearAngle = 0;
+    auto toggleNickPanel = [this, positionRevealBtn]{
         m_nickExpanded = !m_nickExpanded;
-        m_nickList->setVisible(m_nickExpanded);
+        m_nickPanel->setVisible(m_nickExpanded);
+        if (m_nickRevealBtn) {
+            if (!m_nickExpanded) positionRevealBtn();
+            m_nickRevealBtn->setVisible(!m_nickExpanded);
+        }
+    };
 
-        m_nickToggleBtn->setIcon(
-            makeGearIcon(0, m_nickToggleBtn->palette().color(QPalette::WindowText)));
-    });
-
-    connect(m_nickToggleBtn, &QToolButton::clicked, this, [this]{
-        if (m_gearTimer->isActive()) return;
-        m_gearAngle = 0;
-        m_gearTimer->start();
-    });
+    connect(m_nickToggleBtn, &QToolButton::clicked, this, toggleNickPanel);
 
     auto *header = new QWidget;
     header->setObjectName("nickPanelHeader");
@@ -1069,6 +1112,8 @@ void MainWindow::setupNickPanel()
     hbox->setContentsMargins(2, 2, 2, 2);
     hbox->setSpacing(2);
     hbox->addWidget(m_nickToggleBtn);
+    hbox->addWidget(m_nickGroupsIconLabel);
+    hbox->addSpacing(4);
     hbox->addWidget(m_nickCountLabel, 1);
 
     m_nickPanel = new QWidget;
@@ -1111,16 +1156,11 @@ void MainWindow::setupChatArea()
 
     m_topicLabel = new QLabel;
     m_topicLabel->setObjectName("channelLabel");
-    m_modesLabel = new QLabel;
-    m_modesLabel->setObjectName("modesLabel");
     m_userInfoLabel = new QLabel;
     m_userInfoLabel->setObjectName("userInfoLabel");
-    m_signalBars = new SignalBars(topicRight);
+    m_signalBars = new SignalBars;
 
-    trHbox->addWidget(m_signalBars);
-    trHbox->addWidget(m_topicLabel);
-    trHbox->addWidget(m_userInfoLabel);
-    trHbox->addWidget(m_modesLabel, 1);
+    trHbox->addStretch(1);
 
     tHbox->addWidget(m_topicLeft);
     tHbox->addWidget(topicRight, 1);
@@ -1164,14 +1204,6 @@ void MainWindow::setupChatArea()
                     QColor(on ? m_theme.accent : m_theme.placeholder)));
         });
 
-        m_primaryPaneLabel = new QLabel;
-        m_primaryPaneLabel->setObjectName("paneChannelLabel");
-        {
-            QFont f = m_primaryPaneLabel->font();
-            f.setBold(true);
-            m_primaryPaneLabel->setFont(f);
-        }
-
         m_primaryCloseBtn = new QToolButton;
         m_primaryCloseBtn->setText(QStringLiteral("✕"));
         m_primaryCloseBtn->setFixedSize(16, 16);
@@ -1184,14 +1216,31 @@ void MainWindow::setupChatArea()
             m_primaryPanel->hide();
         });
 
+        m_searchBtn = new QToolButton;
+        m_searchBtn->setFixedSize(28, 28);
+        m_searchBtn->setAutoRaise(true);
+        m_searchBtn->setStyleSheet(
+            "QToolButton { background: transparent; border: none; }"
+            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
+        );
+        m_searchBtn->setToolTip(tr("Search (Ctrl+F)"));
+        m_searchBtn->setIcon(makeSvgIcon(
+            QStringLiteral(":/icons/mi-search.svg"),
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
+        connect(m_searchBtn, &QToolButton::clicked, this, &MainWindow::showSearchBar);
+
         hbox->addWidget(m_primaryTopicBtn);
-        hbox->addWidget(m_primaryPaneLabel, 1);
+        hbox->addWidget(m_topicLabel);
+        hbox->addWidget(m_userInfoLabel);
+        hbox->addStretch(1);
+        hbox->addWidget(m_searchBtn);
         hbox->addWidget(m_primaryCloseBtn);
     }
     // chatSection holds the header, topic, and chat+nick splitter.
     // It lives to the right of the sidebar in m_mainSplitter so those
     // widgets only span the chat column, not the sidebar column.
-    auto *chatSection = new QWidget;
+    m_chatSection     = new QWidget;
+    auto *chatSection = m_chatSection;
     auto *chatVbox    = new QVBoxLayout(chatSection);
     chatVbox->setContentsMargins(0, 0, 0, 0);
     chatVbox->setSpacing(0);
@@ -1381,6 +1430,28 @@ void MainWindow::setupChatArea()
     m_chatSplitter->setStretchFactor(1, 0);
     chatVbox->addWidget(m_chatSplitter, 1);
 
+    // Floating reveal button — child of chatSection (plain QWidget, not splitter)
+    // so Qt doesn't treat it as a splitter pane.
+    m_nickRevealBtn = new QToolButton(m_chatSection);
+    m_nickRevealBtn->setFixedSize(28, 28);
+    m_nickRevealBtn->setAutoRaise(true);
+    m_nickRevealBtn->setStyleSheet(
+        "QToolButton { background: transparent; border: none; }"
+        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
+    );
+    m_nickRevealBtn->setToolTip(tr("Show user list"));
+    m_nickRevealBtn->setIcon(makeSvgIcon(
+        QStringLiteral(":/icons/mi-left-panel-close.svg"),
+        QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
+    m_nickRevealBtn->setVisible(false);
+    m_nickRevealBtn->raise();
+    connect(m_nickRevealBtn, &QToolButton::clicked, this, [this]{
+        m_nickExpanded = true;
+        m_nickPanel->setVisible(true);
+        m_nickRevealBtn->setVisible(false);
+    });
+    m_chatSection->installEventFilter(this);
+
     // Sidebar sits alongside chatSection so header/topic stay in the chat
     // column while only the inputBar (added by setupInputBar) spans full width,
     // letting the RoundedPane clip only outer corners.
@@ -1510,6 +1581,10 @@ void MainWindow::setupInputBar()
         closeBtn->setText("✕");
         closeBtn->setFixedSize(22, 22);
         closeBtn->setAutoRaise(true);
+        closeBtn->setStyleSheet(
+            "QToolButton { background: transparent; border: none; }"
+            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
+        );
         connect(closeBtn, &QToolButton::clicked, this, [this]{
             m_searchBar->hide();
             m_chatView->clearFind();
@@ -1826,6 +1901,15 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             doSearch(ke->modifiers() & Qt::ShiftModifier);
             return true;
         }
+    }
+
+    if (obj == m_chatSection && event->type() == QEvent::Resize &&
+        m_nickRevealBtn && m_nickRevealBtn->isVisible()) {
+        auto *re = static_cast<QResizeEvent *>(event);
+        const int topY = m_primaryHeader->height()
+                       + (m_topicDisplay && m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0)
+                       + 4;
+        m_nickRevealBtn->move(re->size().width() - m_nickRevealBtn->width() - 4, topY);
     }
 
     // Check if obj is a pane input bar
@@ -2812,17 +2896,6 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
 void MainWindow::switchToChannel(const QString &host, const QString &channel)
 {
     m_primaryPanel->setVisible(true);
-
-    if (m_primaryPaneLabel) {
-        if (channel == "(server)") {
-            QString serverName = host;
-            for (const auto &sc : std::as_const(m_config.servers))
-                if (sc.host == host && !sc.name.isEmpty()) { serverName = sc.name; break; }
-            m_primaryPaneLabel->setText(serverName);
-        } else {
-            m_primaryPaneLabel->setText(channel);
-        }
-    }
 
     clearReplyBar();
     m_model->setActive(ServerId{host}, BufferId{channel});
@@ -3836,8 +3909,11 @@ void MainWindow::onNickAdded(const QString &host, const QString &channel, const 
                            channel.toLower() == m_model->activeChannel().str().toLower());
     if (isActive) {
         m_nickList->insertItem(static_cast<int>(row), makeNickItem(e, ch, sess));
-        if (m_nickCountLabel)
-            m_nickCountLabel->setText(QString::number(ch->nicks.size()) + " users");
+        if (m_nickCountLabel) {
+            const QString countStr = QString::number(ch->nicks.size());
+            m_nickCountLabel->setText(countStr);
+            m_nickCountLabel->setToolTip(countStr + " users");
+        }
     }
 
     const QString key = host + "|" + channel.toLower();
@@ -3854,8 +3930,11 @@ void MainWindow::onNickRemoved(const QString &host, const QString &channel, cons
     if (isActive) {
         const int row = findNickRow(m_nickList, nick);
         if (row >= 0) delete m_nickList->takeItem(row);
-        if (m_nickCountLabel && ch)
-            m_nickCountLabel->setText(QString::number(ch->nicks.size()) + " users");
+        if (m_nickCountLabel && ch) {
+            const QString countStr = QString::number(ch->nicks.size());
+            m_nickCountLabel->setText(countStr);
+            m_nickCountLabel->setToolTip(countStr + " users");
+        }
     }
 
     const QString key = host + "|" + channel.toLower();
@@ -3900,8 +3979,11 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
     for (const auto &e : std::as_const(ch->nicks))
         m_nickList->addItem(makeNickItem(e, ch, sess));
 
-    if (m_nickCountLabel)
-        m_nickCountLabel->setText(QString::number(ch->nicks.size()) + " users");
+    if (m_nickCountLabel) {
+        const QString countStr = QString::number(ch->nicks.size());
+        m_nickCountLabel->setText(countStr);
+        m_nickCountLabel->setToolTip(countStr + " users");
+    }
 }
 
 
@@ -3913,8 +3995,6 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
     for (const auto &sc : std::as_const(m_config.servers))
         if (sc.host == host && !sc.name.isEmpty()) { serverName = sc.name; break; }
 
-    m_modesLabel->clear();
-
     if (channel == "(server)") {
         m_topicLabel->setText(serverName);
         m_userInfoLabel->clear();
@@ -3923,10 +4003,7 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
         const QString modes   = ch ? ch->modes : QString();
         const QString modeStr = modes.isEmpty() ? QString() : " (" + modes + ")";
         m_topicLabel->setText(channel + modeStr);
-
-        const qsizetype userCount = ch ? ch->nicks.size() : 0;
-        m_userInfoLabel->setText(
-            QString("* %1 — %2 user%3").arg(serverName).arg(userCount).arg(userCount != 1 ? "s" : ""));
+        m_userInfoLabel->setText(QStringLiteral("* ") + serverName);
 
         if (m_topicText)
             m_topicText->setText(ChatRenderer::linkifyTopic(ch ? ch->topic : QString()));

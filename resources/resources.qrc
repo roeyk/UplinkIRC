@@ -34,6 +34,10 @@
         <file alias="mi-host.svg">icons/mi-host.svg</file>
         <file alias="mi-language.svg">icons/mi-language.svg</file>
         <file alias="mi-public.svg">icons/mi-public.svg</file>
+        <file alias="mi-groups.svg">icons/mi-groups.svg</file>
+        <file alias="mi-search.svg">icons/mi-search.svg</file>
+        <file alias="mi-right-panel-close.svg">icons/mi-right-panel-close.svg</file>
+        <file alias="mi-left-panel-close.svg">icons/mi-left-panel-close.svg</file>
     </qresource>
     <qresource prefix="/docs">
         <file alias="configuration.md">../docs/configuration.md</file>

@@ -178,12 +178,15 @@ private:
     QWidget      *m_primaryPanel{nullptr};
     QWidget      *m_primaryHeader{nullptr};
     QToolButton  *m_primaryTopicBtn{nullptr};
-    QLabel       *m_primaryPaneLabel{nullptr};
+    QToolButton  *m_searchBtn{nullptr};
     QToolButton  *m_primaryCloseBtn{nullptr};
     QListWidget  *m_nickList;
     QWidget      *m_nickPanel{nullptr};
+    QLabel       *m_nickGroupsIconLabel{nullptr};
     QLabel       *m_nickCountLabel{nullptr};
     QToolButton  *m_nickToggleBtn{nullptr};
+    QToolButton  *m_nickRevealBtn{nullptr};
+    QWidget      *m_chatSection{nullptr};
     QSplitter    *m_chatSplitter{nullptr};
     QSplitter    *m_panesSplitter{nullptr};
     QHash<QString, ChannelPane*> m_panes;        // key: "host|channel_lower"
@@ -192,13 +195,10 @@ private:
     QSet<QString>                m_expandedEventGroups;  // groupIds (first-msg timestamp ms) of expanded event batches
     ChannelPane                 *m_dragHighlighted{nullptr};
     int                          m_primarySlot{0}; // position of primary panel in layout order
-    QTimer       *m_gearTimer{nullptr};
-    int           m_gearAngle{0};
     bool          m_nickExpanded{true};
     QWidget      *m_topicBar;               // info bar — always visible
     QLabel       *m_topicLabel{nullptr};    // #channel (modes)
-    QLabel       *m_modesLabel{nullptr};    // stretch spacer
-    QLabel       *m_userInfoLabel{nullptr}; // * network — N users
+    QLabel       *m_userInfoLabel{nullptr}; // * network
     QWidget      *m_topicDisplay{nullptr};  // topic text — shown when showTopic
     QLabel       *m_topicText{nullptr};
     QToolButton  *m_hamburger;
