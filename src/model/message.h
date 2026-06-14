@@ -8,6 +8,8 @@ enum class MessageType {
     Notice,
     Action,
     Server,    // server/status text
+    Reply,     // numeric command response (WHOIS, STATS, etc.)
+    Wallops,   // WALLOPS broadcast
     Join,
     Part,
     Quit,

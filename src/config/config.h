@@ -102,6 +102,7 @@ struct UiConfig {
     bool      hangingIndent{true};
     bool      logMessages{false};
     bool      linkPreviews{false};
+    bool      showUnreadCounts{true};
     QString   appIcon{"dark"};
     QString   nickBrackets{"<>"};
 };

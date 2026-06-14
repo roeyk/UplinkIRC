@@ -954,6 +954,12 @@ void IrcClient::processLine(const QString &line)
         return;
     }
 
+    if (cmd == "WALLOPS") {
+        const QString text = msg.trailing.isEmpty() ? msg.params.value(0) : msg.trailing;
+        emit wallopsReceived(m_host, msg.nick, text);
+        return;
+    }
+
     if (cmd == "FAIL" || cmd == "WARN" || cmd == "NOTE") {
         // params: [0]=command [1]=code [2..n-1]=context  trailing=description
         const QString triggeredBy = msg.params.value(0);

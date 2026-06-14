@@ -205,6 +205,7 @@ class SidebarDelegate : public QStyledItemDelegate {
     QColor m_accent;
     QColor m_hover;
     QColor m_activeText;
+    bool   m_showCounts{true};
 public:
     explicit SidebarDelegate(QObject *parent = nullptr)
         : QStyledItemDelegate(parent) {}
@@ -214,6 +215,8 @@ public:
         m_hover      = hover;
         m_activeText = activeText;
     }
+
+    void setShowCounts(bool show) { m_showCounts = show; }
 
     QSize sizeHint(const QStyleOptionViewItem &option,
                    const QModelIndex &index) const override
@@ -227,7 +230,9 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override
     {
-        const QIcon indicator = qvariant_cast<QIcon>(index.data(Qt::UserRole + 2));
+        const QIcon indicator  = qvariant_cast<QIcon>(index.data(Qt::UserRole + 2));
+        const int   unreadCnt  = m_showCounts ? index.data(Qt::UserRole + 3).toInt() : 0;
+        const QString countStr = unreadCnt > 0 ? QString::number(unreadCnt) : QString();
         QStyleOptionViewItem opt = option;
         initStyleOption(&opt, index);
         opt.icon = QIcon();
@@ -240,21 +245,27 @@ public:
         const QStyle  *s    = w ? w->style() : QApplication::style();
         const QRect textRect = s->subElementRect(QStyle::SE_ItemViewItemText, &opt, w);
         const QFontMetrics fm(opt.font);
+        QFont countFont = opt.font;
+        countFont.setPointSizeF(opt.font.pointSizeF() * 0.86);
+        countFont.setBold(true);
+        const QFontMetrics cfm(countFont);
         const int textW      = fm.horizontalAdvance(opt.text);
         const int textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, w) + 1;
         constexpr int hPad   = 8;
         constexpr int vPad   = 2;
         constexpr int iconSz = 14;
         constexpr int iconGap = 2;
+        constexpr int countGap = 3;
         const int pillX      = textRect.x() + textMargin - hPad;
         const int iconExtra  = indicator.isNull() ? 0 : (iconGap + iconSz);
+        const int countExtra = countStr.isEmpty() ? 0 : (countGap + cfm.horizontalAdvance(countStr));
 
         if (selected || hovered) {
             const QColor bg = selected ? m_accent : m_hover;
             if (bg.isValid()) {
                 QRect r(pillX,
                         opt.rect.y() + vPad,
-                        qMin(textW + hPad * 2 + iconExtra, opt.rect.right() - pillX),
+                        qMin(textW + hPad * 2 + iconExtra + countExtra, opt.rect.right() - pillX),
                         opt.rect.height() - vPad * 2);
                 painter->save();
                 painter->setRenderHint(QPainter::Antialiasing);
@@ -274,12 +285,27 @@ public:
         }
         QStyledItemDelegate::paint(painter, opt, index);
 
+        int afterTextX = textRect.x() + textMargin + textW;
         if (!indicator.isNull()) {
-            const int iconX = textRect.x() + textMargin + textW + iconGap;
+            const int iconX = afterTextX + iconGap;
             QRect r(iconX,
                     opt.rect.top() + (opt.rect.height() - iconSz) / 2,
                     iconSz, iconSz);
             indicator.paint(painter, r);
+            afterTextX = iconX + iconSz;
+        }
+        if (!countStr.isEmpty()) {
+            const QRect cr(afterTextX + countGap,
+                           opt.rect.top(),
+                           cfm.horizontalAdvance(countStr) + 2,
+                           opt.rect.height());
+            painter->save();
+            painter->setFont(countFont);
+            QColor cc = opt.palette.color(QPalette::Text);
+            cc.setAlphaF(0.6);
+            painter->setPen(cc);
+            painter->drawText(cr, Qt::AlignLeft | Qt::AlignVCenter, countStr);
+            painter->restore();
         }
     }
 };
@@ -794,6 +820,21 @@ void MainWindow::connectPreferences()
         Config::save(m_config, Config::defaultPath());
     });
 
+    connect(m_prefsDialog, &PreferencesDialog::unreadCountsToggled, this, [this](bool on){
+        m_config.ui.showUnreadCounts = on;
+        Config::save(m_config, Config::defaultPath());
+        m_sidebarDelegate->setShowCounts(on);
+        if (!on) {
+            // Clear all stored counts from sidebar items
+            for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
+                auto *srv = m_sidebar->topLevelItem(i);
+                for (int j = 0; j < srv->childCount(); ++j)
+                    srv->child(j)->setData(0, Qt::UserRole + 3, QVariant());
+            }
+        }
+        m_sidebar->viewport()->update();
+    });
+
     connect(m_prefsDialog, &PreferencesDialog::nickBracketsChanged, this, [this](const QString &br){
         m_config.ui.nickBrackets = br;
         Config::save(m_config, Config::defaultPath());
@@ -1062,6 +1103,7 @@ void MainWindow::setupSidebar()
     m_sidebar->setMinimumWidth(112);
     m_sidebar->setObjectName("sidebar");
     m_sidebarDelegate = new SidebarDelegate(m_sidebar);
+    m_sidebarDelegate->setShowCounts(m_config.ui.showUnreadCounts);
     if (m_theme.valid)
         m_sidebarDelegate->setColors(QColor(m_theme.accent),
                                      QColor(m_theme.border),
@@ -1113,9 +1155,12 @@ void MainWindow::setupSidebar()
         auto *shBox = new QHBoxLayout(m_sidebarHeader);
         shBox->setContentsMargins(2, 2, 2, 2);
         shBox->setSpacing(2);
+        shBox->setAlignment(Qt::AlignTop);
         shBox->addWidget(m_hamburger);
         shBox->addWidget(m_sidebarToggleBtn);
         shBox->addStretch(1);
+        m_signalBars = new SignalBars(m_sidebarHeader);
+        shBox->addWidget(m_signalBars, 0, Qt::AlignVCenter);
     }
 
     vbox->addWidget(m_sidebarHeader);
@@ -1232,8 +1277,6 @@ void MainWindow::setupNickPanel()
 
 void MainWindow::setupChatArea()
 {
-    m_signalBars = new SignalBars(this); // orphaned; placement TBD
-
     // Right content — holds the panes splitter only
     m_rightContent = new QWidget;
     m_rightContent->setObjectName("rightContent");
@@ -1302,7 +1345,10 @@ void MainWindow::setupChatArea()
         m_searchBtn->setIcon(makeSvgIcon(
             QStringLiteral(":/icons/mi-search.svg"),
             QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
-        connect(m_searchBtn, &QToolButton::clicked, this, &MainWindow::showSearchBar);
+        connect(m_searchBtn, &QToolButton::clicked, this, [this]{
+            if (m_searchBar->isVisible()) { m_searchBar->hide(); m_searchInput->clear(); }
+            else showSearchBar();
+        });
 
         m_topicLabel = new QLabel;
         m_topicLabel->setObjectName("channelLabel");
@@ -2774,6 +2820,7 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
             item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::unread()));
         else
             item->setData(0, Qt::UserRole + 2, QVariant());
+        item->setData(0, Qt::UserRole + 3, count > 0 ? count : QVariant());
         item->setText(0, label);
     }
 }
@@ -3015,6 +3062,25 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
 void MainWindow::switchToChannel(const QString &host, const QString &channel)
 {
     m_primaryPanel->setVisible(true);
+
+    const bool isChannel = channel.startsWith('#') || channel.startsWith('&')
+                           || channel.startsWith('+') || channel.startsWith('!');
+
+    // Nick panel: only meaningful in channels
+    if (m_nickPanel) {
+        const bool show = isChannel && m_nickExpanded;
+        m_nickPanel->setVisible(show);
+        if (m_nickRevealBtn)
+            m_nickRevealBtn->setVisible(isChannel && !m_nickExpanded);
+    }
+
+    // Topic button + topic bar: only meaningful in channels
+    if (m_primaryTopicBtn)
+        m_primaryTopicBtn->setVisible(isChannel);
+    if (m_topicDisplay && !isChannel)
+        m_topicDisplay->setVisible(false);
+    else if (m_topicDisplay && isChannel)
+        m_topicDisplay->setVisible(m_showTopic && m_primaryTopicBtn && m_primaryTopicBtn->isChecked());
 
     clearReplyBar();
     m_model->setActive(ServerId{host}, BufferId{channel});

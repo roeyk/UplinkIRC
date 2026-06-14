@@ -125,8 +125,9 @@ Config Config::load(const QString &path)
             cfg.ui.coloredNicks    = (*ui)["colored_nicks"].value_or(true);
             cfg.ui.typingIndicator = (*ui)["typing_indicator"].value_or(true);
             cfg.ui.hangingIndent   = (*ui)["hanging_indent"].value_or(true);
-            cfg.ui.logMessages     = (*ui)["log_messages"].value_or(false);
-            cfg.ui.appIcon         = ustr("app_icon", "dark");
+            cfg.ui.logMessages       = (*ui)["log_messages"].value_or(false);
+            cfg.ui.showUnreadCounts  = (*ui)["show_unread_counts"].value_or(true);
+            cfg.ui.appIcon           = ustr("app_icon", "dark");
             cfg.ui.nickBrackets    = ustr("nick_brackets", "<>");
             cfg.ui.notifications   = (*ui)["notifications"].value_or(true);
             cfg.ui.fontFamily      = ustr("font_family", kDefaultFontFamily);
@@ -299,8 +300,9 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "colored_nicks     = " << boolStr(cfg.ui.coloredNicks)     << "\n";
     out << "typing_indicator  = " << boolStr(cfg.ui.typingIndicator)  << "\n";
     out << "hanging_indent    = " << boolStr(cfg.ui.hangingIndent)    << "\n";
-    out << "log_messages      = " << boolStr(cfg.ui.logMessages)      << "\n";
-    out << "app_icon          = " << tomlQuote(cfg.ui.appIcon)        << "\n";
+    out << "log_messages        = " << boolStr(cfg.ui.logMessages)        << "\n";
+    out << "show_unread_counts  = " << boolStr(cfg.ui.showUnreadCounts)  << "\n";
+    out << "app_icon            = " << tomlQuote(cfg.ui.appIcon)          << "\n";
     out << "nick_brackets     = " << tomlQuote(cfg.ui.nickBrackets)   << "\n";
     out << "notifications     = " << boolStr(cfg.ui.notifications)    << "\n";
     out << "font_family       = " << tomlQuote(cfg.ui.fontFamily)     << "\n";

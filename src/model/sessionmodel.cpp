@@ -478,6 +478,11 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::serverMessage,     this, &SessionModel::onServerMessage);
     connect(cl, &IrcClient::errorMessage,      this, &SessionModel::onErrorMessage);
     connect(cl, &IrcClient::contextualMessage, this, &SessionModel::onContextualMessage);
+    connect(cl, &IrcClient::wallopsReceived, this,
+            [this](const QString &host, const QString &nick, const QString &text){
+        const QString line = "[" + (nick.isEmpty() ? host : nick) + "] " + text;
+        postMessage(host, "(server)", Message::make(MessageType::Wallops, nick, line));
+    });
     connect(cl, &IrcClient::ctcpPingReply,     this, &SessionModel::onCtcpPingReply);
     connect(cl, &IrcClient::ctcpTimeReply,   this, &SessionModel::onCtcpTimeReply);
     connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
@@ -998,7 +1003,7 @@ void SessionModel::onContextualMessage(const QString &host, const QString &text)
 {
     const QString target = (host == m_activeHost.str() && !m_activeChannel.isEmpty())
         ? m_activeChannel.str() : "(server)";
-    postMessage(host, target, Message::make(MessageType::Server, "", text));
+    postMessage(host, target, Message::make(MessageType::Reply, "", text));
 }
 
 void SessionModel::onCtcpPingReply(const QString &host, const QString &nick, qint64 rttMs)

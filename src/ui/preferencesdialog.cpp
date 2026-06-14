@@ -182,6 +182,11 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     connect(m_linkPreviewsCheck, &QCheckBox::toggled, this, [this](bool on){ emit linkPreviewsToggled(on); });
     vbox->addWidget(m_linkPreviewsCheck);
 
+    m_unreadCountsCheck = new QCheckBox("Show Unread Message Counts");
+    m_unreadCountsCheck->setChecked(cfg.ui.showUnreadCounts);
+    connect(m_unreadCountsCheck, &QCheckBox::toggled, this, [this](bool on){ emit unreadCountsToggled(on); });
+    vbox->addWidget(m_unreadCountsCheck);
+
     vbox->addSpacing(2);
     vbox->addWidget(new QLabel("Nick Brackets:"));
     {

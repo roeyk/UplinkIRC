@@ -292,6 +292,10 @@ QString formatMessage(const Message &msg, const Context &ctx)
         html = wrap("steelblue", ts + " ⦁ Topic: " + msg.text); break;
     case MessageType::Error:
         html = wrap("red",       ts + " !! " + msg.text); break;
+    case MessageType::Reply:
+        html = wrap("#6090c0",   ts + " * "  + msg.text); break;
+    case MessageType::Wallops:
+        html = wrap("#e09030",   ts + " [W] " + msg.text); break;
     case MessageType::Server:
     default:
         html = wrap("gray",      ts + " * "  + msg.text); break;
@@ -691,6 +695,18 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
         QTextCharFormat f;
         f.setForeground(isHistory ? dimColor : QColor(Qt::red));
         tb.append(" !! " + msg.text, f);
+        break;
+    }
+    case MessageType::Reply: {
+        QTextCharFormat f;
+        f.setForeground(isHistory ? dimColor : QColor("#6090c0"));
+        tb.append(" * " + msg.text, f);
+        break;
+    }
+    case MessageType::Wallops: {
+        QTextCharFormat f;
+        f.setForeground(isHistory ? dimColor : QColor("#e09030"));
+        tb.append(" [W] " + msg.text, f);
         break;
     }
     case MessageType::Server:
