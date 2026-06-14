@@ -183,9 +183,11 @@ public:
         }
 
         opt.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver);
-        if (selected && m_activeText.isValid()) {
+        if (selected && m_accent.isValid()) {
+            const QColor textCol = m_accent.lightnessF() > 0.5
+                ? QColor("#111111") : QColor("#eeeeee");
             opt.palette.setColor(QPalette::All, QPalette::Highlight,       QColor(Qt::transparent));
-            opt.palette.setColor(QPalette::All, QPalette::HighlightedText, m_activeText);
+            opt.palette.setColor(QPalette::All, QPalette::HighlightedText, textCol);
         }
         QStyledItemDelegate::paint(painter, opt, index);
 
@@ -264,9 +266,11 @@ public:
         }
 
         opt.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver);
-        if (selected && m_activeText.isValid()) {
+        if (selected && m_accent.isValid()) {
+            const QColor textCol = m_accent.lightnessF() > 0.5
+                ? QColor("#111111") : QColor("#eeeeee");
             opt.palette.setColor(QPalette::All, QPalette::Highlight,       QColor(Qt::transparent));
-            opt.palette.setColor(QPalette::All, QPalette::HighlightedText, m_activeText);
+            opt.palette.setColor(QPalette::All, QPalette::HighlightedText, textCol);
         }
         QStyledItemDelegate::paint(painter, opt, index);
 
@@ -442,7 +446,8 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
         if (m_sidebarHeader && m_primaryHeader)
             m_sidebarHeader->setFixedHeight(
-                m_primaryHeader->height() + m_topicDisplay->height());
+                m_primaryHeader->height() +
+                (m_topicDisplay && m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0));
     });
 
     if (!savedPanes.isEmpty()) {
@@ -524,6 +529,9 @@ void MainWindow::setupToolbar()
     m_hamburger = new QToolButton;
     m_hamburger->setFixedSize(28, 28);
     m_hamburger->setAutoRaise(true);
+    m_hamburger->setStyleSheet(
+        "QToolButton { background: transparent; border: none; }"
+        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
     m_hamburger->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_hamburger, &QWidget::customContextMenuRequested, this, [](const QPoint&){});
     m_hamburger->setObjectName("hamburger");
@@ -576,22 +584,36 @@ void MainWindow::setupToolbar()
             });
         });
 
+        menu->addAction(MenuIcons::servers(ic), "Manage Servers", this, [this]{
+            ManageServersDialog dlg(m_config.servers, this);
+            if (dlg.exec() != QDialog::Accepted) return;
+            const QList<ServerConfig> updated = dlg.servers();
+            for (const ServerConfig &old : m_config.servers) {
+                const bool stillPresent = std::any_of(updated.begin(), updated.end(),
+                    [&](const ServerConfig &s){ return s.host == old.host; });
+                if (!stillPresent)
+                    m_model->removeServer(ServerId{old.host});
+            }
+            for (const ServerConfig &sc : updated) {
+                const ServerConfig *existing = nullptr;
+                for (const ServerConfig &old : m_config.servers)
+                    if (old.host == sc.host) { existing = &old; break; }
+                if (!existing) {
+                    m_model->addServer(sc);
+                } else if (*existing != sc) {
+                    m_model->updateServer(ServerId{existing->host}, sc);
+                }
+            }
+            m_config.servers = updated;
+            Config::save(m_config, Config::defaultPath(), true);
+        });
+
         menu->addAction(MenuIcons::documentation(ic), "Documentation", this, [this]{
             if (!m_docsDialog)
                 m_docsDialog = new DocsDialog(this);
             m_docsDialog->show();
             m_docsDialog->raise();
             m_docsDialog->activateWindow();
-        });
-
-        menu->addAction(MenuIcons::fontConfig(ic), "Preferences", this, [this]{
-            if (!m_prefsDialog) {
-                m_prefsDialog = new PreferencesDialog(m_config, this);
-                connectPreferences();
-            }
-            m_prefsDialog->show();
-            m_prefsDialog->raise();
-            m_prefsDialog->activateWindow();
         });
 
         menu->addSeparator();
@@ -653,6 +675,16 @@ void MainWindow::connectPreferences()
                     makeTopicIcon(QColor(m_theme.accent)));
             }
         }
+        if (m_sidebarCloseBtn)
+            m_sidebarCloseBtn->setStyleSheet(
+                "QToolButton { background: transparent; border: none; }"
+                "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
+            );
+        if (m_sidebarRevealBtn)
+            m_sidebarRevealBtn->setStyleSheet(
+                "QToolButton { background: transparent; border: none; }"
+                "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
+            );
         Config::save(m_config, Config::defaultPath());
     });
 
@@ -678,6 +710,8 @@ void MainWindow::connectPreferences()
     });
 
     connect(m_prefsDialog, &PreferencesDialog::topicBarToggled, this, [this](bool on){
+        const int scrollPos = m_nickList ? m_nickList->verticalScrollBar()->value() : 0;
+        const int sbScroll  = m_sidebar  ? m_sidebar->verticalScrollBar()->value()  : 0;
         m_showTopic = on;
         m_config.ui.showTopic = on;
         m_topicDisplay->setVisible(on);
@@ -685,6 +719,10 @@ void MainWindow::connectPreferences()
             m_primaryTopicBtn->setChecked(on);
             m_primaryTopicBtn->setText(on ? QStringLiteral("▾") : QStringLiteral("▸"));
         }
+        QTimer::singleShot(0, this, [this, scrollPos, sbScroll]{
+            if (m_nickList) m_nickList->verticalScrollBar()->setValue(scrollPos);
+            if (m_sidebar)  m_sidebar->verticalScrollBar()->setValue(sbScroll);
+        });
         Config::save(m_config, Config::defaultPath());
     });
 
@@ -954,15 +992,29 @@ void MainWindow::applyFontSizes()
         m_nickRevealBtn->setIcon(makeSvgIcon(
             QStringLiteral(":/icons/mi-left-panel-close.svg"),
             QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
-    if (m_sidebarToggleBtn)
-        m_sidebarToggleBtn->setIcon(
-            makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
+    if (m_sidebarToggleBtn) {
+        m_sidebarToggleBtn->setIcon(makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
+        m_sidebarToggleBtn->setStyleSheet(
+            "QToolButton { background: transparent; border: none; }"
+            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
+    }
+    if (m_sidebarCloseBtn)
+        m_sidebarCloseBtn->setIcon(makeSvgIcon(
+            QStringLiteral(":/icons/mi-left-panel-close.svg"),
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
+    if (m_sidebarRevealBtn)
+        m_sidebarRevealBtn->setIcon(makeSvgIcon(
+            QStringLiteral(":/icons/mi-right-panel-open.svg"),
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
     if (m_nickGroupsIconLabel)
         m_nickGroupsIconLabel->setPixmap(
             makeGroupsIcon(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
-    if (m_hamburger)
-        m_hamburger->setIcon(
-            makeMenuIcon(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
+    if (m_hamburger) {
+        m_hamburger->setIcon(makeMenuIcon(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
+        m_hamburger->setStyleSheet(
+            "QToolButton { background: transparent; border: none; }"
+            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
+    }
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
     if (m_nickPrefix)   m_nickPrefix->setFont(makeFont(fs.inputNick));
@@ -1025,18 +1077,20 @@ void MainWindow::setupSidebar()
     m_sidebarToggleBtn = new QToolButton;
     m_sidebarToggleBtn->setFixedSize(28, 28);
     m_sidebarToggleBtn->setAutoRaise(true);
+    m_sidebarToggleBtn->setStyleSheet(
+        "QToolButton { background: transparent; border: none; }"
+        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
     m_sidebarToggleBtn->setObjectName("sidebarToggleBtn");
-    m_sidebarToggleBtn->setToolTip(tr("Toggle channel list"));
+    m_sidebarToggleBtn->setToolTip(tr("Preferences"));
     m_sidebarToggleBtn->setIcon(makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
     connect(m_sidebarToggleBtn, &QToolButton::clicked, this, [this]{
-        m_sidebarExpanded = !m_sidebarExpanded;
-        // Hide the panel (not just the tree) so Qt redistributes space automatically.
-        // On expand, show the panel first then restore the saved width via setSizes.
-        m_sidebarPanel->setVisible(m_sidebarExpanded);
-        if (m_sidebarExpanded) {
-            const int total = m_mainSplitter->width();
-            m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
+        if (!m_prefsDialog) {
+            m_prefsDialog = new PreferencesDialog(m_config, this);
+            connectPreferences();
         }
+        m_prefsDialog->show();
+        m_prefsDialog->raise();
+        m_prefsDialog->activateWindow();
     });
 
     m_sidebarPanel = new QWidget;
@@ -1048,8 +1102,51 @@ void MainWindow::setupSidebar()
     m_sidebarHeader = new QWidget;
     m_sidebarHeader->setObjectName("sidebarHeader");
     m_sidebarHeader->setFixedHeight(34); // synced to primaryHeader+topicDisplay after show
+
+    auto positionSidebarRevealBtn = [this]{
+        if (!m_sidebarRevealBtn || !m_chatSection) return;
+        m_sidebarRevealBtn->move(4, m_chatSection->height() - m_sidebarRevealBtn->height() - 4);
+        m_sidebarRevealBtn->raise();
+    };
+
+    {
+        auto *shBox = new QHBoxLayout(m_sidebarHeader);
+        shBox->setContentsMargins(2, 2, 2, 2);
+        shBox->setSpacing(2);
+        shBox->addWidget(m_hamburger);
+        shBox->addWidget(m_sidebarToggleBtn);
+        shBox->addStretch(1);
+    }
+
     vbox->addWidget(m_sidebarHeader);
     vbox->addWidget(m_sidebar, 1);
+
+    // Floating close button pinned to the bottom-left corner of the sidebar panel
+    m_sidebarCloseBtn = new QToolButton(m_sidebarPanel);
+    m_sidebarCloseBtn->setFixedSize(28, 28);
+    m_sidebarCloseBtn->setAutoRaise(true);
+    m_sidebarCloseBtn->setStyleSheet(
+        "QToolButton { background: transparent; border: none; }"
+        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
+    );
+    m_sidebarCloseBtn->setToolTip(tr("Hide channel list"));
+    m_sidebarCloseBtn->setIcon(makeSvgIcon(
+        QStringLiteral(":/icons/mi-left-panel-close.svg"),
+        QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
+    m_sidebarCloseBtn->move(4, 0);
+    m_sidebarCloseBtn->raise();
+    connect(m_sidebarCloseBtn, &QToolButton::clicked, this, [this, positionSidebarRevealBtn]{
+        m_sidebarExpanded = false;
+        m_sidebarPanel->setVisible(false);
+        if (m_inputBar)
+            if (auto *l = qobject_cast<QHBoxLayout*>(m_inputBar->layout()))
+                l->setContentsMargins(40, 3, 4, 8);
+        if (m_sidebarRevealBtn) {
+            positionSidebarRevealBtn();
+            m_sidebarRevealBtn->setVisible(true);
+        }
+    });
+    m_sidebarPanel->installEventFilter(this);
 }
 
 void MainWindow::setupNickPanel()
@@ -1112,6 +1209,7 @@ void MainWindow::setupNickPanel()
 
     auto *header = new QWidget;
     header->setObjectName("nickPanelHeader");
+    header->setFixedHeight(34);
     auto *hbox = new QHBoxLayout(header);
     hbox->setContentsMargins(2, 2, 2, 2);
     hbox->setSpacing(2);
@@ -1169,15 +1267,16 @@ void MainWindow::setupChatArea()
         m_primaryTopicBtn->setIconSize(QSize(14, 14));
         m_primaryTopicBtn->setAutoRaise(false);
         connect(m_primaryTopicBtn, &QToolButton::toggled, this, [this](bool on){
+            const int scrollPos = m_nickList ? m_nickList->verticalScrollBar()->value() : 0;
+            const int sbScroll  = m_sidebar  ? m_sidebar->verticalScrollBar()->value()  : 0;
             m_topicDisplay->setVisible(on);
             if (m_theme.valid)
                 m_primaryTopicBtn->setIcon(makeTopicIcon(
                     QColor(on ? m_theme.accent : m_theme.placeholder)));
-            if (m_sidebarHeader && m_primaryHeader)
-                QTimer::singleShot(0, this, [this]{
-                    m_sidebarHeader->setFixedHeight(
-                        m_primaryHeader->height() + m_topicDisplay->height());
-                });
+            QTimer::singleShot(0, this, [this, scrollPos, sbScroll]{
+                if (m_nickList) m_nickList->verticalScrollBar()->setValue(scrollPos);
+                if (m_sidebar)  m_sidebar->verticalScrollBar()->setValue(sbScroll);
+            });
         });
 
         m_primaryCloseBtn = new QToolButton;
@@ -1208,8 +1307,6 @@ void MainWindow::setupChatArea()
         m_topicLabel = new QLabel;
         m_topicLabel->setObjectName("channelLabel");
 
-        hbox->addWidget(m_hamburger);
-        hbox->addWidget(m_sidebarToggleBtn);
         hbox->addWidget(m_primaryTopicBtn);
         hbox->addWidget(m_topicLabel);
         hbox->addStretch(1);
@@ -1430,6 +1527,30 @@ void MainWindow::setupChatArea()
     });
     m_chatSection->installEventFilter(this);
 
+    m_sidebarRevealBtn = new QToolButton(m_chatSection);
+    m_sidebarRevealBtn->setFixedSize(28, 28);
+    m_sidebarRevealBtn->setAutoRaise(true);
+    m_sidebarRevealBtn->setStyleSheet(
+        "QToolButton { background: transparent; border: none; }"
+        "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
+    );
+    m_sidebarRevealBtn->setToolTip(tr("Show channel list"));
+    m_sidebarRevealBtn->setIcon(makeSvgIcon(
+        QStringLiteral(":/icons/mi-right-panel-open.svg"),
+        QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
+    m_sidebarRevealBtn->setVisible(false);
+    m_sidebarRevealBtn->raise();
+    connect(m_sidebarRevealBtn, &QToolButton::clicked, this, [this]{
+        m_sidebarExpanded = true;
+        m_sidebarPanel->setVisible(true);
+        m_sidebarRevealBtn->setVisible(false);
+        if (m_inputBar)
+            if (auto *l = qobject_cast<QHBoxLayout*>(m_inputBar->layout()))
+                l->setContentsMargins(4, 3, 4, 8);
+        const int total = m_mainSplitter->width();
+        m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
+    });
+
     m_mainSplitter = new QSplitter(Qt::Horizontal);
     m_mainSplitter->setHandleWidth(0);
     m_mainSplitter->addWidget(m_sidebarPanel);
@@ -1525,6 +1646,7 @@ void MainWindow::setupInputBar()
     hbox->addWidget(m_emojiBtn);
 
     bar->setObjectName("inputBar");
+    m_inputBar = bar;
 
     m_typingLabel = new QLabel;
     m_typingLabel->setObjectName("typingLabel");
@@ -1871,14 +1993,20 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
+
+
     if (obj == m_topicDisplay && m_sidebarHeader && m_primaryHeader) {
         const auto t = event->type();
         if (t == QEvent::Resize || t == QEvent::Show || t == QEvent::Hide) {
-            QTimer::singleShot(0, this, [this]{
+            const int sbScroll   = m_sidebar   ? m_sidebar->verticalScrollBar()->value()  : 0;
+            const int nickScroll = m_nickList  ? m_nickList->verticalScrollBar()->value() : 0;
+            QTimer::singleShot(0, this, [this, sbScroll, nickScroll]{
                 if (m_sidebarHeader && m_primaryHeader)
                     m_sidebarHeader->setFixedHeight(
                         m_primaryHeader->height() +
-                        (m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0));
+                        (m_topicDisplay && m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0));
+                if (m_sidebar)  m_sidebar->verticalScrollBar()->setValue(sbScroll);
+                if (m_nickList) m_nickList->verticalScrollBar()->setValue(nickScroll);
             });
         }
     }
@@ -1890,6 +2018,17 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                        + (m_topicDisplay && m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0)
                        + 4;
         m_nickRevealBtn->move(re->size().width() - m_nickRevealBtn->width() - 4, topY);
+    }
+
+    if (obj == m_chatSection && event->type() == QEvent::Resize &&
+        m_sidebarRevealBtn && m_sidebarRevealBtn->isVisible()) {
+        auto *re = static_cast<QResizeEvent *>(event);
+        m_sidebarRevealBtn->move(4, re->size().height() - m_sidebarRevealBtn->height() - 4);
+    }
+
+    if (obj == m_sidebarPanel && event->type() == QEvent::Resize && m_sidebarCloseBtn) {
+        m_sidebarCloseBtn->move(4, m_sidebarPanel->height() - m_sidebarCloseBtn->height() - 4);
+        m_sidebarCloseBtn->raise();
     }
 
     // Check if obj is a pane input bar

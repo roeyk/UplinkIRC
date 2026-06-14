@@ -12,11 +12,12 @@ Uplink is configured with a single TOML file. On first launch it is created auto
 | macOS | `~/.config/uplink/config.toml` |
 | Windows | `%USERPROFILE%\.config\uplink\config.toml` |
 
-You can edit the file directly, or use the in-app tools under ☰:
+You can edit the file directly, or use the in-app tools:
 
-- **Open Config** — opens `config.toml` in your system's default text editor
-- **Reload Config** — restarts Uplink immediately, picking up all config changes (useful after a manual edit)
-- **Preferences** — GUI for themes, font sizes, UI toggles, and server management; changes are saved automatically
+- **☰ → Open Config** — opens `config.toml` in your system's default text editor
+- **☰ → Reload Config** — restarts Uplink immediately, picking up all config changes (useful after a manual edit)
+- **☰ → Manage Servers** — add, edit, or remove servers; changes take effect immediately without editing config by hand
+- **⚙ (gear icon in channel header)** — opens **Preferences**, the GUI for themes, font sizes, and UI toggles; changes are saved automatically
 
 ---
 
@@ -112,7 +113,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `log_messages` | bool | `false` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Opt-in — off by default. Toggle from **Preferences → Log Messages to Disk**. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Tray Notifications**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
-| `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`. Change from **☰ → Preferences → App Icon**. |
+| `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`. Change from **Preferences** (click **⚙**) → **App Icon**. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
 | `font_toolbar` | integer | `10` | Font size (pt) for the ☰ button |
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
@@ -811,7 +812,7 @@ The block is written automatically when you use the **Preferences → Profile** 
 | `display_name` | string | Friendly name shown in the nick list tooltip alongside your IRC nick. Does not replace your nick. |
 | `avatar_url` | string | URL to your avatar image, or a local file path (e.g. `/home/you/avatar.png`). A web URL is broadcast to the server via `METADATA SET` and visible to other users. A local path is displayed only to you — it is never sent to the server. Leave blank to publish no avatar. |
 
-**Setting from Preferences:** Open **☰ → Preferences** and scroll to the **Profile** section. Fill in your Display Name and/or Avatar URL, then click **Apply to connected servers**.
+**Setting from Preferences:** Open **Preferences** (click **⚙** in the channel header) and scroll to the **Profile** section. Fill in your Display Name and/or Avatar URL, then click **Apply to connected servers**.
 
 **Setting from commands:**
 
@@ -1033,7 +1034,7 @@ Uplink ships with 55 built-in themes:
 | `one-dark` | Atom One Dark |
 | `default` | Built-in fallback theme |
 
-Themes can be switched live from the **Preferences** dialog (click ☰) without restarting.
+Themes can be switched live from the **Preferences** dialog (click **⚙** in the channel header) without restarting.
 
 ### Theme search path
 

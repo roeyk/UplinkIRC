@@ -185,6 +185,8 @@ private:
     QLabel       *m_nickCountLabel{nullptr};
     QToolButton  *m_nickToggleBtn{nullptr};
     QToolButton  *m_nickRevealBtn{nullptr};
+    QToolButton  *m_sidebarRevealBtn{nullptr};
+    QToolButton  *m_sidebarCloseBtn{nullptr};
     QWidget      *m_chatSection{nullptr};
     QSplitter    *m_chatSplitter{nullptr};
     QSplitter    *m_panesSplitter{nullptr};
@@ -202,6 +204,7 @@ private:
     QToolButton  *m_hamburger;
     QLabel       *m_appLabel{nullptr};
     QLabel       *m_typingLabel{nullptr};
+    QWidget      *m_inputBar{nullptr};
     QWidget      *m_searchBar{nullptr};
     QLineEdit    *m_searchInput{nullptr};
     QWidget      *m_replyBar{nullptr};

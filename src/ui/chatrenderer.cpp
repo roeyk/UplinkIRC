@@ -728,7 +728,7 @@ ChatLine formatEventGroupLine(const QList<Message> &msgs, const Context &ctx,
         }
         bool first = true;
         for (const auto &msg : msgs) {
-            if (!first) tb.append("\n", plainFmt);
+            if (!first) tb.append("\n  ", plainFmt); // 2-space indent aligns timestamps with first entry (▾ prefix)
             const QDateTime mLocal = msg.timestamp.toLocalTime();
             const QString mTs = mLocal.date() == QDate::currentDate()
                 ? mLocal.toString("hh:mm") : mLocal.toString("MM/dd hh:mm");

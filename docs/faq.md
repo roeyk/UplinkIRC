@@ -124,7 +124,7 @@ realname = "Uplink User"
 channels = "#uplink, #linux"
 ```
 
-You can also set this from **☰ → Preferences → Manage Servers → Edit** using the **Auto-join** field.
+You can also set this from **☰ → Manage Servers → Edit** using the **Auto-join** field.
 
 ### How do I temporarily disable a server without removing it?
 
@@ -398,11 +398,13 @@ Yes. Pressing <kbd>Tab</kbd> in any pane input bar completes nicks and slash com
 
 ### Where is the Preferences button?
 
-The `☰` button is in the **info bar** at the top of the chat area. Click it to open the **Preferences** dialog — it stays open while you browse themes, toggle options, and try settings.
+The **⚙ gear icon** sits in the channel header row, to the left of the **☰** hamburger button. Click it to open the **Preferences** dialog — it stays open while you browse themes, toggle options, and try settings.
+
+The **☰** hamburger opens a menu with actions like Manage Servers, Check for Updates, Documentation, Open Config, Reload Config, and About. Preferences is the gear, not the hamburger.
 
 ### How do I change the theme?
 
-Click **☰ → Preferences**. At the top of the Preferences dialog, click the **theme button** (shows the current theme name) to expand the theme list. Use arrow keys to browse, then press **Enter** or click a theme to apply it. The list stays open so you can keep trying themes. Click the button again to collapse it.
+Click the **⚙ gear icon** in the channel header to open **Preferences**. At the top, click the **theme button** (shows the current theme name) to expand the theme list. Use arrow keys to browse, then press **Enter** or click a theme to apply it. The list stays open so you can keep trying themes. Click the button again to collapse it.
 
 To set a theme in config directly:
 
@@ -413,7 +415,7 @@ theme = "nord"
 
 ### How do I hide or show the server/channel list?
 
-Click the **sidebar toggle button** (⊞) in the **channel header row**, just right of the ☰ hamburger. The sidebar collapses completely; the chat panel expands to fill the window. Click it again to bring the sidebar back. The toggle is always visible in the channel header, so you can restore the sidebar at any time.
+Click the **close button** in the top-left corner of the sidebar panel. The sidebar collapses completely; the chat panel expands to fill the window. A **reveal button** appears at the bottom-left of the chat area — click it to bring the sidebar back.
 
 You can also drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.
 
@@ -425,7 +427,7 @@ Click the **close panel button** (▦) in the **nick panel header** (top-right c
 
 The channel header row at the top of the chat area shows `#channel (+modes)`. The connected network name appears inline in the nick panel header (`* NetworkName`). To see the actual channel topic text:
 
-- **Global toggle:** click ☰ → **Preferences** → check **Show Topic Bar**. Or set in config:
+- **Global toggle:** click **⚙** to open **Preferences** → check **Show Topic Bar**. Or set in config:
   ```toml
   [ui]
   show_topic = true
@@ -436,7 +438,7 @@ The channel header row at the top of the chat area shows `#channel (+modes)`. Th
 
 ### How do I hide my nick next to the input box?
 
-Click ☰ to open **Preferences** and check **Show Nick in Input**. Or set it in config:
+Click **⚙** to open **Preferences** and check **Show Nick in Input**. Or set it in config:
 
 ```toml
 [ui]
@@ -516,7 +518,7 @@ client_cert   = "/home/joe/.irc/client.crt"
 client_key    = "/home/joe/.irc/client.key"
 ```
 
-You can also set cert and key paths from the GUI: ☰ → Preferences → Manage Servers → Edit → check **Use SASL EXTERNAL** → Browse for cert and key files.
+You can also set cert and key paths from the GUI: **☰ → Manage Servers → Edit** → check **Use SASL EXTERNAL** → Browse for cert and key files.
 
 ### How do I add, edit, or remove a server from the UI?
 
@@ -620,7 +622,7 @@ You can also use `/react <emoji>` after right-clicking a timestamp and choosing 
 
 ### How do I turn message logging on or off?
 
-Click **☰ → Preferences** and check or uncheck **Log Messages to Disk**.
+Click **⚙** to open **Preferences** and check or uncheck **Log Messages to Disk**.
 
 When enabled, all messages are appended to log files at:
 ```
@@ -845,7 +847,7 @@ Click **☰ → Documentation** to open the help viewer. A search field sits at 
 
 ### How do link previews work?
 
-Link previews are **disabled by default**. To enable them, click **☰ → Preferences** and check **Link Previews**, or add this to `config.toml`:
+Link previews are **disabled by default**. To enable them, click **⚙** to open **Preferences** and check **Link Previews**, or add this to `config.toml`:
 
 ```toml
 [privacy]
@@ -884,7 +886,7 @@ Preview cards survive channel switches — cards are stored per-channel and rein
 
 ### The emoji button doesn't show
 
-The emoji button is hidden by default. Click ☰ to open **Preferences** and check **Show Emoji Button**, or set it in config:
+The emoji button is hidden by default. Click **⚙** to open **Preferences** and check **Show Emoji Button**, or set it in config:
 
 ```toml
 [ui]
@@ -913,7 +915,7 @@ Close the window normally — it minimizes to the system tray instead of quittin
 
 ### How do I switch the app icon between dark and light?
 
-Click **☰ → Preferences** and find the **App Icon** section. Select **Dark** or **Light** — the icon changes immediately in the title bar and system tray without restarting.
+Open **Preferences** (click **⚙** in the channel header) and find the **App Icon** section. Select **Dark** or **Light** — the icon changes immediately in the title bar and system tray without restarting.
 
 You can also set it directly in `config.toml`:
 
@@ -1056,7 +1058,7 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/Qt6 ..
 
 Uplink fetches the page title and thumbnail for URLs posted in chat. If a preview isn't appearing:
 
-- **Are link previews enabled?** They are off by default. Click **☰ → Preferences** and check **Link Previews**, or add `link_previews = true` under `[privacy]` in `config.toml`.
+- **Are link previews enabled?** They are off by default. Click **⚙** to open **Preferences** and check **Link Previews**, or add `link_previews = true` under `[privacy]` in `config.toml`.
 - **Direct image link** — `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp` URLs are handled automatically and show a thumbnail card.
 - **The site redirects** (e.g. `http://` → `https://`, or bare domain → `www.`) — redirects are followed automatically.
 - **YouTube and heavy sites** — as of v0.12.0, Uplink uses the `WhatsApp/2` user-agent, which causes most major sites to serve a compact OG-metadata page. If a site still doesn't preview, it may not publish `og:title` or `<title>` at all.
@@ -1114,7 +1116,7 @@ nick      = "alice"
 
 When `ssl = true`, Uplink uses `wss://` (encrypted). When `ssl = false`, it uses `ws://`. All other features — SASL, reconnect, IRCv3 CAP negotiation, SOCKS5 proxy — work identically over WebSocket.
 
-You can also enable it from the GUI: **☰ → Preferences → Manage Servers → Edit** → tick **Use WebSocket**.
+You can also enable it from the GUI: **☰ → Manage Servers → Edit** → tick **Use WebSocket**.
 
 ### How do I watch for a nick coming online?
 

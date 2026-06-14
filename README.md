@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.25.27-x86_64.AppImage">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.25.30-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.27-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.30-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.27-windows-x64.zip">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.30-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.27-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.30-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -66,7 +66,7 @@
 </p>
 
 <p align="center">
-  <sub>Dark &nbsp;·&nbsp; Light — choose in <strong>Preferences → App Icon</strong></sub>
+  <sub>Dark &nbsp;·&nbsp; Light — choose in <strong>⚙ → App Icon</strong></sub>
 </p>
 
 ---
@@ -108,14 +108,14 @@
 | Feature | Details |
 |---|---|
 | **55 built-in themes** | Catppuccin, Dracula, Nord, Gruvbox, Tokyo Night, Solarized, One Dark, and many more. Click the theme button in Preferences to expand a scrollable list — arrow keys browse, Enter or click applies. |
-| **Reworked Preferences** | Manage Servers and Documentation at the top. Theme as a collapsible list. App icon as radio buttons. Hanging indent toggle. |
+| **Reworked Preferences** | Theme as a collapsible list — browse and apply without closing. App icon as radio buttons. Hanging indent toggle and all other UI options. Open with the **⚙ gear icon** in the channel header. |
 | **Hanging indent** | Wrapped messages align past the timestamp+nick column. Toggle from **Preferences → Hanging Indent** or `hanging_indent = true` in config. |
-| **Hamburger menu** | Click ☰ for About, **Check for Updates** (fetches latest release from GitHub, shows version comparison), Documentation, Preferences, Open Config (opens `config.toml` in your editor), and Reload Config (restarts the app to apply all config changes). |
+| **Hamburger menu** | Click ☰ for About, **Check for Updates** (fetches latest release from GitHub, shows version comparison), **Manage Servers**, Documentation, Open Config (opens `config.toml` in your editor), and Reload Config (restarts the app to apply all config changes). |
 | **Channel panes** | Right-click any `#channel` in the sidebar → **Open in Pane**. Up to 4 panes total. Each pane has its own chat history, nick list, topic bar (with toggle), and input bar. Auto-layout: 2 = side by side, 3 = primary left + two stacked right, 4 = 2×2 grid. |
 | **Native Windows style** | On Windows, the `windows11` Qt style is used by default. No alien dark theme on fresh installs. Custom themes still available. |
 | **Per-widget font sizes** | Independent size control for chat, sidebar, nick list, topic bar, input, and typing indicator. **Preferences → Font Config...** |
 | **Panel persistence** | Nick panel width saved on quit, restored on relaunch. |
-| **Sidebar toggle** | ⚙ gear in the info bar (left of ☰) collapses the server/channel list to give the chat full window width. Click again to restore. |
+| **Sidebar toggle** | A close button in the sidebar panel collapses the server/channel list; a reveal button appears at the bottom-left of the chat area to restore it. Width is drag-resizable and persists across sessions. |
 
 ### 💬 Chat Features
 
@@ -144,8 +144,8 @@
 
 | Feature | Details |
 |---|---|
-| **Embedded nick panel** | User list sits in a panel on the right side of the chat view. Click the ⚙ button in the panel header to collapse or expand it — the gear animates a full spin before toggling. The gear and user count are always visible in the header. Panel width persists across sessions. |
-| **Embedded sidebar** | Server/channel list lives inside the same rounded floating card as the chat area and nick list — all three columns share one seamless surface with a matching background. The ⚙ gear in the topic bar collapses the sidebar completely (chat fills the card) and restores it. Width is drag-resizable and persists across sessions. |
+| **Embedded nick panel** | User list sits in a panel on the right side of the chat view. Click the close button in the panel header to collapse it; a reveal button appears at the top-right of the chat area to restore it. Panel width persists across sessions. |
+| **Embedded sidebar** | Server/channel list lives inside the same rounded floating card as the chat area and nick list — all three columns share one seamless surface with a matching background. A close button in the sidebar panel collapses it (chat fills the card); a reveal button at the bottom-left restores it. Width is drag-resizable and persists across sessions. |
 | **Bot indicators** | Nicks with `+B` mode display 🤖 or 👾 (randomly assigned per nick each session, stable across refreshes). |
 | **Colored nicks** | Unique color per nick in both chat and the nick list. Toggle from **☰ → Preferences**. |
 | **Prefix sorting** | Nick list sorted by prefix rank: `~ & @ % +` then alphabetical. |

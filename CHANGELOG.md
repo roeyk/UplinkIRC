@@ -3,6 +3,36 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-14 (sidebar alignment, event group indent, button transparency, selection contrast, Manage Servers to burger) v0.25.30
+What changed:
+  - Sidebar header height sync: m_sidebarHeader now dynamically matches m_primaryHeader height plus the
+    topic display height (when visible). Sync runs in the startup QTimer::singleShot(0), in the
+    eventFilter for m_topicDisplay Resize/Show/Hide events, and in both topic toggle handlers.
+    Scroll positions for the sidebar tree and nick list are saved and restored around every sync so
+    neither list jumps visually. This ensures server/channel list items align with nick panel header
+    icons regardless of topic bar state.
+  - Event group expanded indent: entries 2+ in an expanded event group now receive a 2-space leading
+    indent (\n  prefix in chatrenderer.cpp formatEventGroupLine). When a long hostmask wraps past the
+    right edge, its continuation starts at column 0 (kHPad); subsequent entries start at column 2,
+    making them visually distinct from wrap continuations.
+  - Hamburger and gear button backgrounds: both m_hamburger and m_sidebarToggleBtn now have an
+    explicit "QToolButton { background: transparent; border: none; }" stylesheet set at construction
+    and refreshed in applyFontSizes() on every theme change. Prevents the platform-default button
+    box from showing through on dark or high-contrast themes.
+  - Selection text contrast: SidebarDelegate and NickDelegate now compute a contrast text color for
+    selected items using m_accent.lightnessF() > 0.5. Light accent → dark text (#111111);
+    dark accent → light text (#eeeeee). Prevents invisible text on themes where the accent color
+    is close to the text color.
+  - Manage Servers moved to ☰ menu: addAction("Manage Servers") inserted in the hamburger QMenu
+    lambda, running the full ManageServersDialog flow inline (add/edit/remove servers, immediate
+    reconnect, config save). Menu entry added before Documentation.
+  - Preferences quick-access row removed: the block containing manageBtn (Manage Servers...) and
+    docsBtn (Documentation) at the top of PreferencesDialog has been removed. Preferences now
+    starts directly with the Appearance section separator.
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-14 (bolt icon, mention detection rewrite, single-word message parsing fix) v0.25.29
 What changed:
   - Bolt mention icon: mi-bolt.svg replaces mi-lightbulb-2.svg for nick mention indicator in sidebar.
@@ -4346,6 +4376,20 @@ No regressions. No known issues.
 Next priorities: hero screenshots (3 needed for docs/index.html hero section); ServerId/BufferId
 strong types; virtual scrolling for very busy channels.
 -->
+
+## [0.25.30] — 2026-06-14
+
+### Fixed
+- **Server/channel list alignment** — sidebar header now dynamically tracks the primary header height plus the topic bar height, so server/channel tree items stay aligned with the nick panel header icons whether the topic bar is visible or not. Sidebar and nick list scroll positions are preserved across every sync.
+- **Event group visual clarity** — in expanded event groups, entries after the first are indented 2 spaces so wrap continuations from long hostmasks are visually distinct from the start of the next entry.
+- **Hamburger and gear icon backgrounds** — both toolbar buttons now always render with a transparent background; icon color refreshes on every theme change to stay consistent with the active theme.
+- **Sidebar/nick list selection text** — selected item text color auto-contrasts with the accent color (dark text on light accents, light text on dark accents) so labels remain readable on all 55 built-in themes.
+
+### Changed
+- **Manage Servers in ☰ menu** — Manage Servers is now directly accessible from the hamburger menu without opening Preferences first.
+- **Preferences dialog streamlined** — the quick-access row (Manage Servers and Documentation buttons) at the top of the Preferences dialog has been removed; both actions are reachable from ☰ directly.
+
+---
 
 ## [0.25.27] — 2026-06-13
 

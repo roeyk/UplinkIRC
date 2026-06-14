@@ -59,24 +59,6 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     vbox->setContentsMargins(8, 6, 8, 6);
     vbox->setSpacing(3);
 
-    // ── Quick access ─────────────────────────────────────────────────────────
-    {
-        auto *row = new QHBoxLayout;
-        auto *manageBtn = new PillButton("Manage Servers...");
-        manageBtn->setIcon(MenuIcons::servers());
-        manageBtn->setAccentColor(accent);
-        manageBtn->setAutoDefault(false);
-        connect(manageBtn, &QPushButton::clicked, this, [this]{ emit manageServersRequested(); });
-        row->addWidget(manageBtn);
-        auto *docsBtn = new PillButton("Documentation");
-        docsBtn->setIcon(MenuIcons::documentation());
-        docsBtn->setAccentColor(accent);
-        docsBtn->setAutoDefault(false);
-        connect(docsBtn, &QPushButton::clicked, this, [this]{ emit docsRequested(); });
-        row->addWidget(docsBtn);
-        vbox->addLayout(row);
-    }
-
     // ── Appearance ────────────────────────────────────────────────────────────
     vbox->addSpacing(2);
     vbox->addWidget(makeSep());

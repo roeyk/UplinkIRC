@@ -277,7 +277,7 @@ Avatar images are fetched asynchronously when metadata arrives and cached for th
 
 #### Setting your own profile
 
-**Via Preferences:** Open ☰ → Preferences → scroll to the **Profile** section. Enter your Display Name and Avatar URL (or click **Browse...** to pick a local image file), then click **Apply to connected servers**. The values are saved to your config and re-sent automatically every time you connect.
+**Via Preferences:** Open **Preferences** (click the **⚙ gear icon** in the channel header) and scroll to the **Profile** section. Enter your Display Name and Avatar URL (or click **Browse...** to pick a local image file), then click **Apply to connected servers**. The values are saved to your config and re-sent automatically every time you connect.
 
 **Via commands:** Type in any channel or PM buffer:
 
