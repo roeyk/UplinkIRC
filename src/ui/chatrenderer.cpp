@@ -607,7 +607,8 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
 
         prefixEnd = static_cast<int>(tb.text.size());
         QTextCharFormat base;
-        if (isHistory) base.setForeground(dimColor);
+        if (isHistory)           base.setForeground(dimColor);
+        else if (ctx.validTheme) base.setForeground(QColor(ctx.themeText));
         ircToSegments(msg.text, base, tb);
         if (!isHistory) {
             linkifySegments(tb, prefixEnd);
@@ -631,7 +632,8 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
         prefixEnd = static_cast<int>(tb.text.size());
         QTextCharFormat base;
         base.setFontItalic(true);
-        if (isHistory) base.setForeground(dimColor);
+        if (isHistory)           base.setForeground(dimColor);
+        else if (ctx.validTheme) base.setForeground(QColor(ctx.themeText));
         ircToSegments(msg.text, base, tb);
         if (!isHistory) linkifySegments(tb, prefixEnd);
         break;
