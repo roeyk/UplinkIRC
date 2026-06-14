@@ -1118,8 +1118,8 @@ void MainWindow::setupNickPanel()
     hbox->addWidget(m_nickToggleBtn);
     hbox->addWidget(m_nickGroupsIconLabel);
     hbox->addSpacing(4);
-    hbox->addWidget(m_userInfoLabel, 1);
     hbox->addWidget(m_nickCountLabel);
+    hbox->addWidget(m_userInfoLabel, 1);
 
     m_nickPanel = new QWidget;
     m_nickPanel->setObjectName("nickPanel");
@@ -3980,7 +3980,7 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
         const QString modes   = ch ? ch->modes : QString();
         const QString modeStr = modes.isEmpty() ? QString() : " (" + modes + ")";
         m_topicLabel->setText(channel + modeStr);
-        m_userInfoLabel->setText(QStringLiteral("* ") + serverName);
+        m_userInfoLabel->clear();
 
         if (m_topicText)
             m_topicText->setText(ChatRenderer::linkifyTopic(ch ? ch->topic : QString()));
