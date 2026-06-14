@@ -1,4 +1,6 @@
+#if defined(__linux__) && !defined(__MUSL__)
 #include <malloc.h>
+#endif
 #include <QApplication>
 #include <QFont>
 #include <QInputDialog>
@@ -11,7 +13,9 @@
 
 int main(int argc, char *argv[])
 {
+#if defined(__linux__) && !defined(__MUSL__)
     mallopt(M_ARENA_MAX, 2); // cap glibc arenas; default (8×cores) wastes ~300 MiB RSS
+#endif
     QApplication app(argc, argv);
     QPixmapCache::setCacheLimit(4096); // 4 MB — default is unlimited
     app.setApplicationName("Uplink");
