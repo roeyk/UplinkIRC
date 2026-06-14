@@ -751,7 +751,7 @@ void IrcClient::processLine(const QString &line)
     // PRIVMSG / CTCP
     if (cmd == "PRIVMSG" && msg.params.size() >= 1) {
         const QString target = msg.params[0];
-        const QString text   = msg.trailing;
+        const QString text   = msg.params.size() >= 2 ? msg.params.last() : msg.trailing;
 
         const QString msgid   = msg.tags.value("msgid");
         const QString replyTo = msg.tags.value("+draft/reply");
@@ -818,7 +818,7 @@ void IrcClient::processLine(const QString &line)
     }
 
     if (cmd == "NOTICE" && msg.params.size() >= 1) {
-        const QString text = msg.trailing;
+        const QString text = msg.params.size() >= 2 ? msg.params.last() : msg.trailing;
         const QString noticeAccount = msg.tags.value("account");
         if (!noticeAccount.isEmpty())
             emit accountChanged(m_host, msg.nick, noticeAccount);
@@ -1074,7 +1074,7 @@ void IrcClient::deliverBatch(const QString &ref)
     for (const BatchInfo::Msg &bm : batch.msgs) {
         if (bm.command == "PRIVMSG" && bm.params.size() >= 1) {
             const QString target = bm.params[0];
-            const QString text   = bm.trailing;
+            const QString text   = bm.params.size() >= 2 ? bm.params.last() : bm.trailing;
             if (text.startsWith('\x01') && text.endsWith('\x01')) {
                 const QString ctcp = text.mid(1, text.size() - 2);
                 if (ctcp.startsWith("ACTION "))
@@ -1085,8 +1085,9 @@ void IrcClient::deliverBatch(const QString &ref)
                                      text, bm.serverTime, isHistory, bm.msgid, bm.replyTo);
             }
         } else if (bm.command == "NOTICE" && bm.params.size() >= 1) {
+            const QString btext = bm.params.size() >= 2 ? bm.params.last() : bm.trailing;
             emit noticeReceived(m_host, bm.params[0], bm.nick,
-                                bm.trailing, bm.serverTime, isHistory, bm.msgid, bm.replyTo);
+                                btext, bm.serverTime, isHistory, bm.msgid, bm.replyTo);
         }
     }
 }
