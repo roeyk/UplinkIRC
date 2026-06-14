@@ -1117,7 +1117,7 @@ void MainWindow::setupNickPanel()
     hbox->setSpacing(2);
     hbox->addWidget(m_nickToggleBtn);
     hbox->addWidget(m_nickGroupsIconLabel);
-    hbox->addSpacing(4);
+    hbox->addSpacing(2);
     hbox->addWidget(m_nickCountLabel);
     hbox->addWidget(m_userInfoLabel, 1);
 

@@ -561,7 +561,7 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
         || (msg.type == MessageType::Notice && target == "(server)");
     if (!isActive && !msg.isHistory && countsAsUnread) {
         ++ch.unread;
-        if (!sess->mentionRe.pattern().isEmpty() && sess->mentionRe.match(msg.text).hasMatch())
+        if (!sess->nick.isEmpty() && msg.text.contains(sess->nick, Qt::CaseInsensitive))
             ++ch.mentions;
     }
 

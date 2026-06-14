@@ -53,7 +53,7 @@ inline QIcon eye            (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon eyeOff         (const QColor &c = {}) { return fromSvg(":/icons/mi-visibility-off.svg",      c); }
 inline QIcon confirm        (const QColor &c = {}) { return fromSvg(":/icons/mi-check.svg",               c); }
 inline QIcon close          (const QColor &c = {}) { return fromSvg(":/icons/mi-close.svg",               c); }
-inline QIcon mention        (const QColor &c = {}) { return fromSvg(":/icons/mi-lightbulb-2.svg",         c); }
+inline QIcon mention        (const QColor &c = {}) { return fromSvg(":/icons/mi-bolt.svg",              c); }
 inline QIcon unread         (const QColor &c = {}) { return fromSvg(":/icons/mi-forum.svg",               c); }
 inline QIcon send           (const QColor &c = {}, int sz = 16) { return fromSvg(":/icons/mi-send.svg", c, sz); }
 inline QIcon connectedServer(const QColor &c = {}) { return fromSvg(":/icons/mi-public.svg",              c); }
