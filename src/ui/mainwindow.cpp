@@ -994,19 +994,15 @@ void MainWindow::setupSidebar()
     m_sidebarToggleBtn->setIcon(makeGearIcon(0, QColor(m_theme.valid ? m_theme.text : "#ffffff")));
     connect(m_sidebarToggleBtn, &QToolButton::clicked, this, [this]{
         m_sidebarExpanded = !m_sidebarExpanded;
-        m_sidebar->setVisible(m_sidebarExpanded);
-        const QList<int> sizes = m_mainSplitter->sizes();
-        const int total = sizes[0] + sizes[1];
+        // Hide the panel (not just the tree) so Qt redistributes space automatically.
+        // On expand, show the panel first then restore the saved width via setSizes.
+        m_sidebarPanel->setVisible(m_sidebarExpanded);
         if (m_sidebarExpanded) {
+            const int total = m_mainSplitter->width();
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
             if (m_topicLeft) m_topicLeft->setFixedWidth(m_sidebarExpandedWidth);
-            if (auto *l = qobject_cast<QVBoxLayout *>(m_rightContent->layout()))
-                l->setContentsMargins(8, 0, 8, 8);
         } else {
-            m_mainSplitter->setSizes({0, total});
             if (m_topicLeft) m_topicLeft->setFixedWidth(kBtnZoneMinW);
-            if (auto *l = qobject_cast<QVBoxLayout *>(m_rightContent->layout()))
-                l->setContentsMargins(8, 0, 8, 8);
         }
     });
 
