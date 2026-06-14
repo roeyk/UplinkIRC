@@ -4254,6 +4254,34 @@ Next priorities: /list dialog, window full-width bug on FreeBSD X11 (diagnostic
 build still on main — needs output from user on X11).
 -->
 
+<!--
+SESSION SUMMARY — 2026-06-14 (unified channel header + nick panel server label)
+What changed:
+  - Removed the standalone top bar (m_topicBar / topicLeftZone / topicRightZone widget hierarchy)
+    and all associated QSS rules. The floating card now has symmetric 8 px margins on all sides.
+  - Hamburger (☰) and sidebar toggle (⊞) moved into the primary channel header row, inline with
+    the #channel (+modes) label, speech bubble topic button, search button, and close button.
+  - Server name label (* NetworkName) moved into the nick panel header row, inline with the
+    close-panel button (▦) and groups icon (👥). m_userInfoLabel is created in setupNickPanel()
+    so it exists before setupChatArea() runs.
+  - Added m_sidebarHeader dynamic spacer at the top of the sidebar panel. Height is kept in sync
+    with m_primaryHeader + m_topicDisplay via an eventFilter on topicDisplay (Resize/Show/Hide),
+    using QTimer::singleShot(0) to read geometry after the layout pass. This keeps the sidebar
+    tree items vertically aligned with the nick panel header regardless of topic visibility.
+  - Channel header, topic display, and input bar are anchored inside chatSection (right of the
+    draggable sidebar divider). setupInputBar() redirects to m_chatSection->layout().
+  - themeloader.cpp: removed #topicBar/#topicLeftZone/#topicRightZone QSS; added
+    QWidget#sidebarHeader { background-color: {{bufferBg}}; }.
+  - Docs updated: howto.html (channel header section rewritten, sidebar/nick panel collapse
+    instructions updated, layout note updated), faq.md (sidebar toggle, nick panel collapse,
+    topic display descriptions), configuration.md (show_topic and font_nick_dock descriptions).
+  - Bumped to v0.25.27, tagged, pushed. CI and Release workflows both passed.
+    All 5 release artifacts present: AppImage + .zsync, Linux tarball, Windows zip, macOS dmg.
+No regressions. No known issues.
+Next priorities: hero screenshots (3 needed for docs/index.html hero section); ServerId/BufferId
+strong types; virtual scrolling for very busy channels.
+-->
+
 ## [0.25.27] — 2026-06-13
 
 ### Changed

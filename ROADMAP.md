@@ -243,6 +243,10 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Sidebar unified with chat card — server/channel sidebar moved inside the RoundedPane floating card alongside the chat area and nick list; sidebar background changed from sidebarBg to bufferBg so all three columns share one seamless surface; inputBar spans the full card width at the bottom, anchoring all columns; 8 px left margin restored on both expanded and collapsed states (v0.25.25, 2026-06-13)
 - [x] MD3-inspired UI pass — pill buttons (20px radius via PillButton QPainter subclass), rounder inputs/menus/tooltips, Material Symbols SVG icons for hamburger/gear/all menu items, sidebar pill highlight padding fixed, row heights via sizeHint delegates (v0.20.0)
 - [x] Self-signed cert fingerprint pinning — per-server accept/reject/pin dialog on first connect; SHA-256 fingerprint saved to config; mismatch disconnects with warning; IrcClient::abort() for clean reject (v0.20.0)
+- [x] Unified channel header — standalone top bar removed; hamburger (☰) and sidebar toggle (⊞) move into the primary header row inline with #channel (+modes); floating card gains symmetric 8 px margins on all four sides (v0.25.27, 2026-06-14)
+- [x] Server name in nick panel header — "* NetworkName" moves from top bar into the nick panel header row, inline with the close-panel button (▦) and groups icon (v0.25.27, 2026-06-14)
+- [x] Sidebar tree alignment — dynamic sidebarHeader spacer at top of sidebar panel keeps server tree items vertically aligned with the nick panel header; spacer height updated reactively via eventFilter on topicDisplay resize/show/hide (v0.25.27, 2026-06-14)
+- [x] Topic + input anchored to chatSection — channel header, topic display, and input bar are all inside chatSection (right of the draggable sidebar divider); they no longer span the full card width including the sidebar column (v0.25.27, 2026-06-14)
 
 ---
 
