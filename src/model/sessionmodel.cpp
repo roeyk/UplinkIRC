@@ -606,17 +606,29 @@ void SessionModel::onConnected(const QString &host)
     sess->connected = true;
     emit serverConnected(ServerId{host});
 
-    // Auto-join configured channels
+    IrcClient *cl = nullptr;
+    for (IrcClient *c : m_clients)
+        if (c->host() == host) { cl = c; break; }
+    if (!cl) return;
+
+    // Join configured channels (with keys)
+    QSet<QString> configChans;
     for (const ServerConfig &sc : m_config.servers) {
         if (sc.host != host) continue;
         for (const ChannelConfig &cc : sc.channels) {
-            for (IrcClient *cl : m_clients) {
-                if (cl->host() == host) {
-                    cl->join(cc.name, cc.password);
-                    break;
-                }
-            }
+            cl->join(cc.name, cc.password);
+            configChans.insert(cc.name.toLower());
         }
+        break;
+    }
+
+    // Re-join any channels the user had open that aren't covered by config
+    static const QString kChanPrefixes = QStringLiteral("#&!+");
+    for (const auto &ch : std::as_const(sess->channels)) {
+        if (ch.name.isEmpty() || ch.name == "(server)") continue;
+        if (!kChanPrefixes.contains(ch.name[0]))         continue; // skip PMs
+        if (configChans.contains(ch.name.toLower()))      continue; // already joining
+        cl->join(ch.name);
     }
 }
 

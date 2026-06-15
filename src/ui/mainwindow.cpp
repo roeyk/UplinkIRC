@@ -151,7 +151,8 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override
     {
-        const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+        const QIcon icon       = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+        const QIcon ignoreIcon = qvariant_cast<QIcon>(index.data(Qt::UserRole + 1));
         QStyleOptionViewItem opt = option;
         initStyleOption(&opt, index);
         opt.icon = QIcon();
@@ -171,7 +172,8 @@ public:
         constexpr int iconSz = 14;
         constexpr int iconGap = 2;
         const int pillX      = textRect.x() + textMargin - hPad;
-        const int iconExtra  = icon.isNull() ? 0 : (iconGap + iconSz);
+        const int iconExtra  = (icon.isNull()       ? 0 : (iconGap + iconSz))
+                             + (ignoreIcon.isNull()  ? 0 : (iconGap + iconSz));
 
         const bool isSelfAway = m_selfAway && !m_selfNick.isEmpty()
             && index.data(Qt::UserRole).toString().compare(m_selfNick, Qt::CaseInsensitive) == 0;
@@ -203,12 +205,17 @@ public:
         }
         QStyledItemDelegate::paint(painter, opt, index);
 
+        int afterIconX = textRect.x() + textMargin + textW;
         if (!icon.isNull()) {
-            const int iconX = textRect.x() + textMargin + textW + iconGap;
-            QRect r(iconX,
-                    opt.rect.top() + (opt.rect.height() - iconSz) / 2,
-                    iconSz, iconSz);
+            afterIconX += iconGap;
+            QRect r(afterIconX, opt.rect.top() + (opt.rect.height() - iconSz) / 2, iconSz, iconSz);
             icon.paint(painter, r);
+            afterIconX += iconSz;
+        }
+        if (!ignoreIcon.isNull()) {
+            afterIconX += iconGap;
+            QRect r(afterIconX, opt.rect.top() + (opt.rect.height() - iconSz) / 2, iconSz, iconSz);
+            ignoreIcon.paint(painter, r);
         }
 
         if (isSelfAway) painter->restore();
@@ -3656,6 +3663,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
                                           "No longer ignoring " + key);
                 }
                 Config::save(m_config, Config::defaultPath());
+                scheduleNickRefresh(host, m_model->activeChannel().str());
             });
         };
 
@@ -3672,6 +3680,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
                 Config::save(m_config, Config::defaultPath());
                 m_model->localMessage(ServerId{host}, m_model->activeChannel(),
                                       "No longer ignoring " + key);
+                scheduleNickRefresh(host, m_model->activeChannel().str());
             });
         }
 
@@ -4045,6 +4054,8 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
                                          QColor(m_theme.valid ? m_theme.accent : "#5588ff")));
     }
     item->setData(Qt::UserRole, e.nick);
+    if (m_model->isIgnored(e.nick.toLower()))
+        item->setData(Qt::UserRole + 1, QVariant::fromValue(MenuIcons::eyeOff()));
     {
         const NickMeta *meta = nullptr;
         if (sess) {
