@@ -1057,6 +1057,9 @@ void MainWindow::applyFontSizes()
     }
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
+    if (m_topicSetByLabel)
+        m_topicSetByLabel->setStyleSheet(
+            QString("QLabel { color: %1; }").arg(m_theme.valid ? m_theme.placeholder : "#888888"));
     if (m_nickPrefix)   m_nickPrefix->setFont(makeFont(fs.inputNick));
     if (m_input)        m_input->setFont(makeFont(fs.input));
     for (auto *p : std::as_const(m_orderedPanes)) {
@@ -1355,7 +1358,8 @@ void MainWindow::setupChatArea()
         m_topicSetByLabel = new QLabel;
         m_topicSetByLabel->setObjectName("topicSetByLabel");
         m_topicSetByLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
-        m_topicSetByLabel->setStyleSheet("QLabel { color: palette(shadow); }");
+        m_topicSetByLabel->setStyleSheet(
+            QString("QLabel { color: %1; }").arg(m_theme.valid ? m_theme.placeholder : "#888888"));
         m_topicSetByLabel->hide();
 
         m_awayBadge = new QLabel(tr("Away"));
