@@ -1367,9 +1367,9 @@ void MainWindow::setupChatArea()
 
         hbox->addWidget(m_primaryTopicBtn);
         hbox->addWidget(m_topicLabel);
-        hbox->addStretch(1);
+        hbox->addSpacing(10);
         hbox->addWidget(m_topicSetByLabel);
-        hbox->addSpacing(6);
+        hbox->addStretch(1);
         hbox->addWidget(m_awayBadge);
         hbox->addWidget(m_searchBtn);
         hbox->addWidget(m_primaryCloseBtn);
@@ -1863,7 +1863,7 @@ void MainWindow::connectModel()
             [this](ServerId h, BufferId ch, const QString &setter, quint64 ts){
         if (h == m_model->activeHost() && ch.str().toLower() == m_model->activeChannel().str().toLower())
             if (m_topicSetByLabel) {
-                m_topicSetByLabel->setText("set by " + setter + " · " + topicAgeStr(ts));
+                m_topicSetByLabel->setText("Topic set by " + setter + " · " + topicAgeStr(ts));
                 m_topicSetByLabel->setVisible(!setter.isEmpty() && ts > 0);
             }
     });
@@ -4225,7 +4225,7 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
             const QString setter = ch ? ch->topicSetBy : QString();
             const quint64 ts     = ch ? ch->topicSetAt : 0;
             if (!setter.isEmpty() && ts > 0) {
-                m_topicSetByLabel->setText("set by " + setter + " · " + topicAgeStr(ts));
+                m_topicSetByLabel->setText("Topic set by " + setter + " · " + topicAgeStr(ts));
                 m_topicSetByLabel->show();
             } else {
                 m_topicSetByLabel->hide();
