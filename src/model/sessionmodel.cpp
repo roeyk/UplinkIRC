@@ -471,7 +471,23 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
     connect(cl, &IrcClient::standardReply,    this, &SessionModel::onStandardReply);
     connect(cl, &IrcClient::nickChanged,     this, &SessionModel::onNickChanged);
     connect(cl, &IrcClient::kicked,          this, &SessionModel::onKicked);
-    connect(cl, &IrcClient::topicReceived,   this, &SessionModel::onTopicReceived);
+    connect(cl, &IrcClient::topicReceived,    this, &SessionModel::onTopicReceived);
+    connect(cl, &IrcClient::topicSetByReceived, this,
+            [this](const QString &host, const QString &channel,
+                   const QString &setter, quint64 ts) {
+        auto *sess = session(ServerId{host});
+        if (!sess) return;
+        auto &ch = sess->getOrCreate(channel);
+        ch.topicSetBy = setter;
+        ch.topicSetAt = ts;
+        emit topicSetByChanged(ServerId{host}, BufferId{channel}, setter, ts);
+    });
+    connect(cl, &IrcClient::awayChanged, this,
+            [this](const QString &host, bool away) {
+        auto *sess = session(ServerId{host});
+        if (sess) sess->away = away;
+        emit awayStatusChanged(ServerId{host}, away);
+    });
     connect(cl, &IrcClient::modesReceived,   this, &SessionModel::onModesReceived);
     connect(cl, &IrcClient::namesReceived,   this, &SessionModel::onNamesReceived);
     connect(cl, &IrcClient::whoEntryReceived,this, &SessionModel::onWhoEntry);

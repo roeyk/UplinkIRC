@@ -55,6 +55,8 @@ struct NickEntry {
 struct Channel {
     QString          name;
     QString          topic;
+    QString          topicSetBy;
+    quint64          topicSetAt{0};
     QString          modes;
     QList<NickEntry>          nicks;
     QHash<QString, qsizetype> nickIndex; // lowercase nick → index in nicks

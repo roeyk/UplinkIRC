@@ -16,6 +16,7 @@ struct ServerSession {
     QString  host;
     QString  nick;
     bool     connected{false};
+    bool     away{false};
     QRegularExpression mentionRe; // pre-compiled; rebuilt when nick changes
 
     QSet<QString> botNicks;     // lowercased nicks with +B user mode (global)

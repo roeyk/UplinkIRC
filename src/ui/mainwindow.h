@@ -201,6 +201,8 @@ private:
     QLabel       *m_userInfoLabel{nullptr}; // * network (in nick panel header)
     QWidget      *m_topicDisplay{nullptr};  // topic text — shown when showTopic
     QLabel       *m_topicText{nullptr};
+    QLabel       *m_topicSetByLabel{nullptr};
+    QLabel       *m_awayBadge{nullptr};
     QToolButton  *m_hamburger;
     QLabel       *m_appLabel{nullptr};
     QLabel       *m_typingLabel{nullptr};

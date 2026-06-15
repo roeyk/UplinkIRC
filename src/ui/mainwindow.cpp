@@ -662,6 +662,7 @@ void MainWindow::setupToolbar()
 
 static QIcon makeTopicIcon(const QColor &color);
 static QIcon makeMenuIcon(const QColor &color);
+static QString topicAgeStr(quint64 ts);
 
 void MainWindow::connectPreferences()
 {
@@ -1351,9 +1352,17 @@ void MainWindow::setupChatArea()
         m_topicLabel = new QLabel;
         m_topicLabel->setObjectName("channelLabel");
 
+        m_awayBadge = new QLabel(tr("Away"));
+        m_awayBadge->setObjectName("awayBadge");
+        m_awayBadge->setStyleSheet(
+            "QLabel { color: #e09030; border: 1px solid #e09030; border-radius: 3px;"
+            " padding: 0px 5px; font-size: 10px; }");
+        m_awayBadge->hide();
+
         hbox->addWidget(m_primaryTopicBtn);
         hbox->addWidget(m_topicLabel);
         hbox->addStretch(1);
+        hbox->addWidget(m_awayBadge);
         hbox->addWidget(m_searchBtn);
         hbox->addWidget(m_primaryCloseBtn);
     }
@@ -1373,7 +1382,15 @@ void MainWindow::setupChatArea()
         if (s == "http" || s == "https")
             QDesktopServices::openUrl(u);
     });
-    tdHbox->addWidget(m_topicText);
+    tdHbox->addWidget(m_topicText, 1);
+
+    m_topicSetByLabel = new QLabel;
+    m_topicSetByLabel->setObjectName("topicSetByLabel");
+    m_topicSetByLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
+    m_topicSetByLabel->setStyleSheet("QLabel { color: palette(mid); font-size: 10px; }");
+    m_topicSetByLabel->hide();
+    tdHbox->addWidget(m_topicSetByLabel, 0);
+
     m_topicDisplay->setObjectName("topicDisplay");
     m_topicDisplay->setVisible(m_showTopic);
     m_topicDisplay->installEventFilter(this);
@@ -1841,6 +1858,19 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::modesChanged, this, [this](ServerId h, BufferId ch){
         if (h == m_model->activeHost() && ch.str().toLower() == m_model->activeChannel().str().toLower())
             refreshTopicBar(h.str(), ch.str());
+    });
+    connect(m_model, &SessionModel::topicSetByChanged, this,
+            [this](ServerId h, BufferId ch, const QString &setter, quint64 ts){
+        if (h == m_model->activeHost() && ch.str().toLower() == m_model->activeChannel().str().toLower())
+            if (m_topicSetByLabel) {
+                m_topicSetByLabel->setText("set by " + setter + " · " + topicAgeStr(ts));
+                m_topicSetByLabel->setVisible(!setter.isEmpty() && ts > 0);
+            }
+    });
+    connect(m_model, &SessionModel::awayStatusChanged, this,
+            [this](ServerId h, bool away){
+        if (h == m_model->activeHost() && m_awayBadge)
+            m_awayBadge->setVisible(away);
     });
     connect(m_model, &SessionModel::nickListChanged, this,
             [this](ServerId h, BufferId ch){ onNickListChanged(h.str(), ch.str()); });
@@ -4157,6 +4187,18 @@ void MainWindow::refreshNickList(const QString &host, const QString &channel)
 }
 
 
+static QString topicAgeStr(quint64 ts)
+{
+    if (ts == 0) return {};
+    const qint64 now  = QDateTime::currentSecsSinceEpoch();
+    const qint64 secs = now - static_cast<qint64>(ts);
+    if (secs < 60)      return QObject::tr("just now");
+    if (secs < 3600)    return QObject::tr("%1m ago").arg(secs / 60);
+    if (secs < 86400)   return QObject::tr("%1h ago").arg(secs / 3600);
+    if (secs < 604800)  return QObject::tr("%1d ago").arg(secs / 86400);
+    return QObject::tr("%1w ago").arg(secs / 604800);
+}
+
 void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
 {
     auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
@@ -4169,6 +4211,7 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
         m_topicLabel->clear();
         m_userInfoLabel->setText(serverName);
         if (m_topicText) m_topicText->clear();
+        if (m_topicSetByLabel) m_topicSetByLabel->hide();
     } else {
         const QString modes   = ch ? ch->modes : QString();
         const QString modeStr = modes.isEmpty() ? QString() : " (" + modes + ")";
@@ -4177,6 +4220,22 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
 
         if (m_topicText)
             m_topicText->setText(ChatRenderer::linkifyTopic(ch ? ch->topic : QString()));
+
+        if (m_topicSetByLabel) {
+            const QString setter = ch ? ch->topicSetBy : QString();
+            const quint64 ts     = ch ? ch->topicSetAt : 0;
+            if (!setter.isEmpty() && ts > 0) {
+                m_topicSetByLabel->setText("set by " + setter + " · " + topicAgeStr(ts));
+                m_topicSetByLabel->show();
+            } else {
+                m_topicSetByLabel->hide();
+            }
+        }
+    }
+
+    if (m_awayBadge) {
+        auto *sess = m_model->session(ServerId{host});
+        m_awayBadge->setVisible(sess && sess->away);
     }
 }
 

@@ -81,7 +81,10 @@ signals:
 
     // Content changes — chat view needs updating
     void messageAdded   (ServerId host, BufferId channel, const Message &msg);
-    void topicChanged   (ServerId host, BufferId channel, const QString &topic);
+    void topicChanged      (ServerId host, BufferId channel, const QString &topic);
+    void topicSetByChanged (ServerId host, BufferId channel,
+                            const QString &setter, quint64 ts);
+    void awayStatusChanged (ServerId host, bool away);
     void modesChanged   (ServerId host, BufferId channel);
     void nickListChanged(ServerId host, BufferId channel);
     void nickAdded      (ServerId host, BufferId channel, const QString &nick);

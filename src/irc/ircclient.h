@@ -84,6 +84,9 @@ signals:
                        const QString &by,     const QString &reason);
 
     void topicReceived    (const QString &server, const QString &channel, const QString &topic);
+    void topicSetByReceived(const QString &server, const QString &channel,
+                            const QString &setter, quint64 timestamp);
+    void awayChanged      (const QString &server, bool away);
     void modesReceived    (const QString &server, const QString &channel, const QString &modes);
     void namesReceived    (const QString &server, const QString &channel, const QStringList &nicks);
     void namesDone        (const QString &server, const QString &channel);
@@ -182,6 +185,7 @@ private:
     QString      m_saslPassword;
     bool         m_saslExternal{false};
     bool         m_saslPending{false};
+    bool         m_away{false};
     QString      m_nickservPassword;
     QByteArray   m_buffer;
 

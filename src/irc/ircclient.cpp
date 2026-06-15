@@ -1380,7 +1380,16 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             emit topicReceived(m_host, params[1], trailing);
         break;
 
-    case 315: case 333: break; // RPL_ENDOFWHO, RPL_TOPICWHOTIME — suppress
+    case 315: break; // RPL_ENDOFWHO — suppress
+
+    case 333: // RPL_TOPICWHOTIME
+        if (params.size() >= 4) {
+            bool ok = false;
+            const quint64 ts = params[3].toULongLong(&ok);
+            if (ok)
+                emit topicSetByReceived(m_host, params[1], params[2], ts);
+        }
+        break;
 
     case 353: { // RPL_NAMREPLY
         if (params.size() >= 3) {
@@ -1552,6 +1561,16 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         }
         break;
     }
+    case 305: // RPL_UNAWAY
+        m_away = false;
+        emit awayChanged(m_host, false);
+        break;
+
+    case 306: // RPL_NOWAWAY
+        m_away = true;
+        emit awayChanged(m_host, true);
+        break;
+
     // WHOIS/WHOWAS replies — route to active channel/window
     case 301: case 307: case 311: case 312: case 313:
     case 317: case 318: case 319: case 320: case 369:
