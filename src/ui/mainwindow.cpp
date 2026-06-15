@@ -1352,16 +1352,24 @@ void MainWindow::setupChatArea()
         m_topicLabel = new QLabel;
         m_topicLabel->setObjectName("channelLabel");
 
+        m_topicSetByLabel = new QLabel;
+        m_topicSetByLabel->setObjectName("topicSetByLabel");
+        m_topicSetByLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
+        m_topicSetByLabel->setStyleSheet("QLabel { color: palette(shadow); }");
+        m_topicSetByLabel->hide();
+
         m_awayBadge = new QLabel(tr("Away"));
         m_awayBadge->setObjectName("awayBadge");
         m_awayBadge->setStyleSheet(
             "QLabel { color: #e09030; border: 1px solid #e09030; border-radius: 3px;"
-            " padding: 0px 5px; font-size: 10px; }");
+            " padding: 0px 5px; }");
         m_awayBadge->hide();
 
         hbox->addWidget(m_primaryTopicBtn);
         hbox->addWidget(m_topicLabel);
         hbox->addStretch(1);
+        hbox->addWidget(m_topicSetByLabel);
+        hbox->addSpacing(6);
         hbox->addWidget(m_awayBadge);
         hbox->addWidget(m_searchBtn);
         hbox->addWidget(m_primaryCloseBtn);
@@ -1383,14 +1391,6 @@ void MainWindow::setupChatArea()
             QDesktopServices::openUrl(u);
     });
     tdHbox->addWidget(m_topicText, 1);
-
-    m_topicSetByLabel = new QLabel;
-    m_topicSetByLabel->setObjectName("topicSetByLabel");
-    m_topicSetByLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
-    m_topicSetByLabel->setStyleSheet("QLabel { color: palette(mid); font-size: 10px; }");
-    m_topicSetByLabel->hide();
-    tdHbox->addWidget(m_topicSetByLabel, 0);
-
     m_topicDisplay->setObjectName("topicDisplay");
     m_topicDisplay->setVisible(m_showTopic);
     m_topicDisplay->installEventFilter(this);
