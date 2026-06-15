@@ -762,8 +762,12 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
     ch.addNick(nick);
     emit nickAdded(ServerId{host}, BufferId{channel}, nick);
 
-    if (!isSelf)
-        sendRaw(ServerId{host}, "WHO " + nick + " %cnfa,42");
+    // Skip WHO if extended-join is active — account arrives in the JOIN message itself.
+    if (!isSelf) {
+        auto *cl = clientFor(ServerId{host});
+        if (!cl || !cl->hasCap("extended-join"))
+            sendRaw(ServerId{host}, "WHO " + nick + " %cnfa,42");
+    }
 
     const QString mask = (!user.isEmpty() && !hostAddr.isEmpty())
         ? " (" + user + "@" + hostAddr + ")" : QString();
