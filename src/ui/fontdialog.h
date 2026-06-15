@@ -25,6 +25,7 @@ private:
     QSpinBox      *m_spNickList;
     QSpinBox      *m_spNickDock;
     QSpinBox      *m_spTopicBar;
+    QSpinBox      *m_spTopicText;
     QSpinBox      *m_spInputNick;
     QSpinBox      *m_spInput;
     QSpinBox      *m_spTyping;

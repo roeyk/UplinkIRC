@@ -60,6 +60,7 @@ font_chat       = 10
 font_nick_list  = 10
 font_nick_dock  = 10
 font_topic_bar  = 10
+font_topic_text = 10
 font_input_nick = 10
 font_input      = 10
 
@@ -138,6 +139,7 @@ Config Config::load(const QString &path)
             cfg.ui.fontSizes.nickList     = (*ui)["font_nick_list"].value_or(10);
             cfg.ui.fontSizes.nickDock     = (*ui)["font_nick_dock"].value_or(10);
             cfg.ui.fontSizes.topicBar     = (*ui)["font_topic_bar"].value_or(10);
+            cfg.ui.fontSizes.topicText    = (*ui)["font_topic_text"].value_or(10);
             cfg.ui.fontSizes.inputNick    = (*ui)["font_input_nick"].value_or(10);
             cfg.ui.fontSizes.input        = (*ui)["font_input"].value_or(10);
             cfg.ui.fontSizes.typing       = (*ui)["font_typing"].value_or(9);
@@ -313,6 +315,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "font_nick_list     = " << cfg.ui.fontSizes.nickList     << "\n";
     out << "font_nick_dock     = " << cfg.ui.fontSizes.nickDock     << "\n";
     out << "font_topic_bar     = " << cfg.ui.fontSizes.topicBar     << "\n";
+    out << "font_topic_text    = " << cfg.ui.fontSizes.topicText    << "\n";
     out << "font_input_nick    = " << cfg.ui.fontSizes.inputNick    << "\n";
     out << "font_input         = " << cfg.ui.fontSizes.input        << "\n";
     out << "font_typing        = " << cfg.ui.fontSizes.typing       << "\n";

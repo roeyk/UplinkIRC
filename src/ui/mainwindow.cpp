@@ -1094,6 +1094,7 @@ void MainWindow::applyFontSizes()
             "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
     }
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
+    if (m_topicText)     m_topicText->setFont(makeFont(fs.topicText));
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
     if (m_topicSetByLabel)
         m_topicSetByLabel->setStyleSheet(
@@ -1104,7 +1105,7 @@ void MainWindow::applyFontSizes()
         const QFont chatFont = makeFont(fs.chat);
         p->chatView()->setFont(chatFont);
         p->nickList()->setFont(makeFont(fs.nickList));
-        p->setTopicFont(makeFont(fs.topicBar));
+        p->setTopicFont(makeFont(fs.topicText));
         p->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
     }
     if (m_typingLabel) {
@@ -3336,7 +3337,7 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
                               QColor(m_theme.text));
             pane->nickList()->setItemDelegate(nd);
         }
-        pane->setTopicFont(makeFont(fs.topicBar));
+        pane->setTopicFont(makeFont(fs.topicText));
         pane->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
     }
 

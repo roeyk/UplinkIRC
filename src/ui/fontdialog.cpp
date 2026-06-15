@@ -55,6 +55,7 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     m_spNickList     = makeSpinBox(sizes.nickList);
     m_spNickDock     = makeSpinBox(sizes.nickDock);
     m_spTopicBar     = makeSpinBox(sizes.topicBar);
+    m_spTopicText    = makeSpinBox(sizes.topicText);
     m_spInputNick    = makeSpinBox(sizes.inputNick);
     m_spInput        = makeSpinBox(sizes.input);
     m_spTyping       = makeSpinBox(sizes.typing);
@@ -91,10 +92,10 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     const SizeRow rows[] = {
         { "Chat",        m_spChat,         "Input",        m_spInput        },
         { "Sidebar",     m_spSidebar,      "Nick List",    m_spNickList     },
-        { "Topic Bar",   m_spTopicBar,     "Nick Label",   m_spInputNick    },
-        { "Server Name", m_spServerHeader, "Typing",       m_spTyping       },
+        { "Topic Bar",   m_spTopicBar,     "Topic Text",   m_spTopicText    },
+        { "Nick Label",  m_spInputNick,    "Typing",       m_spTyping       },
         { "Toolbar",     m_spToolbar,      "Users Title",  m_spNickDock     },
-        { "Chat Emoji",  m_spEmoji,        "",             nullptr          },
+        { "Server Name", m_spServerHeader, "Chat Emoji",   m_spEmoji        },
     };
     for (int r = 0; r < 6; ++r) {
         auto *la = new QLabel(QString(rows[r].l1) + ":");
@@ -134,6 +135,6 @@ FontSizes FontDialog::selectedSizes()  const
 {
     return { m_spToolbar->value(), m_spServerHeader->value(), m_spSidebar->value(),
              m_spChat->value(), m_spNickList->value(), m_spNickDock->value(),
-             m_spTopicBar->value(), m_spInputNick->value(), m_spInput->value(),
-             m_spTyping->value(), m_spEmoji->value() };
+             m_spTopicBar->value(), m_spTopicText->value(), m_spInputNick->value(),
+             m_spInput->value(), m_spTyping->value(), m_spEmoji->value() };
 }
