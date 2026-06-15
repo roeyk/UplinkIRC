@@ -14,6 +14,25 @@
 | **Shift+Tab** | Cycle backwards through nick completions |
 | **Escape** | Cancel a pending reply (when the `↩ nick` reply bar is showing above the input) |
 
+### Text formatting shortcuts
+
+Insert mIRC formatting control codes at the cursor. These codes are invisible in your input box but rendered by IRC clients that support mIRC formatting.
+
+| Shortcut | Format | Effect |
+|---|---|---|
+| **Ctrl+B** | Bold | Toggles bold on/off at the cursor position |
+| **Ctrl+I** | Italic | Toggles italic on/off at the cursor position |
+| **Ctrl+U** | Underline | Toggles underline on/off at the cursor position |
+| **Ctrl+O** | Reset | Clears all active formatting (bold, italic, underline, color) at once |
+
+**Example:** to send `This is **important** now`:
+
+```
+This is [Ctrl+B]important[Ctrl+B] now
+```
+
+Use `Ctrl+O` to reset all formatting at once instead of toggling each one off individually.
+
 ### Nick completion detail
 
 Tab completion works anywhere in the line, not just at the start. If you type `hey ali` and press Tab, it completes `ali` to the first nick starting with those letters in the current channel. Pressing Tab again cycles to the next match.

@@ -150,6 +150,14 @@ void ChatView::scrollToBottom()
     verticalScrollBar()->setValue(verticalScrollBar()->maximum());
 }
 
+void ChatView::scrollToLine(int lineIdx)
+{
+    if (lineIdx < 0 || lineIdx >= m_lines.size()) return;
+    if (m_cumH.size() != m_lines.size()) rebuildCumH();
+    verticalScrollBar()->setValue(m_cumH.value(lineIdx, 0));
+    m_atBottom = false;
+}
+
 int ChatView::findLine(const QString &id) const
 {
     if (id.isEmpty()) return -1;

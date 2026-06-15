@@ -486,8 +486,10 @@
     <li><a href="#channel-panes">Channel panes</a></li>
     <li><a href="#event-condensation">Event condensation</a></li>
     <li><a href="#chat-area">Chat area</a></li>
+    <li><a href="#unread-separator">Unread separator &amp; scroll</a></li>
     <li><a href="#typing">Typing indicator</a></li>
     <li><a href="#nick-panel">Nick list panel</a></li>
+    <li><a href="#nick-filter">Nick list filter</a></li>
     <li><a href="#nick-context-menu">Nick right-click menu</a></li>
     <li><a href="#account-tracking">Account tracking</a></li>
     <li><a href="#user-metadata">User metadata</a></li>
@@ -504,7 +506,7 @@
     <li><a href="#server-queries">Server queries (/stats, /time, /whowas)</a></li>
     <li><a href="#setname">Changing your realname</a></li>
     <li><a href="#pm">Private messages</a></li>
-    <li><a href="#formatting">IRC formatting</a></li>
+    <li><a href="#formatting">IRC formatting (send &amp; receive)</a></li>
     <li><a href="#emoji">Emoji &amp; shortcodes</a></li>
     <li><a href="#multiline">Multi-line messages</a></li>
     <li><a href="#tab">Tab completion</a></li>
@@ -1496,7 +1498,32 @@ channels  = "#uplink"</pre>
       <li><strong>Right-click any nick</strong> in a message to open the nick context menu — Message, Whois, Copy Nick, and submenus: <strong>CTCP ▶</strong> (Ping, Version), <strong>DCC ▶</strong> (Send File), <strong>Chan Ops ▶</strong> (Op, Voice, Invite, Kick, Ban…). See <a href="#nick-context-menu">Nick right-click menu</a>.</li>
       <li><strong>Hover over a nick</strong> in a message to see their NickServ account name as a tooltip (when the server reports it via <code>account-tag</code> or <code>account-notify</code>).</li>
       <li>Press <kbd>Ctrl+F</kbd> to search the current buffer. See <a href="#search">Message search</a>.</li>
+      <li>When you switch to a channel with unread messages, a <strong>── N new messages ──</strong> divider appears at the point where new messages start, and the view scrolls there automatically. See <a href="#unread-separator">Unread separator &amp; scroll memory</a>.</li>
     </ul>
+  </section>
+
+  <!-- UNREAD SEPARATOR & SCROLL MEMORY -->
+  <section id="unread-separator">
+    <h2>Unread separator &amp; scroll position memory</h2>
+
+    <h3>New messages separator</h3>
+    <p>When you switch to a channel that has unread messages, Uplink inserts a horizontal divider in the chat view right before the first message you haven't seen yet:</p>
+    <pre>21:14  alice: hey, anyone around?
+21:15  bob:   yeah what's up
+── 3 new messages ──
+21:22  carol: just got here
+21:22  dave:  same
+21:23  alice: cool, let's talk</pre>
+    <p>The view scrolls automatically to show the separator at the top of the viewport, so you immediately see exactly where you left off — no hunting for your place in a busy channel. The separator clears as soon as you open the channel (unread count resets).</p>
+
+    <h3>Scroll position memory</h3>
+    <p>If you were reading back through history (scrolled up, not at the bottom) when you switched away from a channel, Uplink remembers exactly where you were. When you switch back, the scroll position is restored to the same spot.</p>
+
+    <p>If you were at the bottom when you switched away, the channel opens at the latest message as normal — no saved position is applied.</p>
+
+    <div class="tip">
+      <strong>How the two features work together:</strong> scroll memory applies when you navigate away mid-history. The unread separator applies when new messages arrived while you were away. If both conditions are true (you were mid-history <em>and</em> new messages arrived), the separator wins — Uplink scrolls to the separator so you always land at the boundary between what you read and what you missed.
+    </div>
   </section>
 
   <!-- TYPING INDICATOR -->
@@ -1549,7 +1576,48 @@ typing_indicator = true   # set to false to disable completely</pre>
       <li><strong>Hover</strong> over any nick to see their NickServ account name as a tooltip (shown as <code>account: name</code> when the server has reported it).</li>
       <li>Selected and hovered nicks are highlighted with a pill-shaped background in your theme's accent colour — the same style used in the server/channel sidebar.</li>
       <li>Right-click any nick for a full action menu — see <a href="#nick-context-menu">Nick right-click menu</a> below.</li>
+      <li>A <strong>filter box</strong> sits between the header and the list. Type to narrow the list by name — see <a href="#nick-filter">Nick list filter</a> below.</li>
     </ul>
+  </section>
+
+  <!-- NICK FILTER -->
+  <section id="nick-filter">
+    <h2>Nick list filter</h2>
+    <p>A small filter box sits directly above the nick list, below the panel header. Type any letters to instantly narrow the nick list to only the nicks that <strong>start with</strong> those characters.</p>
+
+    <h3>How it works</h3>
+    <p>The filter is always visible and always active. As you type, any nick that doesn't begin with your input disappears immediately — only matching nicks remain.</p>
+
+    <pre>Filter: si
+
+  Before              After
+  ──────────          ──────────
+  @alice              sienna
+  @bob                silver
+  sienna              sion
+  silver
+  sion
+  zorba</pre>
+
+    <p>The match is case-insensitive — typing <code>Al</code> matches <code>alice</code>, <code>Albert</code>, and <code>ALAN</code> equally.</p>
+
+    <h3>Clearing the filter</h3>
+    <ul>
+      <li>Click the <strong>✕</strong> button on the right of the filter box to clear it — the full nick list is instantly restored.</li>
+      <li>Press <kbd>Escape</kbd> while the filter box has focus to clear the text.</li>
+      <li>The filter clears automatically when you switch to a different channel.</li>
+    </ul>
+
+    <h3>Example use cases</h3>
+    <ul>
+      <li><strong>Busy channels</strong> — in a channel with hundreds of nicks, type the first two letters of someone's nick to find them instantly without scrolling.</li>
+      <li><strong>Checking who's around</strong> — type a common prefix to see all nicks from a particular group at a glance.</li>
+      <li><strong>Before tab-completing</strong> — if you can't remember exactly how to spell someone's nick, filter the list first to narrow your options, then type in the input box and Tab-complete.</li>
+    </ul>
+
+    <div class="tip">
+      <strong>The filter does not affect who is in the channel.</strong> It only hides nicks from <em>your view</em> of the list. Hidden nicks are still present, still receive messages, and still appear in tab completion. Switching channels or clearing the box brings everyone back.
+    </div>
   </section>
 
   <!-- NICK CONTEXT MENU -->
@@ -2013,19 +2081,53 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
 
   <!-- FORMATTING -->
   <section id="formatting">
-    <h2>IRC colors and formatting</h2>
-    <p>Uplink renders all standard IRC formatting codes in received messages:</p>
+    <h2>IRC text formatting — send &amp; receive</h2>
+    <p>Uplink both <strong>renders</strong> incoming mIRC formatting codes and lets you <strong>insert</strong> them in your own messages using keyboard shortcuts in the input box.</p>
+
+    <h3>Keyboard shortcuts — inserting formatting</h3>
+    <p>Press these shortcuts in the message input box to insert the corresponding formatting control character at the cursor position. Everything you type after the control character is formatted. Press the same shortcut again, or <kbd>Ctrl+O</kbd>, to end the formatting.</p>
 
     <table>
-      <tr><th>Code</th><th>Effect</th></tr>
-      <tr><td><kbd>Ctrl+B</kbd> (bold marker)</td><td><strong>Bold text</strong></td></tr>
-      <tr><td><kbd>Ctrl+I</kbd></td><td><em>Italic text</em></td></tr>
-      <tr><td><kbd>Ctrl+U</kbd></td><td>Underline text</td></tr>
-      <tr><td><kbd>Ctrl+S</kbd></td><td><s>Strikethrough</s></td></tr>
-      <tr><td>IRC color codes (03xx)</td><td>16 foreground + background colors</td></tr>
+      <thead><tr><th>Shortcut</th><th>Format</th><th>What others see</th></tr></thead>
+      <tbody>
+        <tr><td><kbd>Ctrl+B</kbd></td><td>Bold</td><td><strong>bold text</strong></td></tr>
+        <tr><td><kbd>Ctrl+I</kbd></td><td>Italic</td><td><em>italic text</em></td></tr>
+        <tr><td><kbd>Ctrl+U</kbd></td><td>Underline</td><td><u>underline text</u></td></tr>
+        <tr><td><kbd>Ctrl+O</kbd></td><td>Reset all</td><td>Clears all active formatting — bold, italic, underline, color. Back to plain text.</td></tr>
+      </tbody>
     </table>
 
-    <p>Most IRC clients let you insert formatting codes by pressing the key combinations above in the input box. Uplink displays whatever formatting codes come through from the server.</p>
+    <h3>Example — bold part of a message</h3>
+    <p>To send: <em>This is <strong>very important</strong> — please read</em></p>
+    <pre>This is [Ctrl+B]very important[Ctrl+B] — please read</pre>
+    <p>The <code>[Ctrl+B]</code> characters are invisible control codes — they don't show in your input box as typed characters. Anyone using an IRC client that renders mIRC formatting will see the bold. On clients that don't support formatting, they see the same text without the effect.</p>
+
+    <h3>Example — italic inside a sentence</h3>
+    <pre>I was [Ctrl+I]absolutely[Ctrl+I] blown away by that</pre>
+
+    <h3>Example — stacking formats</h3>
+    <p>You can combine bold and italic:</p>
+    <pre>This is [Ctrl+B][Ctrl+I]bold italic[Ctrl+O] text</pre>
+    <p>Use <kbd>Ctrl+O</kbd> at the end to reset everything at once rather than pressing each toggle individually.</p>
+
+    <h3>Received formatting — what Uplink renders</h3>
+    <p>All standard mIRC formatting codes in incoming messages are rendered automatically:</p>
+
+    <table>
+      <thead><tr><th>Code</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td>Bold (<code>\x02</code>)</td><td><strong>Bold text</strong></td></tr>
+        <tr><td>Italic (<code>\x1D</code>)</td><td><em>Italic text</em></td></tr>
+        <tr><td>Underline (<code>\x1F</code>)</td><td><u>Underline text</u></td></tr>
+        <tr><td>Strikethrough (<code>\x1E</code>)</td><td><s>Strikethrough text</s></td></tr>
+        <tr><td>Reset (<code>\x0F</code>)</td><td>Clears all formatting at that point</td></tr>
+        <tr><td>Color (<code>\x03</code>fg,bg)</td><td>16 foreground + background colors (standard mIRC palette)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      <strong>The control characters are invisible in your input box.</strong> After pressing <kbd>Ctrl+B</kbd>, the cursor advances but nothing appears — this is normal. The formatting only takes effect when the message is sent and received by other clients. You can verify the code was inserted by pressing the left arrow — the cursor will step back over the invisible character.
+    </div>
   </section>
 
   <!-- EMOJI -->
@@ -2095,14 +2197,21 @@ show_send_button = false   # hide the paper-plane button; press Enter to send</p
       <li>Works for commands too — type <code>/jo</code> and press <kbd>Tab</kbd> to get <code>/join</code>. Cycles through all matching commands on repeated presses.</li>
       <li>At the start of a line, the completed nick gets a colon appended: <code>alice:</code> — the standard IRC convention for addressing someone directly.</li>
       <li>Tab completion in a channel pane uses the nick list for <em>that pane's channel</em>, not the primary channel. You always get the right nicks regardless of which input is focused.</li>
+      <li>Press <kbd>Shift+Tab</kbd> to cycle backwards through completions.</li>
       <li>Pressing any other key after a completion resets the cycle, so you can start a new completion at any point.</li>
     </ul>
 
-    <pre>al[Tab]        →  alice:           (start of line — colon appended)
-thanks al[Tab] →  thanks alice     (mid-line — no colon)
-/p[Tab]        →  /part
-/p[Tab][Tab]   →  /ping
+    <pre>al[Tab]           →  alice:           (start of line — colon appended)
+thanks al[Tab]    →  thanks alice     (mid-line — no colon)
+al[Tab][Tab]      →  alex:            (next match)
+al[Shift+Tab]     →  alice:           (cycle back)
+/p[Tab]           →  /part
+/p[Tab][Tab]      →  /ping
 /p[Tab][Tab][Tab] →  /privmsg</pre>
+
+    <div class="tip">
+      <strong>Tip:</strong> if you're in a large channel and can't remember how a nick starts, use the <a href="#nick-filter">nick list filter</a> on the right to narrow the list first — then Tab-complete from the input. Both work off the same full nick list.
+    </div>
   </section>
 
   <!-- HISTORY -->

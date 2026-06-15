@@ -1340,6 +1340,20 @@ void MainWindow::setupNickPanel()
     hbox->addWidget(m_nickCountLabel);
     hbox->addWidget(m_userInfoLabel, 1);
 
+    m_nickFilter = new QLineEdit;
+    m_nickFilter->setObjectName("nickFilter");
+    m_nickFilter->setPlaceholderText("filter users…");
+    m_nickFilter->setClearButtonEnabled(true);
+    m_nickFilter->installEventFilter(this);
+    connect(m_nickFilter, &QLineEdit::textChanged, this, [this](const QString &text) {
+        const QString lower = text.toLower();
+        for (int i = 0; i < m_nickList->count(); ++i) {
+            auto *item = m_nickList->item(i);
+            const QString nick = item->data(Qt::UserRole).toString().toLower();
+            item->setHidden(!lower.isEmpty() && !nick.startsWith(lower));
+        }
+    });
+
     m_nickPanel = new QWidget;
     m_nickPanel->setObjectName("nickPanel");
     m_nickPanel->setMinimumWidth(24);
@@ -1347,6 +1361,7 @@ void MainWindow::setupNickPanel()
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
     vbox->addWidget(header);
+    vbox->addWidget(m_nickFilter);
     vbox->addWidget(m_nickList, 100);
     vbox->addStretch(1);
 }
@@ -2207,7 +2222,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
-    if (obj == m_input && event->type() == QEvent::Resize) {
+    // Nick filter: Escape clears it
+    if (obj == m_nickFilter && event->type() == QEvent::KeyPress) {
+        auto *ke = static_cast<QKeyEvent *>(event);
+        if (ke->key() == Qt::Key_Escape) {
+            m_nickFilter->clear();
+            return true;
+        }
+    }
+
+if (obj == m_input && event->type() == QEvent::Resize) {
         repositionSendBtn();
         return QMainWindow::eventFilter(obj, event);
     }
@@ -2281,6 +2305,24 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             return false; // let QPlainTextEdit insert newline
         onInputSubmit();
         return true;
+    }
+
+    // mIRC formatting codes: Ctrl+B bold, Ctrl+I italic, Ctrl+U underline, Ctrl+O reset
+    if (ke->modifiers() == Qt::ControlModifier) {
+        QChar fmt;
+        switch (ke->key()) {
+        case Qt::Key_B: fmt = QChar(0x02); break;
+        case Qt::Key_I: fmt = QChar(0x1D); break;
+        case Qt::Key_U: fmt = QChar(0x1F); break;
+        case Qt::Key_O: fmt = QChar(0x0F); break;
+        default: break;
+        }
+        if (!fmt.isNull()) {
+            QTextCursor tc = m_input->textCursor();
+            tc.insertText(QString(fmt));
+            m_input->setTextCursor(tc);
+            return true;
+        }
     }
 
     return QMainWindow::eventFilter(obj, event);
@@ -3193,6 +3235,17 @@ void MainWindow::dispatchInput(const QString &text, const QString &host, const Q
 
 void MainWindow::switchToChannel(const QString &host, const QString &channel)
 {
+    // Save scroll position for the channel we're leaving (only if not at bottom)
+    if (m_chatView) {
+        const QString prevKey = m_model->activeHost().str() + '\t' + m_model->activeChannel().str();
+        if (!prevKey.startsWith('\t')) {
+            if (!m_chatView->isAtBottom())
+                m_scrollPositions[prevKey] = m_chatView->verticalScrollBar()->value();
+            else
+                m_scrollPositions.remove(prevKey);
+        }
+    }
+
     m_primaryPanel->setVisible(true);
 
     const bool isChannel = channel.startsWith('#') || channel.startsWith('&')
@@ -3998,8 +4051,21 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
         m_chatView->appendLine(status);
     }
 
-    const QString selfNick = m_model->selfNick(ServerId{host});
+    const QString selfNick   = m_model->selfNick(ServerId{host});
+    const int     firstUnread = ch->firstUnreadIdx;
+    bool          sepInserted = false;
+
     for (int i = startIdx; i < ch->messages.size(); ) {
+        // Insert "── N new messages ──" separator before first unread message
+        if (!sepInserted && firstUnread >= startIdx && i == firstUnread) {
+            const int n = ch->unread;
+            ChatLine sep = ChatRenderer::makeStatusLine(
+                QString("── %1 new message%2 ──").arg(n).arg(n == 1 ? "" : "s"));
+            sep.id = QStringLiteral("sep:unread");
+            m_chatView->appendLine(sep);
+            sepInserted = true;
+        }
+
         const auto &msg = ch->messages[i];
         if (isCondensable(msg, selfNick)) {
             const QDate day = msg.timestamp.toLocalTime().date();
@@ -4045,8 +4111,21 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
         }
     }
 
-    if (resetToLatest)
-        QTimer::singleShot(0, this, [this]{ m_chatView->scrollToBottom(); });
+    if (resetToLatest) {
+        QTimer::singleShot(0, this, [this, key, firstUnread, startIdx] {
+            // Scroll to unread separator when present in the render window
+            if (firstUnread >= startIdx) {
+                const int li = m_chatView->findLine(QStringLiteral("sep:unread"));
+                if (li >= 0) { m_chatView->scrollToLine(li); return; }
+            }
+            // Restore saved scroll position if user was reading history and nothing new arrived
+            const int saved = m_scrollPositions.take(key);
+            if (saved > 0)
+                m_chatView->verticalScrollBar()->setValue(saved);
+            else
+                m_chatView->scrollToBottom();
+        });
+    }
 }
 
 void MainWindow::loadOlderMessages()
@@ -4303,6 +4382,7 @@ void MainWindow::onNickRenamed(const QString &host, const QString &channel,
 
 void MainWindow::refreshNickList(const QString &host, const QString &channel)
 {
+    if (m_nickFilter) m_nickFilter->clear();
     m_nickList->clear();
     auto *ch   = m_model->channel(ServerId{host}, BufferId{channel});
     if (!ch) return;

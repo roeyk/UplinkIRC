@@ -182,6 +182,7 @@ private:
     QListWidget  *m_nickList;
     QWidget      *m_nickPanel{nullptr};
     QWidget      *m_nickPanelHeader{nullptr};
+    QLineEdit    *m_nickFilter{nullptr};
     QLabel       *m_nickGroupsIconLabel{nullptr};
     QLabel       *m_nickCountLabel{nullptr};
     QToolButton  *m_nickToggleBtn{nullptr};
@@ -227,7 +228,8 @@ private:
     QHash<QString, QSet<QString>> m_typingNicks;       // "host|channel" → nicks
     QHash<QString, QTimer*>       m_typingNickTimers;  // "host|channel|nick" → timeout
     QHash<QString, int>           m_botIconIdx;        // lowercased nick → 0 (robot) or 1 (alien)
-    QHash<QString, int>           m_renderStart;       // "host\tchannel" → first rendered msg index
+    QHash<QString, int>           m_renderStart;        // "host\tchannel" → first rendered msg index
+    QHash<QString, int>           m_scrollPositions;   // "host\tchannel" → saved scroll px (non-bottom)
     bool                          m_loadingOlder{false};
 
     // Avatar image cache

@@ -436,8 +436,9 @@ void SessionModel::setActive(ServerId host, BufferId ch)
     m_activeChannel = ch;
     // Clear unread on the newly active channel
     if (auto *c = channel(host, ch)) {
-        c->unread   = 0;
-        c->mentions = 0;
+        c->unread         = 0;
+        c->mentions       = 0;
+        c->firstUnreadIdx = -1;
         emit unreadChanged(host, ch, 0);
     }
 }
@@ -602,6 +603,8 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     const bool countsAsUnread = msg.type == MessageType::Privmsg
         || (msg.type == MessageType::Notice && target == "(server)");
     if (!isActive && !msg.isHistory && countsAsUnread) {
+        if (ch.unread == 0)
+            ch.firstUnreadIdx = static_cast<int>(ch.messages.size()) - 1;
         ++ch.unread;
         const bool nickHit    = !sess->mentionRe.pattern().isEmpty() && sess->mentionRe.match(msg.text).hasMatch();
         const bool keywordHit = !sess->highlightRe.pattern().isEmpty() && sess->highlightRe.match(msg.text).hasMatch();

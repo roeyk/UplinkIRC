@@ -631,6 +631,53 @@ The expanded view shows every event individually — full hostmask, quit/part re
 
 This is useful any time you want to check a specific user's hostmask, read a quit reason, or confirm the exact order of events during a netsplit or reconnect storm.
 
+### What is the "── N new messages ──" divider I see in chat?
+
+When you switch to a channel that has unread messages, Uplink inserts a separator line at the exact point where new messages begin — right before the first message that arrived while you were away. The view scrolls to show that separator at the top automatically, so you always land at the right spot without hunting for where you left off.
+
+The separator clears as soon as you open the channel (the unread count resets to zero). On the next visit, if new messages have arrived, a fresh separator appears at the new boundary.
+
+### Where does Uplink take me when I switch to a channel?
+
+It depends on your state when you left:
+
+- **You were at the bottom** (reading live chat) → opens at the latest message as normal.
+- **You were reading back through history** (scrolled up) → Uplink restores your exact scroll position so you can pick up where you left off.
+- **New messages arrived while you were away** → Uplink scrolls to the **unread separator** (see above), regardless of where you were scrolled. This always takes priority so you never miss the unread boundary.
+
+### How do I filter the nick list to find someone in a big channel?
+
+The nick list panel has a filter box directly above the list (below the header). Click it and start typing — the list immediately narrows to only show nicks that **start with** your input.
+
+**Example:** type `al` to see `alice`, `albert`, `alan`, and no one else.
+
+- The filter is case-insensitive.
+- Click the **✕** in the filter box, or press **Escape** while focused on it, to clear and restore the full list.
+- The filter clears automatically when you switch to a different channel.
+
+The filter only changes what you see — nicks that don't match are temporarily hidden. They are still in the channel, still visible in tab completion, and come back the moment you clear the filter.
+
+### How do I send bold, italic, or underlined text?
+
+Press the formatting shortcut in the message input box before typing the text you want formatted:
+
+| Shortcut | Format |
+|---|---|
+| **Ctrl+B** | Bold |
+| **Ctrl+I** | Italic |
+| **Ctrl+U** | Underline |
+| **Ctrl+O** | Reset all formatting |
+
+The control character is invisible in your input — just type normally after pressing the shortcut. To end the formatting, press the same shortcut again or press `Ctrl+O` to clear everything at once.
+
+**Example — bold part of a message:**
+```
+Look at this [Ctrl+B]really important[Ctrl+B] thing
+```
+Sends as: Look at this **really important** thing
+
+Recipients using any standard IRC client will see the formatting. On clients that don't render mIRC codes, the text still arrives without any visible garbage — the control characters are invisible.
+
 ### Can I send a message that spans multiple lines?
 
 Yes. Press **Shift+Enter** in the input box to insert a line break. The box grows up to 4 lines automatically. Press **Enter** (without Shift) to send the whole thing.

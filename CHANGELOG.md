@@ -3,6 +3,36 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-15 (new messages separator, scroll memory, mIRC formatting input, nick list filter) v0.25.33
+What changed:
+  - New messages separator: when switching to a channel with unread messages, a "── N new messages ──"
+    divider is inserted before the first unread message and the view scrolls to it automatically.
+    Implemented via Channel::firstUnreadIdx (set on first unread arrival, cleared on setActive),
+    ChatRenderer::makeStatusLine for the separator line, and a QTimer::singleShot in refreshChatView
+    that calls ChatView::scrollToLine(findLine("sep:unread")) after layout.
+  - Scroll position memory: when switching away from a non-bottom scroll position, the scroll px value
+    is stored in m_scrollPositions[key]. On return, if no unread separator applies, the position is
+    restored. If a separator exists it takes priority. m_scrollPositions uses "host\tchannel" keys and
+    is cleaned up when the user scrolls back to the bottom.
+  - ChatView::scrollToLine(int): new public method that sets verticalScrollBar()->setValue(m_cumH[i])
+    and sets m_atBottom = false; used by the unread separator scroll.
+  - mIRC formatting input shortcuts: Ctrl+B (bold \x02), Ctrl+I (italic \x1D), Ctrl+U (underline \x1F),
+    Ctrl+O (reset \x0F) in the message input box. Handled in eventFilter when obj == m_input, inserting
+    the control character at the cursor via QTextCursor::insertText. Returns true (consumed).
+  - Nick list filter: always-visible QLineEdit (m_nickFilter, objectName "nickFilter") sits between
+    the panel header and the nick list. textChanged signal hides items whose Qt::UserRole nick does
+    not startsWith(filter.toLower()). Filter clears on refreshNickList (channel switch). Escape while
+    focused clears text via clear(). Themed via themeloader.cpp nickFilter CSS rule.
+  - Bug fix: QRegularExpression{} (default-constructed) has isValid()==true and empty pattern matches
+    every string. buildHighlightRe returning {} for no keywords caused keywordHit=true on every unread
+    message, showing the bolt icon for all channel chatter. Fixed by guarding all regex matches with
+    !pattern().isEmpty() in sessionmodel.cpp (postMessage) and chatview.cpp (ChatRenderer).
+  - Docs: new howto.html sections #unread-separator and #nick-filter; #formatting section rewritten to
+    cover both sending (keyboard shortcuts) and receiving formatting codes; #tab section updated with
+    Shift+Tab and tip about nick filter; keyboard-shortcuts.md updated with formatting shortcuts table;
+    faq.md updated with Q&As for all four new features. Version bumped to v0.25.33 across
+    CMakeLists.txt, README.md, docs/index.html.
+
 SESSION SUMMARY — 2026-06-14 (hotfix: release script missing tar.gz/eyebrow/footer patterns) v0.25.32
 What changed:
   - docs/index.html: tar.gz link, hero eyebrow <b>vX.Y.Z</b>, and footer "Uplink vX.Y.Z" were not

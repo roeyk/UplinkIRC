@@ -503,6 +503,14 @@ QWidget#nickPanelHeader QLabel {
     background-color: transparent;
     color: {{text}};
 }
+QLineEdit#nickFilter {
+    background-color: {{bufferBg}};
+    color: {{text}};
+    border: none;
+    border-bottom: 1px solid {{border}};
+    padding: 2px 6px;
+    font-size: 11px;
+}
 
 /* ── Tool buttons ── */
 QToolButton {

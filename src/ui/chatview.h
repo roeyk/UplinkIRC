@@ -25,6 +25,7 @@ public:
 
     bool isAtBottom() const;
     void scrollToBottom();
+    void scrollToLine(int lineIdx);
     int  findLine(const QString &id) const; // -1 if not found
 
     bool findText(const QString &text, bool backward = false);

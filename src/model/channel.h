@@ -74,6 +74,7 @@ struct Channel {
     QHash<QString, QHash<QString, QSet<QString>>> reactions;
     int              unread{0};
     int              mentions{0};
+    int              firstUnreadIdx{-1}; // index of first unread msg; -1 when none
     bool             joined{false};
     QDateTime        lastRead;  // soju.im/read marker
 
