@@ -101,6 +101,7 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     m_nickList = new QListWidget;
     m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
     m_nickList->setSpacing(0);
+    m_nickList->setUniformItemSizes(true);
 
     auto *nickWrapper = new QWidget;
     nickWrapper->setObjectName("nickPanel");
