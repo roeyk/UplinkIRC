@@ -405,6 +405,10 @@ void IrcClient::sendRaw(const QString &line)
 {
     if (sockState() != QAbstractSocket::ConnectedState) return;
     const QString stripped = stripCrlf(line);
+    if (stripped.startsWith("AWAY :", Qt::CaseInsensitive))
+        m_awayMsg = stripped.mid(6);
+    else if (stripped.compare("AWAY", Qt::CaseInsensitive) == 0)
+        m_awayMsg.clear();
     // Enforce 510-byte wire limit (RFC 1459: 512 bytes including CRLF).
     // left(510) counts code-points, not bytes — multi-byte chars could exceed the limit.
     QByteArray utf8 = stripped.toUtf8();
@@ -1411,12 +1415,12 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
     }
 
-    case 354: { // RPL_WHOSPCRPL — Ergo format: [me, channel, nick, flags, account]
-        if (params.size() >= 4) {
-            const QString &channel = params[1];
-            const QString &nick    = params[2];
-            const QString &flags   = params[3];
-            const QString account = params.size() >= 5 ? params[4] : QString();
+    case 354: { // RPL_WHOSPCRPL — Ergo format: [me, type, channel, nick, flags, account]
+        if (params.size() >= 5) {
+            const QString &channel = params[2];
+            const QString &nick    = params[3];
+            const QString &flags   = params[4];
+            const QString account = params.size() >= 6 ? params[5] : QString();
             if (channel.startsWith('#') || channel.startsWith('&'))
                 emit whoEntryReceived(m_host, channel, nick, flags);
             if (!account.isEmpty() && account != "0" && account != "*")
@@ -1564,13 +1568,15 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 305: // RPL_UNAWAY
         m_away = false;
         emit awayChanged(m_host, false);
-        if (!trailing.isEmpty()) emit contextualMessage(m_host, trailing);
+        emit contextualMessage(m_host, "You are no longer away");
         break;
 
     case 306: // RPL_NOWAWAY
         m_away = true;
         emit awayChanged(m_host, true);
-        if (!trailing.isEmpty()) emit contextualMessage(m_host, trailing);
+        emit contextualMessage(m_host, m_awayMsg.isEmpty()
+            ? QString("You are now away")
+            : "You are now away: " + m_awayMsg);
         break;
 
     // WHOIS/WHOWAS replies — route to active channel/window

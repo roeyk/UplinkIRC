@@ -186,6 +186,7 @@ private:
     bool         m_saslExternal{false};
     bool         m_saslPending{false};
     bool         m_away{false};
+    QString      m_awayMsg;
     QString      m_nickservPassword;
     QByteArray   m_buffer;
 

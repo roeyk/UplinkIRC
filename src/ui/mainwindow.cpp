@@ -1901,7 +1901,7 @@ void MainWindow::connectModel()
         if (h == m_model->activeHost() && m_nickDelegate) {
             const QString selfNick = m_model->selfNick(h);
             m_nickDelegate->setSelfAway(selfNick, away);
-            if (m_nickList) m_nickList->update();
+            if (m_nickList) m_nickList->viewport()->update();
         }
     });
     connect(m_model, &SessionModel::nickListChanged, this,
