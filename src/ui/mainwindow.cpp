@@ -4233,9 +4233,9 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
             const QString b64 = m_avatarBase64Cache.value(meta->avatarUrl);
             QStringList lines;
             if (!meta->displayName.isEmpty())
-                lines << "Name:" + meta->displayName.toHtmlEscaped();
+                lines << QLatin1String("Name:") + meta->displayName.toHtmlEscaped();
             if (!e.account.isEmpty())
-                lines << "Account: " + e.account.toHtmlEscaped();
+                lines << QLatin1String("Account: ") + e.account.toHtmlEscaped();
             item->setToolTip(
                 QString("<html><body><table><tr>"
                         "<td><img src='data:image/png;base64,%1' width='32' height='32'></td>"
@@ -4245,11 +4245,11 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
         } else {
             QStringList tips;
             if (meta && !meta->displayName.isEmpty())
-                tips << "Name:" + meta->displayName;
+                tips << QLatin1String("Name:") + meta->displayName;
             if (!e.account.isEmpty())
-                tips << "Account: " + e.account;
+                tips << QLatin1String("Account: ") + e.account;
             if (meta && !meta->avatarUrl.isEmpty())
-                tips << "Avatar: " + meta->avatarUrl;
+                tips << QLatin1String("Avatar: ") + meta->avatarUrl;
             if (!tips.isEmpty())
                 item->setToolTip(tips.join('\n'));
         }

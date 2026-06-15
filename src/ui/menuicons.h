@@ -1,4 +1,5 @@
 #pragma once
+#include <QHash>
 #include <QIcon>
 #include <QPixmap>
 #include <QPainter>
@@ -6,6 +7,7 @@
 #include <QScreen>
 #include <QPalette>
 #include <QSvgRenderer>
+#include <QStringBuilder>
 
 // Material Symbols Outlined icons, colorized to the current palette at runtime.
 
@@ -19,6 +21,18 @@ inline QIcon fromSvg(const QString &path, const QColor &color = {}, int logicalS
     const qreal dpr = (QApplication::primaryScreen())
                           ? qMax(1.0, QApplication::primaryScreen()->devicePixelRatio())
                           : 1.0;
+
+    // Cache rendered icons — SVG render + QPixmap alloc is expensive per-call.
+    // Key: path|aarrggbb|size|dpr*100 — all distinct combinations in the app fit in ~30 entries.
+    static QHash<QString, QIcon> s_cache;
+    const QString cacheKey = path
+        % QLatin1Char('|') % QString::number(col.rgba(), 16)
+        % QLatin1Char('|') % QString::number(logicalSize)
+        % QLatin1Char('|') % QString::number(qRound(dpr * 100));
+    auto it = s_cache.constFind(cacheKey);
+    if (it != s_cache.constEnd())
+        return *it;
+
     QSvgRenderer renderer(path);
     const int phys = qRound(logicalSize * dpr);
     QPixmap pix(phys, phys);
@@ -31,7 +45,7 @@ inline QIcon fromSvg(const QString &path, const QColor &color = {}, int logicalS
         p.fillRect(pix.rect(), col);
     }
     pix.setDevicePixelRatio(dpr);
-    return QIcon(pix);
+    return s_cache.emplace(cacheKey, QIcon(pix)).value();
 }
 
 inline QIcon about          (const QColor &c = {}) { return fromSvg(":/icons/mi-info.svg",               c); }
