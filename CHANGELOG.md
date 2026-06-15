@@ -3,6 +3,22 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-14 (nick fade while away, input height jump fix, auto-rejoin on reconnect, ignore icon in nick list) v0.25.32
+What changed:
+  - Nick fading when /away: self-nick in user list fades to 35% opacity when away status is active.
+    Implemented via painter->setOpacity(0.35) wrapping entire NickDelegate item paint, bypassing QSS
+    stylesheet overrides that make palette color changes invisible.
+  - Input height jump fix: bar->setObjectName("inputBar") moved before child widgets are created so
+    QSS rule QWidget#inputBar QPlainTextEdit matches at construction time. QTimer::singleShot(0) added
+    after applyFontSizes() to sync height post-polish using same formula as textChanged handler.
+  - Auto-rejoin channels on reconnect: onConnected now iterates sess->channels (persists across
+    disconnect) and re-issues JOIN for any channel not already covered by the server config list.
+  - Ignore icon in nick list: right-click > Ignore sets Qt::UserRole+1 on the nick list item to
+    MenuIcons::eyeOff(). NickDelegate draws it after the bot icon. Nick list refreshes on toggle.
+  - Docs: fixed /away and away_message descriptions (was "clears away status if none set", now
+    "sends 'Away' as fallback"); updated reconnect FAQ, added ignore icon note, topic-set-by note,
+    and new "How do I mark myself as away?" FAQ entry covering away status UI behaviour.
+
 SESSION SUMMARY — 2026-06-14 (lag meter, WALLOPS/Reply colors, server buffer differentiation, host icon, unread count badges, preferences toggle, /list disconnect fix) v0.25.31
 What changed:
   - Lag meter (SignalBars) moved from orphaned to sidebar header top-right, aligned with hamburger and

@@ -81,7 +81,7 @@ realname = "Uplink User"
 # websocket         = false            # connect via WebSocket (ws:// or wss://) instead of raw TCP
 # disabled          = false            # set to true to keep in config but skip on startup
 # quit_message      = "Later!"         # shown to others when you disconnect (default: "Uplink")
-# away_message      = "AFK"            # used by /away with no argument (default: clears away)
+# away_message      = "AFK"            # used by /away with no argument (default: sends "Away")
 
 [[server.channel]]
 name = "#uplink"
@@ -229,7 +229,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `ssl_fingerprint` | string | no | SHA-256 fingerprint of a pinned self-signed TLS certificate. Set automatically when you choose "Pin Certificate" on first connect. Once set, the connection is rejected if the certificate changes. |
 | `websocket` | bool | no | Connect via WebSocket instead of a raw TCP socket. When `ssl = true`, uses `wss://`; when `ssl = false`, uses `ws://`. Useful for servers behind web infrastructure (e.g. The Lounge). Defaults to `false`. |
 | `quit_message` | string | no | Message broadcast to the server when you disconnect or type `/quit` with no argument. Defaults to `"Uplink"` when omitted or blank. You can always override it for a single disconnect with `/quit <message>`. |
-| `away_message` | string | no | Default away message sent when you type `/away` with no argument. When omitted or blank, `/away` with no argument clears your away status instead. You can still override for a single session with `/away <message>`. Use `/back` to return from away. |
+| `away_message` | string | no | Default away message sent when you type `/away` with no argument. When omitted or blank, `/away` sends `"Away"` as a fallback. You can always override for a single session with `/away <message>`. Use `/back` to clear away status. |
 | `disabled` | bool | no | When `true`, the server block is kept in `config.toml` and written back on every save, but Uplink skips it completely on startup — no connection attempt, no sidebar entry. Toggle from **☰ → Manage Servers → Edit → Disabled** checkbox. Defaults to `false`. |
 
 ### Minimal server block
@@ -921,14 +921,14 @@ nick         = "yournick"
 away_message = "Away from keyboard — back soon"
 ```
 
-**When omitted or blank:** `/away` with no argument clears your away status (same as `/back`).
+**When omitted or blank:** `/away` with no argument sends `"Away"` as a fallback message.
 
 **When set:** `/away` with no argument sets you away using the configured message.
 
 You can still pass a one-off message to override it:
 
 ```
-/away                             # uses configured away_message (or clears away if none set)
+/away                             # uses configured away_message (or "Away" if none set)
 /away Back in 30 minutes          # uses "Back in 30 minutes" just this once
 /back                             # always clears away status regardless of config
 ```

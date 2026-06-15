@@ -121,7 +121,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 | Command | Description |
 |---|---|
 | `/nick <name>` | Change your nickname |
-| `/away [message]` | Set yourself as away. If no message is given, uses the server's configured `away_message`; if that is also unset, clears away status (same as `/back`) |
+| `/away [message]` | Set yourself as away. If no message is given, uses the server's configured `away_message`; if that is also unset, sends `"Away"` as the fallback message |
 | `/back` | Clear your away status |
 | `/whois <nick>` | Look up info about a user — reply appears in the active channel |
 | `/whowas <nick>` | Query history for a departed nick — shows last known user@host and realname |
@@ -135,7 +135,7 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 ```
 /nick coolnick
 /away grabbing coffee
-/away                    # uses configured away_message, or clears away if none set
+/away                    # uses configured away_message, or "Away" if none set
 /back                    # always clears away regardless of config
 /whois alice
 /whowas alice

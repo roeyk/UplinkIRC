@@ -183,7 +183,7 @@ away_message = "Away from keyboard — back soon"
 
 When you type `/away` with no argument, this message is sent. Users who message you while you are away receive it automatically as a server reply.
 
-- `/away` — uses `away_message` (or clears away if none is configured)
+- `/away` — uses `away_message` (or `"Away"` if none is configured)
 - `/away Back in 10` — overrides for this session only
 - `/back` — always clears away regardless of config
 
@@ -246,7 +246,7 @@ channels = "#linux"
 
 ### Uplink disconnected — will it reconnect?
 
-Yes. Uplink reconnects automatically after an unexpected disconnect using exponential backoff: it waits 5 seconds, then 10, 20, 40, and caps at 60 seconds per attempt. A countdown message appears in the server buffer each time. Once reconnected, it re-joins all configured channels automatically.
+Yes. Uplink reconnects automatically after an unexpected disconnect using exponential backoff: it waits 5 seconds, then 10, 20, 40, and caps at 60 seconds per attempt. A countdown message appears in the server buffer each time. Once reconnected, it re-joins all channels you had open — both those in your config and any you joined manually during the session.
 
 If you disconnect deliberately with `/quit` or the **Disconnect** option in the sidebar right-click menu, no reconnect is attempted.
 
@@ -436,6 +436,31 @@ The channel header row at the top of the chat area shows `#channel (+modes)`. Th
   - The icon is **muted** (grey) when the topic is hidden and turns **accent-colored** when the topic is showing, so you can see the state at a glance without clicking.
   - The topic opens automatically when you open a pane for a channel that has a topic set.
 
+When the server reports who set the topic and when, the channel header shows **Topic set by nick · Xh ago** (elapsed time shown as minutes, hours, days, or weeks).
+
+### How do I mark myself as away?
+
+Type `/away [message]` in any input bar. For example:
+
+```
+/away grabbing coffee
+/away                  # uses your configured away_message, or "Away" as a fallback
+/back                  # clear away status
+```
+
+When you are away:
+- A **do-not-disturb icon** appears to the right of the server name in the sidebar.
+- **Your nick fades** in the user list so others can see you are away at a glance.
+- Anyone who sends you a private message while you are away receives your away message as an automatic server reply.
+- A status line appears in the server buffer confirming away is set, and again when you return.
+
+Set a default away message per-server in `config.toml` so you do not have to type it each time:
+
+```toml
+[[server]]
+away_message = "Away from keyboard — back soon"
+```
+
 ### How do I hide my nick next to the input box?
 
 Click **⚙** to open **Preferences** and check **Show Nick in Input**. Or set it in config:
@@ -583,6 +608,8 @@ flags = ["pm", "notice", "invite"]
 nick  = "recruiter"
 flags = ["invite"]    # invites only — their messages still visible
 ```
+
+When any ignore flag is active for a nick, a **visibility-off icon** appears next to their name in the user list as a visual reminder. The icon appears and clears immediately when you toggle ignore from the right-click menu.
 
 ### How do I see the full hostmask and quit reason from a join/quit line?
 
