@@ -3,6 +3,13 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-14 (hotfix: release script missing tar.gz/eyebrow/footer patterns) v0.25.32
+What changed:
+  - docs/index.html: tar.gz link, hero eyebrow <b>vX.Y.Z</b>, and footer "Uplink vX.Y.Z" were not
+    updated by the release script, leaving them on v0.25.31 after the v0.25.32 release.
+  - scripts/release.sh: added three missing sed patterns — linux-x86_64.tar.gz href, <b>...</b>
+    eyebrow, and footer-logo div — so all version strings in index.html are covered on future releases.
+
 SESSION SUMMARY — 2026-06-14 (nick fade while away, input height jump fix, auto-rejoin on reconnect, ignore icon in nick list) v0.25.32
 What changed:
   - Nick fading when /away: self-nick in user list fades to 35% opacity when away status is active.
