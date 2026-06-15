@@ -325,7 +325,7 @@ public:
             painter->save();
             painter->setFont(countFont);
             QColor cc = opt.palette.color(QPalette::Text);
-            cc.setAlphaF(0.6);
+            cc.setAlphaF(0.6f);
             painter->setPen(cc);
             painter->drawText(cr, Qt::AlignLeft | Qt::AlignVCenter, countStr);
             painter->restore();
@@ -1449,6 +1449,16 @@ void MainWindow::setupChatArea()
             if (anchor.startsWith(QLatin1String("evgrp:"))) {
                 toggleEventGroupInView(m_chatView, anchor.mid(6),
                                        m_model->activeHost().str(), m_model->activeChannel().str());
+                return;
+            }
+            if (anchor.startsWith(QLatin1String("nick:"))) {
+                const QString nick = anchor.mid(5);
+                m_input->setFocus();
+                const QString cur = m_input->toPlainText();
+                m_input->setPlainText(cur.isEmpty() ? nick + ": " : cur + nick + " ");
+                QTextCursor c = m_input->textCursor();
+                c.movePosition(QTextCursor::End);
+                m_input->setTextCursor(c);
                 return;
             }
             QString href = anchor;
@@ -3091,6 +3101,19 @@ void MainWindow::onInputSubmit()
         m_model->sendTyping(ServerId{host}, BufferId{channel}, "done");
     }
 
+    const QStringList lines = raw.split('\n', Qt::SkipEmptyParts);
+    if (lines.size() > 1) {
+        if (lines.size() >= 4) {
+            const auto ans = QMessageBox::question(this, "Send multiple lines?",
+                QString("Send %1 lines to %2?").arg(lines.size()).arg(channel),
+                QMessageBox::Yes | QMessageBox::Cancel);
+            if (ans != QMessageBox::Yes) return;
+        }
+        for (const QString &line : lines)
+            dispatchInput(line, host, channel);
+        return;
+    }
+
     dispatchInput(raw, host, channel);
 }
 
@@ -3299,13 +3322,23 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
 
     pane->input()->installEventFilter(this);
     connect(pane->chatView(), &ChatView::anchorActivated, this,
-            [this, pane](const QString &anchor, const QPoint &gp, Qt::MouseButton /*btn*/){
-        if (anchor.startsWith(QLatin1String("evgrp:")))
+            [this, pane](const QString &anchor, const QPoint &gp, Qt::MouseButton btn){
+        if (anchor.startsWith(QLatin1String("evgrp:"))) {
             toggleEventGroupInView(pane->chatView(), anchor.mid(6),
                                    pane->host(), pane->channel());
-        else
+        } else if (btn == Qt::LeftButton && anchor.startsWith(QLatin1String("nick:"))) {
+            const QString nick = anchor.mid(5);
+            QPlainTextEdit *inp = pane->input();
+            inp->setFocus();
+            const QString cur = inp->toPlainText();
+            inp->setPlainText(cur.isEmpty() ? nick + ": " : cur + nick + " ");
+            QTextCursor c = inp->textCursor();
+            c.movePosition(QTextCursor::End);
+            inp->setTextCursor(c);
+        } else {
             handleChatViewContextMenu(pane->chatView(), anchor, gp,
                                       pane->host(), pane->channel());
+        }
     });
     connect(pane->chatView(), &ChatView::anchorHovered, this,
             [this, pane](const QString &anchor){
