@@ -37,6 +37,14 @@ void SignalBars::setState(State state)
     if (m_state == state) return;
     m_state = state;
 
+    switch (state) {
+    case State::Connecting:    setToolTip("Connecting…");    break;
+    case State::Reconnecting:  setToolTip("Reconnecting…");  break;
+    case State::Disconnected:  setToolTip("Disconnected");   break;
+    case State::None:          setToolTip({});               break;
+    case State::Connected:     break; // tooltip set by setLatency
+    }
+
     if (isFlashing()) {
         m_flashOn = true;
         m_flashTimer->start();
@@ -54,6 +62,7 @@ void SignalBars::setLatency(int ms)
     else if (ms < 300) m_litBars = 2;
     else               m_litBars = 1;
 
+    setToolTip(QString("%1 ms").arg(ms));
     setState(State::Connected);
 }
 
