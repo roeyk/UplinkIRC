@@ -1564,13 +1564,13 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 305: // RPL_UNAWAY
         m_away = false;
         emit awayChanged(m_host, false);
-        if (!trailing.isEmpty()) emit serverMessage(m_host, trailing);
+        if (!trailing.isEmpty()) emit contextualMessage(m_host, trailing);
         break;
 
     case 306: // RPL_NOWAWAY
         m_away = true;
         emit awayChanged(m_host, true);
-        if (!trailing.isEmpty()) emit serverMessage(m_host, trailing);
+        if (!trailing.isEmpty()) emit contextualMessage(m_host, trailing);
         break;
 
     // WHOIS/WHOWAS replies — route to active channel/window
