@@ -103,6 +103,8 @@ struct UiConfig {
     bool      hangingIndent{true};
     bool      logMessages{false};
     bool      linkPreviews{false};
+    bool      showTimestamps{true};
+    QString   highlightWords{};   // comma-separated extra highlight keywords
     bool      showUnreadCounts{true};
     QString   appIcon{"dark"};
     QString   nickBrackets{"<>"};

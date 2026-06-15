@@ -238,7 +238,8 @@ private:
     void fetchAvatar(const QString &url);
     QString nickTooltip(const QString &nick, const QString &host) const;
 
-    QRegularExpression m_selfNickRe; // pre-compiled highlight regex for active host's nick
+    QRegularExpression m_selfNickRe;  // pre-compiled highlight regex for active host's nick
+    QRegularExpression m_highlightRe; // extra keyword highlights from config
 
     SessionModel *m_model;
     TrayIcon     *m_tray{nullptr};

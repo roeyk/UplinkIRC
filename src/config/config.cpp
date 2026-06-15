@@ -52,6 +52,8 @@ show_emoji_button = false
 colored_nicks     = true
 typing_indicator  = true
 hanging_indent    = true
+show_timestamps   = true
+highlight_words   = ""           # comma-separated words that trigger highlight (e.g. "myproject,alert")
 nick_brackets     = "<>"         # "<>" angle, "[]" square, "::::" double-colon, "" none
 font_family       = "IBM Plex Mono"
 font_toolbar    = 10
@@ -128,6 +130,8 @@ Config Config::load(const QString &path)
             cfg.ui.hangingIndent   = (*ui)["hanging_indent"].value_or(true);
             cfg.ui.logMessages       = (*ui)["log_messages"].value_or(false);
             cfg.ui.showUnreadCounts  = (*ui)["show_unread_counts"].value_or(true);
+            cfg.ui.showTimestamps    = (*ui)["show_timestamps"].value_or(true);
+            cfg.ui.highlightWords    = ustr("highlight_words", "");
             cfg.ui.appIcon           = ustr("app_icon", "dark");
             cfg.ui.nickBrackets    = ustr("nick_brackets", "<>");
             cfg.ui.notifications   = (*ui)["notifications"].value_or(true);
@@ -304,6 +308,8 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "hanging_indent    = " << boolStr(cfg.ui.hangingIndent)    << "\n";
     out << "log_messages        = " << boolStr(cfg.ui.logMessages)        << "\n";
     out << "show_unread_counts  = " << boolStr(cfg.ui.showUnreadCounts)  << "\n";
+    out << "show_timestamps     = " << boolStr(cfg.ui.showTimestamps)    << "\n";
+    out << "highlight_words     = " << tomlQuote(cfg.ui.highlightWords)  << "\n";
     out << "app_icon            = " << tomlQuote(cfg.ui.appIcon)          << "\n";
     out << "nick_brackets     = " << tomlQuote(cfg.ui.nickBrackets)   << "\n";
     out << "notifications     = " << boolStr(cfg.ui.notifications)    << "\n";

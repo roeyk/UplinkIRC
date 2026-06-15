@@ -187,6 +187,25 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     connect(m_unreadCountsCheck, &QCheckBox::toggled, this, [this](bool on){ emit unreadCountsToggled(on); });
     vbox->addWidget(m_unreadCountsCheck);
 
+    m_timestampsCheck = new QCheckBox("Show Timestamps");
+    m_timestampsCheck->setChecked(cfg.ui.showTimestamps);
+    connect(m_timestampsCheck, &QCheckBox::toggled, this, [this](bool on){ emit timestampsToggled(on); });
+    vbox->addWidget(m_timestampsCheck);
+
+    vbox->addSpacing(3);
+    {
+        auto *row = new QHBoxLayout;
+        row->addWidget(new QLabel("Highlight Words:"));
+        m_highlightWordsEdit = new QLineEdit;
+        m_highlightWordsEdit->setPlaceholderText("e.g. myproject, alert, todo");
+        m_highlightWordsEdit->setText(cfg.ui.highlightWords);
+        connect(m_highlightWordsEdit, &QLineEdit::editingFinished, this, [this]{
+            emit highlightWordsChanged(m_highlightWordsEdit->text().trimmed());
+        });
+        row->addWidget(m_highlightWordsEdit, 1);
+        vbox->addLayout(row);
+    }
+
     vbox->addSpacing(2);
     vbox->addWidget(new QLabel("Nick Brackets:"));
     {

@@ -51,8 +51,9 @@ public:
     void openPM     (ServerId host, const QString &nick);
     IrcClient *clientFor(ServerId host);
 
-    void setIgnore   (const QString &nick, IgnoreTypes flags = kIgnoreAll);
-    void clearIgnore (const QString &nick);
+    void setIgnore         (const QString &nick, IgnoreTypes flags = kIgnoreAll);
+    void clearIgnore       (const QString &nick);
+    void setHighlightWords (const QString &words);
     bool isIgnored   (const QString &nick) const;
     bool isIgnoredFor(const QString &nick, IgnoreType type) const;
     IgnoreTypes ignoreFlags(const QString &nick) const;

@@ -18,7 +18,9 @@ struct Context {
     int               chatPt{10};
     bool              validTheme{false};
     QString           themeText;
-    QRegularExpression selfNickRe; // pre-compiled; invalid = no highlight
+    QRegularExpression selfNickRe;   // pre-compiled; invalid = no highlight
+    QRegularExpression highlightRe;  // extra keyword highlights; invalid = none
+    bool               showTimestamps{true};
     const Channel    *channel{nullptr}; // for reply-reference lookup
 };
 

@@ -63,15 +63,28 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
         client->connectToServer(*shared);
 }
 
+static QRegularExpression buildHighlightRe(const QString &words)
+{
+    QStringList parts;
+    for (const QString &w : words.split(',', Qt::SkipEmptyParts)) {
+        const QString t = w.trimmed();
+        if (!t.isEmpty())
+            parts << "\\b" + QRegularExpression::escape(t) + "\\b";
+    }
+    if (parts.isEmpty()) return {};
+    return QRegularExpression(parts.join('|'), QRegularExpression::CaseInsensitiveOption);
+}
+
 void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
 {
     if (addToConfig)
         m_config.servers.append(sc);
 
     ServerSession sess;
-    sess.name = sc.name;
-    sess.host = sc.host;
-    sess.nick = sc.nick;
+    sess.name        = sc.name;
+    sess.host        = sc.host;
+    sess.nick        = sc.nick;
+    sess.highlightRe = buildHighlightRe(m_config.ui.highlightWords);
     m_sessions.append(sess);
     emit serverAdded(ServerId{sc.host});
 
@@ -89,6 +102,14 @@ void SessionModel::loadConfig(const Config &cfg)
     for (const ServerConfig &sc : cfg.servers)
         if (!sc.disabled)
             spawnSession(sc, false);
+}
+
+void SessionModel::setHighlightWords(const QString &words)
+{
+    m_config.ui.highlightWords = words;
+    const QRegularExpression re = buildHighlightRe(words);
+    for (auto &sess : m_sessions)
+        sess.highlightRe = re;
 }
 
 void SessionModel::setIgnore(const QString &nick, IgnoreTypes flags)
@@ -582,7 +603,9 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
         || (msg.type == MessageType::Notice && target == "(server)");
     if (!isActive && !msg.isHistory && countsAsUnread) {
         ++ch.unread;
-        if (!sess->nick.isEmpty() && msg.text.contains(sess->nick, Qt::CaseInsensitive))
+        const bool nickHit      = !sess->nick.isEmpty() && msg.text.contains(sess->nick, Qt::CaseInsensitive);
+        const bool keywordHit   = sess->highlightRe.isValid() && sess->highlightRe.match(msg.text).hasMatch();
+        if (nickHit || keywordHit)
             ++ch.mentions;
     }
 

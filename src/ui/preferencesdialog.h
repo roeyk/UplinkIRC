@@ -27,6 +27,8 @@ signals:
     void loggingToggled(bool on);
     void linkPreviewsToggled(bool on);
     void unreadCountsToggled(bool on);
+    void timestampsToggled(bool on);
+    void highlightWordsChanged(const QString &words);
     void nickBracketsChanged(const QString &brackets);
     void manageServersRequested();
     void aboutRequested();
@@ -45,6 +47,8 @@ private:
     QCheckBox *m_loggingCheck{nullptr};
     QCheckBox *m_linkPreviewsCheck{nullptr};
     QCheckBox *m_unreadCountsCheck{nullptr};
+    QCheckBox *m_timestampsCheck{nullptr};
+    QLineEdit *m_highlightWordsEdit{nullptr};
     QButtonGroup *m_bracketsGroup{nullptr};
     QLineEdit *m_displayNameEdit{nullptr};
     QLineEdit *m_avatarUrlEdit{nullptr};

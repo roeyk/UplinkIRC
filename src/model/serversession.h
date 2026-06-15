@@ -17,7 +17,8 @@ struct ServerSession {
     QString  nick;
     bool     connected{false};
     bool     away{false};
-    QRegularExpression mentionRe; // pre-compiled; rebuilt when nick changes
+    QRegularExpression mentionRe;   // pre-compiled; rebuilt when nick changes
+    QRegularExpression highlightRe; // extra keyword highlights; rebuilt from config
 
     QSet<QString> botNicks;     // lowercased nicks with +B user mode (global)
     static constexpr int kNickMetaCap = 1000;

@@ -405,6 +405,15 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_showNickPrefix = cfg.ui.showNickPrefix;
     m_showTopic      = cfg.ui.showTopic;
     m_showEmojiBtn   = cfg.ui.showEmojiButton;
+    if (!cfg.ui.highlightWords.trimmed().isEmpty()) {
+        QStringList parts;
+        for (const QString &w : cfg.ui.highlightWords.split(',', Qt::SkipEmptyParts)) {
+            const QString t = w.trimmed();
+            if (!t.isEmpty()) parts << "\\b" + QRegularExpression::escape(t) + "\\b";
+        }
+        if (!parts.isEmpty())
+            m_highlightRe = QRegularExpression(parts.join('|'), QRegularExpression::CaseInsensitiveOption);
+    }
 
     setWindowTitle("Uplink");
     setWindowIcon(AppIcons::appIcon(m_config.ui.appIcon));
@@ -870,6 +879,28 @@ void MainWindow::connectPreferences()
             }
         }
         m_sidebar->viewport()->update();
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::timestampsToggled, this, [this](bool on){
+        m_config.ui.showTimestamps = on;
+        Config::save(m_config, Config::defaultPath());
+        refreshChatView(m_model->activeHost().str(), m_model->activeChannel().str());
+    });
+
+    connect(m_prefsDialog, &PreferencesDialog::highlightWordsChanged, this, [this](const QString &words){
+        m_config.ui.highlightWords = words;
+        Config::save(m_config, Config::defaultPath());
+        m_highlightRe = words.trimmed().isEmpty() ? QRegularExpression{}
+            : [&]() {
+                QStringList parts;
+                for (const QString &w : words.split(',', Qt::SkipEmptyParts)) {
+                    const QString t = w.trimmed();
+                    if (!t.isEmpty()) parts << "\\b" + QRegularExpression::escape(t) + "\\b";
+                }
+                return parts.isEmpty() ? QRegularExpression{}
+                    : QRegularExpression(parts.join('|'), QRegularExpression::CaseInsensitiveOption);
+            }();
+        m_model->setHighlightWords(words);
     });
 
     connect(m_prefsDialog, &PreferencesDialog::nickBracketsChanged, this, [this](const QString &br){
@@ -2658,6 +2689,8 @@ void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
     ctx.selfNickRe   = m_selfNickRe;
+    ctx.highlightRe  = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
     ctx.channel      = ch;
 
     const bool atBottom = view->isAtBottom();
@@ -2785,6 +2818,8 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
         ctx.validTheme   = m_theme.valid;
         ctx.themeText    = m_theme.text;
         ctx.selfNickRe   = m_selfNickRe;
+    ctx.highlightRe  = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
         ctx.channel      = ch;
         return ctx;
     };
@@ -2959,6 +2994,8 @@ void MainWindow::onMessageRedacted(const QString &host, const QString &channel, 
         ctx.validTheme   = m_theme.valid;
         ctx.themeText    = m_theme.text;
         ctx.selfNickRe   = m_selfNickRe;
+    ctx.highlightRe  = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
         ctx.channel      = ch;
         return ctx;
     };
@@ -3565,6 +3602,8 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
     ctx.selfNickRe   = m_selfNickRe;
+    ctx.highlightRe  = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
     ctx.channel      = ch;
 
     const QString selfNick = m_model->selfNick(ServerId{pane->host()});
@@ -3944,6 +3983,8 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
     ctx.selfNickRe   = m_selfNickRe;
+    ctx.highlightRe  = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
     ctx.channel      = ch;
 
     if (startIdx > 0) {
@@ -4031,6 +4072,8 @@ void MainWindow::loadOlderMessages()
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
     ctx.selfNickRe   = m_selfNickRe;
+    ctx.highlightRe  = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
     ctx.channel      = ch;
 
     const QString selfNick = m_model->selfNick(ServerId{host});
@@ -4361,6 +4404,8 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
     ctx.selfNickRe   = m_selfNickRe;
+    ctx.highlightRe  = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
     ctx.channel      = ch;
 
     m_chatView->appendLine(ChatRenderer::formatMessageLine(msg, ctx));
@@ -4454,6 +4499,8 @@ QString MainWindow::formatMessage(const Message &msg) const
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
     ctx.selfNickRe   = m_selfNickRe;
+    ctx.highlightRe  = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
     ctx.channel      = m_model->channel(m_model->activeHost(), m_model->activeChannel());
     return ChatRenderer::formatMessage(msg, ctx);
 }

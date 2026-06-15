@@ -250,10 +250,34 @@ void IrcClient::privmsg(const QString &target, const QString &text, const QStrin
     if (m_utf8Only && text.contains(QChar::ReplacementCharacter))
         emit serverMessage(m_host,
             "Warning: message contains invalid UTF-8 characters — server requires UTF-8 (UTF8ONLY)");
-    if (replyToMsgid.isEmpty())
-        sendRaw("PRIVMSG " + target + " :" + stripCrlf(text));
-    else
-        sendRaw("@+draft/reply=" + ircv3TagEscape(replyToMsgid) + " PRIVMSG " + target + " :" + stripCrlf(text));
+
+    const QString tagStr = replyToMsgid.isEmpty()
+        ? QString{}
+        : "@+draft/reply=" + ircv3TagEscape(replyToMsgid) + " ";
+    const int baseOverhead = 10 + static_cast<int>(target.toUtf8().size()); // "PRIVMSG target :"
+    const QByteArray tagBytes = tagStr.toUtf8();
+
+    const QByteArray utf8 = stripCrlf(text).toUtf8();
+    if (utf8.isEmpty()) return;
+
+    int offset = 0;
+    bool first = true;
+    while (offset < utf8.size()) {
+        const int tagLen  = first ? static_cast<int>(tagBytes.size()) : 0;
+        const int maxText = 510 - baseOverhead - tagLen;
+        int chunkLen = qMin(maxText, static_cast<int>(utf8.size()) - offset);
+        // back off to a valid UTF-8 boundary
+        int end = offset + chunkLen;
+        while (end > offset && end < utf8.size()
+               && (static_cast<unsigned char>(utf8[end]) & 0xC0) == 0x80)
+            --end;
+        chunkLen = end - offset;
+        if (chunkLen <= 0) break;
+        const QString chunk = QString::fromUtf8(utf8.mid(offset, chunkLen));
+        sendRaw((first ? tagStr : QString{}) + "PRIVMSG " + target + " :" + chunk);
+        offset += chunkLen;
+        first = false;
+    }
 }
 
 void IrcClient::sendMultiline(const QString &target, const QString &text,

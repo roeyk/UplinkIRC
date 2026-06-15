@@ -553,7 +553,8 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
     QTextCharFormat tsFmt;
     tsFmt.setForeground(dimColor);
     const QString tsAnchor = msg.msgid.isEmpty() ? QString() : ("msgid:" + msg.msgid);
-    tb.append(ts, tsFmt, tsAnchor);
+    if (ctx.showTimestamps)
+        tb.append(ts, tsFmt, tsAnchor);
 
     if (msg.redacted) {
         QTextCharFormat f;
@@ -618,6 +619,8 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
             linkifySegments(tb, prefixEnd);
             if (ctx.selfNickRe.isValid())
                 addSelfNickHighlight(tb, prefixEnd, ctx.selfNickRe);
+            if (ctx.highlightRe.isValid())
+                addSelfNickHighlight(tb, prefixEnd, ctx.highlightRe);
         }
         break;
     }
