@@ -258,6 +258,16 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Single-word PRIVMSG/NOTICE text fix — ircclient.cpp reads msg.params.last() when msg.trailing is empty; fixes invisible body text and missed mention detection for messages where the server omits the colon prefix on a single-word trailing parameter (v0.25.29, 2026-06-14)
 - [x] Body text foreground always explicit — chatrenderer.cpp Privmsg and Action handlers unconditionally set QTextCharFormat foreground (themeText or #cccccc fallback); prevents invisible text when addSelfNickHighlight overlaps a body segment that had no foreground set (v0.25.29, 2026-06-14)
 - [x] Mention detection rewritten — postMessage() uses msg.text.contains(sess->nick, Qt::CaseInsensitive) instead of QRegularExpression; simpler and consistent with the tray notification path (v0.25.29, 2026-06-14)
+- [x] Lag meter relocated to sidebar header — SignalBars widget moved from orphaned state into shBox (sidebar header HBoxLayout), right-aligned after the stretch, vertically centered; always visible alongside ☰ and ⚙; updates on server switch, latency ping, connect/disconnect/reconnect (v0.25.31, 2026-06-15)
+- [x] Lag meter tooltip — hovering the signal bars shows exact ms latency ("42 ms") or connection state ("Connecting…" / "Reconnecting…" / "Disconnected") (v0.25.31, 2026-06-15)
+- [x] Host icon — connected server icon changed from globe (mi-public.svg) to host (mi-host.svg) in MenuIcons::connectedServer() (v0.25.31, 2026-06-15)
+- [x] WALLOPS support — WALLOPS command parsed in IrcClient; wallopsReceived signal added; posts to server buffer as MessageType::Wallops (amber #e09030, "[nick] text" format) (v0.25.31, 2026-06-15)
+- [x] Server buffer message color differentiation — MessageType::Reply (steel blue #6090c0) for numeric command responses via onContextualMessage (/whois, /stats, /time); MessageType::Server (gray) for status lines; MessageType::Wallops (amber) for operator broadcasts; MessageType::Error (red) unchanged (v0.25.31, 2026-06-15)
+- [x] Unread count badges in sidebar — SidebarDelegate renders Qt::UserRole+3 (int count) as small bold 86% font after the bolt/forum indicator icon; onUnreadChanged stores count on item (v0.25.31, 2026-06-15)
+- [x] Preferences toggle: Show Unread Message Counts — global on/off for sidebar count badges; persisted as show_unread_counts in [ui]; SidebarDelegate::setShowCounts(); clears stored counts immediately on disable (v0.25.31, 2026-06-15)
+- [x] Server and PM buffers hide irrelevant UI — switchToChannel() detects buffer type; server buffers and PM/query buffers hide nick panel and topic button; both restore on switch to a channel (v0.25.31, 2026-06-15)
+- [x] Search button toggle — clicking 🔍 while search bar is open closes it and clears the query; was open-only before (v0.25.31, 2026-06-15)
+- [x] /list on large networks fixed — kMaxPendingBuffer check moved to after the line-processing loop; large /list responses (thousands of 322 replies) no longer disconnect; only a genuinely unterminated partial line > 64 KB triggers the error (v0.25.31, 2026-06-15)
 
 ---
 
