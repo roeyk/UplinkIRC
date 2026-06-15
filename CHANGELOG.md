@@ -3,6 +3,26 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-15 (performance: heaptrack analysis, icon cache, nick list layout)
+What changed:
+  - Analyzed heaptrack.Uplink.1719045.zst (419s runtime, 24.75MB peak heap).
+    Three hotspots identified and fixed:
+  - menuicons.h: added static QHash cache to fromSvg(). SVG render + QPixmap alloc was happening
+    on every call — no cache existed. After fix, each distinct (path, color, size, dpr) combo is
+    rendered once and returned from cache on all subsequent calls. Eliminates the 18.89MB peak /
+    5,986 QImageData::create calls heaptrack flagged. Cache key: path|rgba|size|dpr*100.
+    Also added QHash and QStringBuilder includes.
+  - mainwindow.cpp makeNickItem(): replaced "literal" + QString concatenation with
+    QLatin1String("literal") + QString. The char const* + QString overload calls QString::fromUtf8
+    on the literal first, creating a temporary — QLatin1String skips that conversion. Eliminates
+    the 11,400 temporary QString allocations heaptrack traced to this function.
+  - mainwindow.cpp / channelpane.cpp: added setUniformItemSizes(true) to both QListWidget nick
+    lists. Without it Qt calls NickDelegate::sizeHint on every item on every layout pass (17,628
+    calls traced in heaptrack, each triggering QTextLayout::createLine inside Qt's style engine).
+    With it Qt measures once and reuses the height. Valid because all nick rows are fixed 16px.
+  - Commits: d9ae585 (icon cache + string fix), f6ffc2a (uniform item sizes).
+
+<!--
 SESSION SUMMARY — 2026-06-15 (code quality page, static analysis, clang-tidy fixes)
 What changed:
   - docs/quality.html: new standalone page showing code quality stats — test results (32 passing,
