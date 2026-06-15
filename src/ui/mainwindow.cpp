@@ -414,6 +414,13 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     setupInputBar();
     connectModel();
     applyFontSizes();
+    QTimer::singleShot(0, this, [this]{
+        if (m_input) {
+            const int lineH   = m_input->fontMetrics().lineSpacing();
+            const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
+            m_input->setFixedHeight(lineH + margins);
+        }
+    });
 
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
         m_tray = new TrayIcon(model, this);
@@ -1687,6 +1694,7 @@ void MainWindow::ensureEmojiPicker()
 void MainWindow::setupInputBar()
 {
     auto *bar  = new QWidget;
+    bar->setObjectName("inputBar");
     auto *hbox = new QHBoxLayout(bar);
     hbox->setContentsMargins(4, 3, 4, 8);
     hbox->setSpacing(4);
@@ -1732,7 +1740,6 @@ void MainWindow::setupInputBar()
     hbox->addWidget(m_input, 1);
     hbox->addWidget(m_emojiBtn);
 
-    bar->setObjectName("inputBar");
     m_inputBar = bar;
 
     m_typingLabel = new QLabel;
