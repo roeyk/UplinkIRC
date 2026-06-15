@@ -122,9 +122,11 @@ public:
 };
 
 class NickDelegate : public QStyledItemDelegate {
-    QColor m_accent;
-    QColor m_hover;
-    QColor m_activeText;
+    QColor  m_accent;
+    QColor  m_hover;
+    QColor  m_activeText;
+    QString m_selfNick;
+    bool    m_selfAway{false};
 public:
     explicit NickDelegate(QObject *parent = nullptr)
         : QStyledItemDelegate(parent) {}
@@ -133,6 +135,11 @@ public:
         m_accent     = accent;
         m_hover      = hover;
         m_activeText = activeText;
+    }
+
+    void setSelfAway(const QString &nick, bool away) {
+        m_selfNick = nick;
+        m_selfAway = away;
     }
 
     QSize sizeHint(const QStyleOptionViewItem &option,
@@ -188,6 +195,14 @@ public:
                 ? QColor("#111111") : QColor("#eeeeee");
             opt.palette.setColor(QPalette::All, QPalette::Highlight,       QColor(Qt::transparent));
             opt.palette.setColor(QPalette::All, QPalette::HighlightedText, textCol);
+        }
+        const bool isSelfAway = m_selfAway && !m_selfNick.isEmpty()
+            && index.data(Qt::UserRole).toString().compare(m_selfNick, Qt::CaseInsensitive) == 0;
+        if (isSelfAway) {
+            QColor faded = opt.palette.color(QPalette::Text);
+            faded.setAlphaF(0.35);
+            opt.palette.setColor(QPalette::All, QPalette::Text,            faded);
+            opt.palette.setColor(QPalette::All, QPalette::HighlightedText, faded);
         }
         QStyledItemDelegate::paint(painter, opt, index);
 
@@ -1883,6 +1898,11 @@ void MainWindow::connectModel()
             else
                 srv->setData(0, Qt::UserRole + 4, QVariant());
         }
+        if (h == m_model->activeHost() && m_nickDelegate) {
+            const QString selfNick = m_model->selfNick(h);
+            m_nickDelegate->setSelfAway(selfNick, away);
+            if (m_nickList) m_nickList->update();
+        }
     });
     connect(m_model, &SessionModel::nickListChanged, this,
             [this](ServerId h, BufferId ch){ onNickListChanged(h.str(), ch.str()); });
@@ -3123,6 +3143,8 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
         m_selfNickRe = sess->nick.isEmpty() ? QRegularExpression{}
             : QRegularExpression("(\\b" + QRegularExpression::escape(sess->nick) + "\\b)",
                                  QRegularExpression::CaseInsensitiveOption);
+        if (m_nickDelegate)
+            m_nickDelegate->setSelfAway(sess->nick, sess->away);
     }
 
     if (m_signalBars) {
