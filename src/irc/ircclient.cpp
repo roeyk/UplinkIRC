@@ -512,7 +512,7 @@ void IrcClient::onDisconnected()
     // m_intentionalDisconnect is reset by connectToServer() on next connection
 }
 
-static constexpr qsizetype kMaxPendingBuffer = 64 * 1024;
+static constexpr qsizetype kMaxPendingBuffer = qsizetype{64} * 1024;
 static constexpr qsizetype kMaxIrcLine       = 8192;
 static constexpr int       kMaxOpenBatches   = 8;
 static constexpr int       kMaxBatchMessages = 1000;

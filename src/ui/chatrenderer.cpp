@@ -461,7 +461,7 @@ static void ircToSegments(const QString &raw, const QTextCharFormat &base, TextB
 
     QString chunk;
     int i = 0;
-    const int len = raw.size();
+    const int len = static_cast<int>(raw.size());
 
     auto flushChunk = [&]() {
         if (chunk.isEmpty()) return;
@@ -731,7 +731,7 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
     return line;
 }
 
-ChatLine formatEventGroupLine(const QList<Message> &msgs, const Context &ctx,
+ChatLine formatEventGroupLine(const QList<Message> &msgs, [[maybe_unused]] const Context &ctx,
                                const QString &groupId, bool expanded)
 {
     if (msgs.isEmpty()) return {};
