@@ -339,14 +339,13 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
     } else if (cmd == "/quit") {
         if (auto *cl = m_model->clientFor(host)) cl->quit(args);
     } else if (cmd == "/away") {
-        if (args.isEmpty()) {
-            QString defMsg;
+        QString msg = args.trimmed();
+        if (msg.isEmpty()) {
             for (const auto &sc : std::as_const(m_config->servers))
-                if (sc.host == host.str()) { defMsg = sc.awayMessage; break; }
-            m_model->sendRaw(host, defMsg.isEmpty() ? QStringLiteral("AWAY") : "AWAY :" + defMsg);
-        } else {
-            m_model->sendRaw(host, "AWAY :" + args);
+                if (sc.host == host.str()) { msg = sc.awayMessage; break; }
         }
+        if (msg.isEmpty()) msg = QStringLiteral("Away");
+        m_model->sendRaw(host, "AWAY :" + msg);
     } else if (cmd == "/back") {
         m_model->sendRaw(host, "AWAY");
     } else if (cmd == "/setname") {
