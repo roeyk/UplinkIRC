@@ -35,8 +35,9 @@ show_send_button  = true               # shows paper-plane send button in the in
 colored_nicks     = true
 typing_indicator  = true
 hanging_indent    = true               # wrap long messages past the timestamp+nick column
-log_messages      = false              # write all messages to ~/.config/uplink/logs/ (opt-in)
-notifications     = true               # green dot on tray icon for mentions/PMs when unfocused
+log_messages        = false            # write all messages to ~/.config/uplink/logs/ (opt-in)
+show_unread_counts  = true             # show message count badges in the sidebar
+notifications       = true             # green dot on tray icon for mentions/PMs when unfocused
 nick_brackets     = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
 app_icon          = "dark"
 font_family       = "IBM Plex Mono"   # Windows default is "Consolas"
@@ -111,6 +112,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `typing_indicator` | bool | `true` | Show "nick is typing…" notifications (IRCv3 `draft/typing`) and send your own |
 | `hanging_indent` | bool | `true` | Indent wrapped message lines past the timestamp+nick column so they align with the message text. Toggle live from **Preferences → Hanging Indent**. |
 | `log_messages` | bool | `false` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Opt-in — off by default. Toggle from **Preferences → Log Messages to Disk**. |
+| `show_unread_counts` | bool | `true` | Show a small bold count badge next to the unread indicator icon in the sidebar. Counts mentions and activity separately. Turn off from **Preferences → Show Unread Message Counts**. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Tray Notifications**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`. Change from **Preferences** (click **⚙**) → **App Icon**. |

@@ -718,7 +718,7 @@ The check requires an internet connection. It sends one small HTTPS request to `
 
 ### What do the signal bars mean? (lag / latency indicator)
 
-The four stair-step bars in the topic bar show your connection latency to the current server:
+The four stair-step bars in the top-right of the server/channel list header show your connection latency to the active server. Hover over them to see the exact millisecond value.
 
 | Bars | Latency | Quality |
 |---|---|---|
@@ -729,7 +729,7 @@ The four stair-step bars in the topic bar show your connection latency to the cu
 | Blue flashing | — | Connecting / reconnecting |
 | Red flashing | — | Disconnected |
 
-Uplink sends a `PING` every 30 seconds and updates the bars automatically from the round-trip time (RTT) of the reply.
+Uplink sends a `PING` every 30 seconds and updates the bars automatically from the round-trip time (RTT) of the reply. When you switch to a different server or channel, the bars update immediately to reflect that server's connection.
 
 ### The server name in the sidebar turned purple — what does that mean?
 
@@ -840,6 +840,16 @@ You can also use:
 ### How do I open the server window?
 
 Click the server name (e.g. **LINUXDOJO**) at the top of the sidebar. It shows connection messages, server notices, CTCP replies, and other server-level output. If the server name is highlighted purple, there are unread messages waiting.
+
+Messages in the server window are color-coded by type:
+
+| Color | Type | Examples |
+|---|---|---|
+| Gray | Status | Connected, Disconnected, Joined #channel |
+| Steel blue | Command reply | `/whois`, `/stats`, `/time`, `/motd` responses |
+| Amber | WALLOPS | Operator broadcasts sent with `WALLOPS` |
+| Red | Error | Nick in use, banned, authentication failed |
+| Amber `−nick−` | Notice | Server notices and NickServ/ChanServ messages |
 
 ### How do I search the in-app documentation?
 

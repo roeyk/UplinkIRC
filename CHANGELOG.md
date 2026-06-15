@@ -3,6 +3,40 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-14 (lag meter, WALLOPS/Reply colors, server buffer differentiation, host icon, unread count badges, preferences toggle, /list disconnect fix) v0.25.31
+What changed:
+  - Lag meter (SignalBars) moved from orphaned to sidebar header top-right, aligned with hamburger and
+    gear buttons via shBox->addWidget(m_signalBars, 0, Qt::AlignVCenter). Tooltip shows ms latency on
+    hover ("42 ms"), or "Connecting…" / "Reconnecting…" / "Disconnected" for non-connected states.
+    Updates on server switch (switchToChannel), latency ping (pingRtt), connect, disconnect, reconnect.
+  - Connected server icon: mi-public.svg (globe) replaced with mi-host.svg in menuicons.h.
+  - Server buffer message color differentiation: added MessageType::Reply (steel blue #6090c0) for
+    numeric command responses routed via onContextualMessage (WHOIS, STATS, TIME replies). Added
+    MessageType::Wallops (amber #e09030) for WALLOPS server broadcasts. Both types handled in both
+    the HTML and segment rendering paths in chatrenderer.cpp. WALLOPS command handler added to
+    ircclient.cpp; wallopsReceived signal added to IrcClient; lambda connection in sessionmodel posts
+    to "(server)" buffer with "[nick] text" format.
+  - Unread count badges: SidebarDelegate reads Qt::UserRole+3 (int count) and renders count to the
+    right of the bolt/forum indicator icon, 86% font size, bold, at 60% alpha. onUnreadChanged stores
+    the count on the item. Pill width accounts for countExtra via cfm (countFont metrics).
+  - Preferences toggle "Show Unread Message Counts": QCheckBox added in PreferencesDialog after Link
+    Previews. Persisted as show_unread_counts in [ui] section of config.toml (default true).
+    SidebarDelegate::setShowCounts(bool) skips count rendering when false; clearing the toggle also
+    wipes all UserRole+3 data from sidebar items immediately.
+  - Server and PM buffers: switchToChannel() detects buffer type via channel.startsWith('#') etc.
+    Server buffers ("[server]") and PM/query buffers hide nick panel and topic button; channels
+    restore them (respecting m_nickExpanded for the panel). topicDisplay also hides for non-channels.
+  - Search button: clicking m_searchBtn when bar is visible now hides it and clears input (toggle).
+    Previously it only opened.
+  - Hamburger and gear alignment: shBox->setAlignment(Qt::AlignTop) pins both buttons to the top of
+    the sidebar header when it grows taller (e.g. with topic display visible).
+  - /list disconnect fix: the kMaxPendingBuffer (64 KB) check was moved to AFTER the line-processing
+    while loop. Previously the check fired before any lines were consumed, causing large /list
+    responses (Rizon has thousands of channels) to trigger a disconnect before any 322 lines were
+    parsed. Now only a genuinely unterminated partial line > 64 KB triggers the error.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-14 (sidebar alignment, event group indent, button transparency, selection contrast, Manage Servers to burger) v0.25.30
 What changed:
   - Sidebar header height sync: m_sidebarHeader now dynamically matches m_primaryHeader height plus the
@@ -4376,6 +4410,25 @@ No regressions. No known issues.
 Next priorities: hero screenshots (3 needed for docs/index.html hero section); ServerId/BufferId
 strong types; virtual scrolling for very busy channels.
 -->
+
+## [0.25.31] — 2026-06-14
+
+### Added
+- **Lag meter in sidebar header** — the four signal-bar latency indicator is now anchored in the top-right of the server/channel list header, vertically aligned with ☰ and ⚙. Hover to see your exact latency in milliseconds (`42 ms`). Shows `Connecting…`, `Reconnecting…`, or `Disconnected` when not fully connected. Updates whenever you switch channels or servers.
+- **WALLOPS support** — server-wide operator broadcasts (`WALLOPS`) are now received and displayed in the server buffer in amber, formatted as `[nick] message`. Previously silently dropped.
+- **Server buffer message colors** — command responses (`/whois`, `/stats`, `/time`, etc.) now appear in soft steel blue instead of gray, making it easy to see at a glance that there's output waiting in the server buffer. Error messages remain red; plain status lines (Connected, Disconnected, Joined) stay gray.
+- **Unread message count badges** — a small bold count appears to the right of the unread indicator icon (⚡ mentions, 💬 activity) in the sidebar so you can see exactly how many messages are waiting without switching to the buffer.
+- **Preferences: Show Unread Message Counts** — global toggle in ⚙ Preferences to turn sidebar count badges on or off. Persisted as `show_unread_counts` in `config.toml`. Turning it off clears all badges immediately.
+
+### Fixed
+- **`/list` on large networks** — Uplink no longer disconnects with "Server sent oversized unterminated data" when browsing channels on large networks (Rizon, Undernet, etc.). The buffer safety check was firing before any lines were processed; it now only triggers if a single line exceeds the 64 KB limit.
+
+### Changed
+- **Connected server icon** — replaced the globe icon with a host/server icon for connected network entries in the sidebar.
+- **Search button toggles** — clicking 🔍 while the search bar is open now closes it (and clears the query). Previously a second click had no effect.
+- **Server and PM buffers** — switching to a server buffer or private message tab hides the nick panel and topic button since neither applies outside of channels. Both restore automatically when switching back to a channel.
+
+---
 
 ## [0.25.30] — 2026-06-14
 
