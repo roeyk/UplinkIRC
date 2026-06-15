@@ -3577,7 +3577,7 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
                     card.id     = "preview:" + urlStr;
                     if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
                     card.text   = p->title + "\n" + p->domain;
-                    ChatSegment seg; seg.start = 0; seg.length = card.text.size();
+                    ChatSegment seg; seg.start = 0; seg.length = static_cast<int>(card.text.size());
                     seg.anchor = "preview:" + urlStr;
                     card.segments.append(seg);
                     pane->chatView()->appendLine(card);
@@ -3957,7 +3957,7 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
                     card.id     = "preview:" + urlStr;
                     if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
                     card.text   = p->title + "\n" + p->domain;
-                    ChatSegment seg; seg.start = 0; seg.length = card.text.size();
+                    ChatSegment seg; seg.start = 0; seg.length = static_cast<int>(card.text.size());
                     seg.anchor = "preview:" + urlStr;
                     card.segments.append(seg);
                     m_chatView->appendLine(card);
@@ -4351,7 +4351,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
                     card.id     = "preview:" + urlStr;
                     if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
                     card.text   = p->title + "\n" + p->domain;
-                    ChatSegment seg; seg.start = 0; seg.length = card.text.size();
+                    ChatSegment seg; seg.start = 0; seg.length = static_cast<int>(card.text.size());
                     seg.anchor = "preview:" + urlStr;
                     card.segments.append(seg);
                     m_chatView->appendLine(card);

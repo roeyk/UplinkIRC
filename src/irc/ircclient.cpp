@@ -1586,11 +1586,55 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
 
     // WHOIS/WHOWAS replies — route to active channel/window
-    case 307: case 311: case 312: case 313:
-    case 317: case 318: case 319: case 320: case 369:
-    case 671:
-        if (!trailing.isEmpty())
-            emit contextualMessage(m_host, trailing);
+    case 307: // RPL_WHOISREGNICK
+    case 313: // RPL_WHOISOPERATOR
+    case 320: // RPL_WHOISSPECIAL
+    case 671: // RPL_WHOISSECURE
+        if (params.size() >= 2 && !trailing.isEmpty())
+            emit contextualMessage(m_host, params[1] + " " + trailing);
+        break;
+    case 311: { // RPL_WHOISUSER: <client> <nick> <user> <host> * :<realname>
+        if (params.size() >= 4)
+            emit contextualMessage(m_host,
+                params[1] + " (" + params[2] + "@" + params[3] + ") — " + trailing);
+        break;
+    }
+    case 312: { // RPL_WHOISSERVER: <client> <nick> <server> :<info>
+        if (params.size() >= 3)
+            emit contextualMessage(m_host,
+                params[1] + " on " + params[2] + " (" + trailing + ")");
+        break;
+    }
+    case 317: { // RPL_WHOISIDLE: <client> <nick> <idle_secs> <signon_ts>
+        if (params.size() >= 3) {
+            const int secs = params[2].toInt();
+            QString idle;
+            if (secs >= 3600)
+                idle = QString("%1h %2m idle").arg(secs/3600).arg((secs%3600)/60);
+            else if (secs >= 60)
+                idle = QString("%1m %2s idle").arg(secs/60).arg(secs%60);
+            else
+                idle = QString("%1s idle").arg(secs);
+            if (params.size() >= 4) {
+                const QDateTime dt = QDateTime::fromSecsSinceEpoch(params[3].toLongLong());
+                idle += ", signed on " + dt.toString("ddd hh:mm");
+            }
+            emit contextualMessage(m_host, params[1] + " — " + idle);
+        }
+        break;
+    }
+    case 319: { // RPL_WHOISCHANNELS: <client> <nick> :<channels>
+        if (params.size() >= 2 && !trailing.isEmpty())
+            emit contextualMessage(m_host, params[1] + " is on: " + trailing);
+        break;
+    }
+    case 330: { // RPL_WHOISACCOUNT: <client> <nick> <account> :is logged in as
+        if (params.size() >= 3)
+            emit contextualMessage(m_host, params[1] + " is logged in as " + params[2]);
+        break;
+    }
+    case 318: // RPL_ENDOFWHOIS — suppress, replies already shown
+    case 369: // RPL_ENDOFWHOWAS
         break;
 
     case 766: // ERR_NOMATCHINGKEY — metadata key not set, expected and silent
