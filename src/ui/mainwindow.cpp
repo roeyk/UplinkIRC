@@ -1362,11 +1362,12 @@ void MainWindow::setupChatArea()
             QString("QLabel { color: %1; }").arg(m_theme.valid ? m_theme.placeholder : "#888888"));
         m_topicSetByLabel->hide();
 
-        m_awayBadge = new QLabel(tr("Away"));
+        m_awayBadge = new QLabel;
         m_awayBadge->setObjectName("awayBadge");
-        m_awayBadge->setStyleSheet(
-            "QLabel { color: #e09030; border: 1px solid #e09030; border-radius: 3px;"
-            " padding: 0px 5px; }");
+        m_awayBadge->setPixmap(makeSvgIcon(
+            QStringLiteral(":/icons/mi-do-not-disturb.svg"),
+            QColor("#e06c75")).pixmap(20, 20));
+        m_awayBadge->setToolTip(tr("Away"));
         m_awayBadge->hide();
 
         hbox->addWidget(m_primaryTopicBtn);
