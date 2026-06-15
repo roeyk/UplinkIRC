@@ -471,9 +471,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         if (total > 0)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
         if (m_sidebarHeader && m_primaryHeader)
-            m_sidebarHeader->setFixedHeight(
-                m_primaryHeader->height() +
-                (m_topicDisplay && m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0));
+            m_sidebarHeader->setFixedHeight(m_primaryHeader->height());
     });
 
     if (!savedPanes.isEmpty()) {
@@ -1386,7 +1384,6 @@ void MainWindow::setupChatArea()
     chatVbox->setContentsMargins(0, 0, 0, 0);
     chatVbox->setSpacing(0);
     chatVbox->addWidget(primaryHeader);
-    chatVbox->addWidget(m_topicDisplay);
 
     // Chat view
     m_chatView = new ChatView;
@@ -1543,9 +1540,16 @@ void MainWindow::setupChatArea()
         }
     });
 
+    auto *chatLeft = new QWidget;
+    auto *chatLeftVbox = new QVBoxLayout(chatLeft);
+    chatLeftVbox->setContentsMargins(0, 0, 0, 0);
+    chatLeftVbox->setSpacing(0);
+    chatLeftVbox->addWidget(m_topicDisplay);
+    chatLeftVbox->addWidget(m_chatView, 1);
+
     m_chatSplitter = new QSplitter(Qt::Horizontal);
     m_chatSplitter->setHandleWidth(0);
-    m_chatSplitter->addWidget(m_chatView);
+    m_chatSplitter->addWidget(chatLeft);
     m_chatSplitter->addWidget(m_nickPanel);
     m_chatSplitter->setStretchFactor(0, 1);
     m_chatSplitter->setStretchFactor(1, 0);
@@ -2040,22 +2044,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 
 
-
-    if (obj == m_topicDisplay && m_sidebarHeader && m_primaryHeader) {
-        const auto t = event->type();
-        if (t == QEvent::Resize || t == QEvent::Show || t == QEvent::Hide) {
-            const int sbScroll   = m_sidebar   ? m_sidebar->verticalScrollBar()->value()  : 0;
-            const int nickScroll = m_nickList  ? m_nickList->verticalScrollBar()->value() : 0;
-            QTimer::singleShot(0, this, [this, sbScroll, nickScroll]{
-                if (m_sidebarHeader && m_primaryHeader)
-                    m_sidebarHeader->setFixedHeight(
-                        m_primaryHeader->height() +
-                        (m_topicDisplay && m_topicDisplay->isVisible() ? m_topicDisplay->height() : 0));
-                if (m_sidebar)  m_sidebar->verticalScrollBar()->setValue(sbScroll);
-                if (m_nickList) m_nickList->verticalScrollBar()->setValue(nickScroll);
-            });
-        }
-    }
 
     if (obj == m_chatSection && event->type() == QEvent::Resize &&
         m_nickRevealBtn && m_nickRevealBtn->isVisible()) {
