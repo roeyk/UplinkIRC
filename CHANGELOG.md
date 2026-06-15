@@ -3,6 +3,28 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-15 (code quality page, static analysis, clang-tidy fixes)
+What changed:
+  - docs/quality.html: new standalone page showing code quality stats — test results (32 passing,
+    0 failing), 88 assertions, 26 fuzz corpus inputs, 37 IRCv3 caps, 64 source files, 16 799 lines.
+    Includes verbatim terminal output from tst_ircparser and tst_chatformat runs, full IRCv3 capability
+    table, compiler flag cards, ASCII architecture diagram, and principle cards. Linked from main nav.
+  - docs/index.html: added "Quality" link to nav.
+  - Static analysis run: clang-tidy (bugprone-* + clang-analyzer-*), cppcheck 2.21, and ASan+UBSan
+    test builds all run against the codebase. Three real clang-tidy findings fixed:
+      · ircclient.cpp:515 — implicit int widening to qsizetype: 64*1024 → qsizetype{64}*1024
+      · chatrenderer.cpp:464 — narrowing raw.size() to int: explicit static_cast<int>
+      · chatrenderer.cpp:734 — unused ctx param in formatEventGroupLine: [[maybe_unused]]
+    ASan/UBSan: 0 errors. cppcheck: 0 real bugs (Qt macro false positives only).
+  - docs/quality.html static analysis section: framed as ongoing build workflow, shows current
+    build is clean across all three tools.
+  - Fix: quality.html nav and footer linked to non-existent .html pages (configuration.html,
+    commands.html, ircv3.html — only .md versions exist), causing /docs/docs/docs/... redirect
+    loop on the live site. Replaced with valid links only.
+  - Commits: fa69332 (quality page), 24ba7b1 (clang-tidy fixes), 9bdfd55 (analysis section),
+    d7dfdab (reframe), 8e77cbd (broken link fix).
+
+<!--
 SESSION SUMMARY — 2026-06-15 (new messages separator, scroll memory, mIRC formatting input, nick list filter) v0.25.33
 What changed:
   - New messages separator: when switching to a channel with unread messages, a "── N new messages ──"
