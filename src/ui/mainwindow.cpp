@@ -173,6 +173,11 @@ public:
         const int pillX      = textRect.x() + textMargin - hPad;
         const int iconExtra  = icon.isNull() ? 0 : (iconGap + iconSz);
 
+        const bool isSelfAway = m_selfAway && !m_selfNick.isEmpty()
+            && index.data(Qt::UserRole).toString().compare(m_selfNick, Qt::CaseInsensitive) == 0;
+
+        if (isSelfAway) painter->save(), painter->setOpacity(0.35);
+
         if (selected || hovered) {
             const QColor bg = selected ? m_accent : m_hover;
             if (bg.isValid()) {
@@ -196,14 +201,6 @@ public:
             opt.palette.setColor(QPalette::All, QPalette::Highlight,       QColor(Qt::transparent));
             opt.palette.setColor(QPalette::All, QPalette::HighlightedText, textCol);
         }
-        const bool isSelfAway = m_selfAway && !m_selfNick.isEmpty()
-            && index.data(Qt::UserRole).toString().compare(m_selfNick, Qt::CaseInsensitive) == 0;
-        if (isSelfAway) {
-            QColor faded = opt.palette.color(QPalette::Text);
-            faded.setAlphaF(0.35);
-            opt.palette.setColor(QPalette::All, QPalette::Text,            faded);
-            opt.palette.setColor(QPalette::All, QPalette::HighlightedText, faded);
-        }
         QStyledItemDelegate::paint(painter, opt, index);
 
         if (!icon.isNull()) {
@@ -213,6 +210,8 @@ public:
                     iconSz, iconSz);
             icon.paint(painter, r);
         }
+
+        if (isSelfAway) painter->restore();
     }
 };
 
