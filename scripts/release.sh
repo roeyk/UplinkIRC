@@ -28,8 +28,11 @@ sed -i -E \
 # docs/index.html — download card hrefs + display strings
 sed -i -E \
     "s|Uplink-[0-9]+\.[0-9]+\.[0-9]+-x86_64\.AppImage|Uplink-${VER}-x86_64.AppImage|g;
+     s|Uplink-v[0-9]+\.[0-9]+\.[0-9]+-linux-x86_64\.tar\.gz|Uplink-${TAG}-linux-x86_64.tar.gz|g;
      s|Uplink-v[0-9]+\.[0-9]+\.[0-9]+-windows-x64\.zip|Uplink-${TAG}-windows-x64.zip|g;
      s|Uplink-v[0-9]+\.[0-9]+\.[0-9]+-macos-arm64\.dmg|Uplink-${TAG}-macos-arm64.dmg|g;
+     s|(<b>)v[0-9]+\.[0-9]+\.[0-9]+(</b>)|\1${TAG}\2|g;
+     s|(footer-logo\">Uplink )v[0-9]+\.[0-9]+\.[0-9]+(</div>)|\1${TAG}\2|g;
      s|(Uplink <span>)v[0-9]+\.[0-9]+\.[0-9]+(</span>)|\1${TAG}\2|g;
      s|(Download )v[0-9]+\.[0-9]+\.[0-9]+|\1${TAG}|g;
      s|v[0-9]+\.[0-9]+\.[0-9]+ — Latest release|${TAG} — Latest release|g;
