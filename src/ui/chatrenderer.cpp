@@ -617,9 +617,9 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
         ircToSegments(msg.text, base, tb);
         if (!isHistory) {
             linkifySegments(tb, prefixEnd);
-            if (ctx.selfNickRe.isValid())
+            if (!ctx.selfNickRe.pattern().isEmpty())
                 addSelfNickHighlight(tb, prefixEnd, ctx.selfNickRe);
-            if (ctx.highlightRe.isValid())
+            if (!ctx.highlightRe.pattern().isEmpty())
                 addSelfNickHighlight(tb, prefixEnd, ctx.highlightRe);
         }
         break;

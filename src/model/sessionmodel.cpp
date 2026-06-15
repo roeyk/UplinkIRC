@@ -603,8 +603,8 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
         || (msg.type == MessageType::Notice && target == "(server)");
     if (!isActive && !msg.isHistory && countsAsUnread) {
         ++ch.unread;
-        const bool nickHit      = sess->mentionRe.isValid() && sess->mentionRe.match(msg.text).hasMatch();
-        const bool keywordHit   = sess->highlightRe.isValid() && sess->highlightRe.match(msg.text).hasMatch();
+        const bool nickHit    = !sess->mentionRe.pattern().isEmpty() && sess->mentionRe.match(msg.text).hasMatch();
+        const bool keywordHit = !sess->highlightRe.pattern().isEmpty() && sess->highlightRe.match(msg.text).hasMatch();
         if (nickHit || keywordHit)
             ++ch.mentions;
     }
