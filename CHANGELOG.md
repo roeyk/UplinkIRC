@@ -3,6 +3,16 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-15 (network upload fix: redundant WHO queries on JOIN)
+What changed:
+  - sessionmodel.cpp onUserJoined(): Uplink was sending WHO nick %cnfa,42 for every user that
+    joined any channel, even when extended-join was active. extended-join includes the account
+    name directly in the JOIN message params, making the WHO redundant. On busy channels this
+    generated steady 400-700 B/s of upload traffic. Fix: check cl->hasCap("extended-join")
+    before sending WHO — skip it if the cap is active, fall back to WHO on servers without it.
+  - Commit: 7988bff
+
+<!--
 SESSION SUMMARY — 2026-06-15 (performance: heaptrack analysis, icon cache, nick list layout)
 What changed:
   - Analyzed heaptrack.Uplink.1719045.zst (419s runtime, 24.75MB peak heap).
