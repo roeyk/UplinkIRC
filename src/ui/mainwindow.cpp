@@ -233,6 +233,7 @@ public:
         const QIcon indicator  = qvariant_cast<QIcon>(index.data(Qt::UserRole + 2));
         const int   unreadCnt  = m_showCounts ? index.data(Qt::UserRole + 3).toInt() : 0;
         const QString countStr = unreadCnt > 0 ? QString::number(unreadCnt) : QString();
+        const QIcon awayIcon   = qvariant_cast<QIcon>(index.data(Qt::UserRole + 4));
         QStyleOptionViewItem opt = option;
         initStyleOption(&opt, index);
         opt.icon = QIcon();
@@ -259,13 +260,14 @@ public:
         const int pillX      = textRect.x() + textMargin - hPad;
         const int iconExtra  = indicator.isNull() ? 0 : (iconGap + iconSz);
         const int countExtra = countStr.isEmpty() ? 0 : (countGap + cfm.horizontalAdvance(countStr));
+        const int awayExtra  = awayIcon.isNull()  ? 0 : (iconGap + iconSz);
 
         if (selected || hovered) {
             const QColor bg = selected ? m_accent : m_hover;
             if (bg.isValid()) {
                 QRect r(pillX,
                         opt.rect.y() + vPad,
-                        qMin(textW + hPad * 2 + iconExtra + countExtra, opt.rect.right() - pillX),
+                        qMin(textW + hPad * 2 + iconExtra + countExtra + awayExtra, opt.rect.right() - pillX),
                         opt.rect.height() - vPad * 2);
                 painter->save();
                 painter->setRenderHint(QPainter::Antialiasing);
@@ -306,6 +308,14 @@ public:
             painter->setPen(cc);
             painter->drawText(cr, Qt::AlignLeft | Qt::AlignVCenter, countStr);
             painter->restore();
+            afterTextX += countGap + cfm.horizontalAdvance(countStr) + 2;
+        }
+        if (!awayIcon.isNull()) {
+            const int iconX = afterTextX + iconGap;
+            QRect r(iconX,
+                    opt.rect.top() + (opt.rect.height() - iconSz) / 2,
+                    iconSz, iconSz);
+            awayIcon.paint(painter, r);
         }
     }
 };
@@ -1362,25 +1372,11 @@ void MainWindow::setupChatArea()
             QString("QLabel { color: %1; }").arg(m_theme.valid ? m_theme.placeholder : "#888888"));
         m_topicSetByLabel->hide();
 
-        m_awayBadge = new QToolButton;
-        m_awayBadge->setObjectName("awayBadge");
-        m_awayBadge->setFixedSize(28, 28);
-        m_awayBadge->setAutoRaise(true);
-        m_awayBadge->setStyleSheet(
-            "QToolButton { background: transparent; border: none; }");
-        m_awayBadge->setIcon(makeSvgIcon(
-            QStringLiteral(":/icons/mi-do-not-disturb.svg"),
-            QColor("#e06c75")));
-        m_awayBadge->setIconSize(QSize(20, 20));
-        m_awayBadge->setToolTip(tr("Away — type /back to return"));
-        m_awayBadge->hide();
-
         hbox->addWidget(m_primaryTopicBtn);
         hbox->addWidget(m_topicLabel);
         hbox->addSpacing(10);
         hbox->addWidget(m_topicSetByLabel);
         hbox->addStretch(1);
-        hbox->addWidget(m_awayBadge);
         hbox->addWidget(m_searchBtn);
         hbox->addWidget(m_primaryCloseBtn);
     }
@@ -1879,8 +1875,14 @@ void MainWindow::connectModel()
     });
     connect(m_model, &SessionModel::awayStatusChanged, this,
             [this](ServerId h, bool away){
-        if (h == m_model->activeHost() && m_awayBadge)
-            m_awayBadge->setVisible(away);
+        if (auto *srv = findServerItem(h.str())) {
+            if (away)
+                srv->setData(0, Qt::UserRole + 4, QVariant::fromValue(
+                    makeSvgIcon(QStringLiteral(":/icons/mi-do-not-disturb.svg"),
+                                QColor("#e06c75"))));
+            else
+                srv->setData(0, Qt::UserRole + 4, QVariant());
+        }
     });
     connect(m_model, &SessionModel::nickListChanged, this,
             [this](ServerId h, BufferId ch){ onNickListChanged(h.str(), ch.str()); });
@@ -4243,10 +4245,6 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
         }
     }
 
-    if (m_awayBadge) {
-        auto *sess = m_model->session(ServerId{host});
-        m_awayBadge->setVisible(sess && sess->away);
-    }
 }
 
 QString MainWindow::msgidAtViewPos(const QPoint & /*viewPos*/) const
