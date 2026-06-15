@@ -122,6 +122,13 @@ void DccSend::onNewConnection()
     connect(m_socket, &QAbstractSocket::errorOccurred, this, [this]{
         emit error(m_socket->errorString());
     });
+    // Stall guard: if no ACK arrives within 60s of starting, abort.
+    QTimer::singleShot(60000, this, [this]{
+        if (m_socket && m_sent > 0 && !m_finished) {
+            cancel();
+            emit error("Transfer stalled: no ACK received");
+        }
+    });
     sendNextChunk();
 }
 
@@ -132,6 +139,7 @@ void DccSend::onReadyRead()
         quint32 raw;
         m_socket->read(reinterpret_cast<char *>(&raw), 4);
         if (static_cast<qint64>(qFromBigEndian(raw)) >= filesize()) {
+            m_finished = true;
             emit finished();
             return;
         }

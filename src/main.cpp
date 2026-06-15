@@ -5,6 +5,7 @@
 #include <QFont>
 #include <QInputDialog>
 #include <QPixmapCache>
+#include <QScopedPointer>
 #include "config/config.h"
 #include "model/sessionmodel.h"
 #include "ui/mainwindow.h"
@@ -51,9 +52,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    auto *model = new SessionModel;
+    QScopedPointer<SessionModel> model(new SessionModel);
 
-    MainWindow window(model, cfg);
+    MainWindow window(model.get(), cfg);
     window.show();
 
     // Load config after MainWindow has connected its signals

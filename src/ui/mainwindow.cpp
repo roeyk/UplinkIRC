@@ -1538,10 +1538,14 @@ void MainWindow::setupChatArea()
                                             Qt::SmoothTransformation);
 
         Channel::PreviewCard card;
-        card.title     = title.left(120);
-        card.domain    = pageUrl.host();
-        card.pageUrl   = urlStr;
-        card.thumbnail = thumb;
+        card.title   = title.left(120);
+        card.domain  = pageUrl.host();
+        card.pageUrl = urlStr;
+        if (!thumb.isNull()) {
+            QBuffer pngBuf(&card.pngData);
+            pngBuf.open(QIODevice::WriteOnly);
+            thumb.save(&pngBuf, "PNG");
+        }
         ch->addPreview(urlStr, card);
 
         auto makeCardLine = [&]() -> ChatLine {
@@ -3570,7 +3574,7 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
                     ChatLine card;
                     card.role   = ChatLineRole::PreviewCard;
                     card.id     = "preview:" + urlStr;
-                    card.image  = p->thumbnail;
+                    if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
                     card.text   = p->title + "\n" + p->domain;
                     ChatSegment seg; seg.start = 0; seg.length = card.text.size();
                     seg.anchor = "preview:" + urlStr;
@@ -3950,7 +3954,7 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
                     ChatLine card;
                     card.role   = ChatLineRole::PreviewCard;
                     card.id     = "preview:" + urlStr;
-                    card.image  = p->thumbnail;
+                    if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
                     card.text   = p->title + "\n" + p->domain;
                     ChatSegment seg; seg.start = 0; seg.length = card.text.size();
                     seg.anchor = "preview:" + urlStr;
@@ -4066,11 +4070,7 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
         const bool hasAvatarImage = meta && !meta->avatarUrl.isEmpty()
                                     && m_avatarCache.contains(meta->avatarUrl);
         if (hasAvatarImage) {
-            QByteArray bytes;
-            QBuffer buf(&bytes);
-            buf.open(QIODevice::WriteOnly);
-            m_avatarCache[meta->avatarUrl].save(&buf, "PNG");
-            const QString b64 = QString::fromLatin1(bytes.toBase64());
+            const QString b64 = m_avatarBase64Cache.value(meta->avatarUrl);
             QStringList lines;
             if (!meta->displayName.isEmpty())
                 lines << "Name:" + meta->displayName.toHtmlEscaped();
@@ -4348,7 +4348,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
                     ChatLine card;
                     card.role   = ChatLineRole::PreviewCard;
                     card.id     = "preview:" + urlStr;
-                    card.image  = p->thumbnail;
+                    if (!p->pngData.isEmpty()) card.image.loadFromData(p->pngData, "PNG");
                     card.text   = p->title + "\n" + p->domain;
                     ChatSegment seg; seg.start = 0; seg.length = card.text.size();
                     seg.anchor = "preview:" + urlStr;
@@ -4434,11 +4434,19 @@ void MainWindow::fetchAvatar(const QString &url)
         px = px.scaled(36, 36, Qt::KeepAspectRatio, Qt::FastTransformation);
         static constexpr int kAvatarCacheCap = 200;
         if (!m_avatarCache.contains(url)) {
-            if (m_avatarCacheOrder.size() >= kAvatarCacheCap)
-                m_avatarCache.remove(m_avatarCacheOrder.takeFirst());
+            if (m_avatarCacheOrder.size() >= kAvatarCacheCap) {
+                const QString evicted = m_avatarCacheOrder.takeFirst();
+                m_avatarCache.remove(evicted);
+                m_avatarBase64Cache.remove(evicted);
+            }
             m_avatarCacheOrder.append(url);
         }
+        QByteArray pngBytes;
+        QBuffer pngBuf(&pngBytes);
+        pngBuf.open(QIODevice::WriteOnly);
+        px.save(&pngBuf, "PNG");
         m_avatarCache.insert(url, px);
+        m_avatarBase64Cache.insert(url, QString::fromLatin1(pngBytes.toBase64()));
         scheduleNickRefresh(m_model->activeHost().str(), m_model->activeChannel().str());
     };
 

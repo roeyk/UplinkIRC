@@ -302,7 +302,7 @@ void IrcClient::notice(const QString &target, const QString &text)
 
 void IrcClient::setNick(const QString &nick)
 {
-    const QString clean = stripCrlf(nick);
+    const QString clean = stripCrlf(nick).remove(' ').remove('\0');
     m_nick = clean;
     sendRaw("NICK " + clean);
 }
@@ -470,6 +470,7 @@ void IrcClient::onDisconnected()
 {
     m_pingTimer->stop();
     m_pingPending = false;
+    m_buffer.clear();
     m_namesBuffer.clear();
     m_requestedCaps.clear();
     m_ackedCaps.clear();
@@ -786,7 +787,7 @@ void IrcClient::processLine(const QString &line)
                         m_ctcpTimestamps.erase(m_ctcpTimestamps.begin());
                     m_ctcpTimestamps.insert(rkey, now);
                     QString payload = stripCrlf(ctcp.section(' ', 1).left(32));
-                    payload.remove(QChar(1)); // strip CTCP delimiters from peer-supplied data
+                    payload.remove(QChar(1)).remove('\0'); // strip CTCP delimiters and nulls
                     sendRaw("NOTICE " + msg.nick + " :\x01PING " + payload + "\x01");
                 }
             } else if (ctcpCmd == "DCC" && msg.nick != m_nick) {

@@ -45,5 +45,7 @@ private:
     qint64      m_filesize{0};
     std::optional<QHostAddress> m_expectedPeer;
 
+    bool        m_finished{false};
+
     static constexpr qint32 kChunk = 65536;
 };

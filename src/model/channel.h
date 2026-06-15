@@ -1,15 +1,15 @@
 #pragma once
 
 #include "message.h"
+#include <QByteArray>
 #include <QDateTime>
-#include <QPixmap>
 #include <QString>
 #include <QHash>
 #include <QList>
 #include <QSet>
 #include <QStringList>
 
-static constexpr int kMessageBufferCap = 200;
+static constexpr int kMessageBufferCap = 500;
 
 // Nick prefix rank: ~ & @ % + (owner → admin → op → halfop → voice)
 inline int prefixRank(QChar p)
@@ -63,10 +63,10 @@ struct Channel {
     QList<Message>   messages;
     QSet<QString>    botNicks;  // lowercased nicks with +B channel user mode
     struct PreviewCard {
-        QString title;
-        QString domain;
-        QString pageUrl;
-        QPixmap thumbnail;
+        QString    title;
+        QString    domain;
+        QString    pageUrl;
+        QByteArray pngData; // compressed PNG bytes; reconstruct QPixmap in the view layer
     };
     QHash<QString, PreviewCard> previews;      // url → card data
     QSet<QString>               hiddenPreviews; // urls the user manually hid
