@@ -517,8 +517,10 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         const int total = m_mainSplitter->width();
         if (total > 0)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-        if (m_sidebarHeader && m_primaryHeader)
-            m_sidebarHeader->setFixedHeight(m_primaryHeader->height());
+        if (m_sidebarHeader && m_primaryHeader) {
+            const int h = m_primaryHeader->height();
+            m_sidebarHeader->setFixedHeight(h);
+        }
     });
 
     if (!savedPanes.isEmpty()) {
@@ -1089,6 +1091,7 @@ void MainWindow::applyFontSizes()
     if (m_chatView)       m_chatView->setFont(makeFont(fs.chat));
     if (m_nickList)       m_nickList->setFont(makeFont(fs.nickList));
     if (m_nickPanel)      m_nickPanel->setFont(makeFont(fs.nickDock));
+    if (m_nickCountLabel) m_nickCountLabel->setFont(makeFont(fs.nickDock));
     if (m_searchBtn)
         m_searchBtn->setIcon(makeSvgIcon(
             QStringLiteral(":/icons/mi-search.svg"),
@@ -1324,9 +1327,10 @@ void MainWindow::setupNickPanel()
     m_userInfoLabel->setObjectName("userInfoLabel");
     m_userInfoLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
-    auto *header = new QWidget;
+    m_nickPanelHeader = new QWidget;
+    auto *header = m_nickPanelHeader;
     header->setObjectName("nickPanelHeader");
-    header->setFixedHeight(34);
+    header->setFixedHeight(32);
     auto *hbox = new QHBoxLayout(header);
     hbox->setContentsMargins(2, 2, 2, 2);
     hbox->setSpacing(2);

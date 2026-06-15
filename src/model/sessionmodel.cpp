@@ -603,7 +603,7 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
         || (msg.type == MessageType::Notice && target == "(server)");
     if (!isActive && !msg.isHistory && countsAsUnread) {
         ++ch.unread;
-        const bool nickHit      = !sess->nick.isEmpty() && msg.text.contains(sess->nick, Qt::CaseInsensitive);
+        const bool nickHit      = sess->mentionRe.isValid() && sess->mentionRe.match(msg.text).hasMatch();
         const bool keywordHit   = sess->highlightRe.isValid() && sess->highlightRe.match(msg.text).hasMatch();
         if (nickHit || keywordHit)
             ++ch.mentions;

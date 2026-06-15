@@ -181,6 +181,7 @@ private:
     QToolButton  *m_primaryCloseBtn{nullptr};
     QListWidget  *m_nickList;
     QWidget      *m_nickPanel{nullptr};
+    QWidget      *m_nickPanelHeader{nullptr};
     QLabel       *m_nickGroupsIconLabel{nullptr};
     QLabel       *m_nickCountLabel{nullptr};
     QToolButton  *m_nickToggleBtn{nullptr};
