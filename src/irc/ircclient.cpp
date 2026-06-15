@@ -1436,7 +1436,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             emit namesDone(m_host, channel);
             sendRaw("MODE " + channel);
             if (m_supportsWhox)
-                sendRaw("WHO " + channel + " %cnfa,42");
+                sendRaw("WHO " + channel + " %tcnfa,42");
             else
                 sendRaw("WHO " + channel);
             // Request chat history on join
@@ -1579,8 +1579,13 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             : "You are now away: " + m_awayMsg);
         break;
 
+    case 301: // RPL_AWAY — <client> <nick> :<away message>
+        if (params.size() >= 2 && !trailing.isEmpty())
+            emit contextualMessage(m_host, params[1] + " is away: " + trailing);
+        break;
+
     // WHOIS/WHOWAS replies — route to active channel/window
-    case 301: case 307: case 311: case 312: case 313:
+    case 307: case 311: case 312: case 313:
     case 317: case 318: case 319: case 320: case 369:
     case 671:
         if (!trailing.isEmpty())
