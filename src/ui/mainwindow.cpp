@@ -601,7 +601,7 @@ void MainWindow::setupToolbar()
 
     m_hamburger = new QToolButton;
     m_hamburger->setFixedSize(28, 28);
-    m_hamburger->setIconSize(QSize(20, 20));
+    m_hamburger->setIconSize(QSize(24, 24));
     m_hamburger->setAutoRaise(true);
     m_hamburger->setStyleSheet(
         "QToolButton { background: transparent; border: none; }"
@@ -1018,13 +1018,13 @@ static QIcon makeTopicIcon(const QColor &color)
 static QIcon makeGearIcon(int angleDeg, const QColor &color)
 {
     QSvgRenderer renderer(QStringLiteral(":/icons/settings.svg"));
-    QPixmap pix(20, 20);
+    QPixmap pix(24, 24);
     pix.fill(Qt::transparent);
     QPainter p(&pix);
     if (angleDeg != 0) {
-        p.translate(10, 10);
+        p.translate(12, 12);
         p.rotate(angleDeg);
-        p.translate(-10, -10);
+        p.translate(-12, -12);
     }
     renderer.render(&p);
     p.setCompositionMode(QPainter::CompositionMode_SourceIn);
@@ -1157,7 +1157,7 @@ void MainWindow::applyFontSizes()
 static QIcon makeMenuIcon(const QColor &color)
 {
     QSvgRenderer renderer(QStringLiteral(":/icons/menu.svg"));
-    QPixmap pix(20, 20);
+    QPixmap pix(24, 24);
     pix.fill(Qt::transparent);
     QPainter p(&pix);
     renderer.render(&p);
@@ -1198,7 +1198,7 @@ void MainWindow::setupSidebar()
 
     m_sidebarToggleBtn = new QToolButton;
     m_sidebarToggleBtn->setFixedSize(28, 28);
-    m_sidebarToggleBtn->setIconSize(QSize(20, 20));
+    m_sidebarToggleBtn->setIconSize(QSize(24, 24));
     m_sidebarToggleBtn->setAutoRaise(true);
     m_sidebarToggleBtn->setStyleSheet(
         "QToolButton { background: transparent; border: none; }"
