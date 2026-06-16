@@ -162,15 +162,24 @@ void ChannelPane::setInputFont(const QFont &nickFont, const QFont &inputFont)
 
 void ChannelPane::setTopicFont(const QFont &f)
 {
+    m_topicFontPt = f.pointSize();
     if (m_topicText) {
         m_topicText->setFont(f);
-        m_topicText->setStyleSheet(QString("font-size: %1pt;").arg(f.pointSize()));
+        if (!m_rawTopicHtml.isEmpty())
+            m_topicText->setText(
+                QString("<span style='font-size:%1pt;'>%2</span>").arg(m_topicFontPt).arg(m_rawTopicHtml));
     }
 }
 
 void ChannelPane::setTopic(const QString &html)
 {
-    if (m_topicText) m_topicText->setText(html);
+    m_rawTopicHtml = html;
+    if (m_topicText) {
+        const QString sized = html.isEmpty()
+            ? html
+            : QString("<span style='font-size:%1pt;'>%2</span>").arg(m_topicFontPt).arg(html);
+        m_topicText->setText(sized);
+    }
     if (m_topicBar && m_topicToggle) {
         const bool hasTopic = !html.isEmpty();
         m_topicToggle->setChecked(hasTopic);

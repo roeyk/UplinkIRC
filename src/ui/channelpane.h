@@ -50,4 +50,6 @@ private:
     QWidget      *m_topicBar{nullptr};
     QLabel       *m_topicText{nullptr};
     QToolButton  *m_topicToggle{nullptr};
+    int           m_topicFontPt{11};
+    QString       m_rawTopicHtml;
 };

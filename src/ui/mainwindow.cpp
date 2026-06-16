@@ -4435,8 +4435,13 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
         m_topicLabel->setText(channel + modeStr);
         m_userInfoLabel->clear();
 
-        if (m_topicText)
-            m_topicText->setText(ChatRenderer::linkifyTopic(ch ? ch->topic : QString()));
+        if (m_topicText) {
+            const QString topicHtml = ChatRenderer::linkifyTopic(ch ? ch->topic : QString());
+            const int topicPt = m_config.ui.fontSizes.topicText;
+            m_topicText->setText(topicHtml.isEmpty()
+                ? topicHtml
+                : QString("<span style='font-size:%1pt;'>%2</span>").arg(topicPt).arg(topicHtml));
+        }
 
         if (m_topicSetByLabel) {
             const QString setter = ch ? ch->topicSetBy : QString();
