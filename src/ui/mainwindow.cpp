@@ -1250,6 +1250,7 @@ void MainWindow::setupSidebar()
     // Floating close button pinned to the bottom-left corner of the sidebar panel
     m_sidebarCloseBtn = new QToolButton(m_sidebarPanel);
     m_sidebarCloseBtn->setFixedSize(28, 28);
+    m_sidebarCloseBtn->setIconSize(QSize(20, 20));
     m_sidebarCloseBtn->setAutoRaise(true);
     m_sidebarCloseBtn->setStyleSheet(
         "QToolButton { background: transparent; border: none; }"
@@ -1435,6 +1436,7 @@ void MainWindow::setupChatArea()
 
         m_searchBtn = new QToolButton;
         m_searchBtn->setFixedSize(28, 28);
+        m_searchBtn->setIconSize(QSize(20, 20));
         m_searchBtn->setAutoRaise(true);
         m_searchBtn->setStyleSheet(
             "QToolButton { background: transparent; border: none; }"
@@ -1684,6 +1686,7 @@ void MainWindow::setupChatArea()
     // so Qt doesn't treat it as a splitter pane.
     m_nickRevealBtn = new QToolButton(m_chatSection);
     m_nickRevealBtn->setFixedSize(28, 28);
+    m_nickRevealBtn->setIconSize(QSize(20, 20));
     m_nickRevealBtn->setAutoRaise(true);
     m_nickRevealBtn->setStyleSheet(
         "QToolButton { background: transparent; border: none; }"
@@ -1704,6 +1707,7 @@ void MainWindow::setupChatArea()
 
     m_sidebarRevealBtn = new QToolButton(m_chatSection);
     m_sidebarRevealBtn->setFixedSize(28, 28);
+    m_sidebarRevealBtn->setIconSize(QSize(20, 20));
     m_sidebarRevealBtn->setAutoRaise(true);
     m_sidebarRevealBtn->setStyleSheet(
         "QToolButton { background: transparent; border: none; }"
