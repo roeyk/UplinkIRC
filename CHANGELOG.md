@@ -3,6 +3,18 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-15 (306 themes + separator key)
+What changed:
+  - Added [buffer] separator theme key to all 55 existing themes — controls the color of
+    "── N new messages ──" and "── N older messages ──" dividers. Falls back to border color
+    when key is absent. makeStatusLine() now takes an optional color param; all 3 call sites
+    in mainwindow.cpp pass m_theme.separator.
+  - Added 251 themes converted from tinted-theming/base16-schemes via base16_to_uplink.py
+    (Python, pyyaml). Named with -base16 suffix to coexist with originals. Brings total
+    bundled theme count from 55 to 306.
+  - Commits: e18b7c3
+
+<!--
 SESSION SUMMARY — 2026-06-15 (network upload fix: redundant WHO queries on JOIN)
 What changed:
   - sessionmodel.cpp onUserJoined(): Uplink was sending WHO nick %cnfa,42 for every user that

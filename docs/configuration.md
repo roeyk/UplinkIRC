@@ -1021,7 +1021,9 @@ name = "#archlinux"
 
 Set `theme` in `[ui]` to any theme name from the list below. The name must match the `.toml` filename in the `themes/` folder without the extension.
 
-Uplink ships with 55 built-in themes:
+Uplink ships with 306 built-in themes — 55 hand-picked originals plus all 251 themes from the [base16 catalog](https://github.com/tinted-theming/base16-schemes) (named with a `-base16` suffix). At this point you probably don't need to go looking anywhere else.
+
+Popular picks:
 
 | Theme name | Description |
 |---|---|
@@ -1030,9 +1032,11 @@ Uplink ships with 55 built-in themes:
 | `nord` | Cool blue Arctic palette |
 | `dracula` | Dark purple and pink |
 | `gruvbox-dark` | Warm retro dark theme |
+| `gruvbox-dark-hard-base16` | Gruvbox hard contrast, base16 variant |
 | `solarized-dark` | Classic Solarized dark |
-| `solarized-light` | Classic Solarized light |
-| `tokyo-night` | Dark Tokyo Night |
+| `solarized-dark-base16` | Solarized dark, base16 variant |
+| `tokyo-night-dark-base16` | Tokyo Night dark, base16 variant |
+| `rose-pine-base16` | Rosé Pine, base16 variant |
 | `one-dark` | Atom One Dark |
 | `default` | Built-in fallback theme |
 
