@@ -1484,6 +1484,7 @@ void MainWindow::setupChatArea()
     m_topicDisplay->setObjectName("topicDisplay");
     m_topicDisplay->setVisible(m_showTopic);
     m_topicDisplay->installEventFilter(this);
+    m_primaryHeader->installEventFilter(this);
 
     m_chatSection     = new QWidget;
     auto *chatSection = m_chatSection;
@@ -2189,6 +2190,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
 
 
+
+    if (obj == m_primaryHeader && event->type() == QEvent::Resize && m_sidebarHeader)
+        m_sidebarHeader->setFixedHeight(static_cast<QResizeEvent *>(event)->size().height());
 
     if (obj == m_chatSection && event->type() == QEvent::Resize &&
         m_nickRevealBtn && m_nickRevealBtn->isVisible()) {
