@@ -1121,7 +1121,7 @@ void MainWindow::applyFontSizes()
             QColor(m_theme.valid ? m_theme.text : "#e3e3e3")));
     if (m_nickGroupsIconLabel)
         m_nickGroupsIconLabel->setPixmap(
-            makeGroupsIcon(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 14));
+            makeGroupsIcon(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
     if (m_hamburger) {
         m_hamburger->setIcon(makeMenuIcon(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
         m_hamburger->setStyleSheet(
@@ -1294,7 +1294,7 @@ void MainWindow::setupNickPanel()
     m_nickGroupsIconLabel = new QLabel;
     m_nickGroupsIconLabel->setObjectName("nickGroupsIcon");
     m_nickGroupsIconLabel->setContentsMargins(4, 0, 2, 0);
-    m_nickGroupsIconLabel->setPixmap(makeGroupsIcon(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 14));
+    m_nickGroupsIconLabel->setPixmap(makeGroupsIcon(QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 20));
     m_nickGroupsIconLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
 
     m_nickCountLabel = new QLabel(QStringLiteral("0"));
