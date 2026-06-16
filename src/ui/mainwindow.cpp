@@ -82,6 +82,7 @@
 #include <QScreen>
 #include <QRandomGenerator>
 #include <QShortcut>
+#include <QDebug>
 #include <QStyledItemDelegate>
 #if defined(Q_OS_WIN)
 #  include <windows.h>
@@ -2778,6 +2779,7 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
     if (anchor.startsWith("msgid:")) {
         const QString msgid = anchor.mid(6);
         QMenu menu(view->viewport());
+        auto *cl = m_model->clientFor(ServerId{host});
         const QString sel = view->selectedText();
         if (!sel.isEmpty()) {
             connect(menu.addAction("Copy"), &QAction::triggered, this,
@@ -2795,16 +2797,17 @@ void MainWindow::handleChatViewContextMenu(ChatView *view, const QString &anchor
             if (m_replyBar) m_replyBar->show();
             if (m_input)    m_input->setFocus();
         });
-        connect(menu.addAction("React"), &QAction::triggered, this,
-                [this, msgid, host, channel, globalPos]{
-            m_pendingReactMsgid    = msgid;
-            m_pendingReactHost     = host;
-            m_pendingReactChannel  = channel;
-            ensureEmojiPicker();
-            m_emojiPicker->showAt(globalPos);
-        });
+        if (cl && cl->hasCap("message-tags")) {
+            connect(menu.addAction("React"), &QAction::triggered, this,
+                    [this, msgid, host, channel, globalPos]{
+                m_pendingReactMsgid    = msgid;
+                m_pendingReactHost     = host;
+                m_pendingReactChannel  = channel;
+                ensureEmojiPicker();
+                m_emojiPicker->showAt(globalPos);
+            });
+        }
         {
-            auto *cl = m_model->clientFor(ServerId{host});
             auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
             if (cl && cl->hasCap("draft/message-redaction") && ch) {
                 QString msgNick;
@@ -3014,7 +3017,10 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
 void MainWindow::onReactionsChanged(const QString &host, const QString &channel, const QString &msgid)
 {
     auto updateView = [&](ChatView *view, Channel *ch) {
-        if (view->findLine(msgid) < 0) return;
+        if (view->findLine(msgid) < 0) {
+            qWarning() << "onReactionsChanged: findLine miss for msgid=" << msgid;
+            return;
+        }
         const auto rxIt = ch->reactions.constFind(msgid);
         const bool hasReactions = rxIt != ch->reactions.constEnd() && !rxIt->isEmpty();
         const QString rxId = "rx:" + msgid;

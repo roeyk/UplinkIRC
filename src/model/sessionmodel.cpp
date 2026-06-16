@@ -143,11 +143,13 @@ void SessionModel::sendReact(ServerId host, BufferId target,
     auto *cl = clientFor(ServerId{host});
     if (!cl) return;
     // No echo-message: locally apply only if the TAGMSG was actually sent.
-    if (cl->sendReact(target.str(), msgid, emoji)) {
-        const QString nick = selfNick(host);
-        if (!nick.isEmpty())
-            onReactReceived(host.str(), target.str(), nick, msgid, emoji);
+    if (!cl->sendReact(target.str(), msgid, emoji)) {
+        localMessage(host, target, "Cannot send reaction (message-tags cap not active)");
+        return;
     }
+    const QString nick = selfNick(host);
+    if (!nick.isEmpty())
+        onReactReceived(host.str(), target.str(), nick, msgid, emoji);
 }
 
 void SessionModel::sendRedact(ServerId host, BufferId target,
