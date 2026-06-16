@@ -57,7 +57,7 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
     auto *inner = new QWidget;
     auto *vbox  = new QVBoxLayout(inner);
     vbox->setContentsMargins(8, 6, 8, 6);
-    vbox->setSpacing(3);
+    vbox->setSpacing(6);
 
     // ── Appearance ────────────────────────────────────────────────────────────
     vbox->addSpacing(2);
@@ -234,7 +234,7 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
             "Other users can see them in the nick list tooltip. "
             "Requires <b>draft/metadata-2</b> support (Ergo, soju, and others).");
         note->setWordWrap(true);
-        note->setStyleSheet("font-size:11px;");
+        note->setStyleSheet("font-size: 9pt;");
         vbox->addWidget(note);
     }
 

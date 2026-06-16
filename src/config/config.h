@@ -81,8 +81,8 @@ struct FontSizes {
     int chat{10};         // message area
     int nickList{10};     // user list panel
     int nickDock{10};     // "Users (N)" dock title
-    int topicBar{10};     // #channel label in topic bar
-    int topicText{10};    // actual topic text
+    int topicBar{11};     // #channel label in topic bar
+    int topicText{11};    // actual topic text
     int inputNick{10};    // your nick label
     int input{10};        // message typing area
     int typing{9};        // "nick is typing..." indicator

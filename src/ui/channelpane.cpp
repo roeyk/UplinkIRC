@@ -82,11 +82,6 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
             QDesktopServices::openUrl(u);
     });
     m_topicText->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    {
-        QFont tf = m_topicText->font();
-        tf.setPointSize(qMax(7, tf.pointSize() - 1));
-        m_topicText->setFont(tf);
-    }
     tbhbox->addWidget(m_topicText);
     m_topicBar->hide();
     vbox->addWidget(m_topicBar);

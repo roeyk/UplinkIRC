@@ -382,6 +382,7 @@ QSpinBox::up-button, QSpinBox::down-button {
 QCheckBox {
     spacing: 8px;
     color: {{text}};
+    font-size: 10pt;
 }
 QCheckBox::indicator {
     width: 16px;
@@ -402,6 +403,7 @@ QCheckBox::indicator:hover {
 QRadioButton {
     spacing: 8px;
     color: {{text}};
+    font-size: 10pt;
 }
 QRadioButton::indicator {
     width: 16px;
@@ -513,7 +515,7 @@ QLineEdit#nickFilter {
     border: none;
     border-bottom: 1px solid {{border}};
     padding: 2px 6px;
-    font-size: 11px;
+    font-size: 9pt;
 }
 
 /* ── Tool buttons ── */
