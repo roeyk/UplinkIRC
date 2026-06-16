@@ -565,6 +565,28 @@ What changed:
 No regressions. No known issues.
 -->
 
+## v0.25.38 — 2026-06-16
+
+### Added
+- **Dedicated Manage Servers button** — a new icon button (↗ domain) sits in the sidebar header next to ⚙, giving one-click access to the server list without opening the hamburger menu.
+
+### Changed
+- **Right-click anywhere on a message** — the React/Reply/Delete context menu now triggers on any right-click on a message line (body, nick, timestamp, or blank space). Previously only clicking the narrow timestamp area worked. If text is selected when you right-click, a **Copy** option is prepended automatically.
+- **Local reaction echo** — reactions you send via React appear immediately under the original message without waiting for the server to echo them back (servers without `echo-message` never echo `TAGMSG` reactions at all).
+- **Reply ↩ indicator on own messages** — the reply-target indicator now renders correctly on messages you send yourself; the echo path was not passing the `replyToMsgid` through.
+- **Unread message counts use theme color** — sidebar unread count badges now render at full opacity using the theme's `[ui] unread` color (default `#89b4fa`) instead of 60%-alpha text color.
+- **`/nick` label update** — changing your nick with `/nick newnick` now correctly updates the nick label next to the input bar. The `selfNickChanged` signal was never firing because `m_nick` was set preemptively before the server echoed the NICK back.
+- **nickDock font platform split** — nick panel header font defaults to 9 pt on Linux/FreeBSD and 13 pt on macOS (Retina screens need the larger value). Configurable via `font_nick_dock`.
+- **Toolbar icon sizing unified** — hamburger and gear are both 18–24 px, all floating/panel buttons explicitly sized at 20 px, nick panel header icons at 20 px. All three header buttons routed through the DPR-aware `MenuIcons::fromSvg` path (fixes blurry icons on Retina).
+- **Gear icon 18 px** — the gear/Preferences icon uses 18 px instead of 24 px to visually balance with the heavier hamburger and domain-add icons at 24 px.
+
+### Fixed
+- **Nick panel header alignment** — header row (collapse, groups icon, user count) now aligns correctly with the top sidebar entry at startup, including when the window was previously maximized (`correctStartupGeometry` now syncs the header height).
+- **Topic font-size in HTML mode** — `font_topic` is now embedded directly in the topic label's widget stylesheet so Qt6's QSS engine does not override it with the app default.
+- **sidebarHeader height** — header height is now kept in sync with the primary header via a resize-event listener rather than relying on a one-shot timer at startup.
+
+---
+
 ## v0.25.37 — 2026-06-15
 
 ### Fixed

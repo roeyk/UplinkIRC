@@ -692,7 +692,7 @@ Right-click the **timestamp** (the `hh:mm` at the left of the message) and choos
 
 Reactions appear inline below the original message as `emoji(count)` for all clients that support `draft/react`.
 
-You can also use `/react <emoji>` after right-clicking a timestamp and choosing **Reply** (which sets the message target).
+You can also use `/react <emoji>` after right-clicking a message and choosing **Reply** (which sets the message target).
 
 ### How do I turn message logging on or off?
 
