@@ -4486,6 +4486,15 @@ void MainWindow::onNickRemoved(const QString &host, const QString &channel, cons
         const int row = findNickRow(pane->nickList(), nick);
         if (row >= 0) delete pane->nickList()->takeItem(row);
     }
+
+    const QString timerKey = host + "|" + channel.toLower() + "|" + nick;
+    if (auto *t = m_typingNickTimers.value(timerKey)) {
+        t->stop();
+        t->deleteLater();
+        m_typingNickTimers.remove(timerKey);
+        m_typingNicks[key].remove(nick);
+        updateTypingLabel();
+    }
 }
 
 void MainWindow::onNickRenamed(const QString &host, const QString &channel,
