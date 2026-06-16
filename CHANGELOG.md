@@ -1,6 +1,33 @@
 # Changelog
 
 <!--
+SESSION SUMMARY — 2026-06-16 (icon swap, close-channel UI fix, warning cleanup, v0.25.40 release)
+What changed:
+  - Preferences button icon swapped from settings.svg (gear) to manage_accounts Material Symbol.
+    Icon size bumped from 18×18 to 20×20 to match visual weight.
+  - Manage Servers button went through several icon candidates this session (domain_add →
+    lan → network_manage → add_link) before landing on add_link. Button enlarged from
+    28×28 / 24×24 to 32×32 / 28×28 to compensate for add_link's thinner visual weight.
+  - mi-lan.svg and mi-network-manage.svg added during icon exploration then removed as
+    orphans before session close.
+  - Manage Servers tooltip updated from "Manage Servers" to "Add / Manage Servers" to better
+    match the add_link icon which reads as "add".
+  - Close channel UI stale state fixed: onChannelRemoved() now calls
+    onSidebarSelectionChanged() after deleting the sidebar item. Before this fix, closing a
+    channel via right-click would leave the info bar and nick list showing the closed
+    channel's data until the user manually clicked the auto-selected channel.
+  - -Wconversion warning in chatview.cpp:739 fixed: `const int newline` → `const qsizetype`.
+  - Nick completion button removed from roadmap (was already reverted; Tab is sufficient).
+  - ASan/UBSan and heaptrack builds rebuilt against current code. Both clean. Testing
+    deferred to next session.
+  - Released v0.25.40.
+  - Commits: 14190cd (icon swap + close-channel fix), dd7e455 (v0.25.40 release),
+    fc12aac (orphan icon cleanup + tooltip)
+No regressions. No known issues.
+Next priorities: ASan/UBSan run + heaptrack profile analysis; ServerId/BufferId strong types.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-16 (IRC formatting, format indicator, keychain bundle fix, search icon, v0.25.39 release)
 What changed:
   - IRC text formatting (Ctrl+B/I/U/S/O) now works correctly in the input bar. Formatting is
