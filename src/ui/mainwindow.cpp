@@ -1210,7 +1210,7 @@ void MainWindow::setupSidebar()
         m_serversBtn->setStyleSheet(
             "QToolButton { background: transparent; border: none; }"
             "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
-        m_serversBtn->setToolTip(tr("Manage Servers"));
+        m_serversBtn->setToolTip(tr("Add / Manage Servers"));
         m_serversBtn->setIcon(MenuIcons::manageServers(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
         connect(m_serversBtn, &QToolButton::clicked, this, [this]{
             ManageServersDialog dlg(m_config.servers, this);
