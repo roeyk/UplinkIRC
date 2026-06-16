@@ -1155,7 +1155,7 @@ void MainWindow::setupSidebar()
 
     m_sidebarToggleBtn = new QToolButton;
     m_sidebarToggleBtn->setFixedSize(28, 28);
-    m_sidebarToggleBtn->setIconSize(QSize(24, 24));
+    m_sidebarToggleBtn->setIconSize(QSize(18, 18));
     m_sidebarToggleBtn->setAutoRaise(true);
     m_sidebarToggleBtn->setStyleSheet(
         "QToolButton { background: transparent; border: none; }"

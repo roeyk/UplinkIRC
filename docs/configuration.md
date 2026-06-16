@@ -45,7 +45,7 @@ font_toolbar      = 10
 font_sidebar      = 10
 font_chat         = 10
 font_nick_list    = 10
-font_nick_dock    = 10    # nick panel header font size
+font_nick_dock    = 9     # nick panel header font size (macOS default: 13)
 font_topic_bar    = 10
 font_input_nick   = 10
 font_input        = 10
@@ -121,7 +121,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
 | `font_chat` | integer | `10` | Font size (pt) for the message area |
 | `font_nick_list` | integer | `10` | Font size (pt) for the user list |
-| `font_nick_dock` | integer | `10` | Font size (pt) for the nick panel header (close button, groups icon, and user count) |
+| `font_nick_dock` | integer | `9` (macOS: `13`) | Font size (pt) for the nick panel header (close button, groups icon, and user count) |
 | `font_topic_bar` | integer | `10` | Font size (pt) for the channel header and topic bar |
 | `font_input_nick` | integer | `10` | Font size (pt) for your nick label next to the input |
 | `font_input` | integer | `10` | Font size (pt) for the message input box |

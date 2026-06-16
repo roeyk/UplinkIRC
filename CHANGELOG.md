@@ -1,6 +1,17 @@
 # Changelog
 
 <!--
+SESSION SUMMARY — 2026-06-16 (gear icon size, nick panel header alignment, nickDock font platform split)
+What changed:
+  - Gear (Preferences) icon in sidebar header reduced from 24px to 18px iconSize. Button
+    stays 28×28 (same click target); the gear SVG was visually heavier than the hamburger
+    and servers icons at 24px, now balanced at 18px.
+  - nick panel header alignment fixes (see previous session note below).
+  - font_nick_dock docs updated: default listed as 9 (macOS: 13).
+  - Commits: (this session)
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-16 (nick panel header alignment, correctStartupGeometry sync, nickDock font platform split)
 What changed:
   - m_nickToggleBtn kept at 28×28 / 20×20 icon (same as sidebarCloseBtn / sidebarRevealBtn).
