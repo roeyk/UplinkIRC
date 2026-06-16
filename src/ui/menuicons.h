@@ -71,5 +71,8 @@ inline QIcon mention        (const QColor &c = {}) { return fromSvg(":/icons/mi-
 inline QIcon unread         (const QColor &c = {}) { return fromSvg(":/icons/mi-forum.svg",               c); }
 inline QIcon send           (const QColor &c = {}, int sz = 16) { return fromSvg(":/icons/mi-send.svg", c, sz); }
 inline QIcon connectedServer(const QColor &c = {}) { return fromSvg(":/icons/mi-host.svg",                c); }
+inline QIcon manageServers  (const QColor &c = {}) { return fromSvg(":/icons/mi-domain-add.svg",          c, 24); }
+inline QIcon hamburger      (const QColor &c = {}) { return fromSvg(":/icons/menu.svg",                   c, 24); }
+inline QIcon gear           (const QColor &c = {}) { return fromSvg(":/icons/settings.svg",               c, 24); }
 
 } // namespace MenuIcons

@@ -517,9 +517,10 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         const int total = m_mainSplitter->width();
         if (total > 0)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-        if (m_sidebarHeader && m_primaryHeader) {
+        if (m_primaryHeader) {
             const int h = m_primaryHeader->height();
-            m_sidebarHeader->setFixedHeight(h);
+            if (m_sidebarHeader)   m_sidebarHeader->setFixedHeight(h);
+            if (m_nickPanelHeader) m_nickPanelHeader->setFixedHeight(h);
         }
     });
 
@@ -991,22 +992,9 @@ static QIcon makeTopicIcon(const QColor &color)
     return QIcon(pix);
 }
 
-static QIcon makeGearIcon(int angleDeg, const QColor &color)
+static QIcon makeGearIcon(int, const QColor &color)
 {
-    QSvgRenderer renderer(QStringLiteral(":/icons/settings.svg"));
-    QPixmap pix(24, 24);
-    pix.fill(Qt::transparent);
-    QPainter p(&pix);
-    if (angleDeg != 0) {
-        p.translate(12, 12);
-        p.rotate(angleDeg);
-        p.translate(-12, -12);
-    }
-    renderer.render(&p);
-    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
-    p.fillRect(pix.rect(), color);
-    p.end();
-    return QIcon(pix);
+    return MenuIcons::gear(color);
 }
 
 static QPixmap makeGroupsIcon(const QColor &color, int size = 16)
@@ -1105,9 +1093,7 @@ void MainWindow::applyFontSizes()
             "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
     }
     if (m_serversBtn)
-        m_serversBtn->setIcon(makeSvgIcon(
-            QStringLiteral(":/icons/mi-domain-add.svg"),
-            QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 24));
+        m_serversBtn->setIcon(MenuIcons::manageServers(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
     if (m_topicText) {
         const QFont tf = makeFont(fs.topicText);
@@ -1136,15 +1122,7 @@ void MainWindow::applyFontSizes()
 
 static QIcon makeMenuIcon(const QColor &color)
 {
-    QSvgRenderer renderer(QStringLiteral(":/icons/menu.svg"));
-    QPixmap pix(24, 24);
-    pix.fill(Qt::transparent);
-    QPainter p(&pix);
-    renderer.render(&p);
-    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
-    p.fillRect(pix.rect(), color);
-    p.end();
-    return QIcon(pix);
+    return MenuIcons::hamburger(color);
 }
 
 static QIcon makeConnectedIcon()
@@ -1228,9 +1206,7 @@ void MainWindow::setupSidebar()
             "QToolButton { background: transparent; border: none; }"
             "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
         m_serversBtn->setToolTip(tr("Manage Servers"));
-        m_serversBtn->setIcon(makeSvgIcon(
-            QStringLiteral(":/icons/mi-domain-add.svg"),
-            QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 24));
+        m_serversBtn->setIcon(MenuIcons::manageServers(QColor(m_theme.valid ? m_theme.text : "#ffffff")));
         connect(m_serversBtn, &QToolButton::clicked, this, [this]{
             ManageServersDialog dlg(m_config.servers, this);
             if (dlg.exec() != QDialog::Accepted) return;
