@@ -30,6 +30,7 @@ public:
 
     bool findText(const QString &text, bool backward = false);
     void clearFind();
+    QString selectedText() const;
 
 signals:
     void anchorActivated(const QString &anchor, const QPoint &globalPos, Qt::MouseButton btn);
@@ -91,7 +92,6 @@ private:
     int      lineAt(int docY) const;
     QString  anchorAt(const QPoint &vpPos) const;
     SelPoint hitTest(const QPoint &vpPos) const;
-    QString  selectedText() const;
     void     setFind(int lineIdx, int from, int to);
     void     drawLine(QPainter &p, const ChatLine &line, int screenY,
                       int selFrom = -1, int selTo = -1,

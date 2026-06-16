@@ -140,8 +140,13 @@ IgnoreTypes SessionModel::ignoreFlags(const QString &nick) const
 void SessionModel::sendReact(ServerId host, BufferId target,
                               const QString &msgid, const QString &emoji)
 {
-    if (auto *cl = clientFor(ServerId{host}))
-        cl->sendReact(target.str(), msgid, emoji);
+    auto *cl = clientFor(ServerId{host});
+    if (!cl) return;
+    cl->sendReact(target.str(), msgid, emoji);
+    // No echo-message: locally apply the reaction so it appears in our own UI.
+    const QString nick = selfNick(host);
+    if (!nick.isEmpty())
+        onReactReceived(host.str(), target.str(), nick, msgid, emoji);
 }
 
 void SessionModel::sendRedact(ServerId host, BufferId target,
@@ -370,7 +375,7 @@ void SessionModel::sendMessage(ServerId host, BufferId target, const QString &te
             if (pwdCmds.contains(svcCmd))
                 display = svcCmd + " <redacted>";
         }
-        postMessage(host.str(), target.str(), Message::make(MessageType::Privmsg, sess->nick, display));
+        postMessage(host.str(), target.str(), Message::make(MessageType::Privmsg, sess->nick, display, {}, false, {}, replyToMsgid));
     }
 }
 

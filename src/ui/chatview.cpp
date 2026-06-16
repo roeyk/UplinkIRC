@@ -289,14 +289,28 @@ void ChatView::leaveEvent(QEvent *)
 
 void ChatView::contextMenuEvent(QContextMenuEvent *e)
 {
+    QString anc = anchorAt(e->pos());
+
+    // Fall back to the line's msgid so right-clicking anywhere on a message
+    // (not just the timestamp) triggers React/Reply.
+    if (anc.isEmpty()) {
+        const int idx = lineAt(e->pos().y() + verticalScrollBar()->value());
+        if (idx >= 0 && idx < m_lines.size()) {
+            const ChatLine &ln = m_lines[idx];
+            if (ln.role == ChatLineRole::Message && !ln.id.isEmpty())
+                anc = "msgid:" + ln.id;
+        }
+    }
+
     const QString sel = selectedText();
-    if (!sel.isEmpty()) {
+    if (!sel.isEmpty() && anc.isEmpty()) {
+        // Text selected but not on a message line — just Copy.
         QMenu menu(viewport());
         connect(menu.addAction("Copy"), &QAction::triggered,
                 this, [sel]{ QApplication::clipboard()->setText(sel); });
         menu.exec(e->globalPos());
     } else {
-        const QString anc = anchorAt(e->pos());
+        // Delegate to the anchor handler; it will add Copy if sel is non-empty.
         emit anchorActivated(anc, e->globalPos(), Qt::RightButton);
     }
     e->accept();
