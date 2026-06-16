@@ -142,11 +142,12 @@ void SessionModel::sendReact(ServerId host, BufferId target,
 {
     auto *cl = clientFor(ServerId{host});
     if (!cl) return;
-    cl->sendReact(target.str(), msgid, emoji);
-    // No echo-message: locally apply the reaction so it appears in our own UI.
-    const QString nick = selfNick(host);
-    if (!nick.isEmpty())
-        onReactReceived(host.str(), target.str(), nick, msgid, emoji);
+    // No echo-message: locally apply only if the TAGMSG was actually sent.
+    if (cl->sendReact(target.str(), msgid, emoji)) {
+        const QString nick = selfNick(host);
+        if (!nick.isEmpty())
+            onReactReceived(host.str(), target.str(), nick, msgid, emoji);
+    }
 }
 
 void SessionModel::sendRedact(ServerId host, BufferId target,
@@ -1110,12 +1111,6 @@ void SessionModel::onReactReceived(const QString &host, const QString &target,
     const QString buf = isChannel ? target : nick;
     auto *ch = channel(ServerId{host}, BufferId{buf});
     if (!ch) return;
-
-    // Drop reactions for messages that have already rolled off the buffer.
-    bool known = false;
-    for (const Message &m : std::as_const(ch->messages))
-        if (m.msgid == msgid) { known = true; break; }
-    if (!known) return;
 
     auto &perEmoji = ch->reactions[msgid];
     static constexpr int kMaxEmojis = 16;

@@ -342,14 +342,15 @@ void IrcClient::sendTyping(const QString &channel, const QString &state)
     sendRaw("@" + tag + ircv3TagEscape(state) + " TAGMSG " + channel);
 }
 
-void IrcClient::sendReact(const QString &target, const QString &msgid, const QString &emoji)
+bool IrcClient::sendReact(const QString &target, const QString &msgid, const QString &emoji)
 {
-    if (!validIrcToken(target)) return;
-    if (msgid.isEmpty() || emoji.isEmpty()) return;
-    if (!m_ackedCaps.contains("message-tags")) return;
+    if (!validIrcToken(target)) return false;
+    if (msgid.isEmpty() || emoji.isEmpty()) return false;
+    if (!m_ackedCaps.contains("message-tags")) return false;
     sendRaw("@+draft/react=" + ircv3TagEscape(emoji)
             + ";+draft/reply=" + ircv3TagEscape(msgid)
             + " TAGMSG " + stripCrlf(target));
+    return true;
 }
 
 void IrcClient::requestHistory(const QString &target, int limit)

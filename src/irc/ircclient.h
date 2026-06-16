@@ -36,7 +36,7 @@ public:
     void notice(const QString &target, const QString &text);
     void setNick(const QString &nick);
     void sendTyping(const QString &channel, const QString &state);
-    void sendReact (const QString &target,  const QString &msgid, const QString &emoji);
+    bool sendReact (const QString &target,  const QString &msgid, const QString &emoji);
     void sendRaw(const QString &line);
     void sendRedact(const QString &target, const QString &msgid, const QString &reason = {});
 
