@@ -170,6 +170,7 @@ private:
     QWidget      *m_sidebarPanel{nullptr};
     QWidget      *m_sidebarHeader{nullptr};
     QToolButton  *m_sidebarToggleBtn{nullptr};
+    QToolButton  *m_serversBtn{nullptr};
     bool          m_sidebarExpanded{true};
     int           m_sidebarExpandedWidth{180};
     QSplitter    *m_mainSplitter{nullptr};

@@ -658,30 +658,6 @@ void MainWindow::setupToolbar()
             });
         });
 
-        menu->addAction(MenuIcons::servers(ic), "Manage Servers", this, [this]{
-            ManageServersDialog dlg(m_config.servers, this);
-            if (dlg.exec() != QDialog::Accepted) return;
-            const QList<ServerConfig> updated = dlg.servers();
-            for (const ServerConfig &old : m_config.servers) {
-                const bool stillPresent = std::any_of(updated.begin(), updated.end(),
-                    [&](const ServerConfig &s){ return s.host == old.host; });
-                if (!stillPresent)
-                    m_model->removeServer(ServerId{old.host});
-            }
-            for (const ServerConfig &sc : updated) {
-                const ServerConfig *existing = nullptr;
-                for (const ServerConfig &old : m_config.servers)
-                    if (old.host == sc.host) { existing = &old; break; }
-                if (!existing) {
-                    m_model->addServer(sc);
-                } else if (*existing != sc) {
-                    m_model->updateServer(ServerId{existing->host}, sc);
-                }
-            }
-            m_config.servers = updated;
-            Config::save(m_config, Config::defaultPath(), true);
-        });
-
         menu->addAction(MenuIcons::documentation(ic), "Documentation", this, [this]{
             if (!m_docsDialog)
                 m_docsDialog = new DocsDialog(this);
@@ -1128,6 +1104,10 @@ void MainWindow::applyFontSizes()
             "QToolButton { background: transparent; border: none; }"
             "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
     }
+    if (m_serversBtn)
+        m_serversBtn->setIcon(makeSvgIcon(
+            QStringLiteral(":/icons/mi-domain-add.svg"),
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 24));
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
     if (m_topicText) {
         const QFont tf = makeFont(fs.topicText);
@@ -1239,6 +1219,43 @@ void MainWindow::setupSidebar()
         shBox->setAlignment(Qt::AlignTop);
         shBox->addWidget(m_hamburger);
         shBox->addWidget(m_sidebarToggleBtn);
+
+        m_serversBtn = new QToolButton;
+        m_serversBtn->setFixedSize(28, 28);
+        m_serversBtn->setIconSize(QSize(24, 24));
+        m_serversBtn->setAutoRaise(true);
+        m_serversBtn->setStyleSheet(
+            "QToolButton { background: transparent; border: none; }"
+            "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
+        m_serversBtn->setToolTip(tr("Manage Servers"));
+        m_serversBtn->setIcon(makeSvgIcon(
+            QStringLiteral(":/icons/mi-domain-add.svg"),
+            QColor(m_theme.valid ? m_theme.text : "#e3e3e3"), 24));
+        connect(m_serversBtn, &QToolButton::clicked, this, [this]{
+            ManageServersDialog dlg(m_config.servers, this);
+            if (dlg.exec() != QDialog::Accepted) return;
+            const QList<ServerConfig> updated = dlg.servers();
+            for (const ServerConfig &old : m_config.servers) {
+                const bool stillPresent = std::any_of(updated.begin(), updated.end(),
+                    [&](const ServerConfig &s){ return s.host == old.host; });
+                if (!stillPresent)
+                    m_model->removeServer(ServerId{old.host});
+            }
+            for (const ServerConfig &sc : updated) {
+                const ServerConfig *existing = nullptr;
+                for (const ServerConfig &old : m_config.servers)
+                    if (old.host == sc.host) { existing = &old; break; }
+                if (!existing) {
+                    m_model->addServer(sc);
+                } else if (*existing != sc) {
+                    m_model->updateServer(ServerId{existing->host}, sc);
+                }
+            }
+            m_config.servers = updated;
+            Config::save(m_config, Config::defaultPath(), true);
+        });
+        shBox->addWidget(m_serversBtn);
+
         shBox->addStretch(1);
         m_signalBars = new SignalBars(m_sidebarHeader);
         shBox->addWidget(m_signalBars, 0, Qt::AlignVCenter);

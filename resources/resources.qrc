@@ -10,6 +10,7 @@
         <file alias="mi-menu-book.svg">icons/mi-menu-book.svg</file>
         <file alias="mi-tune.svg">icons/mi-tune.svg</file>
         <file alias="mi-dns.svg">icons/mi-dns.svg</file>
+        <file alias="mi-domain-add.svg">icons/mi-domain-add.svg</file>
         <file alias="mi-font-download.svg">icons/mi-font-download.svg</file>
         <file alias="mi-palette.svg">icons/mi-palette.svg</file>
         <file alias="mi-widgets.svg">icons/mi-widgets.svg</file>
