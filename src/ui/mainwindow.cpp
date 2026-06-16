@@ -1161,7 +1161,7 @@ void MainWindow::setupSidebar()
 
     m_sidebarToggleBtn = new QToolButton;
     m_sidebarToggleBtn->setFixedSize(28, 28);
-    m_sidebarToggleBtn->setIconSize(QSize(18, 18));
+    m_sidebarToggleBtn->setIconSize(QSize(20, 20));
     m_sidebarToggleBtn->setAutoRaise(true);
     m_sidebarToggleBtn->setStyleSheet(
         "QToolButton { background: transparent; border: none; }"
@@ -1204,8 +1204,8 @@ void MainWindow::setupSidebar()
         shBox->addWidget(m_sidebarToggleBtn);
 
         m_serversBtn = new QToolButton;
-        m_serversBtn->setFixedSize(28, 28);
-        m_serversBtn->setIconSize(QSize(24, 24));
+        m_serversBtn->setFixedSize(32, 32);
+        m_serversBtn->setIconSize(QSize(28, 28));
         m_serversBtn->setAutoRaise(true);
         m_serversBtn->setStyleSheet(
             "QToolButton { background: transparent; border: none; }"
@@ -2749,6 +2749,7 @@ void MainWindow::onChannelRemoved(const QString &host, const QString &channel)
     auto *item = findChannelItem(host, channel);
     if (item) delete item;
     closeChannelPane(host, channel);
+    onSidebarSelectionChanged();
 }
 
 static bool isCondensable(const Message &msg, const QString &selfNick)

@@ -6,6 +6,10 @@
         <file alias="banner.png">icons/banner.png</file>
         <file alias="menu.svg">icons/menu.svg</file>
         <file alias="settings.svg">icons/settings.svg</file>
+        <file alias="mi-manage-accounts.svg">icons/mi-manage-accounts.svg</file>
+        <file alias="mi-lan.svg">icons/mi-lan.svg</file>
+        <file alias="mi-network-manage.svg">icons/mi-network-manage.svg</file>
+        <file alias="mi-add-link.svg">icons/mi-add-link.svg</file>
         <file alias="mi-info.svg">icons/mi-info.svg</file>
         <file alias="mi-menu-book.svg">icons/mi-menu-book.svg</file>
         <file alias="mi-tune.svg">icons/mi-tune.svg</file>

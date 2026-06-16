@@ -205,7 +205,6 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Virtual scrolling — refreshChatView renders last 150 messages (kRenderWindow); grey divider shows older count; scroll-to-top loads 50 more (kRenderChunk) with position restore; ~3x faster channel switches (2026-06-12)
 - [x] v0.25.19 released (2026-06-12)
 - [x] RPL_ENDOFWHO (315) suppressed from server window — eliminates WHO list spam on busy networks like Libera.chat (2026-06-12)
-- [ ] Nick completion button — person_search icon triggers Tab completion for non-keyboard users (was added then reverted as pointless mid-message)
 - [x] Preferences toggle for send button — "Show Send Button" in Preferences; show_send_button in [ui]; default true (2026-06-13)
 - [x] Nick hover tooltips in chat — hovering any nick link in chat now shows display name + account + 32×32 avatar, same as nick list; primary view and all split panes (2026-06-13)
 - [x] Quit Uplink — hamburger "Exit" renamed, wired to QCoreApplication::quit() (2026-06-13)
