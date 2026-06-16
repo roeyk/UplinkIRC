@@ -1,6 +1,36 @@
 # Changelog
 
 <!--
+SESSION SUMMARY — 2026-06-16 (react/reply UX, local reaction echo, weight-700 icons, nick panel header WIP)
+What changed:
+  - Right-click anywhere on a message line (body, nick, timestamp, blank space) now triggers
+    the React/Reply menu — previously only clicking the narrow timestamp characters worked.
+    contextMenuEvent falls back to the line's ChatLine::id (msgid) when anchorAt returns empty.
+  - When text is selected during right-click on a message, a Copy action is prepended to the
+    React/Reply menu so the user doesn't lose the selection.
+  - selectedText() moved from private to public on ChatView so handleChatViewContextMenu can
+    read the selection state when building the combined menu.
+  - sendReact() now locally applies the reaction to ch->reactions immediately after sending
+    the TAGMSG. Without echo-message, the server never echoes our own reactions back, so the
+    emoji row never appeared under the original message in the sender's own UI.
+  - sendMessage() local echo now passes replyToMsgid to Message::make so the ↩ indicator
+    renders correctly on the sender's own reply bubble.
+  - menu.svg and mi-domain-add.svg upgraded to Material Symbols weight-700 filled variants
+    (fetched from google/material-design-icons repo). settings.svg kept at weight-400 — the
+    weight-700 gear rendered too heavy/cluttered at 24px.
+  - All three toolbar icon buttons (hamburger, gear, servers) normalized to setIconSize(24,24).
+    Previously: hamburger=24, gear=22, servers=28.
+  - nickPanelHeader moved out of the headerRow HBox and into the top of nickPanel's VBox.
+    This puts collapse/users/count at the same Y level as the filter input — which is where
+    the user expects it to align with the top server entry on the left sidebar.
+    Alignment is still not correct visually; further work needed next session.
+  - Removed syncNickHeaderWidth lambda + splitterMoved connection (no longer needed once
+    header is inside the panel). Removed setFixedWidth calls on nickPanelHeader.
+  - Commits: ca54786
+Still needs: correct nick panel header alignment to top server entry on sidebar left side.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-15 (icon sizing, Manage Servers button, nick panel alignment)
 What changed:
   - All toolbar icon sizes audited and unified. Hamburger and gear icons bumped from 20px to
