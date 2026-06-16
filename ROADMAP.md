@@ -268,6 +268,16 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Server and PM buffers hide irrelevant UI — switchToChannel() detects buffer type; server buffers and PM/query buffers hide nick panel and topic button; both restore on switch to a channel (v0.25.31, 2026-06-15)
 - [x] Search button toggle — clicking 🔍 while search bar is open closes it and clears the query; was open-only before (v0.25.31, 2026-06-15)
 - [x] /list on large networks fixed — kMaxPendingBuffer check moved to after the line-processing loop; large /list responses (thousands of 322 replies) no longer disconnect; only a genuinely unterminated partial line > 64 KB triggers the error (v0.25.31, 2026-06-15)
+- [x] New messages separator — "── N new messages ──" divider before first unread on channel switch; view scrolls to it automatically; clears on focus (v0.25.33, 2026-06-15)
+- [x] Scroll position memory — non-bottom positions saved per-channel, restored on return; separator takes priority (v0.25.33, 2026-06-15)
+- [x] mIRC formatting input — Ctrl+B/I/U/O insert IRC control chars at cursor (v0.25.33, 2026-06-15)
+- [x] Nick list filter — always-visible filter input above nick list; startsWith match, clears on channel switch (v0.25.33, 2026-06-15)
+- [x] SVG icon cache — fromSvg() caches rendered QPixmaps; eliminates 18.89 MB peak / 5,986 allocs per heaptrack session (v0.25.34, 2026-06-15)
+- [x] Nick list setUniformItemSizes(true) — eliminates 17,628 sizeHint calls per layout pass (v0.25.34, 2026-06-15)
+- [x] QLatin1String in makeNickItem() — eliminates ~11,400 temporary QString::fromUtf8 allocs (v0.25.34, 2026-06-15)
+- [x] WHO skip with extended-join — onUserJoined() skips redundant WHO when extended-join CAP is active; eliminates 400–700 B/s upload on busy channels (v0.25.35, 2026-06-15)
+- [x] 306 built-in themes — 251 base16 themes added alongside original 55, named with -base16 suffix (v0.25.36, 2026-06-15)
+- [x] `[buffer] separator` theme key — controls divider line color; falls back to border color (v0.25.36, 2026-06-15)
 
 ---
 

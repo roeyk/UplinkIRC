@@ -461,6 +461,43 @@ What changed:
 No regressions. No known issues.
 -->
 
+## v0.25.36 — 2026-06-15
+
+### Added
+- **306 built-in themes** — 251 themes converted from the [base16 catalog](https://github.com/tinted-theming/base16-schemes) added alongside the original 55, named with a `-base16` suffix so they coexist cleanly.
+- **`[buffer] separator` theme key** — controls the color of the "── N new messages ──" and "── N older messages ──" dividers. Falls back to the theme's `border` color when absent. All 55 original themes updated; base16 themes use their `border` slot.
+
+---
+
+## v0.25.35 — 2026-06-15
+
+### Fixed
+- **Redundant WHO query on JOIN with extended-join** — `onUserJoined()` was sending `WHO nick %cnfa,42` for every joining user even when the `extended-join` CAP was active. `extended-join` already includes the account name in the JOIN message, making the WHO unnecessary. On busy channels this generated 400–700 B/s of upload traffic. WHO is now skipped when `extended-join` is active and falls back as before on servers without it.
+
+---
+
+## v0.25.34 — 2026-06-15
+
+### Performance
+- **SVG icon cache** — `fromSvg()` in `menuicons.h` now caches rendered QPixmaps by `(path, color, size, dpr)`. Previously every call re-rendered the SVG and allocated a new QImageData. Heaptrack traced this as an 18.89 MB peak / 5,986 allocations on a 419s session. After fix: rendered once per unique combo.
+- **Nick list `setUniformItemSizes(true)`** — applied to all nick list QListWidgets. Previously Qt called `NickDelegate::sizeHint()` on every item during every layout pass (17,628 calls in heaptrack). All rows are fixed 16 px so uniform sizing is safe; Qt now measures once and reuses.
+- **QLatin1String in `makeNickItem()`** — replaced `"literal" + QString` with `QLatin1String("literal") + QString`, eliminating ~11,400 temporary `QString::fromUtf8` allocations per heaptrack trace.
+
+---
+
+## v0.25.33 — 2026-06-15
+
+### Added
+- **New messages separator** — switching to a channel with unread messages shows a "── N new messages ──" divider before the first unread and scrolls to it automatically. Clears on channel focus.
+- **Scroll position memory** — non-bottom scroll positions are saved per-channel and restored on return. Separator takes priority when present.
+- **mIRC formatting input** — Ctrl+B bold, Ctrl+I italic, Ctrl+U underline, Ctrl+O reset; inserts IRC control characters at cursor position.
+- **Nick list filter** — always-visible filter field above the nick list; `startsWith` match, clears on channel switch, Escape to clear.
+
+### Fixed
+- **Empty regex matching everything** — default-constructed `QRegularExpression{}` has an empty pattern that matches every string. Guarded with `!pattern().isEmpty()` in `sessionmodel.cpp` and `chatview.cpp`; previously caused the bolt mention indicator to fire on every unread message.
+
+---
+
 ## v0.25.29 — 2026-06-14
 
 ### Changed
