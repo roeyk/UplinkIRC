@@ -109,6 +109,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] CTCP rate limiting — `VERSION` and `PING` replies limited to once per nick per 5 s; PING echo payload capped at 32 bytes
 - [x] Inbound DoS protection — input buffer capped at 64 KB; oversized IRC lines (> 8 KB) dropped; `BATCH` open count (max 8) and message count (max 1 000) bounded
 - [x] QTextBrowser block count bounded — chat view kept in sync with message model cap; no unbounded RAM growth on long sessions
+- [x] ChatView scrollback cap — `kMaxLines = 5 000`; oldest lines trimmed on append; cumulative height array rebuilt after trim; RAM stays bounded even on busy channels running all day (`chatview.cpp`, `chatview.h`)
+- [x] Typing indicator timer leak — `onNickRemoved` now cancels and deletes any active typing timer for the departing nick; `m_typingNicks` entry also removed; `updateTypingLabel()` called immediately so the indicator clears on part/quit/kick instead of waiting up to 6 s (`mainwindow.cpp`)
 - [x] Duplicate disconnect signal fixed — `onErrorOccurred` no longer double-emits or double-schedules reconnect
 - [x] Link preview image decode safety — `QImageReader` dimension check before decode; images > 4096×4096 rejected; scaled during decode, not after
 - [x] Channel preview hash capped — per-channel link preview store evicts oldest at 100 entries

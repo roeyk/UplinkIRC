@@ -657,6 +657,38 @@ What changed:
 No regressions. No known issues.
 -->
 
+<!--
+SESSION SUMMARY — 2026-06-16 (scrollback cap, typing timer cleanup, macOS docs)
+What changed:
+  - ChatView scrollback capped at 5 000 lines (kMaxLines). Previously m_lines grew without
+    bound on busy channels. appendLine() now trims the oldest line and rebuilds cumH when the
+    cap is exceeded. RAM stays flat on long sessions.
+  - Typing timer leak fixed: onNickRemoved() now cancels and deletes any active typing timer
+    for the departing nick and removes the nick from m_typingNicks immediately. Previously the
+    entry lingered up to 6 s until the timer self-fired. Fires on part, quit, and kick.
+  - qsizetype fix (chatview.cpp:739): const int newline → const qsizetype for indexOf return.
+    Committed separately as 4d49015.
+  - All 3 sanitizer tests (tst_ircparser, tst_chatformat, fuzz_ircparser_corpus) pass clean
+    under ASan/UBSan.
+  - FAQ: new "macOS says the app is damaged or can't be opened" section with right-click,
+    System Settings, and xattr -dr workaround steps. macOS table row updated to note arm64.
+  - howto.html: macOS Gatekeeper callout added to the download section.
+  - index.html: version bumped to v0.25.41; all download links updated; Gatekeeper note
+    added inline on the macOS download card.
+  - ROADMAP: two new entries in the stability/memory section for scrollback cap and typing
+    timer fix.
+No regressions. No known issues.
+Next priorities: Ctrl+scroll zoom; ServerId/BufferId strong types.
+-->
+
+## v0.25.41 — 2026-06-16
+
+### Fixed
+- **Scrollback cap** — `ChatView` now trims the oldest lines when the buffer exceeds 5 000 lines. Previously the line list grew without bound on busy channels, consuming RAM indefinitely over long sessions.
+- **Typing indicator cleanup** — when a nick parts, quits, or is kicked, any active "is typing…" timer for that nick is cancelled and the indicator is cleared immediately. Previously the entry lingered for up to 6 seconds until the timer fired on its own.
+
+---
+
 ## v0.25.38 — 2026-06-16
 
 ### Added

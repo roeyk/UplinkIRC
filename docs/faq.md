@@ -15,8 +15,10 @@ Pre-built binaries are available on the [GitHub Releases page](https://github.co
 | **Linux x86_64** | AppImage | `chmod +x Uplink-*.AppImage && ./Uplink-*.AppImage` |
 | **Linux x86_64** | tar.gz | Extract, then `./Uplink` |
 | **Windows x64** | zip | Extract and run `Uplink.exe` |
-| **macOS** | DMG | Open and drag to Applications |
+| **macOS (Apple Silicon)** | DMG | Open and drag to Applications |
 | **FreeBSD** | — | Build from source (see below) |
+
+> **macOS note:** The DMG is built for Apple Silicon (arm64). Intel Mac users can run it under Rosetta 2, which macOS enables automatically. See [macOS says the app is damaged or can't be opened](#macos-says-the-app-is-damaged-or-cant-be-opened) if Gatekeeper blocks it.
 
 The AppImage is the recommended Linux download — it is self-contained, runs on any modern x86_64 Linux with glibc 2.35+, and supports in-place updates (see [How do I update the AppImage?](#how-do-i-update-the-appimage) below).
 
@@ -1017,6 +1019,39 @@ app_icon = "dark"    # or "light"
 ```
 
 Use **Dark** for dark OS themes and **Light** for light OS themes. The preference is saved automatically.
+
+### macOS says the app is damaged or can't be opened
+
+macOS Gatekeeper blocks apps that are not signed with an Apple Developer certificate. The Uplink DMG is currently unsigned, so Gatekeeper may refuse to open it.
+
+**Option 1 — Right-click open (easiest)**
+
+1. Right-click (or Ctrl+click) the DMG in Finder.
+2. Choose **Open**.
+3. Click **Open** in the warning dialog.
+
+This bypasses Gatekeeper for that file and works on most macOS versions.
+
+**Option 2 — System Settings**
+
+1. Try to open the DMG normally — macOS will block it and show a notification.
+2. Open **System Settings → Privacy & Security**.
+3. Scroll to the Security section — you will see a message about the blocked app.
+4. Click **Open Anyway**.
+
+**Option 3 — Strip the quarantine flag (Terminal)**
+
+If the options above do not work, open Terminal and run:
+
+```bash
+xattr -dr com.apple.quarantine ~/Downloads/Uplink-*.dmg
+```
+
+Then open the DMG normally. The `-d` flag removes the attribute, `-r` applies it recursively (covers the app bundle inside).
+
+> The DMG is built for **Apple Silicon (arm64)**. On an Intel Mac, Rosetta 2 will run it automatically — no action needed on your part.
+
+---
 
 ### How do I connect to a server with a self-signed certificate?
 
