@@ -2329,53 +2329,42 @@ if (obj == m_input && event->type() == QEvent::Resize) {
         return true;
     }
 
-    // mIRC formatting codes: Ctrl+B bold, Ctrl+I italic, Ctrl+U underline, Ctrl+O reset.
-    // Insert the IRC control character and toggle the matching visual format so the
-    // input shows styled text instead of a box glyph.
+    // mIRC formatting: toggle visual QTextCharFormat only — no control chars in the widget.
+    // IRC codes are generated from the document formatting at send time (inputToIrcText).
     if (ke->modifiers() == Qt::ControlModifier) {
         switch (ke->key()) {
         case Qt::Key_B: {
-            QTextCursor tc = m_input->textCursor();
-            const bool on = (tc.charFormat().fontWeight() != QFont::Bold);
-            tc.insertText(QString(QChar(0x02)));
-            QTextCharFormat cf; cf.setFontWeight(on ? QFont::Bold : QFont::Normal);
-            tc.setCharFormat(cf);
-            m_input->setTextCursor(tc);
+            QTextCharFormat cf;
+            cf.setFontWeight(m_input->textCursor().charFormat().fontWeight() != QFont::Bold
+                             ? QFont::Bold : QFont::Normal);
+            m_input->textCursor().setCharFormat(cf);
+            m_input->setCurrentCharFormat(cf);
             return true;
         }
         case Qt::Key_I: {
-            QTextCursor tc = m_input->textCursor();
-            const bool on = !tc.charFormat().fontItalic();
-            tc.insertText(QString(QChar(0x1D)));
-            QTextCharFormat cf; cf.setFontItalic(on);
-            tc.setCharFormat(cf);
-            m_input->setTextCursor(tc);
+            QTextCharFormat cf;
+            cf.setFontItalic(!m_input->textCursor().charFormat().fontItalic());
+            m_input->textCursor().setCharFormat(cf);
+            m_input->setCurrentCharFormat(cf);
             return true;
         }
         case Qt::Key_U: {
-            QTextCursor tc = m_input->textCursor();
-            const bool on = !tc.charFormat().fontUnderline();
-            tc.insertText(QString(QChar(0x1F)));
-            QTextCharFormat cf; cf.setFontUnderline(on);
-            tc.setCharFormat(cf);
-            m_input->setTextCursor(tc);
+            QTextCharFormat cf;
+            cf.setFontUnderline(!m_input->textCursor().charFormat().fontUnderline());
+            m_input->textCursor().setCharFormat(cf);
+            m_input->setCurrentCharFormat(cf);
             return true;
         }
         case Qt::Key_S: {
-            QTextCursor tc = m_input->textCursor();
-            const bool on = !tc.charFormat().fontStrikeOut();
-            tc.insertText(QString(QChar(0x1E)));
-            QTextCharFormat cf; cf.setFontStrikeOut(on);
-            tc.setCharFormat(cf);
-            m_input->setTextCursor(tc);
+            QTextCharFormat cf;
+            cf.setFontStrikeOut(!m_input->textCursor().charFormat().fontStrikeOut());
+            m_input->textCursor().setCharFormat(cf);
+            m_input->setCurrentCharFormat(cf);
             return true;
         }
-        case Qt::Key_O: {
-            QTextCursor tc = m_input->textCursor();
-            tc.insertText(QString(QChar(0x0F)));
+        case Qt::Key_O:
             m_input->setCurrentCharFormat(QTextCharFormat{});
             return true;
-        }
         default: break;
         }
     }
@@ -3220,9 +3209,41 @@ void MainWindow::onSidebarSelectionChanged()
 // Input dispatch
 // ---------------------------------------------------------------------------
 
+// Convert the input widget's rich-formatted document to an IRC-encoded string.
+// IRC control chars (bold \x02, italic \x1D, underline \x1F, strikethrough \x1E)
+// are emitted at format-change boundaries; the visible text has no box glyphs.
+static QString inputToIrcText(QPlainTextEdit *edit)
+{
+    const QTextDocument *doc = edit->document();
+    QString result;
+    bool curBold = false, curItalic = false, curUnder = false, curStrike = false;
+    bool firstBlock = true;
+    for (QTextBlock block = doc->begin(); block != doc->end(); block = block.next()) {
+        if (!firstBlock) result += '\n';
+        firstBlock = false;
+        for (auto it = block.begin(); !it.atEnd(); ++it) {
+            const QTextFragment frag = it.fragment();
+            if (!frag.isValid()) continue;
+            const QTextCharFormat fmt = frag.charFormat();
+            const bool wB = (fmt.fontWeight() == QFont::Bold);
+            const bool wI = fmt.fontItalic();
+            const bool wU = fmt.fontUnderline();
+            const bool wS = fmt.fontStrikeOut();
+            if (wB != curBold)   { result += QChar(0x02); curBold  = wB; }
+            if (wI != curItalic) { result += QChar(0x1D); curItalic = wI; }
+            if (wU != curUnder)  { result += QChar(0x1F); curUnder = wU; }
+            if (wS != curStrike) { result += QChar(0x1E); curStrike = wS; }
+            result += frag.text();
+        }
+    }
+    if (curBold || curItalic || curUnder || curStrike)
+        result += QChar(0x0F);
+    return result;
+}
+
 void MainWindow::onInputSubmit()
 {
-    const QString raw  = m_input->toPlainText();
+    const QString raw  = inputToIrcText(m_input);
     const QString text = raw.trimmed();
     if (text.isEmpty()) return;
 
