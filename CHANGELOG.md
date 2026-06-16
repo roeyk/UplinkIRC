@@ -1,5 +1,30 @@
 # Changelog
 
+<!--
+SESSION SUMMARY — 2026-06-15 (icon sizing, Manage Servers button, nick panel alignment)
+What changed:
+  - All toolbar icon sizes audited and unified. Hamburger and gear icons bumped from 20px to
+    24px; all three (hamburger, gear, new Manage Servers button) now routed through
+    MenuIcons::fromSvg which handles device pixel ratio correctly — on Retina Mac the old
+    custom functions produced blurry upscaled icons.
+  - Every floating/panel QToolButton that was missing setIconSize() now explicitly declares
+    20px: sidebarCloseBtn, searchBtn, nickRevealBtn, sidebarRevealBtn, nickToggleBtn.
+  - Nick panel groups icon (users icon) and nick count label font both raised from 14px/10pt
+    to 20px/13pt to be proportional alongside the icons.
+  - Manage Servers pulled out of the hamburger menu and given its own dedicated icon button
+    (domain_add SVG) in the sidebar header next to the gear. Added mi-domain-add.svg to
+    resources. MenuIcons::manageServers/hamburger/gear added to menuicons.h.
+  - Nick panel header alignment fixed: nickPanelHeader was inside chatSplitter below
+    primaryHeader, so it rendered at the same Y level as topicDisplay rather than at the
+    same Y level as sidebarHeader. Fix: extracted both primaryHeader and nickPanelHeader
+    into a joint header row (QHBoxLayout) above chatSplitter. nickPanelHeader width is
+    locked to chatSplitter's nick panel column width and updates on splitterMoved.
+    nickPanelHeader visibility toggled with the nick panel collapse/expand.
+  - Commits: 92b0b95, 9b98dd4, be76ae7, 44e853b, c39676b, e8a927a, ec0cd14
+    (69b8af9 was an intermediate broken attempt, superseded by ec0cd14)
+Still needs verification on Mac — alignment and icon sizing to be confirmed visually.
+-->
+
 ---
 
 <!--
