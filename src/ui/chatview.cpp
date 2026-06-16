@@ -46,6 +46,13 @@ void ChatView::appendLine(const ChatLine &line)
     m_lines.append(line);
     layoutLine(m_lines.last());
     m_cumH.append(prevTotal);
+
+    if (m_lines.size() > kMaxLines) {
+        m_lines.removeFirst();
+        m_cumH.removeFirst();
+        rebuildCumH();
+    }
+
     updateScrollRange();
     viewport()->update();
 }

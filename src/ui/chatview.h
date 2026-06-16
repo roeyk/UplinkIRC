@@ -77,6 +77,7 @@ private:
     int              m_findFrom{-1};
     int              m_findTo{-1};
 
+    static constexpr int kMaxLines   = 5000;
     static constexpr int kVPad       = 2;
     static constexpr int kHPad       = 6;
     static constexpr int kCardIndent = 20;
