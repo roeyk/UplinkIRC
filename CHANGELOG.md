@@ -3,6 +3,28 @@
 ---
 
 <!--
+SESSION SUMMARY — 2026-06-15 (macOS font and Preferences spacing fixes)
+What changed:
+  - Topic text font-size was being ignored by Qt6's QSS engine. QLabel#topicText has a
+    stylesheet rule in themeloader (color/background/padding) but no font-size — when QSS
+    matches a widget, Qt6 ignores setFont() for font-size and falls back to the app default,
+    making the topic text render smaller than configured. Fix: call setStyleSheet("font-size:
+    Xpt") on the label widget directly alongside setFont(). Widget-level stylesheet wins over
+    the app-level stylesheet for that property. Applied in both ChannelPane::setTopicFont()
+    and mainwindow.cpp where m_topicText->setFont() is called.
+  - QCheckBox and QRadioButton in Preferences dialog appeared "smooshed" on macOS. Root cause:
+    macOS native controls are shorter than their Linux/Windows counterparts, so the existing
+    6px vbox spacing left them visually cramped. Fix: added `padding: 3px 0` to QCheckBox and
+    QRadioButton in the themeloader stylesheet, giving each row 3px top + bottom breathing
+    room on top of the layout spacing.
+  - Prior session (16b4420) also removed the pointSize()-1 reduction in ChannelPane topic bar
+    constructor and bumped topicBar/topicText defaults from 10pt to 11pt — that fix lacked a
+    CHANGELOG entry and is included here.
+  - Commits: 16b4420, 3ed9c10, 890eb23
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-15 (306 themes + separator key)
 What changed:
   - Added [buffer] separator theme key to all 55 existing themes — controls the color of
@@ -460,6 +482,15 @@ What changed:
     cleared. ASan shadow memory accounted for the reported 500MB+ RSS. A clean rebuild eliminates it.
 No regressions. No known issues.
 -->
+
+## v0.25.37 — 2026-06-15
+
+### Fixed
+- **Topic text font-size ignored by Qt6 QSS engine** — `QLabel#topicText` has a stylesheet rule in themeloader (color/background/padding) but no `font-size`. Qt6 ignores `setFont()` for font-size when any QSS rule matches a widget, causing the topic text to render at the app default instead of the configured size. Fixed by calling `setStyleSheet("font-size: Xpt")` on the label directly, which takes precedence over the app-level stylesheet for that property. Applies to both the main window topic label and per-channel-pane topic labels.
+- **Preferences dialog checkboxes smooshed on macOS** — macOS native checkbox/radiobutton controls are shorter than their Linux/Windows equivalents, making the 6 px vbox spacing look tight. Added `padding: 3px 0` to `QCheckBox` and `QRadioButton` in the themeloader stylesheet to add breathing room above and below each row without changing the layout spacing.
+- **Topic bar font-size reduction removed** — `ChannelPane` constructor was calling `pointSize()-1` on the topic font before the last session's font fixes; that subtraction was removed and `topicBar`/`topicText` defaults were bumped from 10 pt to 11 pt.
+
+---
 
 ## v0.25.36 — 2026-06-15
 
