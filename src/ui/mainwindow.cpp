@@ -226,15 +226,18 @@ class SidebarDelegate : public QStyledItemDelegate {
     QColor m_accent;
     QColor m_hover;
     QColor m_activeText;
+    QColor m_unreadColor;
     bool   m_showCounts{true};
 public:
     explicit SidebarDelegate(QObject *parent = nullptr)
         : QStyledItemDelegate(parent) {}
 
-    void setColors(const QColor &accent, const QColor &hover, const QColor &activeText) {
-        m_accent     = accent;
-        m_hover      = hover;
-        m_activeText = activeText;
+    void setColors(const QColor &accent, const QColor &hover, const QColor &activeText,
+                   const QColor &unreadColor = {}) {
+        m_accent      = accent;
+        m_hover       = hover;
+        m_activeText  = activeText;
+        m_unreadColor = unreadColor;
     }
 
     void setShowCounts(bool show) { m_showCounts = show; }
@@ -324,8 +327,8 @@ public:
                            opt.rect.height());
             painter->save();
             painter->setFont(countFont);
-            QColor cc = opt.palette.color(QPalette::Text);
-            cc.setAlphaF(0.6f);
+            const QColor cc = m_unreadColor.isValid() ? m_unreadColor
+                                                       : opt.palette.color(QPalette::Text);
             painter->setPen(cc);
             painter->drawText(cr, Qt::AlignLeft | Qt::AlignVCenter, countStr);
             painter->restore();
@@ -704,7 +707,8 @@ void MainWindow::connectPreferences()
         if (m_sidebarDelegate && m_theme.valid)
             m_sidebarDelegate->setColors(QColor(m_theme.accent),
                                          QColor(m_theme.border),
-                                         QColor(m_theme.text));
+                                         QColor(m_theme.text),
+                                         QColor(m_theme.sidebarUnread));
         if (m_nickDelegate && m_theme.valid)
             m_nickDelegate->setColors(QColor(m_theme.accent),
                                       QColor(m_theme.border),
@@ -1144,7 +1148,8 @@ void MainWindow::setupSidebar()
     if (m_theme.valid)
         m_sidebarDelegate->setColors(QColor(m_theme.accent),
                                      QColor(m_theme.border),
-                                     QColor(m_theme.text));
+                                     QColor(m_theme.text),
+                                     QColor(m_theme.sidebarUnread));
     m_sidebar->setItemDelegate(m_sidebarDelegate);
 
     connect(m_sidebar, &QTreeWidget::itemClicked,

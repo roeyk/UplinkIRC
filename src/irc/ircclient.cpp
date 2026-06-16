@@ -958,7 +958,7 @@ void IrcClient::processLine(const QString &line)
 
     if (cmd == "NICK") {
         const QString newNick = msg.params.isEmpty() ? msg.trailing : msg.params[0];
-        if (msg.nick.toLower() == m_nick.toLower()) {
+        if (newNick.toLower() == m_nick.toLower() || msg.nick.toLower() == m_nick.toLower()) {
             m_nick = newNick;
             emit selfNickChanged(m_host, newNick);
         }
