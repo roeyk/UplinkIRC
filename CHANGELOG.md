@@ -1,6 +1,22 @@
 # Changelog
 
 <!--
+SESSION SUMMARY — 2026-06-16 (nick panel header alignment, correctStartupGeometry sync, nickDock font platform split)
+What changed:
+  - m_nickToggleBtn kept at 28×28 / 20×20 icon (same as sidebarCloseBtn / sidebarRevealBtn).
+    hbox vertical margins on nickPanelHeader reduced from (2,2,2,2) to (2,0,2,0), bringing
+    header height from 32px down to 28px — much closer to the 26px sidebar row height,
+    centers now within 1px of each other.
+  - correctStartupGeometry() was missing the m_sidebarHeader->setFixedHeight(m_primaryHeader->height())
+    sync call. On startups where the window was previously maximized this path fires instead
+    of the main singleShot(0) timer, so the sidebar header height was never synced. Fixed.
+  - nickDock font default split by platform: macOS keeps 13pt (needed for Retina), Linux/FreeBSD
+    defaults to 9pt. Both the struct initializer (config.h) and value_or fallback (config.cpp)
+    updated. User config updated to font_nick_dock = 9.
+  - Commits: (this session)
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-16 (react/reply UX, local reaction echo, weight-700 icons, nick panel header WIP)
 What changed:
   - Right-click anywhere on a message line (body, nick, timestamp, blank space) now triggers

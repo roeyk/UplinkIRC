@@ -141,7 +141,11 @@ Config Config::load(const QString &path)
             cfg.ui.fontSizes.sidebar      = (*ui)["font_sidebar"].value_or(10);
             cfg.ui.fontSizes.chat         = (*ui)["font_chat"].value_or(10);
             cfg.ui.fontSizes.nickList     = (*ui)["font_nick_list"].value_or(10);
-            cfg.ui.fontSizes.nickDock     = (*ui)["font_nick_dock"].value_or(10);
+#if defined(Q_OS_MAC)
+            cfg.ui.fontSizes.nickDock     = (*ui)["font_nick_dock"].value_or(13);
+#else
+            cfg.ui.fontSizes.nickDock     = (*ui)["font_nick_dock"].value_or(9);
+#endif
             cfg.ui.fontSizes.topicBar     = (*ui)["font_topic_bar"].value_or(10);
             cfg.ui.fontSizes.topicText    = (*ui)["font_topic_text"].value_or(10);
             cfg.ui.fontSizes.inputNick    = (*ui)["font_input_nick"].value_or(10);

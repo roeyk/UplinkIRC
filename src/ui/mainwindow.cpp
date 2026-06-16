@@ -580,6 +580,8 @@ void MainWindow::correctStartupGeometry()
     const int total = m_mainSplitter->width();
     if (total > 0)
         m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
+    if (m_primaryHeader && m_sidebarHeader)
+        m_sidebarHeader->setFixedHeight(m_primaryHeader->height());
 }
 
 // ---------------------------------------------------------------------------
@@ -1330,7 +1332,7 @@ void MainWindow::setupNickPanel()
     auto *header = m_nickPanelHeader;
     header->setObjectName("nickPanelHeader");
     auto *hbox = new QHBoxLayout(header);
-    hbox->setContentsMargins(2, 2, 2, 2);
+    hbox->setContentsMargins(2, 0, 2, 0);
     hbox->setSpacing(2);
     hbox->addWidget(m_nickToggleBtn);
     hbox->addWidget(m_nickGroupsIconLabel);
