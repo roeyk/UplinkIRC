@@ -270,7 +270,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] /list on large networks fixed — kMaxPendingBuffer check moved to after the line-processing loop; large /list responses (thousands of 322 replies) no longer disconnect; only a genuinely unterminated partial line > 64 KB triggers the error (v0.25.31, 2026-06-15)
 - [x] New messages separator — "── N new messages ──" divider before first unread on channel switch; view scrolls to it automatically; clears on focus (v0.25.33, 2026-06-15)
 - [x] Scroll position memory — non-bottom positions saved per-channel, restored on return; separator takes priority (v0.25.33, 2026-06-15)
-- [x] mIRC formatting input — Ctrl+B/I/U/O insert IRC control chars at cursor (v0.25.33, 2026-06-15)
+- [x] mIRC formatting input — Ctrl+B/I/U/S/O apply formatting visually in the input box (QTextCharFormat); IRC control codes generated from document state at send time; formats stack (Ctrl+B + Ctrl+U = bold+underline); Ctrl+O resets all (v0.25.33/v0.25.39, 2026-06-15/2026-06-16)
 - [x] Nick list filter — always-visible filter input above nick list; startsWith match, clears on channel switch (v0.25.33, 2026-06-15)
 - [x] SVG icon cache — fromSvg() caches rendered QPixmaps; eliminates 18.89 MB peak / 5,986 allocs per heaptrack session (v0.25.34, 2026-06-15)
 - [x] Nick list setUniformItemSizes(true) — eliminates 17,628 sizeHint calls per layout pass (v0.25.34, 2026-06-15)
@@ -288,6 +288,9 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] /nick label fix — selfNickChanged was never emitted because m_nick was set preemptively in setNick(); NICK handler now also checks newNick == m_nick (v0.25.38+, 2026-06-16)
 - [x] Unread count badge theme color — SidebarDelegate::m_unreadColor set from sidebarUnread theme key; full opacity instead of 60%-alpha text color (v0.25.38+, 2026-06-16)
 - [x] Reaction cross-client fix — sendReact returns bool; local echo is conditional on actual send; !known guard removed from onReactReceived so reactions for messages outside chathistory window are no longer silently dropped (v0.25.38+, 2026-06-16)
+- [x] Format indicator — floating B I U S pill label appears at bottom-left of input box while any formatting is active; hides on send and when all formats cleared; reads currentCharFormat() so it reflects cursor position (v0.25.39, 2026-06-16)
+- [x] Keychain bundle + \x1F separator — all four server credentials stored as a single OS keychain item (serverName:bundle) separated by ASCII unit separator \x1F; reduces macOS prompts from up to 4 per server to 1; fixes KWallet NUL-truncation bug that caused empty reads on SASL-only servers (v0.25.39, 2026-06-16)
+- [x] Search icon 24×24 — search button icon size increased from 20×20 to 24×24 (v0.25.39, 2026-06-16)
 
 ---
 

@@ -2081,10 +2081,10 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
   <!-- FORMATTING -->
   <section id="formatting">
     <h2>IRC text formatting — send &amp; receive</h2>
-    <p>Uplink both <strong>renders</strong> incoming mIRC formatting codes and lets you <strong>insert</strong> them in your own messages using keyboard shortcuts in the input box.</p>
+    <p>Uplink both <strong>renders</strong> incoming mIRC formatting codes and lets you <strong>apply</strong> them in your own messages using keyboard shortcuts in the input box.</p>
 
-    <h3>Keyboard shortcuts — inserting formatting</h3>
-    <p>Press these shortcuts in the message input box to insert the corresponding formatting control character at the cursor position. Everything you type after the control character is formatted. Press the same shortcut again, or <kbd>Ctrl+O</kbd>, to end the formatting.</p>
+    <h3>Keyboard shortcuts — applying formatting</h3>
+    <p>Formatting is applied <strong>visually as you type</strong> — bold text looks bold, italic looks italic, right in the input box. The IRC control codes are generated automatically when you send the message. A small <strong>B I U S</strong> indicator appears at the bottom-left of the input box showing which formats are currently active.</p>
 
     <table>
       <thead><tr><th>Shortcut</th><th>Format</th><th>What others see</th></tr></thead>
@@ -2092,22 +2092,23 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
         <tr><td><kbd>Ctrl+B</kbd></td><td>Bold</td><td><strong>bold text</strong></td></tr>
         <tr><td><kbd>Ctrl+I</kbd></td><td>Italic</td><td><em>italic text</em></td></tr>
         <tr><td><kbd>Ctrl+U</kbd></td><td>Underline</td><td><u>underline text</u></td></tr>
-        <tr><td><kbd>Ctrl+O</kbd></td><td>Reset all</td><td>Clears all active formatting — bold, italic, underline, color. Back to plain text.</td></tr>
+        <tr><td><kbd>Ctrl+S</kbd></td><td>Strikethrough</td><td><s>strikethrough text</s></td></tr>
+        <tr><td><kbd>Ctrl+O</kbd></td><td>Reset all</td><td>Clears all active formatting at once. Back to plain text.</td></tr>
       </tbody>
     </table>
+
+    <p>Shortcuts <strong>stack</strong> — press <kbd>Ctrl+B</kbd> then <kbd>Ctrl+U</kbd> to type bold+underlined text. Press the same shortcut again to turn that format off while keeping others active.</p>
 
     <h3>Example — bold part of a message</h3>
     <p>To send: <em>This is <strong>very important</strong> — please read</em></p>
     <pre>This is [Ctrl+B]very important[Ctrl+B] — please read</pre>
-    <p>The <code>[Ctrl+B]</code> characters are invisible control codes — they don't show in your input box as typed characters. Anyone using an IRC client that renders mIRC formatting will see the bold. On clients that don't support formatting, they see the same text without the effect.</p>
 
     <h3>Example — italic inside a sentence</h3>
     <pre>I was [Ctrl+I]absolutely[Ctrl+I] blown away by that</pre>
 
-    <h3>Example — stacking formats</h3>
-    <p>You can combine bold and italic:</p>
-    <pre>This is [Ctrl+B][Ctrl+I]bold italic[Ctrl+O] text</pre>
-    <p>Use <kbd>Ctrl+O</kbd> at the end to reset everything at once rather than pressing each toggle individually.</p>
+    <h3>Example — stacking bold and underline</h3>
+    <pre>[Ctrl+B][Ctrl+U]really important[Ctrl+O] — back to normal</pre>
+    <p>Use <kbd>Ctrl+O</kbd> to reset all formatting at once instead of toggling each one off individually.</p>
 
     <h3>Received formatting — what Uplink renders</h3>
     <p>All standard mIRC formatting codes in incoming messages are rendered automatically:</p>
@@ -2123,10 +2124,6 @@ VERSION reply from bot:   (no reply — most bots block CTCP)</pre>
         <tr><td>Color (<code>\x03</code>fg,bg)</td><td>16 foreground + background colors (standard mIRC palette)</td></tr>
       </tbody>
     </table>
-
-    <div class="note">
-      <strong>The control characters are invisible in your input box.</strong> After pressing <kbd>Ctrl+B</kbd>, the cursor advances but nothing appears — this is normal. The formatting only takes effect when the message is sent and received by other clients. You can verify the code was inserted by pressing the left arrow — the cursor will step back over the invisible character.
-    </div>
   </section>
 
   <!-- EMOJI -->
@@ -2245,14 +2242,8 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <p>Uplink supports IRCv3 <code>draft/reply</code> — replies that reference a specific message by its unique ID. The server must have negotiated <code>message-tags</code> (all modern IRC servers do).</p>
 
     <h3>Sending a reply</h3>
-    <p>There are two ways to trigger a reply — both work equally well:</p>
-    <p><strong>Option A — right-click anywhere in the message:</strong></p>
-    <div class="step-row"><span class="step">1</span><div>Click and drag to select some text in the message (or just right-click anywhere in it).</div></div>
-    <div class="step-row"><span class="step">2</span><div>Right-click — the menu shows <strong>Copy</strong> (if text is selected) and <strong>Reply</strong>. Click <strong>Reply</strong>.</div></div>
-    <p><strong>Option B — right-click the timestamp:</strong></p>
-    <div class="step-row"><span class="step">1</span><div>Right-click the <strong>timestamp</strong> (the <code>hh:mm</code> at the far left of the message).</div></div>
+    <div class="step-row"><span class="step">1</span><div>Right-click <strong>anywhere on the message</strong> — body, nick, timestamp, or blank space. If you have text selected, the menu also includes <strong>Copy</strong>.</div></div>
     <div class="step-row"><span class="step">2</span><div>Click <strong>Reply</strong> from the menu.</div></div>
-    <p><strong>After choosing Reply (either way):</strong></p>
     <div class="step-row"><span class="step">3</span><div>A reply bar appears above the input box showing <em>↩ nick</em>. Press <kbd>Escape</kbd> or click <strong>✕</strong> to cancel without sending.</div></div>
     <div class="step-row"><span class="step">4</span><div>Type your reply and press <kbd>Enter</kbd>. The message is sent referencing the original.</div></div>
 
@@ -2277,11 +2268,11 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <p>Uplink supports IRCv3 <code>draft/react</code> — emoji reactions attached to specific messages. Both sending and receiving are supported.</p>
 
     <h3>Sending a reaction</h3>
-    <div class="step-row"><span class="step">1</span><div>Right-click the <strong>timestamp</strong> (the <code>hh:mm</code> at the left of the message).</div></div>
+    <div class="step-row"><span class="step">1</span><div>Right-click <strong>anywhere on the message</strong> — body, nick, timestamp, or blank space.</div></div>
     <div class="step-row"><span class="step">2</span><div>Choose <strong>React</strong> from the context menu.</div></div>
     <div class="step-row"><span class="step">3</span><div>The emoji picker opens. Search by name (you can type <code>:thumbs</code> or just <code>thumbs</code>), then click the emoji you want.</div></div>
 
-    <p>Alternatively, after right-clicking a timestamp and choosing <strong>Reply</strong> (which sets the message target), you can use:</p>
+    <p>Alternatively, after right-clicking a message and choosing <strong>Reply</strong> (which sets the message target), you can use:</p>
     <pre>/react 👍</pre>
 
     <h3>Viewing reactions</h3>
@@ -2299,7 +2290,7 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <h2>Message deletion</h2>
     <p>Uplink supports IRCv3 <code>draft/message-redaction</code> — you can delete your own sent messages from the chat history.</p>
 
-    <div class="step-row"><span class="step">1</span><div>Right-click the <strong>timestamp</strong> on one of your own messages.</div></div>
+    <div class="step-row"><span class="step">1</span><div>Right-click <strong>anywhere on</strong> one of your own messages.</div></div>
     <div class="step-row"><span class="step">2</span><div>Choose <strong>Delete</strong> from the context menu.</div></div>
 
     <p>The message is replaced with <span style="color:gray;font-style:italic">[message deleted]</span> in grey italic. Other clients that support <code>draft/message-redaction</code> will also hide the message.</p>
