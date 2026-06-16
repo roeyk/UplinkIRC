@@ -517,11 +517,10 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         const int total = m_mainSplitter->width();
         if (total > 0)
             m_mainSplitter->setSizes({m_sidebarExpandedWidth, total - m_sidebarExpandedWidth});
-        if (m_primaryHeader) {
-            const int h = m_primaryHeader->height();
-            if (m_sidebarHeader)   m_sidebarHeader->setFixedHeight(h);
-            if (m_nickPanelHeader) m_nickPanelHeader->setFixedHeight(h);
-        }
+        if (m_primaryHeader && m_sidebarHeader)
+            m_sidebarHeader->setFixedHeight(m_primaryHeader->height());
+        if (m_nickPanelHeader && m_chatSplitter)
+            m_nickPanelHeader->setFixedWidth(qMax(1, m_chatSplitter->sizes().value(1, 0)));
     });
 
     if (!savedPanes.isEmpty()) {
@@ -1317,6 +1316,7 @@ void MainWindow::setupNickPanel()
     auto toggleNickPanel = [this, positionRevealBtn]{
         m_nickExpanded = !m_nickExpanded;
         m_nickPanel->setVisible(m_nickExpanded);
+        if (m_nickPanelHeader) m_nickPanelHeader->setVisible(m_nickExpanded);
         if (m_nickRevealBtn) {
             if (!m_nickExpanded) positionRevealBtn();
             m_nickRevealBtn->setVisible(!m_nickExpanded);
@@ -1361,7 +1361,6 @@ void MainWindow::setupNickPanel()
     auto *vbox = new QVBoxLayout(m_nickPanel);
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
-    vbox->addWidget(header);
     vbox->addWidget(m_nickFilter);
     vbox->addWidget(m_nickList, 100);
     vbox->addStretch(1);
@@ -1658,11 +1657,19 @@ void MainWindow::setupChatArea()
         }
     });
 
+    // Header row: primaryHeader (chat column) + nickPanelHeader (nick column), same Y as sidebarHeader
+    auto *headerRow = new QWidget;
+    auto *hrBox = new QHBoxLayout(headerRow);
+    hrBox->setContentsMargins(0, 0, 0, 0);
+    hrBox->setSpacing(0);
+    hrBox->addWidget(primaryHeader, 1);
+    hrBox->addWidget(m_nickPanelHeader, 0);
+    chatVbox->addWidget(headerRow);
+
     auto *chatLeft = new QWidget;
     auto *chatLeftVbox = new QVBoxLayout(chatLeft);
     chatLeftVbox->setContentsMargins(0, 0, 0, 0);
     chatLeftVbox->setSpacing(0);
-    chatLeftVbox->addWidget(primaryHeader);
     chatLeftVbox->addWidget(m_topicDisplay);
     chatLeftVbox->addWidget(m_chatView, 1);
 
@@ -1672,6 +1679,16 @@ void MainWindow::setupChatArea()
     m_chatSplitter->addWidget(m_nickPanel);
     m_chatSplitter->setStretchFactor(0, 1);
     m_chatSplitter->setStretchFactor(1, 0);
+
+    // Keep nickPanelHeader width locked to the nick panel column width
+    auto syncNickHeaderWidth = [this]{
+        const int w = m_chatSplitter->sizes().value(1, 0);
+        m_nickPanelHeader->setFixedWidth(qMax(1, w));
+    };
+    connect(m_chatSplitter, &QSplitter::splitterMoved, this, [syncNickHeaderWidth](int,int){
+        syncNickHeaderWidth();
+    });
+
     chatVbox->addWidget(m_chatSplitter, 1);
 
     // Floating reveal button — child of chatSection (plain QWidget, not splitter)
@@ -2190,11 +2207,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
 
 
-    if (obj == m_primaryHeader && event->type() == QEvent::Resize) {
-        const int h = static_cast<QResizeEvent *>(event)->size().height();
-        if (m_sidebarHeader)    m_sidebarHeader->setFixedHeight(h);
-        if (m_nickPanelHeader)  m_nickPanelHeader->setFixedHeight(h);
-    }
+    if (obj == m_primaryHeader && event->type() == QEvent::Resize && m_sidebarHeader)
+        m_sidebarHeader->setFixedHeight(static_cast<QResizeEvent *>(event)->size().height());
 
     if (obj == m_chatSection && event->type() == QEvent::Resize &&
         m_nickRevealBtn && m_nickRevealBtn->isVisible()) {
