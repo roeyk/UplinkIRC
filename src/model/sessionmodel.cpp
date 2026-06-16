@@ -19,43 +19,55 @@ SessionModel::SessionModel(QObject *parent)
 static void resolveAndConnect(IrcClient *client, ServerConfig sc)
 {
     static const QLatin1String kSentinel("<keychain>");
-    using FP = QString ServerConfig::*;
 
     auto shared    = std::make_shared<ServerConfig>(std::move(sc));
     auto remaining = std::make_shared<int>(0);
     QPointer<IrcClient> guard(client);
 
-    auto maybeRead = [&](FP field, const QString &key) {
-        if (shared.get()->*field != kSentinel)
-            return;
-        ++(*remaining);
-        KeychainHelper::readAsync(key, [shared, remaining, field, guard, key](const QString &val) {
-            if (!guard) return;
-            if (val.isEmpty())
-                emit guard->socketError(shared->host,
-                    "Keychain: no password stored for \"" + key +
-                    "\" — open Edit Server and re-enter your password");
-            shared.get()->*field = val;
-            if (--(*remaining) == 0)
-                guard->connectToServer(*shared);
-        });
+    auto done = [shared, remaining, guard]() {
+        if (guard && --(*remaining) == 0)
+            guard->connectToServer(*shared);
     };
 
-    maybeRead(&ServerConfig::password,         shared->name + ":password");
-    maybeRead(&ServerConfig::saslPassword,     shared->name + ":sasl_password");
-    maybeRead(&ServerConfig::nickservPassword, shared->name + ":nickserv_password");
-    maybeRead(&ServerConfig::proxyPass,        shared->name + ":proxy_pass");
+    // All 4 server-level passwords share one bundle keychain item → one macOS prompt per server.
+    const bool needBundle = (shared->password         == kSentinel ||
+                             shared->saslPassword     == kSentinel ||
+                             shared->nickservPassword == kSentinel ||
+                             shared->proxyPass        == kSentinel);
+    if (needBundle) {
+        ++(*remaining);
+        const QString bundleKey = shared->name + QLatin1String(":bundle");
+        KeychainHelper::readAsync(bundleKey, [shared, guard, done](const QString &val) {
+            if (!guard) return;
+            if (!val.isEmpty()) {
+                static const QLatin1String kSent("<keychain>");
+                const QStringList parts = val.split(QChar('\x00'));
+                auto fill = [&](QString ServerConfig::*fp, int i) {
+                    if (shared.get()->*fp == kSent)
+                        shared.get()->*fp = parts.value(i);
+                };
+                fill(&ServerConfig::password,         0);
+                fill(&ServerConfig::saslPassword,     1);
+                fill(&ServerConfig::nickservPassword, 2);
+                fill(&ServerConfig::proxyPass,        3);
+            } else {
+                emit guard->socketError(shared->host,
+                    "Keychain: no credentials stored for \"" + shared->name +
+                    "\" — open Edit Server and re-save");
+            }
+            done();
+        });
+    }
 
     for (int i = 0; i < shared->channels.size(); ++i) {
         if (shared->channels[i].password != kSentinel)
             continue;
         ++(*remaining);
         const QString key = shared->name + ":channel:" + shared->channels[i].name + ":key";
-        KeychainHelper::readAsync(key, [shared, remaining, i, guard](const QString &val) {
+        KeychainHelper::readAsync(key, [shared, i, guard, done](const QString &val) {
             if (!guard) return;
             shared->channels[i].password = val;
-            if (--(*remaining) == 0)
-                guard->connectToServer(*shared);
+            done();
         });
     }
 

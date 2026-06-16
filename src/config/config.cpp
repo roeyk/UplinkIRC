@@ -363,9 +363,46 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     writeNickList("monitor", cfg.monitorList);
 
     for (const auto &s : cfg.servers) {
-        auto pw = [&](const QString &val, const char *field) -> QString {
-            return migratePasswords ? storePassword(val, s.name, field) : val;
-        };
+        // Bundle all 4 server-level passwords into one keychain item → one macOS prompt per server.
+        QString savedPw, savedSasl, savedNs, savedProxyPass;
+        if (migratePasswords) {
+            const QString bundleKey = s.name + QLatin1String(":bundle");
+            QString existing = KeychainHelper::read(bundleKey);
+            if (existing.isEmpty()) {
+                // First-time migration: preserve old individual items in the new bundle.
+                const QString op  = KeychainHelper::read(s.name + QLatin1String(":password"));
+                const QString osa = KeychainHelper::read(s.name + QLatin1String(":sasl_password"));
+                const QString ons = KeychainHelper::read(s.name + QLatin1String(":nickserv_password"));
+                const QString opp = KeychainHelper::read(s.name + QLatin1String(":proxy_pass"));
+                existing = op + '\x00' + osa + '\x00' + ons + '\x00' + opp;
+            }
+            QStringList cur = existing.split(QChar('\x00'));
+            while (cur.size() < 4) cur.append(QString{});
+            auto upd = [&](int i, const QString &val) -> QString {
+                if (val.isEmpty())            { cur[i] = {}; return {}; }
+                if (val != kKeychainSentinel) { cur[i] = val; }
+                return cur[i].isEmpty() ? QString{} : kKeychainSentinel;
+            };
+            savedPw        = upd(0, s.password);
+            savedSasl      = upd(1, s.saslPassword);
+            savedNs        = upd(2, s.nickservPassword);
+            savedProxyPass = upd(3, s.proxyPass);
+            const bool hasAny = std::any_of(cur.cbegin(), cur.cend(),
+                                             [](const QString &v){ return !v.isEmpty(); });
+            if (hasAny)
+                KeychainHelper::write(bundleKey, cur.join(QChar('\x00')));
+            else
+                KeychainHelper::remove(bundleKey);
+            KeychainHelper::remove(s.name + QLatin1String(":password"));
+            KeychainHelper::remove(s.name + QLatin1String(":sasl_password"));
+            KeychainHelper::remove(s.name + QLatin1String(":nickserv_password"));
+            KeychainHelper::remove(s.name + QLatin1String(":proxy_pass"));
+        } else {
+            savedPw        = s.password;
+            savedSasl      = s.saslPassword;
+            savedNs        = s.nickservPassword;
+            savedProxyPass = s.proxyPass;
+        }
 
         out << "[[server]]\n";
         out << "name     = " << tomlQuote(s.name)     << "\n";
@@ -375,12 +412,10 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
         out << "nick     = " << tomlQuote(s.nick)     << "\n";
         out << "user     = " << tomlQuote(s.user)     << "\n";
         out << "realname = " << tomlQuote(s.realname) << "\n";
-        const QString savedPw = pw(s.password, "password");
         if (!savedPw.isEmpty())
             out << "password          = " << tomlQuote(savedPw) << "\n";
         if (!s.saslUser.isEmpty())
             out << "sasl_user         = " << tomlQuote(s.saslUser) << "\n";
-        const QString savedSasl = pw(s.saslPassword, "sasl_password");
         if (!savedSasl.isEmpty())
             out << "sasl_password     = " << tomlQuote(savedSasl) << "\n";
         if (s.saslExternal)
@@ -389,7 +424,6 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             out << "client_cert       = " << tomlQuote(s.clientCertFile) << "\n";
         if (!s.clientKeyFile.isEmpty())
             out << "client_key        = " << tomlQuote(s.clientKeyFile) << "\n";
-        const QString savedNs = pw(s.nickservPassword, "nickserv_password");
         if (!savedNs.isEmpty())
             out << "nickserv_password = " << tomlQuote(savedNs) << "\n";
         if (s.bouncerType == BouncerType::ZNC)
@@ -403,7 +437,6 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             out << "proxy_port        = " << s.proxyPort << "\n";
             if (!s.proxyUser.isEmpty())
                 out << "proxy_user        = " << tomlQuote(s.proxyUser) << "\n";
-            const QString savedProxyPass = pw(s.proxyPass, "proxy_pass");
             if (!savedProxyPass.isEmpty())
                 out << "proxy_pass        = " << tomlQuote(savedProxyPass) << "\n";
         }
