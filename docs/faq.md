@@ -657,7 +657,7 @@ The nick list panel has a filter box directly above the list (below the header).
 
 The filter only changes what you see — nicks that don't match are temporarily hidden. They are still in the channel, still visible in tab completion, and come back the moment you clear the filter.
 
-### How do I send bold, italic, or underlined text?
+### How do I send bold, italic, underlined, or strikethrough text?
 
 Press the formatting shortcut in the message input box before typing the text you want formatted:
 
@@ -666,9 +666,12 @@ Press the formatting shortcut in the message input box before typing the text yo
 | **Ctrl+B** | Bold |
 | **Ctrl+I** | Italic |
 | **Ctrl+U** | Underline |
+| **Ctrl+S** | Strikethrough |
 | **Ctrl+O** | Reset all formatting |
 
-The control character is invisible in your input — just type normally after pressing the shortcut. To end the formatting, press the same shortcut again or press `Ctrl+O` to clear everything at once.
+Formatting is applied **visually as you type** — bold text looks bold in the input box, italic looks italic. A small indicator (`B I U S`) appears at the bottom-left of the input showing which formats are currently active. The IRC control codes are generated automatically at send time.
+
+Shortcuts **stack**: press Ctrl+B then Ctrl+U to type bold+underlined text. Press a shortcut again to turn that one format off while keeping the others active. Press Ctrl+O to clear everything at once.
 
 **Example — bold part of a message:**
 ```
@@ -676,7 +679,12 @@ Look at this [Ctrl+B]really important[Ctrl+B] thing
 ```
 Sends as: Look at this **really important** thing
 
-Recipients using any standard IRC client will see the formatting. On clients that don't render mIRC codes, the text still arrives without any visible garbage — the control characters are invisible.
+**Example — bold and underlined together:**
+```
+[Ctrl+B][Ctrl+U]critical warning[Ctrl+O] everything else normal
+```
+
+Recipients using any standard IRC client will see the formatting. On clients that don't render mIRC codes, the text still arrives cleanly — no visible garbage characters.
 
 ### Can I send a message that spans multiple lines?
 
@@ -688,7 +696,7 @@ You can also paste multi-line text directly into the input — line breaks are p
 
 ### How do I react to a message?
 
-Right-click the **timestamp** (the `hh:mm` at the left of the message) and choose **React**. The emoji picker opens — search by name (`thumbs`, `fire`) or shortcode (`:poop:`), then click the emoji or press Enter to send it.
+Right-click **anywhere on a message** — the timestamp, the nick, the message body, or any blank space on that line — and choose **React**. The emoji picker opens — search by name (`thumbs`, `fire`) or shortcode (`:poop:`), then click the emoji or press Enter to send it.
 
 Reactions appear inline below the original message as `emoji(count)` for all clients that support `draft/react`.
 
@@ -836,9 +844,9 @@ Right-click any nick — in the user list or directly on a nick link in the chat
 | **Ban** | Ban `nick!*@*` in current channel (requires op) |
 | **Kick & Ban** | Ban then kick in the correct order (requires op) |
 
-### What can I do from the message timestamp right-click menu?
+### What can I do from the message right-click menu?
 
-Right-clicking the **timestamp** at the left of any chat message opens a message-level context menu:
+Right-clicking **anywhere on a message** (timestamp, nick, body, or blank space on that line) opens a message-level context menu:
 
 | Action | Description |
 |---|---|

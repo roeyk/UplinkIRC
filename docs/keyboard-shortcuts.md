@@ -16,19 +16,28 @@
 
 ### Text formatting shortcuts
 
-Insert mIRC formatting control codes at the cursor. These codes are invisible in your input box but rendered by IRC clients that support mIRC formatting.
+Apply mIRC formatting in the input box. Formatting is applied **visually as you type** — bold text looks bold, italic looks italic. The IRC control codes are generated automatically when you send the message. A small indicator (`B I U S`) appears at the bottom-left of the input showing which formats are currently active.
 
 | Shortcut | Format | Effect |
 |---|---|---|
 | **Ctrl+B** | Bold | Toggles bold on/off at the cursor position |
 | **Ctrl+I** | Italic | Toggles italic on/off at the cursor position |
 | **Ctrl+U** | Underline | Toggles underline on/off at the cursor position |
-| **Ctrl+O** | Reset | Clears all active formatting (bold, italic, underline, color) at once |
+| **Ctrl+S** | Strikethrough | Toggles strikethrough on/off at the cursor position |
+| **Ctrl+O** | Reset | Clears all active formatting at once |
+
+Shortcuts **stack** — press Ctrl+B then Ctrl+U to type bold+underlined text. Press the same shortcut again to turn that format off while keeping others active.
 
 **Example:** to send `This is **important** now`:
 
 ```
 This is [Ctrl+B]important[Ctrl+B] now
+```
+
+**Example:** bold and underlined at the same time:
+
+```
+[Ctrl+B][Ctrl+U]really important[Ctrl+O]
 ```
 
 Use `Ctrl+O` to reset all formatting at once instead of toggling each one off individually.

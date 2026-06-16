@@ -1,6 +1,38 @@
 # Changelog
 
 <!--
+SESSION SUMMARY — 2026-06-16 (IRC formatting, format indicator, keychain bundle fix, search icon, v0.25.39 release)
+What changed:
+  - IRC text formatting (Ctrl+B/I/U/S/O) now works correctly in the input bar. Formatting is
+    applied visually via QTextCharFormat — bold text looks bold while you type, italic looks
+    italic, etc. No control characters are inserted into the widget. IRC codes (0x02, 0x1D,
+    0x1F, 0x1E, 0x0F) are generated from the document formatting at send time via
+    inputToIrcText(). Previous attempts inserted raw control chars which rendered as box glyphs.
+  - Format indicator: a small floating label (B I U S) appears at the bottom-left inside the
+    input box when any formatting is active. It shows only active formats, styled with their
+    respective formatting (bold B, italic I, underlined U, struck S). Hides on send or Ctrl+O.
+    Updates on cursor movement so it reflects the format at the cursor position.
+  - Format combos fixed: Ctrl+B then Ctrl+U now stacks bold+underline correctly. Each handler
+    now starts from currentCharFormat() instead of a fresh QTextCharFormat, preserving all
+    other active formats when toggling one.
+  - echo-message CAP added to desired caps list. Without it, self-sent messages were stored
+    with empty msgid (server never echoed them back with an assigned id). Cross-client reactions
+    failed because findLine(msgid) returned -1. With echo-message, the server echo delivers
+    the message with a real msgid and local postMessage is suppressed.
+  - Keychain bundle: consolidated all 4 per-server password fields into a single keychain item
+    (serverName:bundle) to reduce macOS/KWallet prompts from up to 4 per server to 1.
+  - Keychain separator fixed: bundle was using \x00 (NUL) as field separator, but KWallet
+    (and other OS keystores) treat stored strings as null-terminated, silently truncating
+    everything after the first NUL. Fixed by switching to \x1F (ASCII unit separator).
+  - Search icon bumped from 20×20 to 24×24 px (button stays 28×28).
+  - Commits: 9f90a88, 85c2c13, 451dced (formatting), 40b719c (indicator), c3b944d (combos+size),
+    5979c39 (echo-message), 29a6c57 (keychain bundle), bf2d462 (separator fix), 5ca907c (search icon)
+No regressions. No known issues.
+Next priorities: hero screenshots (3 needed); KWallet auto-unlock on auto-login setups (set blank
+wallet password via qdbus6 changePassword); ServerId/BufferId strong types.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-16 (reaction cross-client fix, /nick label, unread count color, v0.25.38 release)
 What changed:
   - /nick command no longer updates the nick label next to the input bar — fixed. m_nick was
@@ -4732,6 +4764,20 @@ No regressions. No known issues.
 Next priorities: hero screenshots (3 needed for docs/index.html hero section); ServerId/BufferId
 strong types; virtual scrolling for very busy channels.
 -->
+
+## [0.25.39] — 2026-06-16
+
+### Added
+- **IRC text formatting in the input bar** — Ctrl+B (bold), Ctrl+I (italic), Ctrl+U (underline), Ctrl+S (strikethrough), Ctrl+O (reset all). Formatting is applied visually as you type — bold text looks bold, italic looks italic. IRC mIRC codes are generated at send time; no control characters appear in the widget. Combinations stack: Ctrl+B then Ctrl+U produces bold+underline text.
+- **Format indicator** — when any formatting is active, a small `B I U S` label appears at the bottom-left of the input box showing which formats are on, styled with their respective formatting. Hides automatically when you send or press Ctrl+O. Updates as you move the cursor through differently-formatted text.
+
+### Fixed
+- **Cross-client reactions** — reactions sent from one client now appear correctly on all others. Root cause: sent messages were stored with an empty `msgid` because the `echo-message` IRCv3 cap was not requested. The server now echoes sent messages back with a real server-assigned `msgid`, which `draft/react` TAGMSG references when another user reacts. The local echo is suppressed when `echo-message` is active to avoid duplicates.
+- **Keychain bundle separator** — the per-server credential bundle used `\x00` (NUL) as a field separator, but KWallet (and other OS keystores) treat stored strings as null-terminated, silently discarding everything after the first NUL. Fields after the first (SASL password, NickServ password, proxy password) were never actually saved. Fixed by switching to `\x1F` (ASCII unit separator). Re-save your server config in Edit Server once to migrate.
+- **Keychain prompts reduced** — all four per-server password fields are now stored as a single keychain bundle item, reducing OS keychain prompts from up to 4 per server down to 1.
+
+### Changed
+- Search icon enlarged from 20×20 to 24×24 px.
 
 ## [0.25.31] — 2026-06-14
 
