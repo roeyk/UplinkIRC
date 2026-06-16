@@ -367,18 +367,23 @@ void SessionModel::sendMessage(ServerId host, BufferId target, const QString &te
     const bool isPM = !target.str().startsWith('#') && !target.str().startsWith('&')
                       && !target.str().startsWith('!') && target.str() != "(server)";
     if (isPM) openPM(host, target.str());
-    auto *sess = session(ServerId{host});
-    if (sess) {
-        QString display = text;
-        if (target.str().compare("NickServ", Qt::CaseInsensitive) == 0) {
-            const QString svcCmd = text.section(' ', 0, 0).toUpper();
-            static const QStringList pwdCmds = {
-                "IDENTIFY", "REGISTER", "GHOST", "RECOVER", "RELEASE", "REGAIN", "SETPASS"
-            };
-            if (pwdCmds.contains(svcCmd))
-                display = svcCmd + " <redacted>";
+    // If echo-message is acked, the server will echo back the PRIVMSG with the
+    // server-assigned msgid — use that echo as the display so msgid is set correctly.
+    // Without echo-message, display immediately with no msgid (old behaviour).
+    if (!cl->hasCap("echo-message")) {
+        auto *sess = session(ServerId{host});
+        if (sess) {
+            QString display = text;
+            if (target.str().compare("NickServ", Qt::CaseInsensitive) == 0) {
+                const QString svcCmd = text.section(' ', 0, 0).toUpper();
+                static const QStringList pwdCmds = {
+                    "IDENTIFY", "REGISTER", "GHOST", "RECOVER", "RELEASE", "REGAIN", "SETPASS"
+                };
+                if (pwdCmds.contains(svcCmd))
+                    display = svcCmd + " <redacted>";
+            }
+            postMessage(host.str(), target.str(), Message::make(MessageType::Privmsg, sess->nick, display, {}, false, {}, replyToMsgid));
         }
-        postMessage(host.str(), target.str(), Message::make(MessageType::Privmsg, sess->nick, display, {}, false, {}, replyToMsgid));
     }
 }
 
@@ -428,8 +433,10 @@ void SessionModel::sendAction(ServerId host, BufferId target, const QString &tex
     auto *cl = clientFor(ServerId{host});
     if (!cl) return;
     cl->privmsg(target.str(), "\x01""ACTION " + text + "\x01");
-    if (auto *sess = session(ServerId{host}))
-        postMessage(host.str(), target.str(), Message::make(MessageType::Action, sess->nick, text));
+    if (!cl->hasCap("echo-message")) {
+        if (auto *sess = session(ServerId{host}))
+            postMessage(host.str(), target.str(), Message::make(MessageType::Action, sess->nick, text));
+    }
 }
 
 void SessionModel::sendTyping(ServerId host, BufferId channel, const QString &state)
