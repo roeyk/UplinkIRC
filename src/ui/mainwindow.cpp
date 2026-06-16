@@ -1830,7 +1830,8 @@ void MainWindow::setupInputBar()
     m_formatIndicator = new QLabel(m_input);
     m_formatIndicator->setObjectName("formatIndicator");
     m_formatIndicator->setStyleSheet(
-        "color: rgba(150,150,150,0.85); font-size: 10px; padding: 0 2px;");
+        "color: rgba(200,200,200,1.0); font-size: 13px; padding: 1px 5px;"
+        "background: rgba(120,120,120,0.25); border-radius: 4px;");
     m_formatIndicator->hide();
 
     hbox->addWidget(m_nickPrefix);
@@ -2344,33 +2345,32 @@ if (obj == m_input && event->type() == QEvent::Resize) {
     if (ke->modifiers() == Qt::ControlModifier) {
         switch (ke->key()) {
         case Qt::Key_B: {
-            QTextCharFormat cf;
-            cf.setFontWeight(m_input->textCursor().charFormat().fontWeight() != QFont::Bold
-                             ? QFont::Bold : QFont::Normal);
+            QTextCharFormat cf = m_input->currentCharFormat();
+            cf.setFontWeight(cf.fontWeight() >= QFont::Bold ? QFont::Normal : QFont::Bold);
             m_input->textCursor().setCharFormat(cf);
             m_input->setCurrentCharFormat(cf);
             updateFormatIndicator();
             return true;
         }
         case Qt::Key_I: {
-            QTextCharFormat cf;
-            cf.setFontItalic(!m_input->textCursor().charFormat().fontItalic());
+            QTextCharFormat cf = m_input->currentCharFormat();
+            cf.setFontItalic(!cf.fontItalic());
             m_input->textCursor().setCharFormat(cf);
             m_input->setCurrentCharFormat(cf);
             updateFormatIndicator();
             return true;
         }
         case Qt::Key_U: {
-            QTextCharFormat cf;
-            cf.setFontUnderline(!m_input->textCursor().charFormat().fontUnderline());
+            QTextCharFormat cf = m_input->currentCharFormat();
+            cf.setFontUnderline(!cf.fontUnderline());
             m_input->textCursor().setCharFormat(cf);
             m_input->setCurrentCharFormat(cf);
             updateFormatIndicator();
             return true;
         }
         case Qt::Key_S: {
-            QTextCharFormat cf;
-            cf.setFontStrikeOut(!m_input->textCursor().charFormat().fontStrikeOut());
+            QTextCharFormat cf = m_input->currentCharFormat();
+            cf.setFontStrikeOut(!cf.fontStrikeOut());
             m_input->textCursor().setCharFormat(cf);
             m_input->setCurrentCharFormat(cf);
             updateFormatIndicator();
