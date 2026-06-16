@@ -1356,7 +1356,6 @@ void MainWindow::setupNickPanel()
     m_nickPanelHeader = new QWidget;
     auto *header = m_nickPanelHeader;
     header->setObjectName("nickPanelHeader");
-    header->setFixedHeight(32);
     auto *hbox = new QHBoxLayout(header);
     hbox->setContentsMargins(2, 2, 2, 2);
     hbox->setSpacing(2);
@@ -1513,7 +1512,6 @@ void MainWindow::setupChatArea()
     auto *chatVbox    = new QVBoxLayout(chatSection);
     chatVbox->setContentsMargins(0, 0, 0, 0);
     chatVbox->setSpacing(0);
-    chatVbox->addWidget(primaryHeader);
 
     // Chat view
     m_chatView = new ChatView;
@@ -1688,6 +1686,7 @@ void MainWindow::setupChatArea()
     auto *chatLeftVbox = new QVBoxLayout(chatLeft);
     chatLeftVbox->setContentsMargins(0, 0, 0, 0);
     chatLeftVbox->setSpacing(0);
+    chatLeftVbox->addWidget(primaryHeader);
     chatLeftVbox->addWidget(m_topicDisplay);
     chatLeftVbox->addWidget(m_chatView, 1);
 
@@ -2215,8 +2214,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
 
 
-    if (obj == m_primaryHeader && event->type() == QEvent::Resize && m_sidebarHeader)
-        m_sidebarHeader->setFixedHeight(static_cast<QResizeEvent *>(event)->size().height());
+    if (obj == m_primaryHeader && event->type() == QEvent::Resize) {
+        const int h = static_cast<QResizeEvent *>(event)->size().height();
+        if (m_sidebarHeader)    m_sidebarHeader->setFixedHeight(h);
+        if (m_nickPanelHeader)  m_nickPanelHeader->setFixedHeight(h);
+    }
 
     if (obj == m_chatSection && event->type() == QEvent::Resize &&
         m_nickRevealBtn && m_nickRevealBtn->isVisible()) {
