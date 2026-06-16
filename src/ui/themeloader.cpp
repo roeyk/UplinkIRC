@@ -383,6 +383,7 @@ QCheckBox {
     spacing: 8px;
     color: {{text}};
     font-size: 10pt;
+    padding: 3px 0;
 }
 QCheckBox::indicator {
     width: 16px;
@@ -404,6 +405,7 @@ QRadioButton {
     spacing: 8px;
     color: {{text}};
     font-size: 10pt;
+    padding: 3px 0;
 }
 QRadioButton::indicator {
     width: 16px;
