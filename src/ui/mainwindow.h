@@ -135,6 +135,7 @@ private:
     // Tab completion
     void handleTabComplete(QPlainTextEdit *input, const QString &host, const QString &channel);
     void repositionSendBtn();
+    void updateFormatIndicator();
     QStringList m_tabCandidates;
     int         m_tabCandidateIndex{0};
     int         m_tabWordStart{0};
@@ -167,6 +168,7 @@ private:
     QLabel       *m_nickPrefix;
     QPushButton  *m_emojiBtn;
     QToolButton  *m_sendBtn{nullptr};
+    QLabel       *m_formatIndicator{nullptr};
     QWidget      *m_sidebarPanel{nullptr};
     QWidget      *m_sidebarHeader{nullptr};
     QToolButton  *m_sidebarToggleBtn{nullptr};

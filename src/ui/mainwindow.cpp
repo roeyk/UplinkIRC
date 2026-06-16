@@ -1826,6 +1826,13 @@ void MainWindow::setupInputBar()
         m_input->document()->rootFrame()->setFrameFormat(fmt);
     }
 
+    // Format indicator: floats at bottom-left of input, shows active IRC format modes.
+    m_formatIndicator = new QLabel(m_input);
+    m_formatIndicator->setObjectName("formatIndicator");
+    m_formatIndicator->setStyleSheet(
+        "color: rgba(150,150,150,0.85); font-size: 10px; padding: 0 2px;");
+    m_formatIndicator->hide();
+
     hbox->addWidget(m_nickPrefix);
     hbox->addWidget(m_input, 1);
     hbox->addWidget(m_emojiBtn);
@@ -1924,6 +1931,9 @@ void MainWindow::setupInputBar()
         m_typingActive = false;
         m_model->sendTyping(ServerId{host}, BufferId{ch}, "paused");
     });
+
+    connect(m_input, &QPlainTextEdit::cursorPositionChanged,
+            this, &MainWindow::updateFormatIndicator);
 
     connect(m_input, &QPlainTextEdit::textChanged, this, [this]{
         const QString text = m_input->toPlainText();
@@ -2339,6 +2349,7 @@ if (obj == m_input && event->type() == QEvent::Resize) {
                              ? QFont::Bold : QFont::Normal);
             m_input->textCursor().setCharFormat(cf);
             m_input->setCurrentCharFormat(cf);
+            updateFormatIndicator();
             return true;
         }
         case Qt::Key_I: {
@@ -2346,6 +2357,7 @@ if (obj == m_input && event->type() == QEvent::Resize) {
             cf.setFontItalic(!m_input->textCursor().charFormat().fontItalic());
             m_input->textCursor().setCharFormat(cf);
             m_input->setCurrentCharFormat(cf);
+            updateFormatIndicator();
             return true;
         }
         case Qt::Key_U: {
@@ -2353,6 +2365,7 @@ if (obj == m_input && event->type() == QEvent::Resize) {
             cf.setFontUnderline(!m_input->textCursor().charFormat().fontUnderline());
             m_input->textCursor().setCharFormat(cf);
             m_input->setCurrentCharFormat(cf);
+            updateFormatIndicator();
             return true;
         }
         case Qt::Key_S: {
@@ -2360,10 +2373,12 @@ if (obj == m_input && event->type() == QEvent::Resize) {
             cf.setFontStrikeOut(!m_input->textCursor().charFormat().fontStrikeOut());
             m_input->textCursor().setCharFormat(cf);
             m_input->setCurrentCharFormat(cf);
+            updateFormatIndicator();
             return true;
         }
         case Qt::Key_O:
             m_input->setCurrentCharFormat(QTextCharFormat{});
+            updateFormatIndicator();
             return true;
         default: break;
         }
@@ -2380,6 +2395,35 @@ void MainWindow::repositionSendBtn()
     const int y = (m_input->height() - m_sendBtn->height()) / 2;
     m_sendBtn->move(x, y);
     m_sendBtn->raise();
+    if (m_formatIndicator && m_formatIndicator->isVisible()) {
+        const int fy = m_input->height() - m_formatIndicator->height() - 3;
+        m_formatIndicator->move(4, fy);
+    }
+}
+
+void MainWindow::updateFormatIndicator()
+{
+    if (!m_formatIndicator || !m_input) return;
+    const QTextCharFormat cf = m_input->currentCharFormat();
+    const bool bold   = cf.fontWeight() >= QFont::Bold;
+    const bool italic = cf.fontItalic();
+    const bool under  = cf.fontUnderline();
+    const bool strike = cf.fontStrikeOut();
+    if (!bold && !italic && !under && !strike) {
+        m_formatIndicator->hide();
+        return;
+    }
+    QString text;
+    if (bold)   text += "<b>B</b>";
+    if (italic) { if (!text.isEmpty()) text += " "; text += "<i>I</i>"; }
+    if (under)  { if (!text.isEmpty()) text += " "; text += "<u>U</u>"; }
+    if (strike) { if (!text.isEmpty()) text += " "; text += "<s>S</s>"; }
+    m_formatIndicator->setText(text);
+    m_formatIndicator->adjustSize();
+    const int fy = m_input->height() - m_formatIndicator->height() - 3;
+    m_formatIndicator->move(4, fy);
+    m_formatIndicator->raise();
+    m_formatIndicator->show();
 }
 
 void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, const QString &channel)
@@ -3259,6 +3303,7 @@ void MainWindow::onInputSubmit()
     hideEmojiAutocomplete();
 
     m_input->clear();
+    if (m_formatIndicator) m_formatIndicator->hide();
 
     const QString host    = m_model->activeHost().str();
     const QString channel = m_model->activeChannel().str();
