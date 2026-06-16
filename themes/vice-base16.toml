@@ -1,0 +1,44 @@
+# vice
+# Author: Thomas Leon Highbaugh thighbaugh@zoho.com
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#17191E"
+text         = "#8B9CBE"
+border       = "#3C3F4C"
+accent       = "#00EAFF"
+
+[sidebar]
+background   = "#22262D"
+text         = "#383A47"
+active       = "#8B9CBE"
+unread       = "#00EAFF"
+mention      = "#FF29A8"
+server       = "#383A47"
+
+[buffer]
+background   = "#17191E"
+timestamp    = "#383A47"
+server_line  = "#555E70"
+action       = "#00F6D9"
+nick_self    = "#0BADFF"
+separator    = "#3C3F4C"
+
+[highlights]
+mention_bg   = "#22262D"
+mention_text = "#FF29A8"
+keyword      = "#85FFE0"
+
+[nicklist]
+background   = "#22262D"
+text         = "#383A47"
+op           = "#00EAFF"
+halfop       = "#00F6D9"
+voice        = "#0BADFF"
+away         = "#3C3F4C"
+
+[input]
+background   = "#22262D"
+text         = "#8B9CBE"
+placeholder  = "#383A47"
+nick_color   = "#0BADFF"

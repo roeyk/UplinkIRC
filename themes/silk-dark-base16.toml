@@ -1,0 +1,44 @@
+# Silk Dark
+# Author: Gabriel Fontes (https://github.com/Misterio77)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#0E3C46"
+text         = "#C7DBDD"
+border       = "#2A5054"
+accent       = "#46BDDD"
+
+[sidebar]
+background   = "#1D494E"
+text         = "#587073"
+active       = "#C7DBDD"
+unread       = "#46BDDD"
+mention      = "#FB6953"
+server       = "#587073"
+
+[buffer]
+background   = "#0E3C46"
+timestamp    = "#587073"
+server_line  = "#9DC8CD"
+action       = "#756B8A"
+nick_self    = "#73D8AD"
+separator    = "#2A5054"
+
+[highlights]
+mention_bg   = "#1D494E"
+mention_text = "#FB6953"
+keyword      = "#FCAB74"
+
+[nicklist]
+background   = "#1D494E"
+text         = "#587073"
+op           = "#46BDDD"
+halfop       = "#756B8A"
+voice        = "#73D8AD"
+away         = "#2A5054"
+
+[input]
+background   = "#1D494E"
+text         = "#C7DBDD"
+placeholder  = "#587073"
+nick_color   = "#73D8AD"

@@ -1,0 +1,44 @@
+# Horizon Dark
+# Author: Michaël Ball (http://github.com/michael-ball/)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1C1E26"
+text         = "#CBCED0"
+border       = "#2E303E"
+accent       = "#DF5273"
+
+[sidebar]
+background   = "#232530"
+text         = "#6F6F70"
+active       = "#CBCED0"
+unread       = "#DF5273"
+mention      = "#E93C58"
+server       = "#6F6F70"
+
+[buffer]
+background   = "#1C1E26"
+timestamp    = "#6F6F70"
+server_line  = "#9DA0A2"
+action       = "#B072D1"
+nick_self    = "#EFAF8E"
+separator    = "#2E303E"
+
+[highlights]
+mention_bg   = "#232530"
+mention_text = "#E93C58"
+keyword      = "#E58D7D"
+
+[nicklist]
+background   = "#232530"
+text         = "#6F6F70"
+op           = "#DF5273"
+halfop       = "#B072D1"
+voice        = "#EFAF8E"
+away         = "#2E303E"
+
+[input]
+background   = "#232530"
+text         = "#CBCED0"
+placeholder  = "#6F6F70"
+nick_color   = "#EFAF8E"

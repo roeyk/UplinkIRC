@@ -1,0 +1,44 @@
+# Green Screen
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#001100"
+text         = "#00BB00"
+border       = "#005500"
+accent       = "#009900"
+
+[sidebar]
+background   = "#003300"
+text         = "#007700"
+active       = "#00BB00"
+unread       = "#009900"
+mention      = "#007700"
+server       = "#007700"
+
+[buffer]
+background   = "#001100"
+timestamp    = "#007700"
+server_line  = "#009900"
+action       = "#00BB00"
+nick_self    = "#00BB00"
+separator    = "#005500"
+
+[highlights]
+mention_bg   = "#003300"
+mention_text = "#007700"
+keyword      = "#009900"
+
+[nicklist]
+background   = "#003300"
+text         = "#007700"
+op           = "#009900"
+halfop       = "#00BB00"
+voice        = "#00BB00"
+away         = "#005500"
+
+[input]
+background   = "#003300"
+text         = "#00BB00"
+placeholder  = "#007700"
+nick_color   = "#00BB00"

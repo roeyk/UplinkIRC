@@ -1,0 +1,44 @@
+# Oxocarbon Light
+# Author: shaunsingh/IBM
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F2F4F8"
+text         = "#393939"
+border       = "#525252"
+accent       = "#42BE65"
+
+[sidebar]
+background   = "#DDE1E6"
+text         = "#161616"
+active       = "#393939"
+unread       = "#42BE65"
+mention      = "#FF7EB6"
+server       = "#161616"
+
+[buffer]
+background   = "#F2F4F8"
+timestamp    = "#161616"
+server_line  = "#262626"
+action       = "#BE95FF"
+nick_self    = "#0F62FE"
+separator    = "#525252"
+
+[highlights]
+mention_bg   = "#DDE1E6"
+mention_text = "#FF7EB6"
+keyword      = "#EE5396"
+
+[nicklist]
+background   = "#DDE1E6"
+text         = "#161616"
+op           = "#42BE65"
+halfop       = "#BE95FF"
+voice        = "#0F62FE"
+away         = "#525252"
+
+[input]
+background   = "#DDE1E6"
+text         = "#393939"
+placeholder  = "#161616"
+nick_color   = "#0F62FE"

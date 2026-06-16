@@ -1,0 +1,44 @@
+# emil
+# Author: limelier
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#EFEFEF"
+text         = "#313145"
+border       = "#9E9EAF"
+accent       = "#471397"
+
+[sidebar]
+background   = "#BEBED2"
+text         = "#7C7C98"
+active       = "#313145"
+unread       = "#471397"
+mention      = "#F43979"
+server       = "#7C7C98"
+
+[buffer]
+background   = "#EFEFEF"
+timestamp    = "#7C7C98"
+server_line  = "#505063"
+action       = "#6916B6"
+nick_self    = "#0073A8"
+separator    = "#9E9EAF"
+
+[highlights]
+mention_bg   = "#BEBED2"
+mention_text = "#F43979"
+keyword      = "#D22A8B"
+
+[nicklist]
+background   = "#BEBED2"
+text         = "#7C7C98"
+op           = "#471397"
+halfop       = "#6916B6"
+voice        = "#0073A8"
+away         = "#9E9EAF"
+
+[input]
+background   = "#BEBED2"
+text         = "#313145"
+placeholder  = "#7C7C98"
+nick_color   = "#0073A8"

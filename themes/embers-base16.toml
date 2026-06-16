@@ -1,0 +1,44 @@
+# Embers
+# Author: Jannik Siebert (https://github.com/janniks)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#16130F"
+text         = "#A39A90"
+border       = "#433B32"
+accent       = "#6D5782"
+
+[sidebar]
+background   = "#2C2620"
+text         = "#5A5047"
+active       = "#A39A90"
+unread       = "#6D5782"
+mention      = "#826D57"
+server       = "#5A5047"
+
+[buffer]
+background   = "#16130F"
+timestamp    = "#5A5047"
+server_line  = "#8A8075"
+action       = "#82576D"
+nick_self    = "#57826D"
+separator    = "#433B32"
+
+[highlights]
+mention_bg   = "#2C2620"
+mention_text = "#826D57"
+keyword      = "#828257"
+
+[nicklist]
+background   = "#2C2620"
+text         = "#5A5047"
+op           = "#6D5782"
+halfop       = "#82576D"
+voice        = "#57826D"
+away         = "#433B32"
+
+[input]
+background   = "#2C2620"
+text         = "#A39A90"
+placeholder  = "#5A5047"
+nick_color   = "#57826D"

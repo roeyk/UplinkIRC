@@ -1,0 +1,44 @@
+# Still Alive
+# Author: Derrick McKee (derrick.mckee@gmail.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F0F0F0"
+text         = "#D80000"
+border       = "#FFF018"
+accent       = "#001878"
+
+[sidebar]
+background   = "#F0D848"
+text         = "#F01818"
+active       = "#D80000"
+unread       = "#001878"
+mention      = "#487830"
+server       = "#F01818"
+
+[buffer]
+background   = "#F0F0F0"
+timestamp    = "#F01818"
+server_line  = "#F00000"
+action       = "#900000"
+nick_self    = "#5C5C6A"
+separator    = "#FFF018"
+
+[highlights]
+mention_bg   = "#F0D848"
+mention_text = "#487830"
+keyword      = "#183048"
+
+[nicklist]
+background   = "#F0D848"
+text         = "#F01818"
+op           = "#001878"
+halfop       = "#900000"
+voice        = "#5C5C6A"
+away         = "#FFF018"
+
+[input]
+background   = "#F0D848"
+text         = "#D80000"
+placeholder  = "#F01818"
+nick_color   = "#5C5C6A"

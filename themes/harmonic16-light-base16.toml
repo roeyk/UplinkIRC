@@ -1,0 +1,44 @@
+# Harmonic16 Light
+# Author: Jannik Siebert (https://github.com/janniks)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F7F9FB"
+text         = "#405C79"
+border       = "#CBD6E2"
+accent       = "#8B56BF"
+
+[sidebar]
+background   = "#E5EBF1"
+text         = "#AABCCE"
+active       = "#405C79"
+unread       = "#8B56BF"
+mention      = "#BF8B56"
+server       = "#AABCCE"
+
+[buffer]
+background   = "#F7F9FB"
+timestamp    = "#AABCCE"
+server_line  = "#627E99"
+action       = "#BF568B"
+nick_self    = "#56BF8B"
+separator    = "#CBD6E2"
+
+[highlights]
+mention_bg   = "#E5EBF1"
+mention_text = "#BF8B56"
+keyword      = "#BFBF56"
+
+[nicklist]
+background   = "#E5EBF1"
+text         = "#AABCCE"
+op           = "#8B56BF"
+halfop       = "#BF568B"
+voice        = "#56BF8B"
+away         = "#CBD6E2"
+
+[input]
+background   = "#E5EBF1"
+text         = "#405C79"
+placeholder  = "#AABCCE"
+nick_color   = "#56BF8B"

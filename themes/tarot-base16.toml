@@ -1,0 +1,44 @@
+# tarot
+# Author: ed (https://codeberg.org/ed)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#0E091D"
+text         = "#AA556F"
+border       = "#4B2054"
+accent       = "#6E6080"
+
+[sidebar]
+background   = "#2A153C"
+text         = "#74316B"
+active       = "#AA556F"
+unread       = "#6E6080"
+mention      = "#C53253"
+server       = "#74316B"
+
+[buffer]
+background   = "#0E091D"
+timestamp    = "#74316B"
+server_line  = "#8C406F"
+action       = "#A45782"
+nick_self    = "#A68E5A"
+separator    = "#4B2054"
+
+[highlights]
+mention_bg   = "#2A153C"
+mention_text = "#C53253"
+keyword      = "#EA4D60"
+
+[nicklist]
+background   = "#2A153C"
+text         = "#74316B"
+op           = "#6E6080"
+halfop       = "#A45782"
+voice        = "#A68E5A"
+away         = "#4B2054"
+
+[input]
+background   = "#2A153C"
+text         = "#AA556F"
+placeholder  = "#74316B"
+nick_color   = "#A68E5A"

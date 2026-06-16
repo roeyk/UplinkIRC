@@ -1,0 +1,44 @@
+# vulcan
+# Author: Andrey Varfolomeev
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#041523"
+text         = "#5B778C"
+border       = "#003552"
+accent       = "#977D7C"
+
+[sidebar]
+background   = "#122339"
+text         = "#7A5759"
+active       = "#5B778C"
+unread       = "#977D7C"
+mention      = "#818591"
+server       = "#7A5759"
+
+[buffer]
+background   = "#041523"
+timestamp    = "#7A5759"
+server_line  = "#6B6977"
+action       = "#9198A3"
+nick_self    = "#977D7C"
+separator    = "#003552"
+
+[highlights]
+mention_bg   = "#122339"
+mention_text = "#818591"
+keyword      = "#9198A3"
+
+[nicklist]
+background   = "#122339"
+text         = "#7A5759"
+op           = "#977D7C"
+halfop       = "#9198A3"
+voice        = "#977D7C"
+away         = "#003552"
+
+[input]
+background   = "#122339"
+text         = "#5B778C"
+placeholder  = "#7A5759"
+nick_color   = "#977D7C"

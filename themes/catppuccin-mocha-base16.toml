@@ -1,0 +1,44 @@
+# Catppuccin Mocha
+# Author: https://github.com/catppuccin/catppuccin
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1E1E2E"
+text         = "#CDD6F4"
+border       = "#313244"
+accent       = "#89B4FA"
+
+[sidebar]
+background   = "#181825"
+text         = "#45475A"
+active       = "#CDD6F4"
+unread       = "#89B4FA"
+mention      = "#F38BA8"
+server       = "#45475A"
+
+[buffer]
+background   = "#1E1E2E"
+timestamp    = "#45475A"
+server_line  = "#585B70"
+action       = "#CBA6F7"
+nick_self    = "#A6E3A1"
+separator    = "#313244"
+
+[highlights]
+mention_bg   = "#181825"
+mention_text = "#F38BA8"
+keyword      = "#FAB387"
+
+[nicklist]
+background   = "#181825"
+text         = "#45475A"
+op           = "#89B4FA"
+halfop       = "#CBA6F7"
+voice        = "#A6E3A1"
+away         = "#313244"
+
+[input]
+background   = "#181825"
+text         = "#CDD6F4"
+placeholder  = "#45475A"
+nick_color   = "#A6E3A1"

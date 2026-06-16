@@ -1,0 +1,44 @@
+# Da One Sea
+# Author: NNB (https://github.com/NNBnh)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#22273D"
+text         = "#FFFFFF"
+border       = "#525866"
+accent       = "#6BB8FF"
+
+[sidebar]
+background   = "#374059"
+text         = "#878D96"
+active       = "#FFFFFF"
+unread       = "#6BB8FF"
+mention      = "#FA7883"
+server       = "#878D96"
+
+[buffer]
+background   = "#22273D"
+timestamp    = "#878D96"
+server_line  = "#C8C8C8"
+action       = "#E799FF"
+nick_self    = "#98C379"
+separator    = "#525866"
+
+[highlights]
+mention_bg   = "#374059"
+mention_text = "#FA7883"
+keyword      = "#FFC387"
+
+[nicklist]
+background   = "#374059"
+text         = "#878D96"
+op           = "#6BB8FF"
+halfop       = "#E799FF"
+voice        = "#98C379"
+away         = "#525866"
+
+[input]
+background   = "#374059"
+text         = "#FFFFFF"
+placeholder  = "#878D96"
+nick_color   = "#98C379"

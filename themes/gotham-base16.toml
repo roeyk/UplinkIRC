@@ -1,0 +1,44 @@
+# Gotham
+# Author: Andrea Leopardi (arranged by Brett Jones)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#0C1014"
+text         = "#599CAB"
+border       = "#091F2E"
+accent       = "#195466"
+
+[sidebar]
+background   = "#11151C"
+text         = "#0A3749"
+active       = "#599CAB"
+unread       = "#195466"
+mention      = "#C23127"
+server       = "#0A3749"
+
+[buffer]
+background   = "#0C1014"
+timestamp    = "#0A3749"
+server_line  = "#245361"
+action       = "#888CA6"
+nick_self    = "#33859E"
+separator    = "#091F2E"
+
+[highlights]
+mention_bg   = "#11151C"
+mention_text = "#C23127"
+keyword      = "#D26937"
+
+[nicklist]
+background   = "#11151C"
+text         = "#0A3749"
+op           = "#195466"
+halfop       = "#888CA6"
+voice        = "#33859E"
+away         = "#091F2E"
+
+[input]
+background   = "#11151C"
+text         = "#599CAB"
+placeholder  = "#0A3749"
+nick_color   = "#33859E"

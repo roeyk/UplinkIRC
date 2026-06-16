@@ -1,0 +1,44 @@
+# Brush Trees Dark
+# Author: Abraham White <abelincoln.white@gmail.com>
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#485867"
+text         = "#B0C5C8"
+border       = "#6D828E"
+accent       = "#868CB3"
+
+[sidebar]
+background   = "#5A6D7A"
+text         = "#8299A1"
+active       = "#B0C5C8"
+unread       = "#868CB3"
+mention      = "#B38686"
+server       = "#8299A1"
+
+[buffer]
+background   = "#485867"
+timestamp    = "#8299A1"
+server_line  = "#98AFB5"
+action       = "#B386B2"
+nick_self    = "#87B386"
+separator    = "#6D828E"
+
+[highlights]
+mention_bg   = "#5A6D7A"
+mention_text = "#B38686"
+keyword      = "#D8BBA2"
+
+[nicklist]
+background   = "#5A6D7A"
+text         = "#8299A1"
+op           = "#868CB3"
+halfop       = "#B386B2"
+voice        = "#87B386"
+away         = "#6D828E"
+
+[input]
+background   = "#5A6D7A"
+text         = "#B0C5C8"
+placeholder  = "#8299A1"
+nick_color   = "#87B386"

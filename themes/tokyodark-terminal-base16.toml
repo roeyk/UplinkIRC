@@ -1,0 +1,44 @@
+# Tokyodark Terminal
+# Author: Tiagovla (https://github.com/tiagovla/)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#11121D"
+text         = "#A0A8CD"
+border       = "#212234"
+accent       = "#7199EE"
+
+[sidebar]
+background   = "#1A1B2A"
+text         = "#282C34"
+active       = "#A0A8CD"
+unread       = "#7199EE"
+mention      = "#EE6D85"
+server       = "#282C34"
+
+[buffer]
+background   = "#11121D"
+timestamp    = "#282C34"
+server_line  = "#4A5057"
+action       = "#A485DD"
+nick_self    = "#95C561"
+separator    = "#212234"
+
+[highlights]
+mention_bg   = "#1A1B2A"
+mention_text = "#EE6D85"
+keyword      = "#F6955B"
+
+[nicklist]
+background   = "#1A1B2A"
+text         = "#282C34"
+op           = "#7199EE"
+halfop       = "#A485DD"
+voice        = "#95C561"
+away         = "#212234"
+
+[input]
+background   = "#1A1B2A"
+text         = "#A0A8CD"
+placeholder  = "#282C34"
+nick_color   = "#95C561"

@@ -1,0 +1,44 @@
+# Equilibrium Light
+# Author: Carlo Abelli
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F5F0E7"
+text         = "#43474E"
+border       = "#D8D4CB"
+accent       = "#0073B5"
+
+[sidebar]
+background   = "#E7E2D9"
+text         = "#73777F"
+active       = "#43474E"
+unread       = "#0073B5"
+mention      = "#D02023"
+server       = "#73777F"
+
+[buffer]
+background   = "#F5F0E7"
+timestamp    = "#73777F"
+server_line  = "#5A5F66"
+action       = "#4E66B6"
+nick_self    = "#637200"
+separator    = "#D8D4CB"
+
+[highlights]
+mention_bg   = "#E7E2D9"
+mention_text = "#D02023"
+keyword      = "#BF3E05"
+
+[nicklist]
+background   = "#E7E2D9"
+text         = "#73777F"
+op           = "#0073B5"
+halfop       = "#4E66B6"
+voice        = "#637200"
+away         = "#D8D4CB"
+
+[input]
+background   = "#E7E2D9"
+text         = "#43474E"
+placeholder  = "#73777F"
+nick_color   = "#637200"

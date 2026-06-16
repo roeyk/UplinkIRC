@@ -28,7 +28,7 @@ struct Context {
 ChatLine formatMessageLine    (const Message &msg, const Context &ctx);
 ChatLine formatEventGroupLine (const QList<Message> &msgs, const Context &ctx,
                                const QString &groupId = {}, bool expanded = false);
-ChatLine makeStatusLine       (const QString &text);
+ChatLine makeStatusLine       (const QString &text, const QString &color = QStringLiteral("#888888"));
 
 // HTML rendering (kept for topic bar QLabel)
 QString formatMessage    (const Message &msg, const Context &ctx);

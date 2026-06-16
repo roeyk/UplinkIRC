@@ -1,0 +1,44 @@
+# Ayu Light
+# Author: Khue Nguyen <Z5483Y@gmail.com>
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FAFAFA"
+text         = "#5C6773"
+border       = "#F8F9FA"
+accent       = "#36A3D9"
+
+[sidebar]
+background   = "#F3F4F5"
+text         = "#ABB0B6"
+active       = "#5C6773"
+unread       = "#36A3D9"
+mention      = "#F07178"
+server       = "#ABB0B6"
+
+[buffer]
+background   = "#FAFAFA"
+timestamp    = "#ABB0B6"
+server_line  = "#828C99"
+action       = "#A37ACC"
+nick_self    = "#86B300"
+separator    = "#F8F9FA"
+
+[highlights]
+mention_bg   = "#F3F4F5"
+mention_text = "#F07178"
+keyword      = "#FA8D3E"
+
+[nicklist]
+background   = "#F3F4F5"
+text         = "#ABB0B6"
+op           = "#36A3D9"
+halfop       = "#A37ACC"
+voice        = "#86B300"
+away         = "#F8F9FA"
+
+[input]
+background   = "#F3F4F5"
+text         = "#5C6773"
+placeholder  = "#ABB0B6"
+nick_color   = "#86B300"

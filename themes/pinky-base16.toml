@@ -1,0 +1,44 @@
+# pinky
+# Author: Benjamin (https://github.com/b3nj5m1n)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#171517"
+text         = "#F5F5F5"
+border       = "#1D1B1D"
+accent       = "#00FFFF"
+
+[sidebar]
+background   = "#1B181B"
+text         = "#383338"
+active       = "#F5F5F5"
+unread       = "#00FFFF"
+mention      = "#FFA600"
+server       = "#383338"
+
+[buffer]
+background   = "#171517"
+timestamp    = "#383338"
+server_line  = "#E7DBDB"
+action       = "#007FFF"
+nick_self    = "#FF0066"
+separator    = "#1D1B1D"
+
+[highlights]
+mention_bg   = "#1B181B"
+mention_text = "#FFA600"
+keyword      = "#00FF66"
+
+[nicklist]
+background   = "#1B181B"
+text         = "#383338"
+op           = "#00FFFF"
+halfop       = "#007FFF"
+voice        = "#FF0066"
+away         = "#1D1B1D"
+
+[input]
+background   = "#1B181B"
+text         = "#F5F5F5"
+placeholder  = "#383338"
+nick_color   = "#FF0066"

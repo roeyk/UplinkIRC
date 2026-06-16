@@ -1,0 +1,44 @@
+# IR Black
+# Author: Timothée Poisot (http://timotheepoisot.fr)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#000000"
+text         = "#B5B3AA"
+border       = "#484844"
+accent       = "#96CBFE"
+
+[sidebar]
+background   = "#242422"
+text         = "#6C6C66"
+active       = "#B5B3AA"
+unread       = "#96CBFE"
+mention      = "#FF6C60"
+server       = "#6C6C66"
+
+[buffer]
+background   = "#000000"
+timestamp    = "#6C6C66"
+server_line  = "#918F88"
+action       = "#FF73FD"
+nick_self    = "#A8FF60"
+separator    = "#484844"
+
+[highlights]
+mention_bg   = "#242422"
+mention_text = "#FF6C60"
+keyword      = "#E9C062"
+
+[nicklist]
+background   = "#242422"
+text         = "#6C6C66"
+op           = "#96CBFE"
+halfop       = "#FF73FD"
+voice        = "#A8FF60"
+away         = "#484844"
+
+[input]
+background   = "#242422"
+text         = "#B5B3AA"
+placeholder  = "#6C6C66"
+nick_color   = "#A8FF60"

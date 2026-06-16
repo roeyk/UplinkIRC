@@ -1,0 +1,44 @@
+# Tokyo City Dark
+# Author: Michaël Ball
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#171D23"
+text         = "#D8E2EC"
+border       = "#28323A"
+accent       = "#7AA2F7"
+
+[sidebar]
+background   = "#1D252C"
+text         = "#526270"
+active       = "#D8E2EC"
+unread       = "#7AA2F7"
+mention      = "#F7768E"
+server       = "#526270"
+
+[buffer]
+background   = "#171D23"
+timestamp    = "#526270"
+server_line  = "#B7C5D3"
+action       = "#BB9AF7"
+nick_self    = "#9ECE6A"
+separator    = "#28323A"
+
+[highlights]
+mention_bg   = "#1D252C"
+mention_text = "#F7768E"
+keyword      = "#FF9E64"
+
+[nicklist]
+background   = "#1D252C"
+text         = "#526270"
+op           = "#7AA2F7"
+halfop       = "#BB9AF7"
+voice        = "#9ECE6A"
+away         = "#28323A"
+
+[input]
+background   = "#1D252C"
+text         = "#D8E2EC"
+placeholder  = "#526270"
+nick_color   = "#9ECE6A"

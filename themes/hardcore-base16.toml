@@ -1,0 +1,44 @@
+# Hardcore
+# Author: Chris Caller
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#212121"
+text         = "#CDCDCD"
+border       = "#353535"
+accent       = "#66D9EF"
+
+[sidebar]
+background   = "#303030"
+text         = "#4A4A4A"
+active       = "#CDCDCD"
+unread       = "#66D9EF"
+mention      = "#F92672"
+server       = "#4A4A4A"
+
+[buffer]
+background   = "#212121"
+timestamp    = "#4A4A4A"
+server_line  = "#707070"
+action       = "#9E6FFE"
+nick_self    = "#A6E22E"
+separator    = "#353535"
+
+[highlights]
+mention_bg   = "#303030"
+mention_text = "#F92672"
+keyword      = "#FD971F"
+
+[nicklist]
+background   = "#303030"
+text         = "#4A4A4A"
+op           = "#66D9EF"
+halfop       = "#9E6FFE"
+voice        = "#A6E22E"
+away         = "#353535"
+
+[input]
+background   = "#303030"
+text         = "#CDCDCD"
+placeholder  = "#4A4A4A"
+nick_color   = "#A6E22E"

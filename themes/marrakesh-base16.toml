@@ -1,0 +1,44 @@
+# Marrakesh
+# Author: Alexandre Gavioli (http://github.com/Alexx2/)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#201602"
+text         = "#948E48"
+border       = "#5F5B17"
+accent       = "#477CA1"
+
+[sidebar]
+background   = "#302E00"
+text         = "#6C6823"
+active       = "#948E48"
+unread       = "#477CA1"
+mention      = "#C35359"
+server       = "#6C6823"
+
+[buffer]
+background   = "#201602"
+timestamp    = "#6C6823"
+server_line  = "#86813B"
+action       = "#8868B3"
+nick_self    = "#18974E"
+separator    = "#5F5B17"
+
+[highlights]
+mention_bg   = "#302E00"
+mention_text = "#C35359"
+keyword      = "#B36144"
+
+[nicklist]
+background   = "#302E00"
+text         = "#6C6823"
+op           = "#477CA1"
+halfop       = "#8868B3"
+voice        = "#18974E"
+away         = "#5F5B17"
+
+[input]
+background   = "#302E00"
+text         = "#948E48"
+placeholder  = "#6C6823"
+nick_color   = "#18974E"

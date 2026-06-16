@@ -1,0 +1,44 @@
+# Primer Dark Dimmed
+# Author: Jimmy Lin
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1C2128"
+text         = "#909DAB"
+border       = "#444C56"
+accent       = "#539BF5"
+
+[sidebar]
+background   = "#373E47"
+text         = "#545D68"
+active       = "#909DAB"
+unread       = "#539BF5"
+mention      = "#F47067"
+server       = "#545D68"
+
+[buffer]
+background   = "#1C2128"
+timestamp    = "#545D68"
+server_line  = "#768390"
+action       = "#E275AD"
+nick_self    = "#57AB5A"
+separator    = "#444C56"
+
+[highlights]
+mention_bg   = "#373E47"
+mention_text = "#F47067"
+keyword      = "#E0823D"
+
+[nicklist]
+background   = "#373E47"
+text         = "#545D68"
+op           = "#539BF5"
+halfop       = "#E275AD"
+voice        = "#57AB5A"
+away         = "#444C56"
+
+[input]
+background   = "#373E47"
+text         = "#909DAB"
+placeholder  = "#545D68"
+nick_color   = "#57AB5A"

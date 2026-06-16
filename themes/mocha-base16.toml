@@ -1,0 +1,44 @@
+# Mocha
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#3B3228"
+text         = "#D0C8C6"
+border       = "#645240"
+accent       = "#8AB3B5"
+
+[sidebar]
+background   = "#534636"
+text         = "#7E705A"
+active       = "#D0C8C6"
+unread       = "#8AB3B5"
+mention      = "#CB6077"
+server       = "#7E705A"
+
+[buffer]
+background   = "#3B3228"
+timestamp    = "#7E705A"
+server_line  = "#B8AFAD"
+action       = "#A89BB9"
+nick_self    = "#BEB55B"
+separator    = "#645240"
+
+[highlights]
+mention_bg   = "#534636"
+mention_text = "#CB6077"
+keyword      = "#D28B71"
+
+[nicklist]
+background   = "#534636"
+text         = "#7E705A"
+op           = "#8AB3B5"
+halfop       = "#A89BB9"
+voice        = "#BEB55B"
+away         = "#645240"
+
+[input]
+background   = "#534636"
+text         = "#D0C8C6"
+placeholder  = "#7E705A"
+nick_color   = "#BEB55B"

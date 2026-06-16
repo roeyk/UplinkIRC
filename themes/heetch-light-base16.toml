@@ -1,0 +1,44 @@
+# Heetch Light
+# Author: Geoffrey Teale (tealeg@gmail.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FEFFFF"
+text         = "#5A496E"
+border       = "#7B6D8B"
+accent       = "#47F9F5"
+
+[sidebar]
+background   = "#392551"
+text         = "#9C92A8"
+active       = "#5A496E"
+unread       = "#47F9F5"
+mention      = "#27D9D5"
+server       = "#9C92A8"
+
+[buffer]
+background   = "#FEFFFF"
+timestamp    = "#9C92A8"
+server_line  = "#DDD6E5"
+action       = "#BD0152"
+nick_self    = "#F80059"
+separator    = "#7B6D8B"
+
+[highlights]
+mention_bg   = "#392551"
+mention_text = "#27D9D5"
+keyword      = "#BDB6C5"
+
+[nicklist]
+background   = "#392551"
+text         = "#9C92A8"
+op           = "#47F9F5"
+halfop       = "#BD0152"
+voice        = "#F80059"
+away         = "#7B6D8B"
+
+[input]
+background   = "#392551"
+text         = "#5A496E"
+placeholder  = "#9C92A8"
+nick_color   = "#F80059"

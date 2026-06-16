@@ -1,0 +1,44 @@
+# Atelier Dune
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#20201D"
+text         = "#A6A28C"
+border       = "#6E6B5E"
+accent       = "#6684E1"
+
+[sidebar]
+background   = "#292824"
+text         = "#7D7A68"
+active       = "#A6A28C"
+unread       = "#6684E1"
+mention      = "#D73737"
+server       = "#7D7A68"
+
+[buffer]
+background   = "#20201D"
+timestamp    = "#7D7A68"
+server_line  = "#999580"
+action       = "#B854D4"
+nick_self    = "#60AC39"
+separator    = "#6E6B5E"
+
+[highlights]
+mention_bg   = "#292824"
+mention_text = "#D73737"
+keyword      = "#B65611"
+
+[nicklist]
+background   = "#292824"
+text         = "#7D7A68"
+op           = "#6684E1"
+halfop       = "#B854D4"
+voice        = "#60AC39"
+away         = "#6E6B5E"
+
+[input]
+background   = "#292824"
+text         = "#A6A28C"
+placeholder  = "#7D7A68"
+nick_color   = "#60AC39"

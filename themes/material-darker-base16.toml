@@ -1,0 +1,44 @@
+# Material Darker
+# Author: Nate Peterson
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#212121"
+text         = "#EEFFFF"
+border       = "#353535"
+accent       = "#82AAFF"
+
+[sidebar]
+background   = "#303030"
+text         = "#4A4A4A"
+active       = "#EEFFFF"
+unread       = "#82AAFF"
+mention      = "#F07178"
+server       = "#4A4A4A"
+
+[buffer]
+background   = "#212121"
+timestamp    = "#4A4A4A"
+server_line  = "#B2CCD6"
+action       = "#C792EA"
+nick_self    = "#C3E88D"
+separator    = "#353535"
+
+[highlights]
+mention_bg   = "#303030"
+mention_text = "#F07178"
+keyword      = "#F78C6C"
+
+[nicklist]
+background   = "#303030"
+text         = "#4A4A4A"
+op           = "#82AAFF"
+halfop       = "#C792EA"
+voice        = "#C3E88D"
+away         = "#353535"
+
+[input]
+background   = "#303030"
+text         = "#EEFFFF"
+placeholder  = "#4A4A4A"
+nick_color   = "#C3E88D"

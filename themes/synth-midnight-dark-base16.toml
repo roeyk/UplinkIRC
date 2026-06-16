@@ -1,0 +1,44 @@
+# Synth Midnight Terminal Dark
+# Author: Michaël Ball (http://github.com/michael-ball/)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#050608"
+text         = "#C1C3C4"
+border       = "#28292A"
+accent       = "#03AEFF"
+
+[sidebar]
+background   = "#1A1B1C"
+text         = "#474849"
+active       = "#C1C3C4"
+unread       = "#03AEFF"
+mention      = "#B53B50"
+server       = "#474849"
+
+[buffer]
+background   = "#050608"
+timestamp    = "#474849"
+server_line  = "#A3A5A6"
+action       = "#EA5CE2"
+nick_self    = "#06EA61"
+separator    = "#28292A"
+
+[highlights]
+mention_bg   = "#1A1B1C"
+mention_text = "#B53B50"
+keyword      = "#EA770D"
+
+[nicklist]
+background   = "#1A1B1C"
+text         = "#474849"
+op           = "#03AEFF"
+halfop       = "#EA5CE2"
+voice        = "#06EA61"
+away         = "#28292A"
+
+[input]
+background   = "#1A1B1C"
+text         = "#C1C3C4"
+placeholder  = "#474849"
+nick_color   = "#06EA61"

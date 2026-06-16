@@ -1,0 +1,44 @@
+# Nova
+# Author: George Essig (https://github.com/gessig), Trevor D. Miller (https://trevordmiller.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#3C4C55"
+text         = "#C5D4DD"
+border       = "#6A7D89"
+accent       = "#83AFE5"
+
+[sidebar]
+background   = "#556873"
+text         = "#899BA6"
+active       = "#C5D4DD"
+unread       = "#83AFE5"
+mention      = "#83AFE5"
+server       = "#899BA6"
+
+[buffer]
+background   = "#3C4C55"
+timestamp    = "#899BA6"
+server_line  = "#899BA6"
+action       = "#9A93E1"
+nick_self    = "#7FC1CA"
+separator    = "#6A7D89"
+
+[highlights]
+mention_bg   = "#556873"
+mention_text = "#83AFE5"
+keyword      = "#7FC1CA"
+
+[nicklist]
+background   = "#556873"
+text         = "#899BA6"
+op           = "#83AFE5"
+halfop       = "#9A93E1"
+voice        = "#7FC1CA"
+away         = "#6A7D89"
+
+[input]
+background   = "#556873"
+text         = "#C5D4DD"
+placeholder  = "#899BA6"
+nick_color   = "#7FC1CA"

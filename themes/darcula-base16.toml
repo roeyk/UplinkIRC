@@ -1,0 +1,44 @@
+# Darcula
+# Author: jetbrains
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2B2B2B"
+text         = "#A9B7C6"
+border       = "#323232"
+accent       = "#9876AA"
+
+[sidebar]
+background   = "#323232"
+text         = "#606366"
+active       = "#A9B7C6"
+unread       = "#9876AA"
+mention      = "#4EADE5"
+server       = "#606366"
+
+[buffer]
+background   = "#2B2B2B"
+timestamp    = "#606366"
+server_line  = "#A4A3A3"
+action       = "#CC7832"
+nick_self    = "#6A8759"
+separator    = "#323232"
+
+[highlights]
+mention_bg   = "#323232"
+mention_text = "#4EADE5"
+keyword      = "#689757"
+
+[nicklist]
+background   = "#323232"
+text         = "#606366"
+op           = "#9876AA"
+halfop       = "#CC7832"
+voice        = "#6A8759"
+away         = "#323232"
+
+[input]
+background   = "#323232"
+text         = "#A9B7C6"
+placeholder  = "#606366"
+nick_color   = "#6A8759"

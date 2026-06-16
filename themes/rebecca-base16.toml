@@ -1,0 +1,44 @@
+# Rebecca
+# Author: Victor Borja (http://github.com/vic) based on Rebecca Theme (http://github.com/vic/rebecca-theme)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#292A44"
+text         = "#F1EFF8"
+border       = "#383A62"
+accent       = "#2DE0A7"
+
+[sidebar]
+background   = "#663399"
+text         = "#666699"
+active       = "#F1EFF8"
+unread       = "#2DE0A7"
+mention      = "#A0A0C5"
+server       = "#666699"
+
+[buffer]
+background   = "#292A44"
+timestamp    = "#666699"
+server_line  = "#A0A0C5"
+action       = "#7AA5FF"
+nick_self    = "#6DFEDF"
+separator    = "#383A62"
+
+[highlights]
+mention_bg   = "#663399"
+mention_text = "#A0A0C5"
+keyword      = "#EFE4A1"
+
+[nicklist]
+background   = "#663399"
+text         = "#666699"
+op           = "#2DE0A7"
+halfop       = "#7AA5FF"
+voice        = "#6DFEDF"
+away         = "#383A62"
+
+[input]
+background   = "#663399"
+text         = "#F1EFF8"
+placeholder  = "#666699"
+nick_color   = "#6DFEDF"

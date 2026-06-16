@@ -1,0 +1,44 @@
+# Equilibrium Gray Dark
+# Author: Carlo Abelli
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#111111"
+text         = "#ABABAB"
+border       = "#262626"
+accent       = "#008DD1"
+
+[sidebar]
+background   = "#1B1B1B"
+text         = "#777777"
+active       = "#ABABAB"
+unread       = "#008DD1"
+mention      = "#F04339"
+server       = "#777777"
+
+[buffer]
+background   = "#111111"
+timestamp    = "#777777"
+server_line  = "#919191"
+action       = "#6A7FD2"
+nick_self    = "#7F8B00"
+separator    = "#262626"
+
+[highlights]
+mention_bg   = "#1B1B1B"
+mention_text = "#F04339"
+keyword      = "#DF5923"
+
+[nicklist]
+background   = "#1B1B1B"
+text         = "#777777"
+op           = "#008DD1"
+halfop       = "#6A7FD2"
+voice        = "#7F8B00"
+away         = "#262626"
+
+[input]
+background   = "#1B1B1B"
+text         = "#ABABAB"
+placeholder  = "#777777"
+nick_color   = "#7F8B00"

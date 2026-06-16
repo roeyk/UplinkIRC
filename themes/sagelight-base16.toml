@@ -1,0 +1,44 @@
+# Sagelight
+# Author: Carter Veldhuizen
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F8F8F8"
+text         = "#383838"
+border       = "#D8D8D8"
+accent       = "#A0A7D2"
+
+[sidebar]
+background   = "#E8E8E8"
+text         = "#B8B8B8"
+active       = "#383838"
+unread       = "#A0A7D2"
+mention      = "#FA8480"
+server       = "#B8B8B8"
+
+[buffer]
+background   = "#F8F8F8"
+timestamp    = "#B8B8B8"
+server_line  = "#585858"
+action       = "#C8A0D2"
+nick_self    = "#A0D2C8"
+separator    = "#D8D8D8"
+
+[highlights]
+mention_bg   = "#E8E8E8"
+mention_text = "#FA8480"
+keyword      = "#FFAA61"
+
+[nicklist]
+background   = "#E8E8E8"
+text         = "#B8B8B8"
+op           = "#A0A7D2"
+halfop       = "#C8A0D2"
+voice        = "#A0D2C8"
+away         = "#D8D8D8"
+
+[input]
+background   = "#E8E8E8"
+text         = "#383838"
+placeholder  = "#B8B8B8"
+nick_color   = "#A0D2C8"

@@ -1,0 +1,44 @@
+# Everforest Dark Hard
+# Author: Oskar Liew (https://github.com/OskarLiew)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#272E33"
+text         = "#D3C6AA"
+border       = "#414B50"
+accent       = "#A7C080"
+
+[sidebar]
+background   = "#2E383C"
+text         = "#859289"
+active       = "#D3C6AA"
+unread       = "#A7C080"
+mention      = "#7FBBB3"
+server       = "#859289"
+
+[buffer]
+background   = "#272E33"
+timestamp    = "#859289"
+server_line  = "#9DA9A0"
+action       = "#E67E80"
+nick_self    = "#83C092"
+separator    = "#414B50"
+
+[highlights]
+mention_bg   = "#2E383C"
+mention_text = "#7FBBB3"
+keyword      = "#D699B6"
+
+[nicklist]
+background   = "#2E383C"
+text         = "#859289"
+op           = "#A7C080"
+halfop       = "#E67E80"
+voice        = "#83C092"
+away         = "#414B50"
+
+[input]
+background   = "#2E383C"
+text         = "#D3C6AA"
+placeholder  = "#859289"
+nick_color   = "#83C092"

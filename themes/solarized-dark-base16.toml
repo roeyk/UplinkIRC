@@ -1,0 +1,44 @@
+# Solarized Dark
+# Author: Ethan Schoonover (modified by aramisgithub)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#002B36"
+text         = "#93A1A1"
+border       = "#586E75"
+accent       = "#268BD2"
+
+[sidebar]
+background   = "#073642"
+text         = "#657B83"
+active       = "#93A1A1"
+unread       = "#268BD2"
+mention      = "#DC322F"
+server       = "#657B83"
+
+[buffer]
+background   = "#002B36"
+timestamp    = "#657B83"
+server_line  = "#839496"
+action       = "#6C71C4"
+nick_self    = "#859900"
+separator    = "#586E75"
+
+[highlights]
+mention_bg   = "#073642"
+mention_text = "#DC322F"
+keyword      = "#CB4B16"
+
+[nicklist]
+background   = "#073642"
+text         = "#657B83"
+op           = "#268BD2"
+halfop       = "#6C71C4"
+voice        = "#859900"
+away         = "#586E75"
+
+[input]
+background   = "#073642"
+text         = "#93A1A1"
+placeholder  = "#657B83"
+nick_color   = "#859900"

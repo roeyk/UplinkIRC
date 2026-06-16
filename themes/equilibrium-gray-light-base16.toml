@@ -1,0 +1,44 @@
+# Equilibrium Gray Light
+# Author: Carlo Abelli
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F1F1F1"
+text         = "#474747"
+border       = "#D4D4D4"
+accent       = "#0073B5"
+
+[sidebar]
+background   = "#E2E2E2"
+text         = "#777777"
+active       = "#474747"
+unread       = "#0073B5"
+mention      = "#D02023"
+server       = "#777777"
+
+[buffer]
+background   = "#F1F1F1"
+timestamp    = "#777777"
+server_line  = "#5E5E5E"
+action       = "#4E66B6"
+nick_self    = "#637200"
+separator    = "#D4D4D4"
+
+[highlights]
+mention_bg   = "#E2E2E2"
+mention_text = "#D02023"
+keyword      = "#BF3E05"
+
+[nicklist]
+background   = "#E2E2E2"
+text         = "#777777"
+op           = "#0073B5"
+halfop       = "#4E66B6"
+voice        = "#637200"
+away         = "#D4D4D4"
+
+[input]
+background   = "#E2E2E2"
+text         = "#474747"
+placeholder  = "#777777"
+nick_color   = "#637200"

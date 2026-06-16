@@ -1,0 +1,44 @@
+# Spacemacs
+# Author: Nasser Alshammari (https://github.com/nashamri/spacemacs-theme)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1F2022"
+text         = "#A3A3A3"
+border       = "#444155"
+accent       = "#4F97D7"
+
+[sidebar]
+background   = "#282828"
+text         = "#585858"
+active       = "#A3A3A3"
+unread       = "#4F97D7"
+mention      = "#F2241F"
+server       = "#585858"
+
+[buffer]
+background   = "#1F2022"
+timestamp    = "#585858"
+server_line  = "#B8B8B8"
+action       = "#A31DB1"
+nick_self    = "#67B11D"
+separator    = "#444155"
+
+[highlights]
+mention_bg   = "#282828"
+mention_text = "#F2241F"
+keyword      = "#FFA500"
+
+[nicklist]
+background   = "#282828"
+text         = "#585858"
+op           = "#4F97D7"
+halfop       = "#A31DB1"
+voice        = "#67B11D"
+away         = "#444155"
+
+[input]
+background   = "#282828"
+text         = "#A3A3A3"
+placeholder  = "#585858"
+nick_color   = "#67B11D"

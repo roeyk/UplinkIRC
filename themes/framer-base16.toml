@@ -1,0 +1,44 @@
+# Framer
+# Author: Framer (Maintained by Jesse Hoyos)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#181818"
+text         = "#D0D0D0"
+border       = "#464646"
+accent       = "#20BCFC"
+
+[sidebar]
+background   = "#151515"
+text         = "#747474"
+active       = "#D0D0D0"
+unread       = "#20BCFC"
+mention      = "#FD886B"
+server       = "#747474"
+
+[buffer]
+background   = "#181818"
+timestamp    = "#747474"
+server_line  = "#B9B9B9"
+action       = "#BA8CFC"
+nick_self    = "#32CCDC"
+separator    = "#464646"
+
+[highlights]
+mention_bg   = "#151515"
+mention_text = "#FD886B"
+keyword      = "#FC4769"
+
+[nicklist]
+background   = "#151515"
+text         = "#747474"
+op           = "#20BCFC"
+halfop       = "#BA8CFC"
+voice        = "#32CCDC"
+away         = "#464646"
+
+[input]
+background   = "#151515"
+text         = "#D0D0D0"
+placeholder  = "#747474"
+nick_color   = "#32CCDC"

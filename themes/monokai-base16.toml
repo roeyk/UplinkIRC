@@ -1,0 +1,44 @@
+# Monokai
+# Author: Wimer Hazenberg (http://www.monokai.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#272822"
+text         = "#F8F8F2"
+border       = "#49483E"
+accent       = "#66D9EF"
+
+[sidebar]
+background   = "#383830"
+text         = "#75715E"
+active       = "#F8F8F2"
+unread       = "#66D9EF"
+mention      = "#F92672"
+server       = "#75715E"
+
+[buffer]
+background   = "#272822"
+timestamp    = "#75715E"
+server_line  = "#A59F85"
+action       = "#AE81FF"
+nick_self    = "#A6E22E"
+separator    = "#49483E"
+
+[highlights]
+mention_bg   = "#383830"
+mention_text = "#F92672"
+keyword      = "#FD971F"
+
+[nicklist]
+background   = "#383830"
+text         = "#75715E"
+op           = "#66D9EF"
+halfop       = "#AE81FF"
+voice        = "#A6E22E"
+away         = "#49483E"
+
+[input]
+background   = "#383830"
+text         = "#F8F8F2"
+placeholder  = "#75715E"
+nick_color   = "#A6E22E"

@@ -1,0 +1,44 @@
+# Unikitty Reversible
+# Author: Josh W Lewis (@joshwlewis)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2E2A31"
+text         = "#C3C2C4"
+border       = "#69666B"
+accent       = "#7864FA"
+
+[sidebar]
+background   = "#4B484E"
+text         = "#878589"
+active       = "#C3C2C4"
+unread       = "#7864FA"
+mention      = "#D8137F"
+server       = "#878589"
+
+[buffer]
+background   = "#2E2A31"
+timestamp    = "#878589"
+server_line  = "#A5A3A6"
+action       = "#B33CE8"
+nick_self    = "#17AD98"
+separator    = "#69666B"
+
+[highlights]
+mention_bg   = "#4B484E"
+mention_text = "#D8137F"
+keyword      = "#D65407"
+
+[nicklist]
+background   = "#4B484E"
+text         = "#878589"
+op           = "#7864FA"
+halfop       = "#B33CE8"
+voice        = "#17AD98"
+away         = "#69666B"
+
+[input]
+background   = "#4B484E"
+text         = "#C3C2C4"
+placeholder  = "#878589"
+nick_color   = "#17AD98"

@@ -1,0 +1,44 @@
+# Gigavolt
+# Author: Aidan Swope (http://github.com/Whillikers)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#202126"
+text         = "#E9E7E1"
+border       = "#5A576E"
+accent       = "#40BFFF"
+
+[sidebar]
+background   = "#2D303D"
+text         = "#A1D2E6"
+active       = "#E9E7E1"
+unread       = "#40BFFF"
+mention      = "#FF661A"
+server       = "#A1D2E6"
+
+[buffer]
+background   = "#202126"
+timestamp    = "#A1D2E6"
+server_line  = "#CAD3FF"
+action       = "#AE94F9"
+nick_self    = "#F2E6A9"
+separator    = "#5A576E"
+
+[highlights]
+mention_bg   = "#2D303D"
+mention_text = "#FF661A"
+keyword      = "#19F988"
+
+[nicklist]
+background   = "#2D303D"
+text         = "#A1D2E6"
+op           = "#40BFFF"
+halfop       = "#AE94F9"
+voice        = "#F2E6A9"
+away         = "#5A576E"
+
+[input]
+background   = "#2D303D"
+text         = "#E9E7E1"
+placeholder  = "#A1D2E6"
+nick_color   = "#F2E6A9"

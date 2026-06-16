@@ -1,0 +1,44 @@
+# Cupertino
+# Author: Defman21
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FFFFFF"
+text         = "#404040"
+border       = "#C0C0C0"
+accent       = "#0000FF"
+
+[sidebar]
+background   = "#C0C0C0"
+text         = "#808080"
+active       = "#404040"
+unread       = "#0000FF"
+mention      = "#C41A15"
+server       = "#808080"
+
+[buffer]
+background   = "#FFFFFF"
+timestamp    = "#808080"
+server_line  = "#808080"
+action       = "#A90D91"
+nick_self    = "#007400"
+separator    = "#C0C0C0"
+
+[highlights]
+mention_bg   = "#C0C0C0"
+mention_text = "#C41A15"
+keyword      = "#EB8500"
+
+[nicklist]
+background   = "#C0C0C0"
+text         = "#808080"
+op           = "#0000FF"
+halfop       = "#A90D91"
+voice        = "#007400"
+away         = "#C0C0C0"
+
+[input]
+background   = "#C0C0C0"
+text         = "#404040"
+placeholder  = "#808080"
+nick_color   = "#007400"

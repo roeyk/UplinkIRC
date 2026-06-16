@@ -1,0 +1,44 @@
+# XCode Dusk
+# Author: Elsa Gonsiorowski (https://github.com/gonsie)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#282B35"
+text         = "#939599"
+border       = "#53555D"
+accent       = "#790EAD"
+
+[sidebar]
+background   = "#3D4048"
+text         = "#686A71"
+active       = "#939599"
+unread       = "#790EAD"
+mention      = "#B21889"
+server       = "#686A71"
+
+[buffer]
+background   = "#282B35"
+timestamp    = "#686A71"
+server_line  = "#7E8086"
+action       = "#B21889"
+nick_self    = "#DF0002"
+separator    = "#53555D"
+
+[highlights]
+mention_bg   = "#3D4048"
+mention_text = "#B21889"
+keyword      = "#786DC5"
+
+[nicklist]
+background   = "#3D4048"
+text         = "#686A71"
+op           = "#790EAD"
+halfop       = "#B21889"
+voice        = "#DF0002"
+away         = "#53555D"
+
+[input]
+background   = "#3D4048"
+text         = "#939599"
+placeholder  = "#686A71"
+nick_color   = "#DF0002"

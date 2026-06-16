@@ -1,0 +1,44 @@
+# Atelier Seaside Light
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F4FBF4"
+text         = "#5E6E5E"
+border       = "#8CA68C"
+accent       = "#3D62F5"
+
+[sidebar]
+background   = "#CFE8CF"
+text         = "#809980"
+active       = "#5E6E5E"
+unread       = "#3D62F5"
+mention      = "#E6193C"
+server       = "#809980"
+
+[buffer]
+background   = "#F4FBF4"
+timestamp    = "#809980"
+server_line  = "#687D68"
+action       = "#AD2BEE"
+nick_self    = "#29A329"
+separator    = "#8CA68C"
+
+[highlights]
+mention_bg   = "#CFE8CF"
+mention_text = "#E6193C"
+keyword      = "#87711D"
+
+[nicklist]
+background   = "#CFE8CF"
+text         = "#809980"
+op           = "#3D62F5"
+halfop       = "#AD2BEE"
+voice        = "#29A329"
+away         = "#8CA68C"
+
+[input]
+background   = "#CFE8CF"
+text         = "#5E6E5E"
+placeholder  = "#809980"
+nick_color   = "#29A329"

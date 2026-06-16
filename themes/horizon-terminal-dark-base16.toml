@@ -1,0 +1,44 @@
+# Horizon Terminal Dark
+# Author: Michaël Ball (http://github.com/michael-ball/)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1C1E26"
+text         = "#CBCED0"
+border       = "#2E303E"
+accent       = "#26BBD9"
+
+[sidebar]
+background   = "#232530"
+text         = "#6F6F70"
+active       = "#CBCED0"
+unread       = "#26BBD9"
+mention      = "#E95678"
+server       = "#6F6F70"
+
+[buffer]
+background   = "#1C1E26"
+timestamp    = "#6F6F70"
+server_line  = "#9DA0A2"
+action       = "#EE64AC"
+nick_self    = "#29D398"
+separator    = "#2E303E"
+
+[highlights]
+mention_bg   = "#232530"
+mention_text = "#E95678"
+keyword      = "#FAB795"
+
+[nicklist]
+background   = "#232530"
+text         = "#6F6F70"
+op           = "#26BBD9"
+halfop       = "#EE64AC"
+voice        = "#29D398"
+away         = "#2E303E"
+
+[input]
+background   = "#232530"
+text         = "#CBCED0"
+placeholder  = "#6F6F70"
+nick_color   = "#29D398"

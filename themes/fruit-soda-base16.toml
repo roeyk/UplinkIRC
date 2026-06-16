@@ -1,0 +1,44 @@
+# Fruit Soda
+# Author: jozip
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F1ECF1"
+text         = "#515151"
+border       = "#D8D5D5"
+accent       = "#2931DF"
+
+[sidebar]
+background   = "#E0DEE0"
+text         = "#B5B4B6"
+active       = "#515151"
+unread       = "#2931DF"
+mention      = "#FE3E31"
+server       = "#B5B4B6"
+
+[buffer]
+background   = "#F1ECF1"
+timestamp    = "#B5B4B6"
+server_line  = "#979598"
+action       = "#611FCE"
+nick_self    = "#47F74C"
+separator    = "#D8D5D5"
+
+[highlights]
+mention_bg   = "#E0DEE0"
+mention_text = "#FE3E31"
+keyword      = "#FE6D08"
+
+[nicklist]
+background   = "#E0DEE0"
+text         = "#B5B4B6"
+op           = "#2931DF"
+halfop       = "#611FCE"
+voice        = "#47F74C"
+away         = "#D8D5D5"
+
+[input]
+background   = "#E0DEE0"
+text         = "#515151"
+placeholder  = "#B5B4B6"
+nick_color   = "#47F74C"

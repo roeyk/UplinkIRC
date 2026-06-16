@@ -1,0 +1,44 @@
+# Atelier Plateau Light
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F4ECEC"
+text         = "#585050"
+border       = "#8A8585"
+accent       = "#7272CA"
+
+[sidebar]
+background   = "#E7DFDF"
+text         = "#7E7777"
+active       = "#585050"
+unread       = "#7272CA"
+mention      = "#CA4949"
+server       = "#7E7777"
+
+[buffer]
+background   = "#F4ECEC"
+timestamp    = "#7E7777"
+server_line  = "#655D5D"
+action       = "#8464C4"
+nick_self    = "#4B8B8B"
+separator    = "#8A8585"
+
+[highlights]
+mention_bg   = "#E7DFDF"
+mention_text = "#CA4949"
+keyword      = "#B45A3C"
+
+[nicklist]
+background   = "#E7DFDF"
+text         = "#7E7777"
+op           = "#7272CA"
+halfop       = "#8464C4"
+voice        = "#4B8B8B"
+away         = "#8A8585"
+
+[input]
+background   = "#E7DFDF"
+text         = "#585050"
+placeholder  = "#7E7777"
+nick_color   = "#4B8B8B"

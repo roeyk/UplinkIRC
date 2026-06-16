@@ -1,0 +1,44 @@
+# Horizon Terminal Light
+# Author: Michaël Ball (http://github.com/michael-ball/)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FDF0ED"
+text         = "#403C3D"
+border       = "#F9CBBE"
+accent       = "#26BBD9"
+
+[sidebar]
+background   = "#FADAD1"
+text         = "#BDB3B1"
+active       = "#403C3D"
+unread       = "#26BBD9"
+mention      = "#E95678"
+server       = "#BDB3B1"
+
+[buffer]
+background   = "#FDF0ED"
+timestamp    = "#BDB3B1"
+server_line  = "#948C8A"
+action       = "#EE64AC"
+nick_self    = "#29D398"
+separator    = "#F9CBBE"
+
+[highlights]
+mention_bg   = "#FADAD1"
+mention_text = "#E95678"
+keyword      = "#F9CEC3"
+
+[nicklist]
+background   = "#FADAD1"
+text         = "#BDB3B1"
+op           = "#26BBD9"
+halfop       = "#EE64AC"
+voice        = "#29D398"
+away         = "#F9CBBE"
+
+[input]
+background   = "#FADAD1"
+text         = "#403C3D"
+placeholder  = "#BDB3B1"
+nick_color   = "#29D398"

@@ -1,0 +1,44 @@
+# Atelier Seaside
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#131513"
+text         = "#8CA68C"
+border       = "#5E6E5E"
+accent       = "#3D62F5"
+
+[sidebar]
+background   = "#242924"
+text         = "#687D68"
+active       = "#8CA68C"
+unread       = "#3D62F5"
+mention      = "#E6193C"
+server       = "#687D68"
+
+[buffer]
+background   = "#131513"
+timestamp    = "#687D68"
+server_line  = "#809980"
+action       = "#AD2BEE"
+nick_self    = "#29A329"
+separator    = "#5E6E5E"
+
+[highlights]
+mention_bg   = "#242924"
+mention_text = "#E6193C"
+keyword      = "#87711D"
+
+[nicklist]
+background   = "#242924"
+text         = "#687D68"
+op           = "#3D62F5"
+halfop       = "#AD2BEE"
+voice        = "#29A329"
+away         = "#5E6E5E"
+
+[input]
+background   = "#242924"
+text         = "#8CA68C"
+placeholder  = "#687D68"
+nick_color   = "#29A329"

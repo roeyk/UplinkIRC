@@ -1,0 +1,44 @@
+# Bespin
+# Author: Jan T. Sott
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#28211C"
+text         = "#8A8986"
+border       = "#5E5D5C"
+accent       = "#5EA6EA"
+
+[sidebar]
+background   = "#36312E"
+text         = "#666666"
+active       = "#8A8986"
+unread       = "#5EA6EA"
+mention      = "#CF6A4C"
+server       = "#666666"
+
+[buffer]
+background   = "#28211C"
+timestamp    = "#666666"
+server_line  = "#797977"
+action       = "#9B859D"
+nick_self    = "#54BE0D"
+separator    = "#5E5D5C"
+
+[highlights]
+mention_bg   = "#36312E"
+mention_text = "#CF6A4C"
+keyword      = "#CF7D34"
+
+[nicklist]
+background   = "#36312E"
+text         = "#666666"
+op           = "#5EA6EA"
+halfop       = "#9B859D"
+voice        = "#54BE0D"
+away         = "#5E5D5C"
+
+[input]
+background   = "#36312E"
+text         = "#8A8986"
+placeholder  = "#666666"
+nick_color   = "#54BE0D"

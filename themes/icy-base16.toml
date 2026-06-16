@@ -1,0 +1,44 @@
+# Icy Dark
+# Author: icyphox (https://icyphox.ga)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#021012"
+text         = "#095B67"
+border       = "#041F23"
+accent       = "#00BCD4"
+
+[sidebar]
+background   = "#031619"
+text         = "#052E34"
+active       = "#095B67"
+unread       = "#00BCD4"
+mention      = "#16C1D9"
+server       = "#052E34"
+
+[buffer]
+background   = "#021012"
+timestamp    = "#052E34"
+server_line  = "#064048"
+action       = "#00ACC1"
+nick_self    = "#4DD0E1"
+separator    = "#041F23"
+
+[highlights]
+mention_bg   = "#031619"
+mention_text = "#16C1D9"
+keyword      = "#B3EBF2"
+
+[nicklist]
+background   = "#031619"
+text         = "#052E34"
+op           = "#00BCD4"
+halfop       = "#00ACC1"
+voice        = "#4DD0E1"
+away         = "#041F23"
+
+[input]
+background   = "#031619"
+text         = "#095B67"
+placeholder  = "#052E34"
+nick_color   = "#4DD0E1"

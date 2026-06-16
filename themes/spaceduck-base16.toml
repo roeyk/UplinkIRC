@@ -1,0 +1,44 @@
+# Spaceduck
+# Author: Guillermo Rodriguez (https://github.com/pineapplegiant), packaged by Gabriel Fontes (https://github.com/Misterio77)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#16172D"
+text         = "#ECF0C1"
+border       = "#30365F"
+accent       = "#7A5CCC"
+
+[sidebar]
+background   = "#1B1C36"
+text         = "#686F9A"
+active       = "#ECF0C1"
+unread       = "#7A5CCC"
+mention      = "#E33400"
+server       = "#686F9A"
+
+[buffer]
+background   = "#16172D"
+timestamp    = "#686F9A"
+server_line  = "#818596"
+action       = "#B3A1E6"
+nick_self    = "#5CCC96"
+separator    = "#30365F"
+
+[highlights]
+mention_bg   = "#1B1C36"
+mention_text = "#E33400"
+keyword      = "#E39400"
+
+[nicklist]
+background   = "#1B1C36"
+text         = "#686F9A"
+op           = "#7A5CCC"
+halfop       = "#B3A1E6"
+voice        = "#5CCC96"
+away         = "#30365F"
+
+[input]
+background   = "#1B1C36"
+text         = "#ECF0C1"
+placeholder  = "#686F9A"
+nick_color   = "#5CCC96"

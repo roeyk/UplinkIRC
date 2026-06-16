@@ -1,0 +1,44 @@
+# Circus
+# Author: Stephan Boyer (https://github.com/stepchowfun) and Esther Wang (https://github.com/ewang12)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#191919"
+text         = "#A7A7A7"
+border       = "#303030"
+accent       = "#639EE4"
+
+[sidebar]
+background   = "#202020"
+text         = "#5F5A60"
+active       = "#A7A7A7"
+unread       = "#639EE4"
+mention      = "#DC657D"
+server       = "#5F5A60"
+
+[buffer]
+background   = "#191919"
+timestamp    = "#5F5A60"
+server_line  = "#505050"
+action       = "#B888E2"
+nick_self    = "#84B97C"
+separator    = "#303030"
+
+[highlights]
+mention_bg   = "#202020"
+mention_text = "#DC657D"
+keyword      = "#4BB1A7"
+
+[nicklist]
+background   = "#202020"
+text         = "#5F5A60"
+op           = "#639EE4"
+halfop       = "#B888E2"
+voice        = "#84B97C"
+away         = "#303030"
+
+[input]
+background   = "#202020"
+text         = "#A7A7A7"
+placeholder  = "#5F5A60"
+nick_color   = "#84B97C"

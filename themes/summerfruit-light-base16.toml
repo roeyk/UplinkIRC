@@ -1,0 +1,44 @@
+# Summerfruit Light
+# Author: Christopher Corley (http://christop.club/)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FFFFFF"
+text         = "#101010"
+border       = "#D0D0D0"
+accent       = "#3777E6"
+
+[sidebar]
+background   = "#E0E0E0"
+text         = "#B0B0B0"
+active       = "#101010"
+unread       = "#3777E6"
+mention      = "#FF0086"
+server       = "#B0B0B0"
+
+[buffer]
+background   = "#FFFFFF"
+timestamp    = "#B0B0B0"
+server_line  = "#000000"
+action       = "#AD00A1"
+nick_self    = "#00C918"
+separator    = "#D0D0D0"
+
+[highlights]
+mention_bg   = "#E0E0E0"
+mention_text = "#FF0086"
+keyword      = "#FD8900"
+
+[nicklist]
+background   = "#E0E0E0"
+text         = "#B0B0B0"
+op           = "#3777E6"
+halfop       = "#AD00A1"
+voice        = "#00C918"
+away         = "#D0D0D0"
+
+[input]
+background   = "#E0E0E0"
+text         = "#101010"
+placeholder  = "#B0B0B0"
+nick_color   = "#00C918"

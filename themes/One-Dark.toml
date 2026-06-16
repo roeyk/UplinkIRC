@@ -18,6 +18,7 @@ timestamp    = "#737984"
 server_line  = "#3592c4"
 action       = "#d55fde"
 nick_self    = "#89ca78"
+separator    = "#737373"
 
 [highlights]
 mention_bg   = "#3b3037"

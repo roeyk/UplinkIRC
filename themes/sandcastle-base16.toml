@@ -1,0 +1,44 @@
+# Sandcastle
+# Author: George Essig (https://github.com/gessig)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#282C34"
+text         = "#A89984"
+border       = "#3E4451"
+accent       = "#83A598"
+
+[sidebar]
+background   = "#2C323B"
+text         = "#665C54"
+active       = "#A89984"
+unread       = "#83A598"
+mention      = "#83A598"
+server       = "#665C54"
+
+[buffer]
+background   = "#282C34"
+timestamp    = "#665C54"
+server_line  = "#928374"
+action       = "#D75F5F"
+nick_self    = "#528B8B"
+separator    = "#3E4451"
+
+[highlights]
+mention_bg   = "#2C323B"
+mention_text = "#83A598"
+keyword      = "#A07E3B"
+
+[nicklist]
+background   = "#2C323B"
+text         = "#665C54"
+op           = "#83A598"
+halfop       = "#D75F5F"
+voice        = "#528B8B"
+away         = "#3E4451"
+
+[input]
+background   = "#2C323B"
+text         = "#A89984"
+placeholder  = "#665C54"
+nick_color   = "#528B8B"

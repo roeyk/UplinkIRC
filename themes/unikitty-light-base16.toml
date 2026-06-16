@@ -1,0 +1,44 @@
+# Unikitty Light
+# Author: Josh W Lewis (@joshwlewis)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FFFFFF"
+text         = "#6C696E"
+border       = "#C4C3C5"
+accent       = "#775DFF"
+
+[sidebar]
+background   = "#E1E1E2"
+text         = "#A7A5A8"
+active       = "#6C696E"
+unread       = "#775DFF"
+mention      = "#D8137F"
+server       = "#A7A5A8"
+
+[buffer]
+background   = "#FFFFFF"
+timestamp    = "#A7A5A8"
+server_line  = "#89878B"
+action       = "#AA17E6"
+nick_self    = "#17AD98"
+separator    = "#C4C3C5"
+
+[highlights]
+mention_bg   = "#E1E1E2"
+mention_text = "#D8137F"
+keyword      = "#D65407"
+
+[nicklist]
+background   = "#E1E1E2"
+text         = "#A7A5A8"
+op           = "#775DFF"
+halfop       = "#AA17E6"
+voice        = "#17AD98"
+away         = "#C4C3C5"
+
+[input]
+background   = "#E1E1E2"
+text         = "#6C696E"
+placeholder  = "#A7A5A8"
+nick_color   = "#17AD98"

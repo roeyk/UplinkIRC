@@ -1,0 +1,44 @@
+# Solarized Light
+# Author: Ethan Schoonover (modified by aramisgithub)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FDF6E3"
+text         = "#586E75"
+border       = "#93A1A1"
+accent       = "#268BD2"
+
+[sidebar]
+background   = "#EEE8D5"
+text         = "#839496"
+active       = "#586E75"
+unread       = "#268BD2"
+mention      = "#DC322F"
+server       = "#839496"
+
+[buffer]
+background   = "#FDF6E3"
+timestamp    = "#839496"
+server_line  = "#657B83"
+action       = "#6C71C4"
+nick_self    = "#859900"
+separator    = "#93A1A1"
+
+[highlights]
+mention_bg   = "#EEE8D5"
+mention_text = "#DC322F"
+keyword      = "#CB4B16"
+
+[nicklist]
+background   = "#EEE8D5"
+text         = "#839496"
+op           = "#268BD2"
+halfop       = "#6C71C4"
+voice        = "#859900"
+away         = "#93A1A1"
+
+[input]
+background   = "#EEE8D5"
+text         = "#586E75"
+placeholder  = "#839496"
+nick_color   = "#859900"

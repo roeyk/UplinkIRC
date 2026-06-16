@@ -1,0 +1,44 @@
+# Sakura
+# Author: Misterio77 (http://github.com/Misterio77)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FEEDF3"
+text         = "#564448"
+border       = "#E0CCD1"
+accent       = "#006E93"
+
+[sidebar]
+background   = "#F8E2E7"
+text         = "#755F64"
+active       = "#564448"
+unread       = "#006E93"
+mention      = "#DF2D52"
+server       = "#755F64"
+
+[buffer]
+background   = "#FEEDF3"
+timestamp    = "#755F64"
+server_line  = "#665055"
+action       = "#5E2180"
+nick_self    = "#2E916D"
+separator    = "#E0CCD1"
+
+[highlights]
+mention_bg   = "#F8E2E7"
+mention_text = "#DF2D52"
+keyword      = "#F6661E"
+
+[nicklist]
+background   = "#F8E2E7"
+text         = "#755F64"
+op           = "#006E93"
+halfop       = "#5E2180"
+voice        = "#2E916D"
+away         = "#E0CCD1"
+
+[input]
+background   = "#F8E2E7"
+text         = "#564448"
+placeholder  = "#755F64"
+nick_color   = "#2E916D"

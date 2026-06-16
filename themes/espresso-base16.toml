@@ -1,0 +1,44 @@
+# Espresso
+# Author: Unknown. Maintained by Alex Mirrington (https://github.com/alexmirrington)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2D2D2D"
+text         = "#CCCCCC"
+border       = "#515151"
+accent       = "#6C99BB"
+
+[sidebar]
+background   = "#393939"
+text         = "#777777"
+active       = "#CCCCCC"
+unread       = "#6C99BB"
+mention      = "#D25252"
+server       = "#777777"
+
+[buffer]
+background   = "#2D2D2D"
+timestamp    = "#777777"
+server_line  = "#B4B7B4"
+action       = "#D197D9"
+nick_self    = "#A5C261"
+separator    = "#515151"
+
+[highlights]
+mention_bg   = "#393939"
+mention_text = "#D25252"
+keyword      = "#F9A959"
+
+[nicklist]
+background   = "#393939"
+text         = "#777777"
+op           = "#6C99BB"
+halfop       = "#D197D9"
+voice        = "#A5C261"
+away         = "#515151"
+
+[input]
+background   = "#393939"
+text         = "#CCCCCC"
+placeholder  = "#777777"
+nick_color   = "#A5C261"

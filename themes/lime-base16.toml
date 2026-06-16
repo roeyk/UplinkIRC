@@ -1,0 +1,44 @@
+# lime
+# Author: limelier
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1A1A2F"
+text         = "#818175"
+border       = "#2A2A3F"
+accent       = "#2B926F"
+
+[sidebar]
+background   = "#202030"
+text         = "#313140"
+active       = "#818175"
+unread       = "#2B926F"
+mention      = "#FF662A"
+server       = "#313140"
+
+[buffer]
+background   = "#1A1A2F"
+timestamp    = "#313140"
+server_line  = "#515155"
+action       = "#1B825F"
+nick_self    = "#8CD97C"
+separator    = "#2A2A3F"
+
+[highlights]
+mention_bg   = "#202030"
+mention_text = "#FF662A"
+keyword      = "#FF773A"
+
+[nicklist]
+background   = "#202030"
+text         = "#313140"
+op           = "#2B926F"
+halfop       = "#1B825F"
+voice        = "#8CD97C"
+away         = "#2A2A3F"
+
+[input]
+background   = "#202030"
+text         = "#818175"
+placeholder  = "#313140"
+nick_color   = "#8CD97C"

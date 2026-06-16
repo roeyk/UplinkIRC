@@ -1,0 +1,44 @@
+# Stella
+# Author: Shrimpram
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2B213C"
+text         = "#998BAD"
+border       = "#4D4160"
+accent       = "#A5AAD4"
+
+[sidebar]
+background   = "#362B48"
+text         = "#655978"
+active       = "#998BAD"
+unread       = "#A5AAD4"
+mention      = "#C79987"
+server       = "#655978"
+
+[buffer]
+background   = "#2B213C"
+timestamp    = "#655978"
+server_line  = "#7F7192"
+action       = "#C594FF"
+nick_self    = "#ACC79B"
+separator    = "#4D4160"
+
+[highlights]
+mention_bg   = "#362B48"
+mention_text = "#C79987"
+keyword      = "#8865C6"
+
+[nicklist]
+background   = "#362B48"
+text         = "#655978"
+op           = "#A5AAD4"
+halfop       = "#C594FF"
+voice        = "#ACC79B"
+away         = "#4D4160"
+
+[input]
+background   = "#362B48"
+text         = "#998BAD"
+placeholder  = "#655978"
+nick_color   = "#ACC79B"

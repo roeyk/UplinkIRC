@@ -1,0 +1,44 @@
+# Rosé Pine Dawn
+# Author: Emilia Dunfelt <edun@dunfelt.se>
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FAF4ED"
+text         = "#575279"
+border       = "#F2E9DE"
+accent       = "#907AA9"
+
+[sidebar]
+background   = "#FFFAF3"
+text         = "#9893A5"
+active       = "#575279"
+unread       = "#907AA9"
+mention      = "#B4637A"
+server       = "#9893A5"
+
+[buffer]
+background   = "#FAF4ED"
+timestamp    = "#9893A5"
+server_line  = "#797593"
+action       = "#EA9D34"
+nick_self    = "#286983"
+separator    = "#F2E9DE"
+
+[highlights]
+mention_bg   = "#FFFAF3"
+mention_text = "#B4637A"
+keyword      = "#EA9D34"
+
+[nicklist]
+background   = "#FFFAF3"
+text         = "#9893A5"
+op           = "#907AA9"
+halfop       = "#EA9D34"
+voice        = "#286983"
+away         = "#F2E9DE"
+
+[input]
+background   = "#FFFAF3"
+text         = "#575279"
+placeholder  = "#9893A5"
+nick_color   = "#286983"

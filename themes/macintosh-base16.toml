@@ -1,0 +1,44 @@
+# Macintosh
+# Author: Rebecca Bettencourt (http://www.kreativekorp.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#000000"
+text         = "#C0C0C0"
+border       = "#404040"
+accent       = "#0000D3"
+
+[sidebar]
+background   = "#404040"
+text         = "#808080"
+active       = "#C0C0C0"
+unread       = "#0000D3"
+mention      = "#DD0907"
+server       = "#808080"
+
+[buffer]
+background   = "#000000"
+timestamp    = "#808080"
+server_line  = "#808080"
+action       = "#4700A5"
+nick_self    = "#1FB714"
+separator    = "#404040"
+
+[highlights]
+mention_bg   = "#404040"
+mention_text = "#DD0907"
+keyword      = "#FF6403"
+
+[nicklist]
+background   = "#404040"
+text         = "#808080"
+op           = "#0000D3"
+halfop       = "#4700A5"
+voice        = "#1FB714"
+away         = "#404040"
+
+[input]
+background   = "#404040"
+text         = "#C0C0C0"
+placeholder  = "#808080"
+nick_color   = "#1FB714"

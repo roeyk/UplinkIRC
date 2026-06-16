@@ -1,0 +1,44 @@
+# Tokyo City Terminal Dark
+# Author: Michaël Ball
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#171D23"
+text         = "#D8E2EC"
+border       = "#28323A"
+accent       = "#539AFC"
+
+[sidebar]
+background   = "#1D252C"
+text         = "#526270"
+active       = "#D8E2EC"
+unread       = "#539AFC"
+mention      = "#D95468"
+server       = "#526270"
+
+[buffer]
+background   = "#171D23"
+timestamp    = "#526270"
+server_line  = "#B7C5D3"
+action       = "#B62D65"
+nick_self    = "#8BD49C"
+separator    = "#28323A"
+
+[highlights]
+mention_bg   = "#1D252C"
+mention_text = "#D95468"
+keyword      = "#FF9E64"
+
+[nicklist]
+background   = "#1D252C"
+text         = "#526270"
+op           = "#539AFC"
+halfop       = "#B62D65"
+voice        = "#8BD49C"
+away         = "#28323A"
+
+[input]
+background   = "#1D252C"
+text         = "#D8E2EC"
+placeholder  = "#526270"
+nick_color   = "#8BD49C"

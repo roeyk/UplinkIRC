@@ -1,0 +1,44 @@
+# London Tube
+# Author: Jan T. Sott
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#231F20"
+text         = "#D9D8D8"
+border       = "#5A5758"
+accent       = "#009DDC"
+
+[sidebar]
+background   = "#1C3F95"
+text         = "#737171"
+active       = "#D9D8D8"
+unread       = "#009DDC"
+mention      = "#EE2E24"
+server       = "#737171"
+
+[buffer]
+background   = "#231F20"
+timestamp    = "#737171"
+server_line  = "#959CA1"
+action       = "#98005D"
+nick_self    = "#00853E"
+separator    = "#5A5758"
+
+[highlights]
+mention_bg   = "#1C3F95"
+mention_text = "#EE2E24"
+keyword      = "#F386A1"
+
+[nicklist]
+background   = "#1C3F95"
+text         = "#737171"
+op           = "#009DDC"
+halfop       = "#98005D"
+voice        = "#00853E"
+away         = "#5A5758"
+
+[input]
+background   = "#1C3F95"
+text         = "#D9D8D8"
+placeholder  = "#737171"
+nick_color   = "#00853E"

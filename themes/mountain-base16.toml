@@ -1,0 +1,44 @@
+# Mountain
+# Author: gnsfujiwara (https://github.com/gnsfujiwara)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#0F0F0F"
+text         = "#CACACA"
+border       = "#262626"
+accent       = "#8F8AAC"
+
+[sidebar]
+background   = "#191919"
+text         = "#4C4C4C"
+active       = "#CACACA"
+unread       = "#8F8AAC"
+mention      = "#AC8A8C"
+server       = "#4C4C4C"
+
+[buffer]
+background   = "#0F0F0F"
+timestamp    = "#4C4C4C"
+server_line  = "#AC8A8C"
+action       = "#AC8AAC"
+nick_self    = "#8AAC8B"
+separator    = "#262626"
+
+[highlights]
+mention_bg   = "#191919"
+mention_text = "#AC8A8C"
+keyword      = "#CEB188"
+
+[nicklist]
+background   = "#191919"
+text         = "#4C4C4C"
+op           = "#8F8AAC"
+halfop       = "#AC8AAC"
+voice        = "#8AAC8B"
+away         = "#262626"
+
+[input]
+background   = "#191919"
+text         = "#CACACA"
+placeholder  = "#4C4C4C"
+nick_color   = "#8AAC8B"

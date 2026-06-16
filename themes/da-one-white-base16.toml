@@ -1,0 +1,44 @@
+# Da One White
+# Author: NNB (https://github.com/NNBnh)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FFFFFF"
+text         = "#181818"
+border       = "#888888"
+accent       = "#5890F8"
+
+[sidebar]
+background   = "#C8C8C8"
+text         = "#585858"
+active       = "#181818"
+unread       = "#5890F8"
+mention      = "#DE5D6E"
+server       = "#585858"
+
+[buffer]
+background   = "#FFFFFF"
+timestamp    = "#585858"
+server_line  = "#282828"
+action       = "#C173D1"
+nick_self    = "#76A85D"
+separator    = "#888888"
+
+[highlights]
+mention_bg   = "#C8C8C8"
+mention_text = "#DE5D6E"
+keyword      = "#FF9470"
+
+[nicklist]
+background   = "#C8C8C8"
+text         = "#585858"
+op           = "#5890F8"
+halfop       = "#C173D1"
+voice        = "#76A85D"
+away         = "#888888"
+
+[input]
+background   = "#C8C8C8"
+text         = "#181818"
+placeholder  = "#585858"
+nick_color   = "#76A85D"

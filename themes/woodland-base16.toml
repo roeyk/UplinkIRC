@@ -1,0 +1,44 @@
+# Woodland
+# Author: Jay Cornwall (https://jcornwall.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#231E18"
+text         = "#CABCB1"
+border       = "#48413A"
+accent       = "#88A4D3"
+
+[sidebar]
+background   = "#302B25"
+text         = "#9D8B70"
+active       = "#CABCB1"
+unread       = "#88A4D3"
+mention      = "#D35C5C"
+server       = "#9D8B70"
+
+[buffer]
+background   = "#231E18"
+timestamp    = "#9D8B70"
+server_line  = "#B4A490"
+action       = "#BB90E2"
+nick_self    = "#B7BA53"
+separator    = "#48413A"
+
+[highlights]
+mention_bg   = "#302B25"
+mention_text = "#D35C5C"
+keyword      = "#CA7F32"
+
+[nicklist]
+background   = "#302B25"
+text         = "#9D8B70"
+op           = "#88A4D3"
+halfop       = "#BB90E2"
+voice        = "#B7BA53"
+away         = "#48413A"
+
+[input]
+background   = "#302B25"
+text         = "#CABCB1"
+placeholder  = "#9D8B70"
+nick_color   = "#B7BA53"

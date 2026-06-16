@@ -1,0 +1,44 @@
+# selenized-dark
+# Author: Jan Warchol (https://github.com/jan-warchol/selenized) / adapted to base16 by ali
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#103C48"
+text         = "#ADBCBC"
+border       = "#2D5B69"
+accent       = "#4695F7"
+
+[sidebar]
+background   = "#184956"
+text         = "#72898F"
+active       = "#ADBCBC"
+unread       = "#4695F7"
+mention      = "#FA5750"
+server       = "#72898F"
+
+[buffer]
+background   = "#103C48"
+timestamp    = "#72898F"
+server_line  = "#72898F"
+action       = "#AF88EB"
+nick_self    = "#75B938"
+separator    = "#2D5B69"
+
+[highlights]
+mention_bg   = "#184956"
+mention_text = "#FA5750"
+keyword      = "#ED8649"
+
+[nicklist]
+background   = "#184956"
+text         = "#72898F"
+op           = "#4695F7"
+halfop       = "#AF88EB"
+voice        = "#75B938"
+away         = "#2D5B69"
+
+[input]
+background   = "#184956"
+text         = "#ADBCBC"
+placeholder  = "#72898F"
+nick_color   = "#75B938"

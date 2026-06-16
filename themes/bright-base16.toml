@@ -1,0 +1,44 @@
+# Bright
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#000000"
+text         = "#E0E0E0"
+border       = "#505050"
+accent       = "#6FB3D2"
+
+[sidebar]
+background   = "#303030"
+text         = "#B0B0B0"
+active       = "#E0E0E0"
+unread       = "#6FB3D2"
+mention      = "#FB0120"
+server       = "#B0B0B0"
+
+[buffer]
+background   = "#000000"
+timestamp    = "#B0B0B0"
+server_line  = "#D0D0D0"
+action       = "#D381C3"
+nick_self    = "#A1C659"
+separator    = "#505050"
+
+[highlights]
+mention_bg   = "#303030"
+mention_text = "#FB0120"
+keyword      = "#FC6D24"
+
+[nicklist]
+background   = "#303030"
+text         = "#B0B0B0"
+op           = "#6FB3D2"
+halfop       = "#D381C3"
+voice        = "#A1C659"
+away         = "#505050"
+
+[input]
+background   = "#303030"
+text         = "#E0E0E0"
+placeholder  = "#B0B0B0"
+nick_color   = "#A1C659"

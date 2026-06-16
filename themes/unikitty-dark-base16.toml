@@ -1,0 +1,44 @@
+# Unikitty Dark
+# Author: Josh W Lewis (@joshwlewis)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2E2A31"
+text         = "#BCBABE"
+border       = "#666369"
+accent       = "#796AF5"
+
+[sidebar]
+background   = "#4A464D"
+text         = "#838085"
+active       = "#BCBABE"
+unread       = "#796AF5"
+mention      = "#D8137F"
+server       = "#838085"
+
+[buffer]
+background   = "#2E2A31"
+timestamp    = "#838085"
+server_line  = "#9F9DA2"
+action       = "#BB60EA"
+nick_self    = "#17AD98"
+separator    = "#666369"
+
+[highlights]
+mention_bg   = "#4A464D"
+mention_text = "#D8137F"
+keyword      = "#D65407"
+
+[nicklist]
+background   = "#4A464D"
+text         = "#838085"
+op           = "#796AF5"
+halfop       = "#BB60EA"
+voice        = "#17AD98"
+away         = "#666369"
+
+[input]
+background   = "#4A464D"
+text         = "#BCBABE"
+placeholder  = "#838085"
+nick_color   = "#17AD98"

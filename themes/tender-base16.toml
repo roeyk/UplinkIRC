@@ -1,0 +1,44 @@
+# tender
+# Author: Jacobo Tabernero (https://github/com/jacoborus/tender.vim)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#282828"
+text         = "#EEEEEE"
+border       = "#484848"
+accent       = "#B3DEEF"
+
+[sidebar]
+background   = "#383838"
+text         = "#4C4C4C"
+active       = "#EEEEEE"
+unread       = "#B3DEEF"
+mention      = "#F43753"
+server       = "#4C4C4C"
+
+[buffer]
+background   = "#282828"
+timestamp    = "#4C4C4C"
+server_line  = "#B8B8B8"
+action       = "#D3B987"
+nick_self    = "#C9D05C"
+separator    = "#484848"
+
+[highlights]
+mention_bg   = "#383838"
+mention_text = "#F43753"
+keyword      = "#DC9656"
+
+[nicklist]
+background   = "#383838"
+text         = "#4C4C4C"
+op           = "#B3DEEF"
+halfop       = "#D3B987"
+voice        = "#C9D05C"
+away         = "#484848"
+
+[input]
+background   = "#383838"
+text         = "#EEEEEE"
+placeholder  = "#4C4C4C"
+nick_color   = "#C9D05C"

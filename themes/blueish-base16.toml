@@ -1,0 +1,44 @@
+# Blueish
+# Author: Ben Mayoras
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#182430"
+text         = "#C8E1F8"
+border       = "#46290A"
+accent       = "#82AAFF"
+
+[sidebar]
+background   = "#243C54"
+text         = "#616D78"
+active       = "#C8E1F8"
+unread       = "#82AAFF"
+mention      = "#4CE587"
+server       = "#616D78"
+
+[buffer]
+background   = "#182430"
+timestamp    = "#616D78"
+server_line  = "#74AFE7"
+action       = "#FF84DD"
+nick_self    = "#C3E88D"
+separator    = "#46290A"
+
+[highlights]
+mention_bg   = "#243C54"
+mention_text = "#4CE587"
+keyword      = "#F6A85C"
+
+[nicklist]
+background   = "#243C54"
+text         = "#616D78"
+op           = "#82AAFF"
+halfop       = "#FF84DD"
+voice        = "#C3E88D"
+away         = "#46290A"
+
+[input]
+background   = "#243C54"
+text         = "#C8E1F8"
+placeholder  = "#616D78"
+nick_color   = "#C3E88D"

@@ -1,0 +1,44 @@
+# Pasque
+# Author: Gabriel Fontes (https://github.com/Misterio77)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#271C3A"
+text         = "#DEDCDF"
+border       = "#3E2D5C"
+accent       = "#8E7DC6"
+
+[sidebar]
+background   = "#100323"
+text         = "#5D5766"
+active       = "#DEDCDF"
+unread       = "#8E7DC6"
+mention      = "#A92258"
+server       = "#5D5766"
+
+[buffer]
+background   = "#271C3A"
+timestamp    = "#5D5766"
+server_line  = "#BEBCBF"
+action       = "#953B9D"
+nick_self    = "#C6914B"
+separator    = "#3E2D5C"
+
+[highlights]
+mention_bg   = "#100323"
+mention_text = "#A92258"
+keyword      = "#918889"
+
+[nicklist]
+background   = "#100323"
+text         = "#5D5766"
+op           = "#8E7DC6"
+halfop       = "#953B9D"
+voice        = "#C6914B"
+away         = "#3E2D5C"
+
+[input]
+background   = "#100323"
+text         = "#DEDCDF"
+placeholder  = "#5D5766"
+nick_color   = "#C6914B"

@@ -1,0 +1,44 @@
+# Solar Flare Light
+# Author: Chuck Harmston (https://chuck.harmston.ch)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F5F7FA"
+text         = "#586875"
+border       = "#A6AFB8"
+accent       = "#33B5E1"
+
+[sidebar]
+background   = "#E8E9ED"
+text         = "#85939E"
+active       = "#586875"
+unread       = "#33B5E1"
+mention      = "#EF5253"
+server       = "#85939E"
+
+[buffer]
+background   = "#F5F7FA"
+timestamp    = "#85939E"
+server_line  = "#667581"
+action       = "#A363D5"
+nick_self    = "#7CC844"
+separator    = "#A6AFB8"
+
+[highlights]
+mention_bg   = "#E8E9ED"
+mention_text = "#EF5253"
+keyword      = "#E66B2B"
+
+[nicklist]
+background   = "#E8E9ED"
+text         = "#85939E"
+op           = "#33B5E1"
+halfop       = "#A363D5"
+voice        = "#7CC844"
+away         = "#A6AFB8"
+
+[input]
+background   = "#E8E9ED"
+text         = "#586875"
+placeholder  = "#85939E"
+nick_color   = "#7CC844"

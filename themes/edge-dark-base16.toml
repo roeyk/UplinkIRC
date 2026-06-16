@@ -1,0 +1,44 @@
+# Edge Dark
+# Author: cjayross (https://github.com/cjayross)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#262729"
+text         = "#B7BEC9"
+border       = "#B7BEC9"
+accent       = "#73B3E7"
+
+[sidebar]
+background   = "#88909F"
+text         = "#3E4249"
+active       = "#B7BEC9"
+unread       = "#73B3E7"
+mention      = "#E77171"
+server       = "#3E4249"
+
+[buffer]
+background   = "#262729"
+timestamp    = "#3E4249"
+server_line  = "#73B3E7"
+action       = "#D390E7"
+nick_self    = "#A1BF78"
+separator    = "#B7BEC9"
+
+[highlights]
+mention_bg   = "#88909F"
+mention_text = "#E77171"
+keyword      = "#E77171"
+
+[nicklist]
+background   = "#88909F"
+text         = "#3E4249"
+op           = "#73B3E7"
+halfop       = "#D390E7"
+voice        = "#A1BF78"
+away         = "#B7BEC9"
+
+[input]
+background   = "#88909F"
+text         = "#B7BEC9"
+placeholder  = "#3E4249"
+nick_color   = "#A1BF78"

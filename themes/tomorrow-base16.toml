@@ -1,0 +1,44 @@
+# Tomorrow
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FFFFFF"
+text         = "#4D4D4C"
+border       = "#D6D6D6"
+accent       = "#4271AE"
+
+[sidebar]
+background   = "#E0E0E0"
+text         = "#8E908C"
+active       = "#4D4D4C"
+unread       = "#4271AE"
+mention      = "#C82829"
+server       = "#8E908C"
+
+[buffer]
+background   = "#FFFFFF"
+timestamp    = "#8E908C"
+server_line  = "#969896"
+action       = "#8959A8"
+nick_self    = "#718C00"
+separator    = "#D6D6D6"
+
+[highlights]
+mention_bg   = "#E0E0E0"
+mention_text = "#C82829"
+keyword      = "#F5871F"
+
+[nicklist]
+background   = "#E0E0E0"
+text         = "#8E908C"
+op           = "#4271AE"
+halfop       = "#8959A8"
+voice        = "#718C00"
+away         = "#D6D6D6"
+
+[input]
+background   = "#E0E0E0"
+text         = "#4D4D4C"
+placeholder  = "#8E908C"
+nick_color   = "#718C00"

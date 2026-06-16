@@ -4047,7 +4047,7 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
 
     if (startIdx > 0) {
         ChatLine status = ChatRenderer::makeStatusLine(
-            QString("── %1 older messages ──").arg(startIdx));
+            QString("── %1 older messages ──").arg(startIdx), m_theme.separator);
         status.id = "status:older";
         m_chatView->appendLine(status);
     }
@@ -4061,7 +4061,7 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
         if (!sepInserted && firstUnread >= startIdx && i == firstUnread) {
             const int n = ch->unread;
             ChatLine sep = ChatRenderer::makeStatusLine(
-                QString("── %1 new message%2 ──").arg(n).arg(n == 1 ? "" : "s"));
+                QString("── %1 new message%2 ──").arg(n).arg(n == 1 ? "" : "s"), m_theme.separator);
             sep.id = QStringLiteral("sep:unread");
             m_chatView->appendLine(sep);
             sepInserted = true;
@@ -4165,7 +4165,7 @@ void MainWindow::loadOlderMessages()
 
     if (newStart > 0) {
         ChatLine status = ChatRenderer::makeStatusLine(
-            QString("── %1 older messages ──").arg(newStart));
+            QString("── %1 older messages ──").arg(newStart), m_theme.separator);
         status.id = "status:older";
         older.append(status);
     }

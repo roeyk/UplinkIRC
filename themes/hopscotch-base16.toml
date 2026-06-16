@@ -1,0 +1,44 @@
+# Hopscotch
+# Author: Jan T. Sott
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#322931"
+text         = "#B9B5B8"
+border       = "#5C545B"
+accent       = "#1290BF"
+
+[sidebar]
+background   = "#433B42"
+text         = "#797379"
+active       = "#B9B5B8"
+unread       = "#1290BF"
+mention      = "#DD464C"
+server       = "#797379"
+
+[buffer]
+background   = "#322931"
+timestamp    = "#797379"
+server_line  = "#989498"
+action       = "#C85E7C"
+nick_self    = "#8FC13E"
+separator    = "#5C545B"
+
+[highlights]
+mention_bg   = "#433B42"
+mention_text = "#DD464C"
+keyword      = "#FD8B19"
+
+[nicklist]
+background   = "#433B42"
+text         = "#797379"
+op           = "#1290BF"
+halfop       = "#C85E7C"
+voice        = "#8FC13E"
+away         = "#5C545B"
+
+[input]
+background   = "#433B42"
+text         = "#B9B5B8"
+placeholder  = "#797379"
+nick_color   = "#8FC13E"

@@ -1,0 +1,44 @@
+# ShadeSmear Dark
+# Author: Kyle Giammarco (http://kyle.giammar.co)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#232323"
+text         = "#DBDBDB"
+border       = "#4E4E4E"
+accent       = "#376388"
+
+[sidebar]
+background   = "#1C1C1C"
+text         = "#C0C0C0"
+active       = "#DBDBDB"
+unread       = "#376388"
+mention      = "#CC5450"
+server       = "#C0C0C0"
+
+[buffer]
+background   = "#232323"
+timestamp    = "#C0C0C0"
+server_line  = "#E4E4E4"
+action       = "#D7AB54"
+nick_self    = "#71983B"
+separator    = "#4E4E4E"
+
+[highlights]
+mention_bg   = "#1C1C1C"
+mention_text = "#CC5450"
+keyword      = "#A64270"
+
+[nicklist]
+background   = "#1C1C1C"
+text         = "#C0C0C0"
+op           = "#376388"
+halfop       = "#D7AB54"
+voice        = "#71983B"
+away         = "#4E4E4E"
+
+[input]
+background   = "#1C1C1C"
+text         = "#DBDBDB"
+placeholder  = "#C0C0C0"
+nick_color   = "#71983B"

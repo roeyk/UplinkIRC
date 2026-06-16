@@ -1,0 +1,44 @@
+# Atlas
+# Author: Alex Lende (https://ajlende.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#002635"
+text         = "#A1A19A"
+border       = "#517F8D"
+accent       = "#5DD7B9"
+
+[sidebar]
+background   = "#00384D"
+text         = "#6C8B91"
+active       = "#A1A19A"
+unread       = "#5DD7B9"
+mention      = "#FF5A67"
+server       = "#6C8B91"
+
+[buffer]
+background   = "#002635"
+timestamp    = "#6C8B91"
+server_line  = "#869696"
+action       = "#9A70A4"
+nick_self    = "#7FC06E"
+separator    = "#517F8D"
+
+[highlights]
+mention_bg   = "#00384D"
+mention_text = "#FF5A67"
+keyword      = "#F08E48"
+
+[nicklist]
+background   = "#00384D"
+text         = "#6C8B91"
+op           = "#5DD7B9"
+halfop       = "#9A70A4"
+voice        = "#7FC06E"
+away         = "#517F8D"
+
+[input]
+background   = "#00384D"
+text         = "#A1A19A"
+placeholder  = "#6C8B91"
+nick_color   = "#7FC06E"

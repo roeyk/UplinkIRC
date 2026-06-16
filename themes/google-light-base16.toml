@@ -1,0 +1,44 @@
+# Google Light
+# Author: Seth Wright (http://sethawright.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FFFFFF"
+text         = "#373B41"
+border       = "#C5C8C6"
+accent       = "#3971ED"
+
+[sidebar]
+background   = "#E0E0E0"
+text         = "#B4B7B4"
+active       = "#373B41"
+unread       = "#3971ED"
+mention      = "#CC342B"
+server       = "#B4B7B4"
+
+[buffer]
+background   = "#FFFFFF"
+timestamp    = "#B4B7B4"
+server_line  = "#969896"
+action       = "#A36AC7"
+nick_self    = "#198844"
+separator    = "#C5C8C6"
+
+[highlights]
+mention_bg   = "#E0E0E0"
+mention_text = "#CC342B"
+keyword      = "#F96A38"
+
+[nicklist]
+background   = "#E0E0E0"
+text         = "#B4B7B4"
+op           = "#3971ED"
+halfop       = "#A36AC7"
+voice        = "#198844"
+away         = "#C5C8C6"
+
+[input]
+background   = "#E0E0E0"
+text         = "#373B41"
+placeholder  = "#B4B7B4"
+nick_color   = "#198844"

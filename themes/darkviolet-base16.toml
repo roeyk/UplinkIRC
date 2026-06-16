@@ -1,0 +1,44 @@
+# Dark Violet
+# Author: ruler501 (https://github.com/ruler501/base16-darkviolet)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#000000"
+text         = "#B08AE6"
+border       = "#432D59"
+accent       = "#4136D9"
+
+[sidebar]
+background   = "#231A40"
+text         = "#593380"
+active       = "#B08AE6"
+unread       = "#4136D9"
+mention      = "#A82EE6"
+server       = "#593380"
+
+[buffer]
+background   = "#000000"
+timestamp    = "#593380"
+server_line  = "#00FF00"
+action       = "#7E5CE6"
+nick_self    = "#4595E6"
+separator    = "#432D59"
+
+[highlights]
+mention_bg   = "#231A40"
+mention_text = "#A82EE6"
+keyword      = "#BB66CC"
+
+[nicklist]
+background   = "#231A40"
+text         = "#593380"
+op           = "#4136D9"
+halfop       = "#7E5CE6"
+voice        = "#4595E6"
+away         = "#432D59"
+
+[input]
+background   = "#231A40"
+text         = "#B08AE6"
+placeholder  = "#593380"
+nick_color   = "#4595E6"

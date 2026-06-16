@@ -1,0 +1,44 @@
+# Colors
+# Author: mrmrs (http://clrs.cc)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#111111"
+text         = "#BBBBBB"
+border       = "#555555"
+accent       = "#0074D9"
+
+[sidebar]
+background   = "#333333"
+text         = "#777777"
+active       = "#BBBBBB"
+unread       = "#0074D9"
+mention      = "#FF4136"
+server       = "#777777"
+
+[buffer]
+background   = "#111111"
+timestamp    = "#777777"
+server_line  = "#999999"
+action       = "#B10DC9"
+nick_self    = "#2ECC40"
+separator    = "#555555"
+
+[highlights]
+mention_bg   = "#333333"
+mention_text = "#FF4136"
+keyword      = "#FF851B"
+
+[nicklist]
+background   = "#333333"
+text         = "#777777"
+op           = "#0074D9"
+halfop       = "#B10DC9"
+voice        = "#2ECC40"
+away         = "#555555"
+
+[input]
+background   = "#333333"
+text         = "#BBBBBB"
+placeholder  = "#777777"
+nick_color   = "#2ECC40"

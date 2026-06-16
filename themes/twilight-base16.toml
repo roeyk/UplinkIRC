@@ -1,0 +1,44 @@
+# Twilight
+# Author: David Hart (https://github.com/hartbit)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1E1E1E"
+text         = "#A7A7A7"
+border       = "#464B50"
+accent       = "#7587A6"
+
+[sidebar]
+background   = "#323537"
+text         = "#5F5A60"
+active       = "#A7A7A7"
+unread       = "#7587A6"
+mention      = "#CF6A4C"
+server       = "#5F5A60"
+
+[buffer]
+background   = "#1E1E1E"
+timestamp    = "#5F5A60"
+server_line  = "#838184"
+action       = "#9B859D"
+nick_self    = "#8F9D6A"
+separator    = "#464B50"
+
+[highlights]
+mention_bg   = "#323537"
+mention_text = "#CF6A4C"
+keyword      = "#CDA869"
+
+[nicklist]
+background   = "#323537"
+text         = "#5F5A60"
+op           = "#7587A6"
+halfop       = "#9B859D"
+voice        = "#8F9D6A"
+away         = "#464B50"
+
+[input]
+background   = "#323537"
+text         = "#A7A7A7"
+placeholder  = "#5F5A60"
+nick_color   = "#8F9D6A"

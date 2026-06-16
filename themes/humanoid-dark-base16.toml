@@ -1,0 +1,44 @@
+# Humanoid dark
+# Author: Thomas (tasmo) Friese
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#232629"
+text         = "#F8F8F2"
+border       = "#484E54"
+accent       = "#00A6FB"
+
+[sidebar]
+background   = "#333B3D"
+text         = "#60615D"
+active       = "#F8F8F2"
+unread       = "#00A6FB"
+mention      = "#F11235"
+server       = "#60615D"
+
+[buffer]
+background   = "#232629"
+timestamp    = "#60615D"
+server_line  = "#C0C0BD"
+action       = "#F15EE3"
+nick_self    = "#02D849"
+separator    = "#484E54"
+
+[highlights]
+mention_bg   = "#333B3D"
+mention_text = "#F11235"
+keyword      = "#FF9505"
+
+[nicklist]
+background   = "#333B3D"
+text         = "#60615D"
+op           = "#00A6FB"
+halfop       = "#F15EE3"
+voice        = "#02D849"
+away         = "#484E54"
+
+[input]
+background   = "#333B3D"
+text         = "#F8F8F2"
+placeholder  = "#60615D"
+nick_color   = "#02D849"

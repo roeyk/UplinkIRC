@@ -1,0 +1,44 @@
+# Qualia
+# Author: isaacwhanson
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#101010"
+text         = "#C0C0C0"
+border       = "#454545"
+accent       = "#50CACD"
+
+[sidebar]
+background   = "#454545"
+text         = "#454545"
+active       = "#C0C0C0"
+unread       = "#50CACD"
+mention      = "#EFA6A2"
+server       = "#454545"
+
+[buffer]
+background   = "#101010"
+timestamp    = "#454545"
+server_line  = "#808080"
+action       = "#E0AF85"
+nick_self    = "#80C990"
+separator    = "#454545"
+
+[highlights]
+mention_bg   = "#454545"
+mention_text = "#EFA6A2"
+keyword      = "#A3B8EF"
+
+[nicklist]
+background   = "#454545"
+text         = "#454545"
+op           = "#50CACD"
+halfop       = "#E0AF85"
+voice        = "#80C990"
+away         = "#454545"
+
+[input]
+background   = "#454545"
+text         = "#C0C0C0"
+placeholder  = "#454545"
+nick_color   = "#80C990"

@@ -1,0 +1,44 @@
+# Decaf
+# Author: Alex Mirrington (https://github.com/alexmirrington)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2D2D2D"
+text         = "#CCCCCC"
+border       = "#515151"
+accent       = "#90BEE1"
+
+[sidebar]
+background   = "#393939"
+text         = "#777777"
+active       = "#CCCCCC"
+unread       = "#90BEE1"
+mention      = "#FF7F7B"
+server       = "#777777"
+
+[buffer]
+background   = "#2D2D2D"
+timestamp    = "#777777"
+server_line  = "#B4B7B4"
+action       = "#EFB3F7"
+nick_self    = "#BEDA78"
+separator    = "#515151"
+
+[highlights]
+mention_bg   = "#393939"
+mention_text = "#FF7F7B"
+keyword      = "#FFBF70"
+
+[nicklist]
+background   = "#393939"
+text         = "#777777"
+op           = "#90BEE1"
+halfop       = "#EFB3F7"
+voice        = "#BEDA78"
+away         = "#515151"
+
+[input]
+background   = "#393939"
+text         = "#CCCCCC"
+placeholder  = "#777777"
+nick_color   = "#BEDA78"

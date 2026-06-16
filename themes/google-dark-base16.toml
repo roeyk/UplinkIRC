@@ -1,0 +1,44 @@
+# Google Dark
+# Author: Seth Wright (http://sethawright.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1D1F21"
+text         = "#C5C8C6"
+border       = "#373B41"
+accent       = "#3971ED"
+
+[sidebar]
+background   = "#282A2E"
+text         = "#969896"
+active       = "#C5C8C6"
+unread       = "#3971ED"
+mention      = "#CC342B"
+server       = "#969896"
+
+[buffer]
+background   = "#1D1F21"
+timestamp    = "#969896"
+server_line  = "#B4B7B4"
+action       = "#A36AC7"
+nick_self    = "#198844"
+separator    = "#373B41"
+
+[highlights]
+mention_bg   = "#282A2E"
+mention_text = "#CC342B"
+keyword      = "#F96A38"
+
+[nicklist]
+background   = "#282A2E"
+text         = "#969896"
+op           = "#3971ED"
+halfop       = "#A36AC7"
+voice        = "#198844"
+away         = "#373B41"
+
+[input]
+background   = "#282A2E"
+text         = "#C5C8C6"
+placeholder  = "#969896"
+nick_color   = "#198844"

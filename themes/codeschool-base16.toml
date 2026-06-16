@@ -1,0 +1,44 @@
+# Codeschool
+# Author: blockloop
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#232C31"
+text         = "#9EA7A6"
+border       = "#2A343A"
+accent       = "#484D79"
+
+[sidebar]
+background   = "#1C3657"
+text         = "#3F4944"
+active       = "#9EA7A6"
+unread       = "#484D79"
+mention      = "#2A5491"
+server       = "#3F4944"
+
+[buffer]
+background   = "#232C31"
+timestamp    = "#3F4944"
+server_line  = "#84898C"
+action       = "#C59820"
+nick_self    = "#237986"
+separator    = "#2A343A"
+
+[highlights]
+mention_bg   = "#1C3657"
+mention_text = "#2A5491"
+keyword      = "#43820D"
+
+[nicklist]
+background   = "#1C3657"
+text         = "#3F4944"
+op           = "#484D79"
+halfop       = "#C59820"
+voice        = "#237986"
+away         = "#2A343A"
+
+[input]
+background   = "#1C3657"
+text         = "#9EA7A6"
+placeholder  = "#3F4944"
+nick_color   = "#237986"

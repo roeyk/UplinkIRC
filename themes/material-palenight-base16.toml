@@ -1,0 +1,44 @@
+# Material Palenight
+# Author: Nate Peterson
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#292D3E"
+text         = "#959DCB"
+border       = "#32374D"
+accent       = "#82AAFF"
+
+[sidebar]
+background   = "#444267"
+text         = "#676E95"
+active       = "#959DCB"
+unread       = "#82AAFF"
+mention      = "#F07178"
+server       = "#676E95"
+
+[buffer]
+background   = "#292D3E"
+timestamp    = "#676E95"
+server_line  = "#8796B0"
+action       = "#C792EA"
+nick_self    = "#C3E88D"
+separator    = "#32374D"
+
+[highlights]
+mention_bg   = "#444267"
+mention_text = "#F07178"
+keyword      = "#F78C6C"
+
+[nicklist]
+background   = "#444267"
+text         = "#676E95"
+op           = "#82AAFF"
+halfop       = "#C792EA"
+voice        = "#C3E88D"
+away         = "#32374D"
+
+[input]
+background   = "#444267"
+text         = "#959DCB"
+placeholder  = "#676E95"
+nick_color   = "#C3E88D"

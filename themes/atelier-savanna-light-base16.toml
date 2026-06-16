@@ -1,0 +1,44 @@
+# Atelier Savanna Light
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#ECF4EE"
+text         = "#526057"
+border       = "#87928A"
+accent       = "#478C90"
+
+[sidebar]
+background   = "#DFE7E2"
+text         = "#78877D"
+active       = "#526057"
+unread       = "#478C90"
+mention      = "#B16139"
+server       = "#78877D"
+
+[buffer]
+background   = "#ECF4EE"
+timestamp    = "#78877D"
+server_line  = "#5F6D64"
+action       = "#55859B"
+nick_self    = "#489963"
+separator    = "#87928A"
+
+[highlights]
+mention_bg   = "#DFE7E2"
+mention_text = "#B16139"
+keyword      = "#9F713C"
+
+[nicklist]
+background   = "#DFE7E2"
+text         = "#78877D"
+op           = "#478C90"
+halfop       = "#55859B"
+voice        = "#489963"
+away         = "#87928A"
+
+[input]
+background   = "#DFE7E2"
+text         = "#526057"
+placeholder  = "#78877D"
+nick_color   = "#489963"

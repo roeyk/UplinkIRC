@@ -90,6 +90,10 @@ Theme ThemeLoader::load(const QString &name)
             t.serverLine = str(*b, "server_line", "#585b70");
             t.action     = str(*b, "action",      "#cba6f7");
             t.nickSelf   = str(*b, "nick_self",   "#a6e3a1");
+            const auto sepNode = (*b)["separator"];
+            t.separator  = sepNode.is_string()
+                ? QString::fromStdString(*sepNode.value<std::string>())
+                : t.border;
         }
         if (auto *h = get("highlights")) {
             t.mentionBg   = str(*h, "mention_bg",   "#2a1a2e");

@@ -1,0 +1,44 @@
+# Atelier Estuary
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#22221B"
+text         = "#929181"
+border       = "#5F5E4E"
+accent       = "#36A166"
+
+[sidebar]
+background   = "#302F27"
+text         = "#6C6B5A"
+active       = "#929181"
+unread       = "#36A166"
+mention      = "#BA6236"
+server       = "#6C6B5A"
+
+[buffer]
+background   = "#22221B"
+timestamp    = "#6C6B5A"
+server_line  = "#878573"
+action       = "#5F9182"
+nick_self    = "#7D9726"
+separator    = "#5F5E4E"
+
+[highlights]
+mention_bg   = "#302F27"
+mention_text = "#BA6236"
+keyword      = "#AE7313"
+
+[nicklist]
+background   = "#302F27"
+text         = "#6C6B5A"
+op           = "#36A166"
+halfop       = "#5F9182"
+voice        = "#7D9726"
+away         = "#5F5E4E"
+
+[input]
+background   = "#302F27"
+text         = "#929181"
+placeholder  = "#6C6B5A"
+nick_color   = "#7D9726"

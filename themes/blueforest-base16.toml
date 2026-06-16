@@ -1,0 +1,44 @@
+# Blue Forest
+# Author: alonsodomin (https://github.com/alonsodomin)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#141F2E"
+text         = "#FFCC33"
+border       = "#273E5C"
+accent       = "#A2CFF5"
+
+[sidebar]
+background   = "#1E5C1E"
+text         = "#A0FFA0"
+active       = "#FFCC33"
+unread       = "#A2CFF5"
+mention      = "#FFFAB1"
+server       = "#A0FFA0"
+
+[buffer]
+background   = "#141F2E"
+timestamp    = "#A0FFA0"
+server_line  = "#1E5C1E"
+action       = "#0099FF"
+nick_self    = "#80FF80"
+separator    = "#273E5C"
+
+[highlights]
+mention_bg   = "#1E5C1E"
+mention_text = "#FFFAB1"
+keyword      = "#FF8080"
+
+[nicklist]
+background   = "#1E5C1E"
+text         = "#A0FFA0"
+op           = "#A2CFF5"
+halfop       = "#0099FF"
+voice        = "#80FF80"
+away         = "#273E5C"
+
+[input]
+background   = "#1E5C1E"
+text         = "#FFCC33"
+placeholder  = "#A0FFA0"
+nick_color   = "#80FF80"

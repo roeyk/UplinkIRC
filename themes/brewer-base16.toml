@@ -1,0 +1,44 @@
+# Brewer
+# Author: Timothée Poisot (http://github.com/tpoisot)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#0C0D0E"
+text         = "#B7B8B9"
+border       = "#515253"
+accent       = "#3182BD"
+
+[sidebar]
+background   = "#2E2F30"
+text         = "#737475"
+active       = "#B7B8B9"
+unread       = "#3182BD"
+mention      = "#E31A1C"
+server       = "#737475"
+
+[buffer]
+background   = "#0C0D0E"
+timestamp    = "#737475"
+server_line  = "#959697"
+action       = "#756BB1"
+nick_self    = "#31A354"
+separator    = "#515253"
+
+[highlights]
+mention_bg   = "#2E2F30"
+mention_text = "#E31A1C"
+keyword      = "#E6550D"
+
+[nicklist]
+background   = "#2E2F30"
+text         = "#737475"
+op           = "#3182BD"
+halfop       = "#756BB1"
+voice        = "#31A354"
+away         = "#515253"
+
+[input]
+background   = "#2E2F30"
+text         = "#B7B8B9"
+placeholder  = "#737475"
+nick_color   = "#31A354"

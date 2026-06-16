@@ -1,0 +1,44 @@
+# UwUnicorn
+# Author: Fernando Marques (https://github.com/RakkiUwU) and Gabriel Fontes (https://github.com/Misterio77)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#241B26"
+text         = "#EED5D9"
+border       = "#46354A"
+accent       = "#6A9EB5"
+
+[sidebar]
+background   = "#2F2A3F"
+text         = "#6C3CB2"
+active       = "#EED5D9"
+unread       = "#6A9EB5"
+mention      = "#877BB6"
+server       = "#6C3CB2"
+
+[buffer]
+background   = "#241B26"
+timestamp    = "#6C3CB2"
+server_line  = "#7E5F83"
+action       = "#78A38F"
+nick_self    = "#C965BF"
+separator    = "#46354A"
+
+[highlights]
+mention_bg   = "#2F2A3F"
+mention_text = "#877BB6"
+keyword      = "#DE5B44"
+
+[nicklist]
+background   = "#2F2A3F"
+text         = "#6C3CB2"
+op           = "#6A9EB5"
+halfop       = "#78A38F"
+voice        = "#C965BF"
+away         = "#46354A"
+
+[input]
+background   = "#2F2A3F"
+text         = "#EED5D9"
+placeholder  = "#6C3CB2"
+nick_color   = "#C965BF"

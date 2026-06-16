@@ -1,0 +1,44 @@
+# 3024
+# Author: Jan T. Sott (http://github.com/idleberg)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#090300"
+text         = "#A5A2A2"
+border       = "#4A4543"
+accent       = "#01A0E4"
+
+[sidebar]
+background   = "#3A3432"
+text         = "#5C5855"
+active       = "#A5A2A2"
+unread       = "#01A0E4"
+mention      = "#DB2D20"
+server       = "#5C5855"
+
+[buffer]
+background   = "#090300"
+timestamp    = "#5C5855"
+server_line  = "#807D7C"
+action       = "#A16A94"
+nick_self    = "#01A252"
+separator    = "#4A4543"
+
+[highlights]
+mention_bg   = "#3A3432"
+mention_text = "#DB2D20"
+keyword      = "#E8BBD0"
+
+[nicklist]
+background   = "#3A3432"
+text         = "#5C5855"
+op           = "#01A0E4"
+halfop       = "#A16A94"
+voice        = "#01A252"
+away         = "#4A4543"
+
+[input]
+background   = "#3A3432"
+text         = "#A5A2A2"
+placeholder  = "#5C5855"
+nick_color   = "#01A252"

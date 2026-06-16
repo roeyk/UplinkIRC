@@ -1,0 +1,44 @@
+# summercamp
+# Author: zoe firi (zoefiri.github.io)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1C1810"
+text         = "#736E55"
+border       = "#3A3527"
+accent       = "#489BF0"
+
+[sidebar]
+background   = "#2A261C"
+text         = "#504B38"
+active       = "#736E55"
+unread       = "#489BF0"
+mention      = "#E35142"
+server       = "#504B38"
+
+[buffer]
+background   = "#1C1810"
+timestamp    = "#504B38"
+server_line  = "#5F5B45"
+action       = "#FF8080"
+nick_self    = "#5CEB5A"
+separator    = "#3A3527"
+
+[highlights]
+mention_bg   = "#2A261C"
+mention_text = "#E35142"
+keyword      = "#FBA11B"
+
+[nicklist]
+background   = "#2A261C"
+text         = "#504B38"
+op           = "#489BF0"
+halfop       = "#FF8080"
+voice        = "#5CEB5A"
+away         = "#3A3527"
+
+[input]
+background   = "#2A261C"
+text         = "#736E55"
+placeholder  = "#504B38"
+nick_color   = "#5CEB5A"

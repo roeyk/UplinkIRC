@@ -1,0 +1,44 @@
+# Railscasts
+# Author: Ryan Bates (http://railscasts.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2B2B2B"
+text         = "#E6E1DC"
+border       = "#3A4055"
+accent       = "#6D9CBE"
+
+[sidebar]
+background   = "#272935"
+text         = "#5A647E"
+active       = "#E6E1DC"
+unread       = "#6D9CBE"
+mention      = "#DA4939"
+server       = "#5A647E"
+
+[buffer]
+background   = "#2B2B2B"
+timestamp    = "#5A647E"
+server_line  = "#D4CFC9"
+action       = "#B6B3EB"
+nick_self    = "#A5C261"
+separator    = "#3A4055"
+
+[highlights]
+mention_bg   = "#272935"
+mention_text = "#DA4939"
+keyword      = "#CC7833"
+
+[nicklist]
+background   = "#272935"
+text         = "#5A647E"
+op           = "#6D9CBE"
+halfop       = "#B6B3EB"
+voice        = "#A5C261"
+away         = "#3A4055"
+
+[input]
+background   = "#272935"
+text         = "#E6E1DC"
+placeholder  = "#5A647E"
+nick_color   = "#A5C261"

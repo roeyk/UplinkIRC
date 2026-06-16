@@ -1,0 +1,44 @@
+# Snazzy
+# Author: Chawye Hsu (https://github.com/chawyehsu) based on Hyper Snazzy Theme (https://github.com/sindresorhus/hyper-snazzy)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#282A36"
+text         = "#E2E4E5"
+border       = "#43454F"
+accent       = "#57C7FF"
+
+[sidebar]
+background   = "#34353E"
+text         = "#78787E"
+active       = "#E2E4E5"
+unread       = "#57C7FF"
+mention      = "#FF5C57"
+server       = "#78787E"
+
+[buffer]
+background   = "#282A36"
+timestamp    = "#78787E"
+server_line  = "#A5A5A9"
+action       = "#FF6AC1"
+nick_self    = "#5AF78E"
+separator    = "#43454F"
+
+[highlights]
+mention_bg   = "#34353E"
+mention_text = "#FF5C57"
+keyword      = "#FF9F43"
+
+[nicklist]
+background   = "#34353E"
+text         = "#78787E"
+op           = "#57C7FF"
+halfop       = "#FF6AC1"
+voice        = "#5AF78E"
+away         = "#43454F"
+
+[input]
+background   = "#34353E"
+text         = "#E2E4E5"
+placeholder  = "#78787E"
+nick_color   = "#5AF78E"

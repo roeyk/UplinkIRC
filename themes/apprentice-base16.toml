@@ -1,0 +1,44 @@
+# Apprentice
+# Author: romainl
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#262626"
+text         = "#5F5F87"
+border       = "#5F875F"
+accent       = "#8787AF"
+
+[sidebar]
+background   = "#AF5F5F"
+text         = "#87875F"
+active       = "#5F5F87"
+unread       = "#8787AF"
+mention      = "#444444"
+server       = "#87875F"
+
+[buffer]
+background   = "#262626"
+timestamp    = "#87875F"
+server_line  = "#5F87AF"
+action       = "#5FAFAF"
+nick_self    = "#FFFFAF"
+separator    = "#5F875F"
+
+[highlights]
+mention_bg   = "#AF5F5F"
+mention_text = "#444444"
+keyword      = "#FF8700"
+
+[nicklist]
+background   = "#AF5F5F"
+text         = "#87875F"
+op           = "#8787AF"
+halfop       = "#5FAFAF"
+voice        = "#FFFFAF"
+away         = "#5F875F"
+
+[input]
+background   = "#AF5F5F"
+text         = "#5F5F87"
+placeholder  = "#87875F"
+nick_color   = "#FFFFAF"

@@ -1,0 +1,44 @@
+# Eighties
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2D2D2D"
+text         = "#D3D0C8"
+border       = "#515151"
+accent       = "#6699CC"
+
+[sidebar]
+background   = "#393939"
+text         = "#747369"
+active       = "#D3D0C8"
+unread       = "#6699CC"
+mention      = "#F2777A"
+server       = "#747369"
+
+[buffer]
+background   = "#2D2D2D"
+timestamp    = "#747369"
+server_line  = "#A09F93"
+action       = "#CC99CC"
+nick_self    = "#99CC99"
+separator    = "#515151"
+
+[highlights]
+mention_bg   = "#393939"
+mention_text = "#F2777A"
+keyword      = "#F99157"
+
+[nicklist]
+background   = "#393939"
+text         = "#747369"
+op           = "#6699CC"
+halfop       = "#CC99CC"
+voice        = "#99CC99"
+away         = "#515151"
+
+[input]
+background   = "#393939"
+text         = "#D3D0C8"
+placeholder  = "#747369"
+nick_color   = "#99CC99"

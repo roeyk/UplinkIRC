@@ -1,0 +1,44 @@
+# Tokyo City Terminal Light
+# Author: Michaël Ball
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FBFBFD"
+text         = "#28323A"
+border       = "#D8E2EC"
+accent       = "#34548A"
+
+[sidebar]
+background   = "#F6F6F8"
+text         = "#B7C5D3"
+active       = "#28323A"
+unread       = "#34548A"
+mention      = "#8C4351"
+server       = "#B7C5D3"
+
+[buffer]
+background   = "#FBFBFD"
+timestamp    = "#B7C5D3"
+server_line  = "#526270"
+action       = "#5A4A78"
+nick_self    = "#33635C"
+separator    = "#D8E2EC"
+
+[highlights]
+mention_bg   = "#F6F6F8"
+mention_text = "#8C4351"
+keyword      = "#965027"
+
+[nicklist]
+background   = "#F6F6F8"
+text         = "#B7C5D3"
+op           = "#34548A"
+halfop       = "#5A4A78"
+voice        = "#33635C"
+away         = "#D8E2EC"
+
+[input]
+background   = "#F6F6F8"
+text         = "#28323A"
+placeholder  = "#B7C5D3"
+nick_color   = "#33635C"

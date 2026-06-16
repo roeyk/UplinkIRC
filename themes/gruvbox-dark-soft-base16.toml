@@ -1,0 +1,44 @@
+# Gruvbox dark, soft
+# Author: Dawid Kurek (dawikur@gmail.com), morhetz (https://github.com/morhetz/gruvbox)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#32302F"
+text         = "#D5C4A1"
+border       = "#504945"
+accent       = "#83A598"
+
+[sidebar]
+background   = "#3C3836"
+text         = "#665C54"
+active       = "#D5C4A1"
+unread       = "#83A598"
+mention      = "#FB4934"
+server       = "#665C54"
+
+[buffer]
+background   = "#32302F"
+timestamp    = "#665C54"
+server_line  = "#BDAE93"
+action       = "#D3869B"
+nick_self    = "#B8BB26"
+separator    = "#504945"
+
+[highlights]
+mention_bg   = "#3C3836"
+mention_text = "#FB4934"
+keyword      = "#FE8019"
+
+[nicklist]
+background   = "#3C3836"
+text         = "#665C54"
+op           = "#83A598"
+halfop       = "#D3869B"
+voice        = "#B8BB26"
+away         = "#504945"
+
+[input]
+background   = "#3C3836"
+text         = "#D5C4A1"
+placeholder  = "#665C54"
+nick_color   = "#B8BB26"

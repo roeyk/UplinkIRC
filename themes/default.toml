@@ -40,6 +40,8 @@ server_line  = "#585b70"
 action       = "#cba6f7"
 # Your own nick in messages
 nick_self    = "#a6e3a1"
+# "── N new messages ──" separator and "── N older messages ──" divider
+separator    = "#313244"
 
 [highlights]
 # Background tint on a line where your nick or a keyword is mentioned

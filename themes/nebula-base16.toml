@@ -1,0 +1,44 @@
+# Nebula
+# Author: Gabriel Fontes (https://github.com/Misterio77)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#22273B"
+text         = "#A4A6A9"
+border       = "#5A8380"
+accent       = "#4D6BB6"
+
+[sidebar]
+background   = "#414F60"
+text         = "#6E6F72"
+active       = "#A4A6A9"
+unread       = "#4D6BB6"
+mention      = "#777ABC"
+server       = "#6E6F72"
+
+[buffer]
+background   = "#22273B"
+timestamp    = "#6E6F72"
+server_line  = "#87888B"
+action       = "#716CAE"
+nick_self    = "#6562A8"
+separator    = "#5A8380"
+
+[highlights]
+mention_bg   = "#414F60"
+mention_text = "#777ABC"
+keyword      = "#94929E"
+
+[nicklist]
+background   = "#414F60"
+text         = "#6E6F72"
+op           = "#4D6BB6"
+halfop       = "#716CAE"
+voice        = "#6562A8"
+away         = "#5A8380"
+
+[input]
+background   = "#414F60"
+text         = "#A4A6A9"
+placeholder  = "#6E6F72"
+nick_color   = "#6562A8"

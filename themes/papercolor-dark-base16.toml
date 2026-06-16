@@ -1,0 +1,44 @@
+# PaperColor Dark
+# Author: Jon Leopard (http://github.com/jonleopard) based on PaperColor Theme (https://github.com/NLKNguyen/papercolor-theme)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1C1C1C"
+text         = "#808080"
+border       = "#5FAF00"
+accent       = "#FF5FAF"
+
+[sidebar]
+background   = "#AF005F"
+text         = "#D7AF5F"
+active       = "#808080"
+unread       = "#FF5FAF"
+mention      = "#585858"
+server       = "#D7AF5F"
+
+[buffer]
+background   = "#1C1C1C"
+timestamp    = "#D7AF5F"
+server_line  = "#5FAFD7"
+action       = "#00AFAF"
+nick_self    = "#AF87D7"
+separator    = "#5FAF00"
+
+[highlights]
+mention_bg   = "#AF005F"
+mention_text = "#585858"
+keyword      = "#5FAF5F"
+
+[nicklist]
+background   = "#AF005F"
+text         = "#D7AF5F"
+op           = "#FF5FAF"
+halfop       = "#00AFAF"
+voice        = "#AF87D7"
+away         = "#5FAF00"
+
+[input]
+background   = "#AF005F"
+text         = "#808080"
+placeholder  = "#D7AF5F"
+nick_color   = "#AF87D7"

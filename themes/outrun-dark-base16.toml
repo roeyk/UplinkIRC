@@ -1,0 +1,44 @@
+# Outrun Dark
+# Author: Hugo Delahousse (http://github.com/hugodelahousse/)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#00002A"
+text         = "#D0D0FA"
+border       = "#30305A"
+accent       = "#66B0FF"
+
+[sidebar]
+background   = "#20204A"
+text         = "#50507A"
+active       = "#D0D0FA"
+unread       = "#66B0FF"
+mention      = "#FF4242"
+server       = "#50507A"
+
+[buffer]
+background   = "#00002A"
+timestamp    = "#50507A"
+server_line  = "#B0B0DA"
+action       = "#F10596"
+nick_self    = "#59F176"
+separator    = "#30305A"
+
+[highlights]
+mention_bg   = "#20204A"
+mention_text = "#FF4242"
+keyword      = "#FC8D28"
+
+[nicklist]
+background   = "#20204A"
+text         = "#50507A"
+op           = "#66B0FF"
+halfop       = "#F10596"
+voice        = "#59F176"
+away         = "#30305A"
+
+[input]
+background   = "#20204A"
+text         = "#D0D0FA"
+placeholder  = "#50507A"
+nick_color   = "#59F176"

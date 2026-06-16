@@ -1,0 +1,44 @@
+# Eva
+# Author: kjakapat (https://github.com/kjakapat)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2A3B4D"
+text         = "#9FA2A6"
+border       = "#4B6988"
+accent       = "#15F4EE"
+
+[sidebar]
+background   = "#3D566F"
+text         = "#55799C"
+active       = "#9FA2A6"
+unread       = "#15F4EE"
+mention      = "#C4676C"
+server       = "#55799C"
+
+[buffer]
+background   = "#2A3B4D"
+timestamp    = "#55799C"
+server_line  = "#7E90A3"
+action       = "#9C6CD3"
+nick_self    = "#66FF66"
+separator    = "#4B6988"
+
+[highlights]
+mention_bg   = "#3D566F"
+mention_text = "#C4676C"
+keyword      = "#FF9966"
+
+[nicklist]
+background   = "#3D566F"
+text         = "#55799C"
+op           = "#15F4EE"
+halfop       = "#9C6CD3"
+voice        = "#66FF66"
+away         = "#4B6988"
+
+[input]
+background   = "#3D566F"
+text         = "#9FA2A6"
+placeholder  = "#55799C"
+nick_color   = "#66FF66"

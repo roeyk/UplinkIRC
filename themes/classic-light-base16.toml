@@ -1,0 +1,44 @@
+# Classic Light
+# Author: Jason Heeris (http://heeris.id.au)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F5F5F5"
+text         = "#303030"
+border       = "#D0D0D0"
+accent       = "#6A9FB5"
+
+[sidebar]
+background   = "#E0E0E0"
+text         = "#B0B0B0"
+active       = "#303030"
+unread       = "#6A9FB5"
+mention      = "#AC4142"
+server       = "#B0B0B0"
+
+[buffer]
+background   = "#F5F5F5"
+timestamp    = "#B0B0B0"
+server_line  = "#505050"
+action       = "#AA759F"
+nick_self    = "#90A959"
+separator    = "#D0D0D0"
+
+[highlights]
+mention_bg   = "#E0E0E0"
+mention_text = "#AC4142"
+keyword      = "#D28445"
+
+[nicklist]
+background   = "#E0E0E0"
+text         = "#B0B0B0"
+op           = "#6A9FB5"
+halfop       = "#AA759F"
+voice        = "#90A959"
+away         = "#D0D0D0"
+
+[input]
+background   = "#E0E0E0"
+text         = "#303030"
+placeholder  = "#B0B0B0"
+nick_color   = "#90A959"

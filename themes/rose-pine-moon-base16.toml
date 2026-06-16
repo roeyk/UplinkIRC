@@ -1,0 +1,44 @@
+# Rosé Pine Moon
+# Author: Emilia Dunfelt <edun@dunfelt.se>
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#232136"
+text         = "#E0DEF4"
+border       = "#393552"
+accent       = "#C4A7E7"
+
+[sidebar]
+background   = "#2A273F"
+text         = "#6E6A86"
+active       = "#E0DEF4"
+unread       = "#C4A7E7"
+mention      = "#EB6F92"
+server       = "#6E6A86"
+
+[buffer]
+background   = "#232136"
+timestamp    = "#6E6A86"
+server_line  = "#908CAA"
+action       = "#F6C177"
+nick_self    = "#3E8FB0"
+separator    = "#393552"
+
+[highlights]
+mention_bg   = "#2A273F"
+mention_text = "#EB6F92"
+keyword      = "#F6C177"
+
+[nicklist]
+background   = "#2A273F"
+text         = "#6E6A86"
+op           = "#C4A7E7"
+halfop       = "#F6C177"
+voice        = "#3E8FB0"
+away         = "#393552"
+
+[input]
+background   = "#2A273F"
+text         = "#E0DEF4"
+placeholder  = "#6E6A86"
+nick_color   = "#3E8FB0"

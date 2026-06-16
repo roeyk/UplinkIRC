@@ -1,0 +1,44 @@
+# Seti UI
+# Author: 
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#151718"
+text         = "#D6D6D6"
+border       = "#3B758C"
+accent       = "#55B5DB"
+
+[sidebar]
+background   = "#282A2B"
+text         = "#41535B"
+active       = "#D6D6D6"
+unread       = "#55B5DB"
+mention      = "#CD3F45"
+server       = "#41535B"
+
+[buffer]
+background   = "#151718"
+timestamp    = "#41535B"
+server_line  = "#43A5D5"
+action       = "#A074C4"
+nick_self    = "#9FCA56"
+separator    = "#3B758C"
+
+[highlights]
+mention_bg   = "#282A2B"
+mention_text = "#CD3F45"
+keyword      = "#DB7B55"
+
+[nicklist]
+background   = "#282A2B"
+text         = "#41535B"
+op           = "#55B5DB"
+halfop       = "#A074C4"
+voice        = "#9FCA56"
+away         = "#3B758C"
+
+[input]
+background   = "#282A2B"
+text         = "#D6D6D6"
+placeholder  = "#41535B"
+nick_color   = "#9FCA56"

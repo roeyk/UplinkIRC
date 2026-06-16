@@ -1,0 +1,44 @@
+# Windows 95 Light
+# Author: Fergus Collins (https://github.com/C-Fergus)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FCFCFC"
+text         = "#545454"
+border       = "#C4C4C4"
+accent       = "#0000A8"
+
+[sidebar]
+background   = "#E0E0E0"
+text         = "#A8A8A8"
+active       = "#545454"
+unread       = "#0000A8"
+mention      = "#A80000"
+server       = "#A8A8A8"
+
+[buffer]
+background   = "#FCFCFC"
+timestamp    = "#A8A8A8"
+server_line  = "#7E7E7E"
+action       = "#A800A8"
+nick_self    = "#00A800"
+separator    = "#C4C4C4"
+
+[highlights]
+mention_bg   = "#E0E0E0"
+mention_text = "#A80000"
+keyword      = "#FCFC54"
+
+[nicklist]
+background   = "#E0E0E0"
+text         = "#A8A8A8"
+op           = "#0000A8"
+halfop       = "#A800A8"
+voice        = "#00A800"
+away         = "#C4C4C4"
+
+[input]
+background   = "#E0E0E0"
+text         = "#545454"
+placeholder  = "#A8A8A8"
+nick_color   = "#00A800"

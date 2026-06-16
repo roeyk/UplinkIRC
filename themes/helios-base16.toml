@@ -1,0 +1,44 @@
+# Helios
+# Author: Alex Meyer (https://github.com/reyemxela)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1D2021"
+text         = "#D5D5D5"
+border       = "#53585B"
+accent       = "#1E8BAC"
+
+[sidebar]
+background   = "#383C3E"
+text         = "#6F7579"
+active       = "#D5D5D5"
+unread       = "#1E8BAC"
+mention      = "#D72638"
+server       = "#6F7579"
+
+[buffer]
+background   = "#1D2021"
+timestamp    = "#6F7579"
+server_line  = "#CDCDCD"
+action       = "#BE4264"
+nick_self    = "#88B92D"
+separator    = "#53585B"
+
+[highlights]
+mention_bg   = "#383C3E"
+mention_text = "#D72638"
+keyword      = "#EB8413"
+
+[nicklist]
+background   = "#383C3E"
+text         = "#6F7579"
+op           = "#1E8BAC"
+halfop       = "#BE4264"
+voice        = "#88B92D"
+away         = "#53585B"
+
+[input]
+background   = "#383C3E"
+text         = "#D5D5D5"
+placeholder  = "#6F7579"
+nick_color   = "#88B92D"

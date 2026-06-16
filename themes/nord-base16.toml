@@ -1,0 +1,44 @@
+# Nord
+# Author: arcticicestudio
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2E3440"
+text         = "#E5E9F0"
+border       = "#434C5E"
+accent       = "#81A1C1"
+
+[sidebar]
+background   = "#3B4252"
+text         = "#4C566A"
+active       = "#E5E9F0"
+unread       = "#81A1C1"
+mention      = "#BF616A"
+server       = "#4C566A"
+
+[buffer]
+background   = "#2E3440"
+timestamp    = "#4C566A"
+server_line  = "#D8DEE9"
+action       = "#B48EAD"
+nick_self    = "#A3BE8C"
+separator    = "#434C5E"
+
+[highlights]
+mention_bg   = "#3B4252"
+mention_text = "#BF616A"
+keyword      = "#D08770"
+
+[nicklist]
+background   = "#3B4252"
+text         = "#4C566A"
+op           = "#81A1C1"
+halfop       = "#B48EAD"
+voice        = "#A3BE8C"
+away         = "#434C5E"
+
+[input]
+background   = "#3B4252"
+text         = "#E5E9F0"
+placeholder  = "#4C566A"
+nick_color   = "#A3BE8C"

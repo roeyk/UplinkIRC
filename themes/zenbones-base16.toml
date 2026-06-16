@@ -1,0 +1,44 @@
+# Zenbones
+# Author: mcchrish
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#191919"
+text         = "#B279A7"
+border       = "#819B69"
+accent       = "#CF86C1"
+
+[sidebar]
+background   = "#DE6E7C"
+text         = "#B77E64"
+active       = "#B279A7"
+unread       = "#CF86C1"
+mention      = "#3D3839"
+server       = "#B77E64"
+
+[buffer]
+background   = "#191919"
+timestamp    = "#B77E64"
+server_line  = "#6099C0"
+action       = "#65B8C1"
+nick_self    = "#D68C67"
+separator    = "#819B69"
+
+[highlights]
+mention_bg   = "#DE6E7C"
+mention_text = "#3D3839"
+keyword      = "#E8838F"
+
+[nicklist]
+background   = "#DE6E7C"
+text         = "#B77E64"
+op           = "#CF86C1"
+halfop       = "#65B8C1"
+voice        = "#D68C67"
+away         = "#819B69"
+
+[input]
+background   = "#DE6E7C"
+text         = "#B279A7"
+placeholder  = "#B77E64"
+nick_color   = "#D68C67"

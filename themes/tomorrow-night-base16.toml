@@ -1,0 +1,44 @@
+# Tomorrow Night
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1D1F21"
+text         = "#C5C8C6"
+border       = "#373B41"
+accent       = "#81A2BE"
+
+[sidebar]
+background   = "#282A2E"
+text         = "#969896"
+active       = "#C5C8C6"
+unread       = "#81A2BE"
+mention      = "#CC6666"
+server       = "#969896"
+
+[buffer]
+background   = "#1D1F21"
+timestamp    = "#969896"
+server_line  = "#B4B7B4"
+action       = "#B294BB"
+nick_self    = "#B5BD68"
+separator    = "#373B41"
+
+[highlights]
+mention_bg   = "#282A2E"
+mention_text = "#CC6666"
+keyword      = "#DE935F"
+
+[nicklist]
+background   = "#282A2E"
+text         = "#969896"
+op           = "#81A2BE"
+halfop       = "#B294BB"
+voice        = "#B5BD68"
+away         = "#373B41"
+
+[input]
+background   = "#282A2E"
+text         = "#C5C8C6"
+placeholder  = "#969896"
+nick_color   = "#B5BD68"

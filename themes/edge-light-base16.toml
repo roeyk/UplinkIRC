@@ -1,0 +1,44 @@
+# Edge Light
+# Author: cjayross (https://github.com/cjayross)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FAFAFA"
+text         = "#5E646F"
+border       = "#D69822"
+accent       = "#6587BF"
+
+[sidebar]
+background   = "#7C9F4B"
+text         = "#5E646F"
+active       = "#5E646F"
+unread       = "#6587BF"
+mention      = "#DB7070"
+server       = "#5E646F"
+
+[buffer]
+background   = "#FAFAFA"
+timestamp    = "#5E646F"
+server_line  = "#6587BF"
+action       = "#B870CE"
+nick_self    = "#7C9F4B"
+separator    = "#D69822"
+
+[highlights]
+mention_bg   = "#7C9F4B"
+mention_text = "#DB7070"
+keyword      = "#DB7070"
+
+[nicklist]
+background   = "#7C9F4B"
+text         = "#5E646F"
+op           = "#6587BF"
+halfop       = "#B870CE"
+voice        = "#7C9F4B"
+away         = "#D69822"
+
+[input]
+background   = "#7C9F4B"
+text         = "#5E646F"
+placeholder  = "#5E646F"
+nick_color   = "#7C9F4B"

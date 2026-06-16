@@ -1,0 +1,44 @@
+# darkmoss
+# Author: Gabriel Avanzi (https://github.com/avanzzzi)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#171E1F"
+text         = "#C7C7A5"
+border       = "#373C3D"
+accent       = "#498091"
+
+[sidebar]
+background   = "#252C2D"
+text         = "#555E5F"
+active       = "#C7C7A5"
+unread       = "#498091"
+mention      = "#FF4658"
+server       = "#555E5F"
+
+[buffer]
+background   = "#171E1F"
+timestamp    = "#555E5F"
+server_line  = "#818F80"
+action       = "#9BC0C8"
+nick_self    = "#499180"
+separator    = "#373C3D"
+
+[highlights]
+mention_bg   = "#252C2D"
+mention_text = "#FF4658"
+keyword      = "#E6DB74"
+
+[nicklist]
+background   = "#252C2D"
+text         = "#555E5F"
+op           = "#498091"
+halfop       = "#9BC0C8"
+voice        = "#499180"
+away         = "#373C3D"
+
+[input]
+background   = "#252C2D"
+text         = "#C7C7A5"
+placeholder  = "#555E5F"
+nick_color   = "#499180"

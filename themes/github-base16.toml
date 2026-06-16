@@ -1,0 +1,44 @@
+# Github
+# Author: Defman21
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FFFFFF"
+text         = "#333333"
+border       = "#C8C8FA"
+accent       = "#795DA3"
+
+[sidebar]
+background   = "#F5F5F5"
+text         = "#969896"
+active       = "#333333"
+unread       = "#795DA3"
+mention      = "#ED6A43"
+server       = "#969896"
+
+[buffer]
+background   = "#FFFFFF"
+timestamp    = "#969896"
+server_line  = "#E8E8E8"
+action       = "#A71D5D"
+nick_self    = "#183691"
+separator    = "#C8C8FA"
+
+[highlights]
+mention_bg   = "#F5F5F5"
+mention_text = "#ED6A43"
+keyword      = "#0086B3"
+
+[nicklist]
+background   = "#F5F5F5"
+text         = "#969896"
+op           = "#795DA3"
+halfop       = "#A71D5D"
+voice        = "#183691"
+away         = "#C8C8FA"
+
+[input]
+background   = "#F5F5F5"
+text         = "#333333"
+placeholder  = "#969896"
+nick_color   = "#183691"

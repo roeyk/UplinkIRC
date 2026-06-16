@@ -1,0 +1,44 @@
+# Heetch Dark
+# Author: Geoffrey Teale (tealeg@gmail.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#190134"
+text         = "#BDB6C5"
+border       = "#5A496E"
+accent       = "#BD0152"
+
+[sidebar]
+background   = "#392551"
+text         = "#7B6D8B"
+active       = "#BDB6C5"
+unread       = "#BD0152"
+mention      = "#27D9D5"
+server       = "#7B6D8B"
+
+[buffer]
+background   = "#190134"
+timestamp    = "#7B6D8B"
+server_line  = "#9C92A8"
+action       = "#82034C"
+nick_self    = "#C33678"
+separator    = "#5A496E"
+
+[highlights]
+mention_bg   = "#392551"
+mention_text = "#27D9D5"
+keyword      = "#5BA2B6"
+
+[nicklist]
+background   = "#392551"
+text         = "#7B6D8B"
+op           = "#BD0152"
+halfop       = "#82034C"
+voice        = "#C33678"
+away         = "#5A496E"
+
+[input]
+background   = "#392551"
+text         = "#BDB6C5"
+placeholder  = "#7B6D8B"
+nick_color   = "#C33678"

@@ -856,11 +856,11 @@ ChatLine formatEventGroupLine(const QList<Message> &msgs, [[maybe_unused]] const
     return line;
 }
 
-ChatLine makeStatusLine(const QString &text)
+ChatLine makeStatusLine(const QString &text, const QString &color)
 {
     TextBuilder tb;
     QTextCharFormat f;
-    f.setForeground(QColor("#888888"));
+    f.setForeground(QColor(color));
     tb.append(text, f);
     ChatLine line;
     line.text     = tb.text;

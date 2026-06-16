@@ -1,0 +1,44 @@
+# Kimber
+# Author: Mishka Nguyen (https://github.com/akhsiM)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#222222"
+text         = "#DEDEE7"
+border       = "#555D55"
+accent       = "#537C9C"
+
+[sidebar]
+background   = "#313131"
+text         = "#644646"
+active       = "#DEDEE7"
+unread       = "#537C9C"
+mention      = "#C88C8C"
+server       = "#644646"
+
+[buffer]
+background   = "#222222"
+timestamp    = "#644646"
+server_line  = "#5A5A5A"
+action       = "#86CACD"
+nick_self    = "#99C899"
+separator    = "#555D55"
+
+[highlights]
+mention_bg   = "#313131"
+mention_text = "#C88C8C"
+keyword      = "#476C88"
+
+[nicklist]
+background   = "#313131"
+text         = "#644646"
+op           = "#537C9C"
+halfop       = "#86CACD"
+voice        = "#99C899"
+away         = "#555D55"
+
+[input]
+background   = "#313131"
+text         = "#DEDEE7"
+placeholder  = "#644646"
+nick_color   = "#99C899"

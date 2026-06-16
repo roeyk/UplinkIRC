@@ -1,0 +1,44 @@
+# Gruvbox Material Light, Medium
+# Author: Mayush Kumar (https://github.com/MayushKumar), sainnhe (https://github.com/sainnhe/gruvbox-material-vscode)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FBF1C7"
+text         = "#654735"
+border       = "#D5C4A1"
+accent       = "#45707A"
+
+[sidebar]
+background   = "#F2E5BC"
+text         = "#BDAE93"
+active       = "#654735"
+unread       = "#45707A"
+mention      = "#C14A4A"
+server       = "#BDAE93"
+
+[buffer]
+background   = "#FBF1C7"
+timestamp    = "#BDAE93"
+server_line  = "#665C54"
+action       = "#945E80"
+nick_self    = "#6C782E"
+separator    = "#D5C4A1"
+
+[highlights]
+mention_bg   = "#F2E5BC"
+mention_text = "#C14A4A"
+keyword      = "#C35E0A"
+
+[nicklist]
+background   = "#F2E5BC"
+text         = "#BDAE93"
+op           = "#45707A"
+halfop       = "#945E80"
+voice        = "#6C782E"
+away         = "#D5C4A1"
+
+[input]
+background   = "#F2E5BC"
+text         = "#654735"
+placeholder  = "#BDAE93"
+nick_color   = "#6C782E"

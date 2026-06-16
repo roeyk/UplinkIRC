@@ -1,0 +1,44 @@
+# Apathy
+# Author: Jannik Siebert (https://github.com/janniks)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#031A16"
+text         = "#81B5AC"
+border       = "#184E45"
+accent       = "#96883E"
+
+[sidebar]
+background   = "#0B342D"
+text         = "#2B685E"
+active       = "#81B5AC"
+unread       = "#96883E"
+mention      = "#3E9688"
+server       = "#2B685E"
+
+[buffer]
+background   = "#031A16"
+timestamp    = "#2B685E"
+server_line  = "#5F9C92"
+action       = "#4C963E"
+nick_self    = "#883E96"
+separator    = "#184E45"
+
+[highlights]
+mention_bg   = "#0B342D"
+mention_text = "#3E9688"
+keyword      = "#3E7996"
+
+[nicklist]
+background   = "#0B342D"
+text         = "#2B685E"
+op           = "#96883E"
+halfop       = "#4C963E"
+voice        = "#883E96"
+away         = "#184E45"
+
+[input]
+background   = "#0B342D"
+text         = "#81B5AC"
+placeholder  = "#2B685E"
+nick_color   = "#883E96"

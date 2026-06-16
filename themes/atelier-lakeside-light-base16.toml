@@ -1,0 +1,44 @@
+# Atelier Lakeside Light
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#EBF8FF"
+text         = "#516D7B"
+border       = "#7EA2B4"
+accent       = "#257FAD"
+
+[sidebar]
+background   = "#C1E4F6"
+text         = "#7195A8"
+active       = "#516D7B"
+unread       = "#257FAD"
+mention      = "#D22D72"
+server       = "#7195A8"
+
+[buffer]
+background   = "#EBF8FF"
+timestamp    = "#7195A8"
+server_line  = "#5A7B8C"
+action       = "#6B6BB8"
+nick_self    = "#568C3B"
+separator    = "#7EA2B4"
+
+[highlights]
+mention_bg   = "#C1E4F6"
+mention_text = "#D22D72"
+keyword      = "#935C25"
+
+[nicklist]
+background   = "#C1E4F6"
+text         = "#7195A8"
+op           = "#257FAD"
+halfop       = "#6B6BB8"
+voice        = "#568C3B"
+away         = "#7EA2B4"
+
+[input]
+background   = "#C1E4F6"
+text         = "#516D7B"
+placeholder  = "#7195A8"
+nick_color   = "#568C3B"

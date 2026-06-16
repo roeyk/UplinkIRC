@@ -1,0 +1,44 @@
+# caroline
+# Author: ed (https://codeberg.org/ed)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1C1213"
+text         = "#A87569"
+border       = "#563837"
+accent       = "#684C59"
+
+[sidebar]
+background   = "#3A2425"
+text         = "#6D4745"
+active       = "#A87569"
+unread       = "#684C59"
+mention      = "#C24F57"
+server       = "#6D4745"
+
+[buffer]
+background   = "#1C1213"
+timestamp    = "#6D4745"
+server_line  = "#8B5D57"
+action       = "#A63650"
+nick_self    = "#806C61"
+separator    = "#563837"
+
+[highlights]
+mention_bg   = "#3A2425"
+mention_text = "#C24F57"
+keyword      = "#A63650"
+
+[nicklist]
+background   = "#3A2425"
+text         = "#6D4745"
+op           = "#684C59"
+halfop       = "#A63650"
+voice        = "#806C61"
+away         = "#563837"
+
+[input]
+background   = "#3A2425"
+text         = "#A87569"
+placeholder  = "#6D4745"
+nick_color   = "#806C61"

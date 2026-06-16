@@ -1,0 +1,44 @@
+# dirtysea
+# Author: Kahlil (Kal) Hodgson
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#E0E0E0"
+text         = "#000000"
+border       = "#D0D0D0"
+accent       = "#007300"
+
+[sidebar]
+background   = "#D0DAD0"
+text         = "#707070"
+active       = "#000000"
+unread       = "#007300"
+mention      = "#840000"
+server       = "#707070"
+
+[buffer]
+background   = "#E0E0E0"
+timestamp    = "#707070"
+server_line  = "#202020"
+action       = "#000090"
+nick_self    = "#730073"
+separator    = "#D0D0D0"
+
+[highlights]
+mention_bg   = "#D0DAD0"
+mention_text = "#840000"
+keyword      = "#006565"
+
+[nicklist]
+background   = "#D0DAD0"
+text         = "#707070"
+op           = "#007300"
+halfop       = "#000090"
+voice        = "#730073"
+away         = "#D0D0D0"
+
+[input]
+background   = "#D0DAD0"
+text         = "#000000"
+placeholder  = "#707070"
+nick_color   = "#730073"

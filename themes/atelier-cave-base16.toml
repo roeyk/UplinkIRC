@@ -1,0 +1,44 @@
+# Atelier Cave
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#19171C"
+text         = "#8B8792"
+border       = "#585260"
+accent       = "#576DDB"
+
+[sidebar]
+background   = "#26232A"
+text         = "#655F6D"
+active       = "#8B8792"
+unread       = "#576DDB"
+mention      = "#BE4678"
+server       = "#655F6D"
+
+[buffer]
+background   = "#19171C"
+timestamp    = "#655F6D"
+server_line  = "#7E7887"
+action       = "#955AE7"
+nick_self    = "#2A9292"
+separator    = "#585260"
+
+[highlights]
+mention_bg   = "#26232A"
+mention_text = "#BE4678"
+keyword      = "#AA573C"
+
+[nicklist]
+background   = "#26232A"
+text         = "#655F6D"
+op           = "#576DDB"
+halfop       = "#955AE7"
+voice        = "#2A9292"
+away         = "#585260"
+
+[input]
+background   = "#26232A"
+text         = "#8B8792"
+placeholder  = "#655F6D"
+nick_color   = "#2A9292"

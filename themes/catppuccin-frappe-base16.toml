@@ -1,0 +1,44 @@
+# Catppuccin Frappe
+# Author: https://github.com/catppuccin/catppuccin
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#303446"
+text         = "#C6D0F5"
+border       = "#414559"
+accent       = "#8CAAEE"
+
+[sidebar]
+background   = "#292C3C"
+text         = "#51576D"
+active       = "#C6D0F5"
+unread       = "#8CAAEE"
+mention      = "#E78284"
+server       = "#51576D"
+
+[buffer]
+background   = "#303446"
+timestamp    = "#51576D"
+server_line  = "#626880"
+action       = "#CA9EE6"
+nick_self    = "#A6D189"
+separator    = "#414559"
+
+[highlights]
+mention_bg   = "#292C3C"
+mention_text = "#E78284"
+keyword      = "#EF9F76"
+
+[nicklist]
+background   = "#292C3C"
+text         = "#51576D"
+op           = "#8CAAEE"
+halfop       = "#CA9EE6"
+voice        = "#A6D189"
+away         = "#414559"
+
+[input]
+background   = "#292C3C"
+text         = "#C6D0F5"
+placeholder  = "#51576D"
+nick_color   = "#A6D189"

@@ -1,0 +1,44 @@
+# Tokyo Night Light
+# Author: Michaël Ball
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#D5D6DB"
+text         = "#343B59"
+border       = "#DFE0E5"
+accent       = "#34548A"
+
+[sidebar]
+background   = "#CBCCD1"
+text         = "#9699A3"
+active       = "#343B59"
+unread       = "#34548A"
+mention      = "#343B58"
+server       = "#9699A3"
+
+[buffer]
+background   = "#D5D6DB"
+timestamp    = "#9699A3"
+server_line  = "#4C505E"
+action       = "#5A4A78"
+nick_self    = "#485E30"
+separator    = "#DFE0E5"
+
+[highlights]
+mention_bg   = "#CBCCD1"
+mention_text = "#343B58"
+keyword      = "#965027"
+
+[nicklist]
+background   = "#CBCCD1"
+text         = "#9699A3"
+op           = "#34548A"
+halfop       = "#5A4A78"
+voice        = "#485E30"
+away         = "#DFE0E5"
+
+[input]
+background   = "#CBCCD1"
+text         = "#343B59"
+placeholder  = "#9699A3"
+nick_color   = "#485E30"

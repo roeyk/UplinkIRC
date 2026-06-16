@@ -1,0 +1,44 @@
+# Gruber
+# Author: Patel, Nimai <nimai.m.patel@gmail.com>, colors from www.github.com/rexim/gruber-darker-theme
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#181818"
+text         = "#F4F4FF"
+border       = "#484848"
+accent       = "#96A6C8"
+
+[sidebar]
+background   = "#453D41"
+text         = "#52494E"
+active       = "#F4F4FF"
+unread       = "#96A6C8"
+mention      = "#F43841"
+server       = "#52494E"
+
+[buffer]
+background   = "#181818"
+timestamp    = "#52494E"
+server_line  = "#E4E4EF"
+action       = "#9E95C7"
+nick_self    = "#73C936"
+separator    = "#484848"
+
+[highlights]
+mention_bg   = "#453D41"
+mention_text = "#F43841"
+keyword      = "#C73C3F"
+
+[nicklist]
+background   = "#453D41"
+text         = "#52494E"
+op           = "#96A6C8"
+halfop       = "#9E95C7"
+voice        = "#73C936"
+away         = "#484848"
+
+[input]
+background   = "#453D41"
+text         = "#F4F4FF"
+placeholder  = "#52494E"
+nick_color   = "#73C936"

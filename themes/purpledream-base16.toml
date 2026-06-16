@@ -1,0 +1,44 @@
+# Purpledream
+# Author: malet
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#100510"
+text         = "#DDD0DD"
+border       = "#403040"
+accent       = "#00A0F0"
+
+[sidebar]
+background   = "#302030"
+text         = "#605060"
+active       = "#DDD0DD"
+unread       = "#00A0F0"
+mention      = "#FF1D0D"
+server       = "#605060"
+
+[buffer]
+background   = "#100510"
+timestamp    = "#605060"
+server_line  = "#BBB0BB"
+action       = "#B000D0"
+nick_self    = "#14CC64"
+separator    = "#403040"
+
+[highlights]
+mention_bg   = "#302030"
+mention_text = "#FF1D0D"
+keyword      = "#CCAE14"
+
+[nicklist]
+background   = "#302030"
+text         = "#605060"
+op           = "#00A0F0"
+halfop       = "#B000D0"
+voice        = "#14CC64"
+away         = "#403040"
+
+[input]
+background   = "#302030"
+text         = "#DDD0DD"
+placeholder  = "#605060"
+nick_color   = "#14CC64"

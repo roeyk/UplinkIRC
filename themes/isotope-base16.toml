@@ -1,0 +1,44 @@
+# Isotope
+# Author: Jan T. Sott
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#000000"
+text         = "#D0D0D0"
+border       = "#606060"
+accent       = "#0066FF"
+
+[sidebar]
+background   = "#404040"
+text         = "#808080"
+active       = "#D0D0D0"
+unread       = "#0066FF"
+mention      = "#FF0000"
+server       = "#808080"
+
+[buffer]
+background   = "#000000"
+timestamp    = "#808080"
+server_line  = "#C0C0C0"
+action       = "#CC00FF"
+nick_self    = "#33FF00"
+separator    = "#606060"
+
+[highlights]
+mention_bg   = "#404040"
+mention_text = "#FF0000"
+keyword      = "#FF9900"
+
+[nicklist]
+background   = "#404040"
+text         = "#808080"
+op           = "#0066FF"
+halfop       = "#CC00FF"
+voice        = "#33FF00"
+away         = "#606060"
+
+[input]
+background   = "#404040"
+text         = "#D0D0D0"
+placeholder  = "#808080"
+nick_color   = "#33FF00"

@@ -1,0 +1,44 @@
+# Pico
+# Author: PICO-8 (http://www.lexaloffle.com/pico-8.php)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#000000"
+text         = "#5F574F"
+border       = "#7E2553"
+accent       = "#83769C"
+
+[sidebar]
+background   = "#1D2B53"
+text         = "#008751"
+active       = "#5F574F"
+unread       = "#83769C"
+mention      = "#FF004D"
+server       = "#008751"
+
+[buffer]
+background   = "#000000"
+timestamp    = "#008751"
+server_line  = "#AB5236"
+action       = "#FF77A8"
+nick_self    = "#00E756"
+separator    = "#7E2553"
+
+[highlights]
+mention_bg   = "#1D2B53"
+mention_text = "#FF004D"
+keyword      = "#FFA300"
+
+[nicklist]
+background   = "#1D2B53"
+text         = "#008751"
+op           = "#83769C"
+halfop       = "#FF77A8"
+voice        = "#00E756"
+away         = "#7E2553"
+
+[input]
+background   = "#1D2B53"
+text         = "#5F574F"
+placeholder  = "#008751"
+nick_color   = "#00E756"

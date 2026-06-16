@@ -1,0 +1,44 @@
+# Solar Flare
+# Author: Chuck Harmston (https://chuck.harmston.ch)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#18262F"
+text         = "#A6AFB8"
+border       = "#586875"
+accent       = "#33B5E1"
+
+[sidebar]
+background   = "#222E38"
+text         = "#667581"
+active       = "#A6AFB8"
+unread       = "#33B5E1"
+mention      = "#EF5253"
+server       = "#667581"
+
+[buffer]
+background   = "#18262F"
+timestamp    = "#667581"
+server_line  = "#85939E"
+action       = "#A363D5"
+nick_self    = "#7CC844"
+separator    = "#586875"
+
+[highlights]
+mention_bg   = "#222E38"
+mention_text = "#EF5253"
+keyword      = "#E66B2B"
+
+[nicklist]
+background   = "#222E38"
+text         = "#667581"
+op           = "#33B5E1"
+halfop       = "#A363D5"
+voice        = "#7CC844"
+away         = "#586875"
+
+[input]
+background   = "#222E38"
+text         = "#A6AFB8"
+placeholder  = "#667581"
+nick_color   = "#7CC844"

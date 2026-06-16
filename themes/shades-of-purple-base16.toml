@@ -1,0 +1,44 @@
+# Shades of Purple
+# Author: Iolar Demartini Junior (http://github.com/demartini) based on Shades of Purple Theme (https://github.com/ahmadawais/shades-of-purple-vscode).
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1E1E3F"
+text         = "#C7C7C7"
+border       = "#F1D000"
+accent       = "#6943FF"
+
+[sidebar]
+background   = "#43D426"
+text         = "#808080"
+active       = "#C7C7C7"
+unread       = "#6943FF"
+mention      = "#D90429"
+server       = "#808080"
+
+[buffer]
+background   = "#1E1E3F"
+timestamp    = "#808080"
+server_line  = "#6871FF"
+action       = "#FF2C70"
+nick_self    = "#3AD900"
+separator    = "#F1D000"
+
+[highlights]
+mention_bg   = "#43D426"
+mention_text = "#D90429"
+keyword      = "#F92A1C"
+
+[nicklist]
+background   = "#43D426"
+text         = "#808080"
+op           = "#6943FF"
+halfop       = "#FF2C70"
+voice        = "#3AD900"
+away         = "#F1D000"
+
+[input]
+background   = "#43D426"
+text         = "#C7C7C7"
+placeholder  = "#808080"
+nick_color   = "#3AD900"

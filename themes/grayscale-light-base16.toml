@@ -1,0 +1,44 @@
+# Grayscale Light
+# Author: Alexandre Gavioli (https://github.com/Alexx2/)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F7F7F7"
+text         = "#464646"
+border       = "#B9B9B9"
+accent       = "#686868"
+
+[sidebar]
+background   = "#E3E3E3"
+text         = "#ABABAB"
+active       = "#464646"
+unread       = "#686868"
+mention      = "#7C7C7C"
+server       = "#ABABAB"
+
+[buffer]
+background   = "#F7F7F7"
+timestamp    = "#ABABAB"
+server_line  = "#525252"
+action       = "#747474"
+nick_self    = "#8E8E8E"
+separator    = "#B9B9B9"
+
+[highlights]
+mention_bg   = "#E3E3E3"
+mention_text = "#7C7C7C"
+keyword      = "#999999"
+
+[nicklist]
+background   = "#E3E3E3"
+text         = "#ABABAB"
+op           = "#686868"
+halfop       = "#747474"
+voice        = "#8E8E8E"
+away         = "#B9B9B9"
+
+[input]
+background   = "#E3E3E3"
+text         = "#464646"
+placeholder  = "#ABABAB"
+nick_color   = "#8E8E8E"

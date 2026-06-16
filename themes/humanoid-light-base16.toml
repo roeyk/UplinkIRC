@@ -1,0 +1,44 @@
+# Humanoid light
+# Author: Thomas (tasmo) Friese
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F8F8F2"
+text         = "#232629"
+border       = "#DEDED8"
+accent       = "#0082C9"
+
+[sidebar]
+background   = "#EFEFE9"
+text         = "#C0C0BD"
+active       = "#232629"
+unread       = "#0082C9"
+mention      = "#B0151A"
+server       = "#C0C0BD"
+
+[buffer]
+background   = "#F8F8F2"
+timestamp    = "#C0C0BD"
+server_line  = "#60615D"
+action       = "#700F98"
+nick_self    = "#388E3C"
+separator    = "#DEDED8"
+
+[highlights]
+mention_bg   = "#EFEFE9"
+mention_text = "#B0151A"
+keyword      = "#FF3D00"
+
+[nicklist]
+background   = "#EFEFE9"
+text         = "#C0C0BD"
+op           = "#0082C9"
+halfop       = "#700F98"
+voice        = "#388E3C"
+away         = "#DEDED8"
+
+[input]
+background   = "#EFEFE9"
+text         = "#232629"
+placeholder  = "#C0C0BD"
+nick_color   = "#388E3C"

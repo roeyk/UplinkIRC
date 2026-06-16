@@ -1,0 +1,44 @@
+# Windows 10 Light
+# Author: Fergus Collins (https://github.com/C-Fergus)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F2F2F2"
+text         = "#767676"
+border       = "#D9D9D9"
+accent       = "#0037DA"
+
+[sidebar]
+background   = "#E5E5E5"
+text         = "#CCCCCC"
+active       = "#767676"
+unread       = "#0037DA"
+mention      = "#C50F1F"
+server       = "#CCCCCC"
+
+[buffer]
+background   = "#F2F2F2"
+timestamp    = "#CCCCCC"
+server_line  = "#ABABAB"
+action       = "#881798"
+nick_self    = "#13A10E"
+separator    = "#D9D9D9"
+
+[highlights]
+mention_bg   = "#E5E5E5"
+mention_text = "#C50F1F"
+keyword      = "#F9F1A5"
+
+[nicklist]
+background   = "#E5E5E5"
+text         = "#CCCCCC"
+op           = "#0037DA"
+halfop       = "#881798"
+voice        = "#13A10E"
+away         = "#D9D9D9"
+
+[input]
+background   = "#E5E5E5"
+text         = "#767676"
+placeholder  = "#CCCCCC"
+nick_color   = "#13A10E"

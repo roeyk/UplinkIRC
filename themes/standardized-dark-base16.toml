@@ -1,0 +1,44 @@
+# standardized-dark
+# Author: ali (https://github.com/ali-githb/base16-standardized-scheme)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#222222"
+text         = "#C0C0C0"
+border       = "#555555"
+accent       = "#00A3F2"
+
+[sidebar]
+background   = "#303030"
+text         = "#898989"
+active       = "#C0C0C0"
+unread       = "#00A3F2"
+mention      = "#E15D67"
+server       = "#898989"
+
+[buffer]
+background   = "#222222"
+timestamp    = "#898989"
+server_line  = "#898989"
+action       = "#B46EE0"
+nick_self    = "#5DB129"
+separator    = "#555555"
+
+[highlights]
+mention_bg   = "#303030"
+mention_text = "#E15D67"
+keyword      = "#FC804E"
+
+[nicklist]
+background   = "#303030"
+text         = "#898989"
+op           = "#00A3F2"
+halfop       = "#B46EE0"
+voice        = "#5DB129"
+away         = "#555555"
+
+[input]
+background   = "#303030"
+text         = "#C0C0C0"
+placeholder  = "#898989"
+nick_color   = "#5DB129"

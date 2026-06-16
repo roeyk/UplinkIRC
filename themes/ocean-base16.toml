@@ -1,0 +1,44 @@
+# Ocean
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2B303B"
+text         = "#C0C5CE"
+border       = "#4F5B66"
+accent       = "#8FA1B3"
+
+[sidebar]
+background   = "#343D46"
+text         = "#65737E"
+active       = "#C0C5CE"
+unread       = "#8FA1B3"
+mention      = "#BF616A"
+server       = "#65737E"
+
+[buffer]
+background   = "#2B303B"
+timestamp    = "#65737E"
+server_line  = "#A7ADBA"
+action       = "#B48EAD"
+nick_self    = "#A3BE8C"
+separator    = "#4F5B66"
+
+[highlights]
+mention_bg   = "#343D46"
+mention_text = "#BF616A"
+keyword      = "#D08770"
+
+[nicklist]
+background   = "#343D46"
+text         = "#65737E"
+op           = "#8FA1B3"
+halfop       = "#B48EAD"
+voice        = "#A3BE8C"
+away         = "#4F5B66"
+
+[input]
+background   = "#343D46"
+text         = "#C0C5CE"
+placeholder  = "#65737E"
+nick_color   = "#A3BE8C"

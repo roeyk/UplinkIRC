@@ -1,0 +1,44 @@
+# pandora
+# Author: Cassandra Fox
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#131213"
+text         = "#F15C99"
+border       = "#472234"
+accent       = "#008080"
+
+[sidebar]
+background   = "#2F1823"
+text         = "#FFBEE3"
+active       = "#F15C99"
+unread       = "#008080"
+mention      = "#B00B69"
+server       = "#FFBEE3"
+
+[buffer]
+background   = "#131213"
+timestamp    = "#FFBEE3"
+server_line  = "#9B2A46"
+action       = "#A24030"
+nick_self    = "#9DDF69"
+separator    = "#472234"
+
+[highlights]
+mention_bg   = "#2F1823"
+mention_text = "#B00B69"
+keyword      = "#FF9153"
+
+[nicklist]
+background   = "#2F1823"
+text         = "#FFBEE3"
+op           = "#008080"
+halfop       = "#A24030"
+voice        = "#9DDF69"
+away         = "#472234"
+
+[input]
+background   = "#2F1823"
+text         = "#F15C99"
+placeholder  = "#FFBEE3"
+nick_color   = "#9DDF69"

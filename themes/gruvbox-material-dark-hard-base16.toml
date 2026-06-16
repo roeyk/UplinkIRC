@@ -1,0 +1,44 @@
+# Gruvbox Material Dark, Hard
+# Author: Mayush Kumar (https://github.com/MayushKumar), sainnhe (https://github.com/sainnhe/gruvbox-material-vscode)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#202020"
+text         = "#DDC7A1"
+border       = "#504945"
+accent       = "#7DAEA3"
+
+[sidebar]
+background   = "#2A2827"
+text         = "#5A524C"
+active       = "#DDC7A1"
+unread       = "#7DAEA3"
+mention      = "#EA6962"
+server       = "#5A524C"
+
+[buffer]
+background   = "#202020"
+timestamp    = "#5A524C"
+server_line  = "#BDAE93"
+action       = "#D3869B"
+nick_self    = "#A9B665"
+separator    = "#504945"
+
+[highlights]
+mention_bg   = "#2A2827"
+mention_text = "#EA6962"
+keyword      = "#E78A4E"
+
+[nicklist]
+background   = "#2A2827"
+text         = "#5A524C"
+op           = "#7DAEA3"
+halfop       = "#D3869B"
+voice        = "#A9B665"
+away         = "#504945"
+
+[input]
+background   = "#2A2827"
+text         = "#DDC7A1"
+placeholder  = "#5A524C"
+nick_color   = "#A9B665"

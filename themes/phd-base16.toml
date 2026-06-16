@@ -1,0 +1,44 @@
+# PhD
+# Author: Hennig Hasemann (http://leetless.de/vim.html)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#061229"
+text         = "#B8BBC2"
+border       = "#4D5666"
+accent       = "#5299BF"
+
+[sidebar]
+background   = "#2A3448"
+text         = "#717885"
+active       = "#B8BBC2"
+unread       = "#5299BF"
+mention      = "#D07346"
+server       = "#717885"
+
+[buffer]
+background   = "#061229"
+timestamp    = "#717885"
+server_line  = "#9A99A3"
+action       = "#9989CC"
+nick_self    = "#99BF52"
+separator    = "#4D5666"
+
+[highlights]
+mention_bg   = "#2A3448"
+mention_text = "#D07346"
+keyword      = "#F0A000"
+
+[nicklist]
+background   = "#2A3448"
+text         = "#717885"
+op           = "#5299BF"
+halfop       = "#9989CC"
+voice        = "#99BF52"
+away         = "#4D5666"
+
+[input]
+background   = "#2A3448"
+text         = "#B8BBC2"
+placeholder  = "#717885"
+nick_color   = "#99BF52"

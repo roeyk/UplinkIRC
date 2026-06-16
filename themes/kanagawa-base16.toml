@@ -1,0 +1,44 @@
+# Kanagawa
+# Author: Tommaso Laurenzi (https://github.com/rebelot)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1F1F28"
+text         = "#DCD7BA"
+border       = "#223249"
+accent       = "#7E9CD8"
+
+[sidebar]
+background   = "#16161D"
+text         = "#54546D"
+active       = "#DCD7BA"
+unread       = "#7E9CD8"
+mention      = "#C34043"
+server       = "#54546D"
+
+[buffer]
+background   = "#1F1F28"
+timestamp    = "#54546D"
+server_line  = "#727169"
+action       = "#957FB8"
+nick_self    = "#76946A"
+separator    = "#223249"
+
+[highlights]
+mention_bg   = "#16161D"
+mention_text = "#C34043"
+keyword      = "#FFA066"
+
+[nicklist]
+background   = "#16161D"
+text         = "#54546D"
+op           = "#7E9CD8"
+halfop       = "#957FB8"
+voice        = "#76946A"
+away         = "#223249"
+
+[input]
+background   = "#16161D"
+text         = "#DCD7BA"
+placeholder  = "#54546D"
+nick_color   = "#76946A"

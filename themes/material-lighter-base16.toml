@@ -1,0 +1,44 @@
+# Material Lighter
+# Author: Nate Peterson
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FAFAFA"
+text         = "#80CBC4"
+border       = "#CCEAE7"
+accent       = "#6182B8"
+
+[sidebar]
+background   = "#E7EAEC"
+text         = "#CCD7DA"
+active       = "#80CBC4"
+unread       = "#6182B8"
+mention      = "#FF5370"
+server       = "#CCD7DA"
+
+[buffer]
+background   = "#FAFAFA"
+timestamp    = "#CCD7DA"
+server_line  = "#8796B0"
+action       = "#7C4DFF"
+nick_self    = "#91B859"
+separator    = "#CCEAE7"
+
+[highlights]
+mention_bg   = "#E7EAEC"
+mention_text = "#FF5370"
+keyword      = "#F76D47"
+
+[nicklist]
+background   = "#E7EAEC"
+text         = "#CCD7DA"
+op           = "#6182B8"
+halfop       = "#7C4DFF"
+voice        = "#91B859"
+away         = "#CCEAE7"
+
+[input]
+background   = "#E7EAEC"
+text         = "#80CBC4"
+placeholder  = "#CCD7DA"
+nick_color   = "#91B859"

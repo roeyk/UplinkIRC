@@ -1,0 +1,44 @@
+# Chalk
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#151515"
+text         = "#D0D0D0"
+border       = "#303030"
+accent       = "#6FC2EF"
+
+[sidebar]
+background   = "#202020"
+text         = "#505050"
+active       = "#D0D0D0"
+unread       = "#6FC2EF"
+mention      = "#FB9FB1"
+server       = "#505050"
+
+[buffer]
+background   = "#151515"
+timestamp    = "#505050"
+server_line  = "#B0B0B0"
+action       = "#E1A3EE"
+nick_self    = "#ACC267"
+separator    = "#303030"
+
+[highlights]
+mention_bg   = "#202020"
+mention_text = "#FB9FB1"
+keyword      = "#EDA987"
+
+[nicklist]
+background   = "#202020"
+text         = "#505050"
+op           = "#6FC2EF"
+halfop       = "#E1A3EE"
+voice        = "#ACC267"
+away         = "#303030"
+
+[input]
+background   = "#202020"
+text         = "#D0D0D0"
+placeholder  = "#505050"
+nick_color   = "#ACC267"

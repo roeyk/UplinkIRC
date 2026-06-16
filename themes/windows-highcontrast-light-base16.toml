@@ -1,0 +1,44 @@
+# Windows High Contrast Light
+# Author: Fergus Collins (https://github.com/C-Fergus)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FCFCFC"
+text         = "#545454"
+border       = "#D4D4D4"
+accent       = "#000080"
+
+[sidebar]
+background   = "#E8E8E8"
+text         = "#C0C0C0"
+active       = "#545454"
+unread       = "#000080"
+mention      = "#800000"
+server       = "#C0C0C0"
+
+[buffer]
+background   = "#FCFCFC"
+timestamp    = "#C0C0C0"
+server_line  = "#7E7E7E"
+action       = "#800080"
+nick_self    = "#008000"
+separator    = "#D4D4D4"
+
+[highlights]
+mention_bg   = "#E8E8E8"
+mention_text = "#800000"
+keyword      = "#FCFC54"
+
+[nicklist]
+background   = "#E8E8E8"
+text         = "#C0C0C0"
+op           = "#000080"
+halfop       = "#800080"
+voice        = "#008000"
+away         = "#D4D4D4"
+
+[input]
+background   = "#E8E8E8"
+text         = "#545454"
+placeholder  = "#C0C0C0"
+nick_color   = "#008000"

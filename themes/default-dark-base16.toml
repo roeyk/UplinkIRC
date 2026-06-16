@@ -1,0 +1,44 @@
+# Default Dark
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#181818"
+text         = "#D8D8D8"
+border       = "#383838"
+accent       = "#7CAFC2"
+
+[sidebar]
+background   = "#282828"
+text         = "#585858"
+active       = "#D8D8D8"
+unread       = "#7CAFC2"
+mention      = "#AB4642"
+server       = "#585858"
+
+[buffer]
+background   = "#181818"
+timestamp    = "#585858"
+server_line  = "#B8B8B8"
+action       = "#BA8BAF"
+nick_self    = "#A1B56C"
+separator    = "#383838"
+
+[highlights]
+mention_bg   = "#282828"
+mention_text = "#AB4642"
+keyword      = "#DC9656"
+
+[nicklist]
+background   = "#282828"
+text         = "#585858"
+op           = "#7CAFC2"
+halfop       = "#BA8BAF"
+voice        = "#A1B56C"
+away         = "#383838"
+
+[input]
+background   = "#282828"
+text         = "#D8D8D8"
+placeholder  = "#585858"
+nick_color   = "#A1B56C"

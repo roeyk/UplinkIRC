@@ -1,0 +1,44 @@
+# Paraiso
+# Author: Jan T. Sott
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2F1E2E"
+text         = "#A39E9B"
+border       = "#4F424C"
+accent       = "#06B6EF"
+
+[sidebar]
+background   = "#41323F"
+text         = "#776E71"
+active       = "#A39E9B"
+unread       = "#06B6EF"
+mention      = "#EF6155"
+server       = "#776E71"
+
+[buffer]
+background   = "#2F1E2E"
+timestamp    = "#776E71"
+server_line  = "#8D8687"
+action       = "#815BA4"
+nick_self    = "#48B685"
+separator    = "#4F424C"
+
+[highlights]
+mention_bg   = "#41323F"
+mention_text = "#EF6155"
+keyword      = "#F99B15"
+
+[nicklist]
+background   = "#41323F"
+text         = "#776E71"
+op           = "#06B6EF"
+halfop       = "#815BA4"
+voice        = "#48B685"
+away         = "#4F424C"
+
+[input]
+background   = "#41323F"
+text         = "#A39E9B"
+placeholder  = "#776E71"
+nick_color   = "#48B685"

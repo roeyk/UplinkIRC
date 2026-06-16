@@ -1,0 +1,44 @@
+# Atelier Savanna
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#171C19"
+text         = "#87928A"
+border       = "#526057"
+accent       = "#478C90"
+
+[sidebar]
+background   = "#232A25"
+text         = "#5F6D64"
+active       = "#87928A"
+unread       = "#478C90"
+mention      = "#B16139"
+server       = "#5F6D64"
+
+[buffer]
+background   = "#171C19"
+timestamp    = "#5F6D64"
+server_line  = "#78877D"
+action       = "#55859B"
+nick_self    = "#489963"
+separator    = "#526057"
+
+[highlights]
+mention_bg   = "#232A25"
+mention_text = "#B16139"
+keyword      = "#9F713C"
+
+[nicklist]
+background   = "#232A25"
+text         = "#5F6D64"
+op           = "#478C90"
+halfop       = "#55859B"
+voice        = "#489963"
+away         = "#526057"
+
+[input]
+background   = "#232A25"
+text         = "#87928A"
+placeholder  = "#5F6D64"
+nick_color   = "#489963"

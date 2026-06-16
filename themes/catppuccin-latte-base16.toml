@@ -1,0 +1,44 @@
+# Catppuccin Latte
+# Author: https://github.com/catppuccin/catppuccin
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#EFF1F5"
+text         = "#4C4F69"
+border       = "#CCD0DA"
+accent       = "#1E66F5"
+
+[sidebar]
+background   = "#E6E9EF"
+text         = "#BCC0CC"
+active       = "#4C4F69"
+unread       = "#1E66F5"
+mention      = "#D20F39"
+server       = "#BCC0CC"
+
+[buffer]
+background   = "#EFF1F5"
+timestamp    = "#BCC0CC"
+server_line  = "#ACB0BE"
+action       = "#8839EF"
+nick_self    = "#40A02B"
+separator    = "#CCD0DA"
+
+[highlights]
+mention_bg   = "#E6E9EF"
+mention_text = "#D20F39"
+keyword      = "#FE640B"
+
+[nicklist]
+background   = "#E6E9EF"
+text         = "#BCC0CC"
+op           = "#1E66F5"
+halfop       = "#8839EF"
+voice        = "#40A02B"
+away         = "#CCD0DA"
+
+[input]
+background   = "#E6E9EF"
+text         = "#4C4F69"
+placeholder  = "#BCC0CC"
+nick_color   = "#40A02B"

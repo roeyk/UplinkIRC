@@ -1,0 +1,44 @@
+# Primer Light
+# Author: Jimmy Lin
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FAFBFC"
+text         = "#2F363D"
+border       = "#D1D5DA"
+accent       = "#0366D6"
+
+[sidebar]
+background   = "#E1E4E8"
+text         = "#959DA5"
+active       = "#2F363D"
+unread       = "#0366D6"
+mention      = "#D73A49"
+server       = "#959DA5"
+
+[buffer]
+background   = "#FAFBFC"
+timestamp    = "#959DA5"
+server_line  = "#444D56"
+action       = "#EA4AAA"
+nick_self    = "#28A745"
+separator    = "#D1D5DA"
+
+[highlights]
+mention_bg   = "#E1E4E8"
+mention_text = "#D73A49"
+keyword      = "#F66A0A"
+
+[nicklist]
+background   = "#E1E4E8"
+text         = "#959DA5"
+op           = "#0366D6"
+halfop       = "#EA4AAA"
+voice        = "#28A745"
+away         = "#D1D5DA"
+
+[input]
+background   = "#E1E4E8"
+text         = "#2F363D"
+placeholder  = "#959DA5"
+nick_color   = "#28A745"

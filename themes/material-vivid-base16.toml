@@ -1,0 +1,44 @@
+# Material Vivid
+# Author: joshyrobot
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#202124"
+text         = "#80868B"
+border       = "#323639"
+accent       = "#2196F3"
+
+[sidebar]
+background   = "#27292C"
+text         = "#44464D"
+active       = "#80868B"
+unread       = "#2196F3"
+mention      = "#F44336"
+server       = "#44464D"
+
+[buffer]
+background   = "#202124"
+timestamp    = "#44464D"
+server_line  = "#676C71"
+action       = "#673AB7"
+nick_self    = "#00E676"
+separator    = "#323639"
+
+[highlights]
+mention_bg   = "#27292C"
+mention_text = "#F44336"
+keyword      = "#FF9800"
+
+[nicklist]
+background   = "#27292C"
+text         = "#44464D"
+op           = "#2196F3"
+halfop       = "#673AB7"
+voice        = "#00E676"
+away         = "#323639"
+
+[input]
+background   = "#27292C"
+text         = "#80868B"
+placeholder  = "#44464D"
+nick_color   = "#00E676"

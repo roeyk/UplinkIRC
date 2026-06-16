@@ -1,0 +1,44 @@
+# Atelier Heath Light
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F7F3F7"
+text         = "#695D69"
+border       = "#AB9BAB"
+accent       = "#516AEC"
+
+[sidebar]
+background   = "#D8CAD8"
+text         = "#9E8F9E"
+active       = "#695D69"
+unread       = "#516AEC"
+mention      = "#CA402B"
+server       = "#9E8F9E"
+
+[buffer]
+background   = "#F7F3F7"
+timestamp    = "#9E8F9E"
+server_line  = "#776977"
+action       = "#7B59C0"
+nick_self    = "#918B3B"
+separator    = "#AB9BAB"
+
+[highlights]
+mention_bg   = "#D8CAD8"
+mention_text = "#CA402B"
+keyword      = "#A65926"
+
+[nicklist]
+background   = "#D8CAD8"
+text         = "#9E8F9E"
+op           = "#516AEC"
+halfop       = "#7B59C0"
+voice        = "#918B3B"
+away         = "#AB9BAB"
+
+[input]
+background   = "#D8CAD8"
+text         = "#695D69"
+placeholder  = "#9E8F9E"
+nick_color   = "#918B3B"

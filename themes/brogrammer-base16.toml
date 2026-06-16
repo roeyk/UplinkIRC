@@ -1,0 +1,44 @@
+# Brogrammer
+# Author: Vik Ramanujam (http://github.com/piggyslasher)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1F1F1F"
+text         = "#4E5AB7"
+border       = "#2DC55E"
+accent       = "#5350B9"
+
+[sidebar]
+background   = "#F81118"
+text         = "#ECBA0F"
+active       = "#4E5AB7"
+unread       = "#5350B9"
+mention      = "#D6DBE5"
+server       = "#ECBA0F"
+
+[buffer]
+background   = "#1F1F1F"
+timestamp    = "#ECBA0F"
+server_line  = "#2A84D2"
+action       = "#0F7DDB"
+nick_self    = "#F3BD09"
+separator    = "#2DC55E"
+
+[highlights]
+mention_bg   = "#F81118"
+mention_text = "#D6DBE5"
+keyword      = "#DE352E"
+
+[nicklist]
+background   = "#F81118"
+text         = "#ECBA0F"
+op           = "#5350B9"
+halfop       = "#0F7DDB"
+voice        = "#F3BD09"
+away         = "#2DC55E"
+
+[input]
+background   = "#F81118"
+text         = "#4E5AB7"
+placeholder  = "#ECBA0F"
+nick_color   = "#F3BD09"

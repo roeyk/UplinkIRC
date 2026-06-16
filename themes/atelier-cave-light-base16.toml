@@ -1,0 +1,44 @@
+# Atelier Cave Light
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#EFECF4"
+text         = "#585260"
+border       = "#8B8792"
+accent       = "#576DDB"
+
+[sidebar]
+background   = "#E2DFE7"
+text         = "#7E7887"
+active       = "#585260"
+unread       = "#576DDB"
+mention      = "#BE4678"
+server       = "#7E7887"
+
+[buffer]
+background   = "#EFECF4"
+timestamp    = "#7E7887"
+server_line  = "#655F6D"
+action       = "#955AE7"
+nick_self    = "#2A9292"
+separator    = "#8B8792"
+
+[highlights]
+mention_bg   = "#E2DFE7"
+mention_text = "#BE4678"
+keyword      = "#AA573C"
+
+[nicklist]
+background   = "#E2DFE7"
+text         = "#7E7887"
+op           = "#576DDB"
+halfop       = "#955AE7"
+voice        = "#2A9292"
+away         = "#8B8792"
+
+[input]
+background   = "#E2DFE7"
+text         = "#585260"
+placeholder  = "#7E7887"
+nick_color   = "#2A9292"

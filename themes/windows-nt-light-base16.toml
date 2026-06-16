@@ -1,0 +1,44 @@
+# Windows NT Light
+# Author: Fergus Collins (https://github.com/C-Fergus)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FFFFFF"
+text         = "#808080"
+border       = "#D5D5D5"
+accent       = "#000080"
+
+[sidebar]
+background   = "#EAEAEA"
+text         = "#C0C0C0"
+active       = "#808080"
+unread       = "#000080"
+mention      = "#800000"
+server       = "#C0C0C0"
+
+[buffer]
+background   = "#FFFFFF"
+timestamp    = "#C0C0C0"
+server_line  = "#A0A0A0"
+action       = "#800080"
+nick_self    = "#008000"
+separator    = "#D5D5D5"
+
+[highlights]
+mention_bg   = "#EAEAEA"
+mention_text = "#800000"
+keyword      = "#FFFF00"
+
+[nicklist]
+background   = "#EAEAEA"
+text         = "#C0C0C0"
+op           = "#000080"
+halfop       = "#800080"
+voice        = "#008000"
+away         = "#D5D5D5"
+
+[input]
+background   = "#EAEAEA"
+text         = "#808080"
+placeholder  = "#C0C0C0"
+nick_color   = "#008000"

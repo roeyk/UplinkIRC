@@ -1,0 +1,44 @@
+# iA Dark
+# Author: iA Inc. (modified by aramisgithub)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1A1A1A"
+text         = "#CCCCCC"
+border       = "#1D414D"
+accent       = "#8ECCDD"
+
+[sidebar]
+background   = "#222222"
+text         = "#767676"
+active       = "#CCCCCC"
+unread       = "#8ECCDD"
+mention      = "#D88568"
+server       = "#767676"
+
+[buffer]
+background   = "#1A1A1A"
+timestamp    = "#767676"
+server_line  = "#B8B8B8"
+action       = "#B98EB2"
+nick_self    = "#83A471"
+separator    = "#1D414D"
+
+[highlights]
+mention_bg   = "#222222"
+mention_text = "#D88568"
+keyword      = "#D86868"
+
+[nicklist]
+background   = "#222222"
+text         = "#767676"
+op           = "#8ECCDD"
+halfop       = "#B98EB2"
+voice        = "#83A471"
+away         = "#1D414D"
+
+[input]
+background   = "#222222"
+text         = "#CCCCCC"
+placeholder  = "#767676"
+nick_color   = "#83A471"

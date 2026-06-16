@@ -1,0 +1,44 @@
+# OceanicNext
+# Author: https://github.com/voronianski/oceanic-next-color-scheme
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1B2B34"
+text         = "#C0C5CE"
+border       = "#4F5B66"
+accent       = "#6699CC"
+
+[sidebar]
+background   = "#343D46"
+text         = "#65737E"
+active       = "#C0C5CE"
+unread       = "#6699CC"
+mention      = "#EC5F67"
+server       = "#65737E"
+
+[buffer]
+background   = "#1B2B34"
+timestamp    = "#65737E"
+server_line  = "#A7ADBA"
+action       = "#C594C5"
+nick_self    = "#99C794"
+separator    = "#4F5B66"
+
+[highlights]
+mention_bg   = "#343D46"
+mention_text = "#EC5F67"
+keyword      = "#F99157"
+
+[nicklist]
+background   = "#343D46"
+text         = "#65737E"
+op           = "#6699CC"
+halfop       = "#C594C5"
+voice        = "#99C794"
+away         = "#4F5B66"
+
+[input]
+background   = "#343D46"
+text         = "#C0C5CE"
+placeholder  = "#65737E"
+nick_color   = "#99C794"

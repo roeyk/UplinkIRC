@@ -1,0 +1,44 @@
+# DanQing
+# Author: Wenhan Zhu (Cosmos) (zhuwenhan950913@gmail.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2D302F"
+text         = "#E0F0EF"
+border       = "#5A605D"
+accent       = "#B0A4E3"
+
+[sidebar]
+background   = "#434846"
+text         = "#9DA8A3"
+active       = "#E0F0EF"
+unread       = "#B0A4E3"
+mention      = "#F9906F"
+server       = "#9DA8A3"
+
+[buffer]
+background   = "#2D302F"
+timestamp    = "#9DA8A3"
+server_line  = "#CAD8D2"
+action       = "#CCA4E3"
+nick_self    = "#8AB361"
+separator    = "#5A605D"
+
+[highlights]
+mention_bg   = "#434846"
+mention_text = "#F9906F"
+keyword      = "#B38A61"
+
+[nicklist]
+background   = "#434846"
+text         = "#9DA8A3"
+op           = "#B0A4E3"
+halfop       = "#CCA4E3"
+voice        = "#8AB361"
+away         = "#5A605D"
+
+[input]
+background   = "#434846"
+text         = "#E0F0EF"
+placeholder  = "#9DA8A3"
+nick_color   = "#8AB361"

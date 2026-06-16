@@ -1,0 +1,44 @@
+# Zenburn
+# Author: elnawe
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#383838"
+text         = "#DCDCCC"
+border       = "#606060"
+accent       = "#7CB8BB"
+
+[sidebar]
+background   = "#404040"
+text         = "#6F6F6F"
+active       = "#DCDCCC"
+unread       = "#7CB8BB"
+mention      = "#DCA3A3"
+server       = "#6F6F6F"
+
+[buffer]
+background   = "#383838"
+timestamp    = "#6F6F6F"
+server_line  = "#808080"
+action       = "#DC8CC3"
+nick_self    = "#5F7F5F"
+separator    = "#606060"
+
+[highlights]
+mention_bg   = "#404040"
+mention_text = "#DCA3A3"
+keyword      = "#DFAF8F"
+
+[nicklist]
+background   = "#404040"
+text         = "#6F6F6F"
+op           = "#7CB8BB"
+halfop       = "#DC8CC3"
+voice        = "#5F7F5F"
+away         = "#606060"
+
+[input]
+background   = "#404040"
+text         = "#DCDCCC"
+placeholder  = "#6F6F6F"
+nick_color   = "#5F7F5F"

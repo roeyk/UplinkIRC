@@ -1,0 +1,44 @@
+# Ayu Mirage
+# Author: Khue Nguyen <Z5483Y@gmail.com>
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#171B24"
+text         = "#CCCAC2"
+border       = "#242936"
+accent       = "#5CCFE6"
+
+[sidebar]
+background   = "#1F2430"
+text         = "#707A8C"
+active       = "#CCCAC2"
+unread       = "#5CCFE6"
+mention      = "#F28779"
+server       = "#707A8C"
+
+[buffer]
+background   = "#171B24"
+timestamp    = "#707A8C"
+server_line  = "#8A9199"
+action       = "#D4BFFF"
+nick_self    = "#D5FF80"
+separator    = "#242936"
+
+[highlights]
+mention_bg   = "#1F2430"
+mention_text = "#F28779"
+keyword      = "#FFAD66"
+
+[nicklist]
+background   = "#1F2430"
+text         = "#707A8C"
+op           = "#5CCFE6"
+halfop       = "#D4BFFF"
+voice        = "#D5FF80"
+away         = "#242936"
+
+[input]
+background   = "#1F2430"
+text         = "#CCCAC2"
+placeholder  = "#707A8C"
+nick_color   = "#D5FF80"

@@ -1,0 +1,44 @@
+# Ayu Dark
+# Author: Khue Nguyen <Z5483Y@gmail.com>
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#0F1419"
+text         = "#E6E1CF"
+border       = "#272D38"
+accent       = "#59C2FF"
+
+[sidebar]
+background   = "#131721"
+text         = "#3E4B59"
+active       = "#E6E1CF"
+unread       = "#59C2FF"
+mention      = "#F07178"
+server       = "#3E4B59"
+
+[buffer]
+background   = "#0F1419"
+timestamp    = "#3E4B59"
+server_line  = "#BFBDB6"
+action       = "#D2A6FF"
+nick_self    = "#B8CC52"
+separator    = "#272D38"
+
+[highlights]
+mention_bg   = "#131721"
+mention_text = "#F07178"
+keyword      = "#FF8F40"
+
+[nicklist]
+background   = "#131721"
+text         = "#3E4B59"
+op           = "#59C2FF"
+halfop       = "#D2A6FF"
+voice        = "#B8CC52"
+away         = "#272D38"
+
+[input]
+background   = "#131721"
+text         = "#E6E1CF"
+placeholder  = "#3E4B59"
+nick_color   = "#B8CC52"

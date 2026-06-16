@@ -1,0 +1,44 @@
+# Evenok Dark
+# Author: Mekeor Melire
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#000000"
+text         = "#D0D0D0"
+border       = "#303030"
+accent       = "#00AFF2"
+
+[sidebar]
+background   = "#202020"
+text         = "#505050"
+active       = "#D0D0D0"
+unread       = "#00AFF2"
+mention      = "#F5708A"
+server       = "#505050"
+
+[buffer]
+background   = "#000000"
+timestamp    = "#505050"
+server_line  = "#B0B0B0"
+action       = "#9095FF"
+nick_self    = "#54BC5C"
+separator    = "#303030"
+
+[highlights]
+mention_bg   = "#202020"
+mention_text = "#F5708A"
+keyword      = "#EE8122"
+
+[nicklist]
+background   = "#202020"
+text         = "#505050"
+op           = "#00AFF2"
+halfop       = "#9095FF"
+voice        = "#54BC5C"
+away         = "#303030"
+
+[input]
+background   = "#202020"
+text         = "#D0D0D0"
+placeholder  = "#505050"
+nick_color   = "#54BC5C"

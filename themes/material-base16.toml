@@ -1,0 +1,44 @@
+# Material
+# Author: Nate Peterson
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#263238"
+text         = "#EEFFFF"
+border       = "#314549"
+accent       = "#82AAFF"
+
+[sidebar]
+background   = "#2E3C43"
+text         = "#546E7A"
+active       = "#EEFFFF"
+unread       = "#82AAFF"
+mention      = "#F07178"
+server       = "#546E7A"
+
+[buffer]
+background   = "#263238"
+timestamp    = "#546E7A"
+server_line  = "#B2CCD6"
+action       = "#C792EA"
+nick_self    = "#C3E88D"
+separator    = "#314549"
+
+[highlights]
+mention_bg   = "#2E3C43"
+mention_text = "#F07178"
+keyword      = "#F78C6C"
+
+[nicklist]
+background   = "#2E3C43"
+text         = "#546E7A"
+op           = "#82AAFF"
+halfop       = "#C792EA"
+voice        = "#C3E88D"
+away         = "#314549"
+
+[input]
+background   = "#2E3C43"
+text         = "#EEFFFF"
+placeholder  = "#546E7A"
+nick_color   = "#C3E88D"

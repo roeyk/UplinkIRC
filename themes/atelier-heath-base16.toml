@@ -1,0 +1,44 @@
+# Atelier Heath
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1B181B"
+text         = "#AB9BAB"
+border       = "#695D69"
+accent       = "#516AEC"
+
+[sidebar]
+background   = "#292329"
+text         = "#776977"
+active       = "#AB9BAB"
+unread       = "#516AEC"
+mention      = "#CA402B"
+server       = "#776977"
+
+[buffer]
+background   = "#1B181B"
+timestamp    = "#776977"
+server_line  = "#9E8F9E"
+action       = "#7B59C0"
+nick_self    = "#918B3B"
+separator    = "#695D69"
+
+[highlights]
+mention_bg   = "#292329"
+mention_text = "#CA402B"
+keyword      = "#A65926"
+
+[nicklist]
+background   = "#292329"
+text         = "#776977"
+op           = "#516AEC"
+halfop       = "#7B59C0"
+voice        = "#918B3B"
+away         = "#695D69"
+
+[input]
+background   = "#292329"
+text         = "#AB9BAB"
+placeholder  = "#776977"
+nick_color   = "#918B3B"

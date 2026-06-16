@@ -1,0 +1,44 @@
+# Flat
+# Author: Chris Kempson (http://chriskempson.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2C3E50"
+text         = "#E0E0E0"
+border       = "#7F8C8D"
+accent       = "#3498DB"
+
+[sidebar]
+background   = "#34495E"
+text         = "#95A5A6"
+active       = "#E0E0E0"
+unread       = "#3498DB"
+mention      = "#E74C3C"
+server       = "#95A5A6"
+
+[buffer]
+background   = "#2C3E50"
+timestamp    = "#95A5A6"
+server_line  = "#BDC3C7"
+action       = "#9B59B6"
+nick_self    = "#2ECC71"
+separator    = "#7F8C8D"
+
+[highlights]
+mention_bg   = "#34495E"
+mention_text = "#E74C3C"
+keyword      = "#E67E22"
+
+[nicklist]
+background   = "#34495E"
+text         = "#95A5A6"
+op           = "#3498DB"
+halfop       = "#9B59B6"
+voice        = "#2ECC71"
+away         = "#7F8C8D"
+
+[input]
+background   = "#34495E"
+text         = "#E0E0E0"
+placeholder  = "#95A5A6"
+nick_color   = "#2ECC71"

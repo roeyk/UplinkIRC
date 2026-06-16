@@ -1,0 +1,44 @@
+# Tango
+# Author: @Schnouki, based on the Tango Desktop Project
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#2E3436"
+text         = "#D3D7CF"
+border       = "#FCE94F"
+accent       = "#3465A4"
+
+[sidebar]
+background   = "#8AE234"
+text         = "#555753"
+active       = "#D3D7CF"
+unread       = "#3465A4"
+mention      = "#CC0000"
+server       = "#555753"
+
+[buffer]
+background   = "#2E3436"
+timestamp    = "#555753"
+server_line  = "#729FCF"
+action       = "#75507B"
+nick_self    = "#4E9A06"
+separator    = "#FCE94F"
+
+[highlights]
+mention_bg   = "#8AE234"
+mention_text = "#CC0000"
+keyword      = "#EF2929"
+
+[nicklist]
+background   = "#8AE234"
+text         = "#555753"
+op           = "#3465A4"
+halfop       = "#75507B"
+voice        = "#4E9A06"
+away         = "#FCE94F"
+
+[input]
+background   = "#8AE234"
+text         = "#D3D7CF"
+placeholder  = "#555753"
+nick_color   = "#4E9A06"

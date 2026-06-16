@@ -1,0 +1,44 @@
+# Mellow Purple
+# Author: gidsi
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1E0528"
+text         = "#FFEEFF"
+border       = "#331354"
+accent       = "#550068"
+
+[sidebar]
+background   = "#1A092D"
+text         = "#320F55"
+active       = "#FFEEFF"
+unread       = "#550068"
+mention      = "#00D9E9"
+server       = "#320F55"
+
+[buffer]
+background   = "#1E0528"
+timestamp    = "#320F55"
+server_line  = "#873582"
+action       = "#8991BB"
+nick_self    = "#05CB0D"
+separator    = "#331354"
+
+[highlights]
+mention_bg   = "#1A092D"
+mention_text = "#00D9E9"
+keyword      = "#AA00A3"
+
+[nicklist]
+background   = "#1A092D"
+text         = "#320F55"
+op           = "#550068"
+halfop       = "#8991BB"
+voice        = "#05CB0D"
+away         = "#331354"
+
+[input]
+background   = "#1A092D"
+text         = "#FFEEFF"
+placeholder  = "#320F55"
+nick_color   = "#05CB0D"

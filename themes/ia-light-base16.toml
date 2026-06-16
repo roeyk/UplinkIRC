@@ -1,0 +1,44 @@
+# iA Light
+# Author: iA Inc. (modified by aramisgithub)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F6F6F6"
+text         = "#181818"
+border       = "#BDE5F2"
+accent       = "#48BAC2"
+
+[sidebar]
+background   = "#DEDEDE"
+text         = "#898989"
+active       = "#181818"
+unread       = "#48BAC2"
+mention      = "#9C5A02"
+server       = "#898989"
+
+[buffer]
+background   = "#F6F6F6"
+timestamp    = "#898989"
+server_line  = "#767676"
+action       = "#A94598"
+nick_self    = "#38781C"
+separator    = "#BDE5F2"
+
+[highlights]
+mention_bg   = "#DEDEDE"
+mention_text = "#9C5A02"
+keyword      = "#C43E18"
+
+[nicklist]
+background   = "#DEDEDE"
+text         = "#898989"
+op           = "#48BAC2"
+halfop       = "#A94598"
+voice        = "#38781C"
+away         = "#BDE5F2"
+
+[input]
+background   = "#DEDEDE"
+text         = "#181818"
+placeholder  = "#898989"
+nick_color   = "#38781C"

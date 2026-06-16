@@ -1,0 +1,44 @@
+# Catppuccin Macchiato
+# Author: https://github.com/catppuccin/catppuccin
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#24273A"
+text         = "#CAD3F5"
+border       = "#363A4F"
+accent       = "#8AADF4"
+
+[sidebar]
+background   = "#1E2030"
+text         = "#494D64"
+active       = "#CAD3F5"
+unread       = "#8AADF4"
+mention      = "#ED8796"
+server       = "#494D64"
+
+[buffer]
+background   = "#24273A"
+timestamp    = "#494D64"
+server_line  = "#5B6078"
+action       = "#C6A0F6"
+nick_self    = "#A6DA95"
+separator    = "#363A4F"
+
+[highlights]
+mention_bg   = "#1E2030"
+mention_text = "#ED8796"
+keyword      = "#F5A97F"
+
+[nicklist]
+background   = "#1E2030"
+text         = "#494D64"
+op           = "#8AADF4"
+halfop       = "#C6A0F6"
+voice        = "#A6DA95"
+away         = "#363A4F"
+
+[input]
+background   = "#1E2030"
+text         = "#CAD3F5"
+placeholder  = "#494D64"
+nick_color   = "#A6DA95"

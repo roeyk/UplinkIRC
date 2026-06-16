@@ -1,0 +1,44 @@
+# Atelier Sulphurpool
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#202746"
+text         = "#979DB4"
+border       = "#5E6687"
+accent       = "#3D8FD1"
+
+[sidebar]
+background   = "#293256"
+text         = "#6B7394"
+active       = "#979DB4"
+unread       = "#3D8FD1"
+mention      = "#C94922"
+server       = "#6B7394"
+
+[buffer]
+background   = "#202746"
+timestamp    = "#6B7394"
+server_line  = "#898EA4"
+action       = "#6679CC"
+nick_self    = "#AC9739"
+separator    = "#5E6687"
+
+[highlights]
+mention_bg   = "#293256"
+mention_text = "#C94922"
+keyword      = "#C76B29"
+
+[nicklist]
+background   = "#293256"
+text         = "#6B7394"
+op           = "#3D8FD1"
+halfop       = "#6679CC"
+voice        = "#AC9739"
+away         = "#5E6687"
+
+[input]
+background   = "#293256"
+text         = "#979DB4"
+placeholder  = "#6B7394"
+nick_color   = "#AC9739"

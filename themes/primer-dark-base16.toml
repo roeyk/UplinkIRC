@@ -1,0 +1,44 @@
+# Primer Dark
+# Author: Jimmy Lin
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#010409"
+text         = "#B1BAC4"
+border       = "#30363D"
+accent       = "#58A6FF"
+
+[sidebar]
+background   = "#21262D"
+text         = "#484F58"
+active       = "#B1BAC4"
+unread       = "#58A6FF"
+mention      = "#FF7B72"
+server       = "#484F58"
+
+[buffer]
+background   = "#010409"
+timestamp    = "#484F58"
+server_line  = "#8B949E"
+action       = "#F778BA"
+nick_self    = "#3FB950"
+separator    = "#30363D"
+
+[highlights]
+mention_bg   = "#21262D"
+mention_text = "#FF7B72"
+keyword      = "#F0883E"
+
+[nicklist]
+background   = "#21262D"
+text         = "#484F58"
+op           = "#58A6FF"
+halfop       = "#F778BA"
+voice        = "#3FB950"
+away         = "#30363D"
+
+[input]
+background   = "#21262D"
+text         = "#B1BAC4"
+placeholder  = "#484F58"
+nick_color   = "#3FB950"

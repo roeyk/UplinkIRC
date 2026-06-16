@@ -9,7 +9,7 @@ struct Theme {
     // [sidebar]
     QString sidebarBg, sidebarText, sidebarActive, sidebarUnread, sidebarMention, sidebarServer;
     // [buffer]
-    QString bufferBg, timestamp, serverLine, action, nickSelf;
+    QString bufferBg, timestamp, serverLine, action, nickSelf, separator;
     // [highlights]
     QString mentionBg, mentionText, keyword;
     // [nicklist]

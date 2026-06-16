@@ -1,0 +1,44 @@
+# Darktooth
+# Author: Jason Milkins (https://github.com/jasonm23)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1D2021"
+text         = "#A89984"
+border       = "#504945"
+accent       = "#0D6678"
+
+[sidebar]
+background   = "#32302F"
+text         = "#665C54"
+active       = "#A89984"
+unread       = "#0D6678"
+mention      = "#FB543F"
+server       = "#665C54"
+
+[buffer]
+background   = "#1D2021"
+timestamp    = "#665C54"
+server_line  = "#928374"
+action       = "#8F4673"
+nick_self    = "#95C085"
+separator    = "#504945"
+
+[highlights]
+mention_bg   = "#32302F"
+mention_text = "#FB543F"
+keyword      = "#FE8625"
+
+[nicklist]
+background   = "#32302F"
+text         = "#665C54"
+op           = "#0D6678"
+halfop       = "#8F4673"
+voice        = "#95C085"
+away         = "#504945"
+
+[input]
+background   = "#32302F"
+text         = "#A89984"
+placeholder  = "#665C54"
+nick_color   = "#95C085"

@@ -1,0 +1,44 @@
+# OneDark
+# Author: Lalit Magant (http://github.com/tilal6991)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#282C34"
+text         = "#ABB2BF"
+border       = "#3E4451"
+accent       = "#61AFEF"
+
+[sidebar]
+background   = "#353B45"
+text         = "#545862"
+active       = "#ABB2BF"
+unread       = "#61AFEF"
+mention      = "#E06C75"
+server       = "#545862"
+
+[buffer]
+background   = "#282C34"
+timestamp    = "#545862"
+server_line  = "#565C64"
+action       = "#C678DD"
+nick_self    = "#98C379"
+separator    = "#3E4451"
+
+[highlights]
+mention_bg   = "#353B45"
+mention_text = "#E06C75"
+keyword      = "#D19A66"
+
+[nicklist]
+background   = "#353B45"
+text         = "#545862"
+op           = "#61AFEF"
+halfop       = "#C678DD"
+voice        = "#98C379"
+away         = "#3E4451"
+
+[input]
+background   = "#353B45"
+text         = "#ABB2BF"
+placeholder  = "#545862"
+nick_color   = "#98C379"

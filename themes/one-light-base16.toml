@@ -1,0 +1,44 @@
+# One Light
+# Author: Daniel Pfeifer (http://github.com/purpleKarrot)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#FAFAFA"
+text         = "#383A42"
+border       = "#E5E5E6"
+accent       = "#4078F2"
+
+[sidebar]
+background   = "#F0F0F1"
+text         = "#A0A1A7"
+active       = "#383A42"
+unread       = "#4078F2"
+mention      = "#CA1243"
+server       = "#A0A1A7"
+
+[buffer]
+background   = "#FAFAFA"
+timestamp    = "#A0A1A7"
+server_line  = "#696C77"
+action       = "#A626A4"
+nick_self    = "#50A14F"
+separator    = "#E5E5E6"
+
+[highlights]
+mention_bg   = "#F0F0F1"
+mention_text = "#CA1243"
+keyword      = "#D75F00"
+
+[nicklist]
+background   = "#F0F0F1"
+text         = "#A0A1A7"
+op           = "#4078F2"
+halfop       = "#A626A4"
+voice        = "#50A14F"
+away         = "#E5E5E6"
+
+[input]
+background   = "#F0F0F1"
+text         = "#383A42"
+placeholder  = "#A0A1A7"
+nick_color   = "#50A14F"

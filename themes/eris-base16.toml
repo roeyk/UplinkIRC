@@ -1,0 +1,44 @@
+# eris
+# Author: ed (https://codeberg.org/ed)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#0A0920"
+text         = "#606BAC"
+border       = "#23255A"
+accent       = "#258FC4"
+
+[sidebar]
+background   = "#13133A"
+text         = "#333773"
+active       = "#606BAC"
+unread       = "#258FC4"
+mention      = "#F768A3"
+server       = "#333773"
+
+[buffer]
+background   = "#0A0920"
+timestamp    = "#333773"
+server_line  = "#4A5293"
+action       = "#F768A3"
+nick_self    = "#FAAEA2"
+separator    = "#23255A"
+
+[highlights]
+mention_bg   = "#13133A"
+mention_text = "#F768A3"
+keyword      = "#F768A3"
+
+[nicklist]
+background   = "#13133A"
+text         = "#333773"
+op           = "#258FC4"
+halfop       = "#F768A3"
+voice        = "#FAAEA2"
+away         = "#23255A"
+
+[input]
+background   = "#13133A"
+text         = "#606BAC"
+placeholder  = "#333773"
+nick_color   = "#FAAEA2"

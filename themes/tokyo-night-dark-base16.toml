@@ -1,0 +1,44 @@
+# Tokyo Night Dark
+# Author: Michaël Ball
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#1A1B26"
+text         = "#A9B1D6"
+border       = "#2F3549"
+accent       = "#2AC3DE"
+
+[sidebar]
+background   = "#16161E"
+text         = "#444B6A"
+active       = "#A9B1D6"
+unread       = "#2AC3DE"
+mention      = "#C0CAF5"
+server       = "#444B6A"
+
+[buffer]
+background   = "#1A1B26"
+timestamp    = "#444B6A"
+server_line  = "#787C99"
+action       = "#BB9AF7"
+nick_self    = "#9ECE6A"
+separator    = "#2F3549"
+
+[highlights]
+mention_bg   = "#16161E"
+mention_text = "#C0CAF5"
+keyword      = "#A9B1D6"
+
+[nicklist]
+background   = "#16161E"
+text         = "#444B6A"
+op           = "#2AC3DE"
+halfop       = "#BB9AF7"
+voice        = "#9ECE6A"
+away         = "#2F3549"
+
+[input]
+background   = "#16161E"
+text         = "#A9B1D6"
+placeholder  = "#444B6A"
+nick_color   = "#9ECE6A"

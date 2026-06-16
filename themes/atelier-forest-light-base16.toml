@@ -1,0 +1,44 @@
+# Atelier Forest Light
+# Author: Bram de Haan (http://atelierbramdehaan.nl)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F1EFEE"
+text         = "#68615E"
+border       = "#A8A19F"
+accent       = "#407EE7"
+
+[sidebar]
+background   = "#E6E2E0"
+text         = "#9C9491"
+active       = "#68615E"
+unread       = "#407EE7"
+mention      = "#F22C40"
+server       = "#9C9491"
+
+[buffer]
+background   = "#F1EFEE"
+timestamp    = "#9C9491"
+server_line  = "#766E6B"
+action       = "#6666EA"
+nick_self    = "#7B9726"
+separator    = "#A8A19F"
+
+[highlights]
+mention_bg   = "#E6E2E0"
+mention_text = "#F22C40"
+keyword      = "#DF5320"
+
+[nicklist]
+background   = "#E6E2E0"
+text         = "#9C9491"
+op           = "#407EE7"
+halfop       = "#6666EA"
+voice        = "#7B9726"
+away         = "#A8A19F"
+
+[input]
+background   = "#E6E2E0"
+text         = "#68615E"
+placeholder  = "#9C9491"
+nick_color   = "#7B9726"

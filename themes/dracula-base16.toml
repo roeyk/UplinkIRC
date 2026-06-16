@@ -1,0 +1,44 @@
+# Dracula
+# Author: Mike Barkmin (http://github.com/mikebarkmin) based on Dracula Theme (http://github.com/dracula)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#282936"
+text         = "#E9E9F4"
+border       = "#4D4F68"
+accent       = "#62D6E8"
+
+[sidebar]
+background   = "#3A3C4E"
+text         = "#626483"
+active       = "#E9E9F4"
+unread       = "#62D6E8"
+mention      = "#EA51B2"
+server       = "#626483"
+
+[buffer]
+background   = "#282936"
+timestamp    = "#626483"
+server_line  = "#62D6E8"
+action       = "#B45BCF"
+nick_self    = "#EBFF87"
+separator    = "#4D4F68"
+
+[highlights]
+mention_bg   = "#3A3C4E"
+mention_text = "#EA51B2"
+keyword      = "#B45BCF"
+
+[nicklist]
+background   = "#3A3C4E"
+text         = "#626483"
+op           = "#62D6E8"
+halfop       = "#B45BCF"
+voice        = "#EBFF87"
+away         = "#4D4F68"
+
+[input]
+background   = "#3A3C4E"
+text         = "#E9E9F4"
+placeholder  = "#626483"
+nick_color   = "#EBFF87"

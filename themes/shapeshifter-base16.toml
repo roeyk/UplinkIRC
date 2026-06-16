@@ -1,0 +1,44 @@
+# Shapeshifter
+# Author: Tyler Benziger (http://tybenz.com)
+# Converted from base16 — https://github.com/tinted-theming/base16-schemes
+
+[general]
+background   = "#F9F9F9"
+text         = "#102015"
+border       = "#ABABAB"
+accent       = "#3B48E3"
+
+[sidebar]
+background   = "#E0E0E0"
+text         = "#555555"
+active       = "#102015"
+unread       = "#3B48E3"
+mention      = "#E92F2F"
+server       = "#555555"
+
+[buffer]
+background   = "#F9F9F9"
+timestamp    = "#555555"
+server_line  = "#343434"
+action       = "#F996E2"
+nick_self    = "#0ED839"
+separator    = "#ABABAB"
+
+[highlights]
+mention_bg   = "#E0E0E0"
+mention_text = "#E92F2F"
+keyword      = "#E09448"
+
+[nicklist]
+background   = "#E0E0E0"
+text         = "#555555"
+op           = "#3B48E3"
+halfop       = "#F996E2"
+voice        = "#0ED839"
+away         = "#ABABAB"
+
+[input]
+background   = "#E0E0E0"
+text         = "#102015"
+placeholder  = "#555555"
+nick_color   = "#0ED839"
