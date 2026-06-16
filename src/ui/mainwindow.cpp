@@ -1433,7 +1433,7 @@ void MainWindow::setupChatArea()
 
         m_searchBtn = new QToolButton;
         m_searchBtn->setFixedSize(28, 28);
-        m_searchBtn->setIconSize(QSize(20, 20));
+        m_searchBtn->setIconSize(QSize(24, 24));
         m_searchBtn->setAutoRaise(true);
         m_searchBtn->setStyleSheet(
             "QToolButton { background: transparent; border: none; }"
