@@ -677,8 +677,14 @@ What changed:
     added inline on the macOS download card.
   - ROADMAP: two new entries in the stability/memory section for scrollback cap and typing
     timer fix.
-No regressions. No known issues.
-Next priorities: Ctrl+scroll zoom; ServerId/BufferId strong types.
+  - Investigated message deletion (REDACT) on LinuxDojo Ergo server. Ergo 2.18.0 only
+    advertises draft/message-redaction when allow-individual-delete=true in ircd.yaml.
+    Added that setting under history: section, REHASH'd. Delete menu shows on Linux but
+    server returns REDACT_FORBIDDEN — likely needs a full Ergo restart (not just REHASH).
+    On Mac, Delete menu doesn't appear at all despite Reply/React showing — pending debug
+    after Ergo restart confirms the Linux path works.
+No regressions. Known issue: REDACT blocked pending Ergo restart.
+Next priorities: Ergo restart + REDACT retest; Ctrl+scroll zoom; ServerId/BufferId strong types.
 -->
 
 ## v0.25.41 — 2026-06-16
