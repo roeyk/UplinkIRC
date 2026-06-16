@@ -2329,21 +2329,45 @@ if (obj == m_input && event->type() == QEvent::Resize) {
         return true;
     }
 
-    // mIRC formatting codes: Ctrl+B bold, Ctrl+I italic, Ctrl+U underline, Ctrl+O reset
+    // mIRC formatting codes: Ctrl+B bold, Ctrl+I italic, Ctrl+U underline, Ctrl+O reset.
+    // Insert the IRC control character and toggle the matching visual format so the
+    // input shows styled text instead of a box glyph.
     if (ke->modifiers() == Qt::ControlModifier) {
-        QChar fmt;
         switch (ke->key()) {
-        case Qt::Key_B: fmt = QChar(0x02); break;
-        case Qt::Key_I: fmt = QChar(0x1D); break;
-        case Qt::Key_U: fmt = QChar(0x1F); break;
-        case Qt::Key_O: fmt = QChar(0x0F); break;
-        default: break;
-        }
-        if (!fmt.isNull()) {
+        case Qt::Key_B: {
             QTextCursor tc = m_input->textCursor();
-            tc.insertText(QString(fmt));
+            const bool on = (tc.charFormat().fontWeight() != QFont::Bold);
+            tc.insertText(QString(QChar(0x02)));
+            QTextCharFormat cf; cf.setFontWeight(on ? QFont::Bold : QFont::Normal);
+            tc.setCharFormat(cf);
             m_input->setTextCursor(tc);
             return true;
+        }
+        case Qt::Key_I: {
+            QTextCursor tc = m_input->textCursor();
+            const bool on = !tc.charFormat().fontItalic();
+            tc.insertText(QString(QChar(0x1D)));
+            QTextCharFormat cf; cf.setFontItalic(on);
+            tc.setCharFormat(cf);
+            m_input->setTextCursor(tc);
+            return true;
+        }
+        case Qt::Key_U: {
+            QTextCursor tc = m_input->textCursor();
+            const bool on = !tc.charFormat().fontUnderline();
+            tc.insertText(QString(QChar(0x1F)));
+            QTextCharFormat cf; cf.setFontUnderline(on);
+            tc.setCharFormat(cf);
+            m_input->setTextCursor(tc);
+            return true;
+        }
+        case Qt::Key_O: {
+            QTextCursor tc = m_input->textCursor();
+            tc.insertText(QString(QChar(0x0F)));
+            m_input->setCurrentCharFormat(QTextCharFormat{});
+            return true;
+        }
+        default: break;
         }
     }
 
