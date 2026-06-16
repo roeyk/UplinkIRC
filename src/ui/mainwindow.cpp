@@ -1128,7 +1128,11 @@ void MainWindow::applyFontSizes()
             "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }");
     }
     if (m_topicLabel)    m_topicLabel->setFont(makeFont(fs.topicBar));
-    if (m_topicText)     m_topicText->setFont(makeFont(fs.topicText));
+    if (m_topicText) {
+        const QFont tf = makeFont(fs.topicText);
+        m_topicText->setFont(tf);
+        m_topicText->setStyleSheet(QString("font-size: %1pt;").arg(tf.pointSize()));
+    }
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
     if (m_topicSetByLabel)
         m_topicSetByLabel->setStyleSheet(

@@ -162,7 +162,10 @@ void ChannelPane::setInputFont(const QFont &nickFont, const QFont &inputFont)
 
 void ChannelPane::setTopicFont(const QFont &f)
 {
-    if (m_topicText) m_topicText->setFont(f);
+    if (m_topicText) {
+        m_topicText->setFont(f);
+        m_topicText->setStyleSheet(QString("font-size: %1pt;").arg(f.pointSize()));
+    }
 }
 
 void ChannelPane::setTopic(const QString &html)
