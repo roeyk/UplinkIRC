@@ -290,6 +290,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Format indicator — floating B I U S pill label appears at bottom-left of input box while any formatting is active; hides on send and when all formats cleared; reads currentCharFormat() so it reflects cursor position (v0.25.39, 2026-06-16)
 - [x] Keychain bundle + \x1F separator — all four server credentials stored as a single OS keychain item (serverName:bundle) separated by ASCII unit separator \x1F; reduces macOS prompts from up to 4 per server to 1; fixes KWallet NUL-truncation bug that caused empty reads on SASL-only servers (v0.25.39, 2026-06-16)
 - [x] Search icon 24×24 — search button icon size increased from 20×20 to 24×24 (v0.25.39, 2026-06-16)
+- [x] Close channel refreshes UI — onChannelRemoved calls onSidebarSelectionChanged() so info bar and nick list update immediately to the auto-selected channel (v0.25.40, 2026-06-16)
+- [x] Sidebar header icon swap — Preferences → manage_accounts; Manage Servers → add_link at 32×32/28×28 (v0.25.40, 2026-06-16)
 
 ---
 

@@ -4765,6 +4765,15 @@ Next priorities: hero screenshots (3 needed for docs/index.html hero section); S
 strong types; virtual scrolling for very busy channels.
 -->
 
+## [0.25.40] — 2026-06-16
+
+### Fixed
+- **Close channel restores UI** — right-clicking a channel and choosing Close now immediately refreshes the info bar and nick list to reflect the auto-selected channel. Previously they stayed stale showing the closed channel's data until you manually clicked the new selection.
+
+### Changed
+- **Sidebar header icons** — Preferences button now uses the `manage_accounts` icon; Manage Servers button now uses `add_link`.
+- Manage Servers button enlarged to 32×32 (icon 28×28) for better visual weight alongside the other header buttons.
+
 ## [0.25.39] — 2026-06-16
 
 ### Added
