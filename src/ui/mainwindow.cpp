@@ -1304,7 +1304,7 @@ void MainWindow::setupNickPanel()
 
     m_nickToggleBtn = new QToolButton;
     m_nickToggleBtn->setFixedSize(28, 28);
-    m_nickToggleBtn->setIconSize(QSize(14, 14));
+    m_nickToggleBtn->setIconSize(QSize(20, 20));
     m_nickToggleBtn->setAutoRaise(true);
     m_nickToggleBtn->setToolTip(tr("Hide user list"));
     m_nickToggleBtn->setIcon(makeSvgIcon(
