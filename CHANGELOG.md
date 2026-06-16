@@ -1,6 +1,39 @@
 # Changelog
 
 <!--
+SESSION SUMMARY — 2026-06-16 (reaction cross-client fix, /nick label, unread count color, v0.25.38 release)
+What changed:
+  - /nick command no longer updates the nick label next to the input bar — fixed. m_nick was
+    set preemptively in IrcClient::setNick() before the server confirmed the change. The NICK
+    handler compared msg.nick (old nick) against m_nick (already new nick), never matched, so
+    selfNickChanged was never emitted. Fixed by OR-ing the new nick check:
+    `newNick.toLower() == m_nick.toLower() || msg.nick.toLower() == m_nick.toLower()`.
+  - Unread message count badges now use the theme's sidebarUnread color (default #89b4fa) at
+    full opacity instead of 60%-alpha text color. Added m_unreadColor field to SidebarDelegate;
+    setColors() gains optional unreadColor param; both setColors() call sites pass
+    QColor(m_theme.sidebarUnread).
+  - Released v0.25.38 — committed changelog, version bump (CMakeLists 0.25.37 → 0.25.38),
+    sync-site.sh (index.html + README), tagged v0.25.38, pushed. Release CI queued:
+    AppImage + .zsync, Linux tarball, Windows zip, macOS dmg. CI on main was green.
+    Also fixed docs: "right-click the timestamp" → "right-click anywhere on a message" in
+    howto.html (2 places) and faq.md (1 place).
+  - Reactions not visible on other clients — two bugs fixed:
+    1. SessionModel::sendReact() ran the local echo unconditionally, even if
+       IrcClient::sendReact() returned early (message-tags not acked, invalid token, etc.).
+       Linux always showed its own reaction regardless of whether anything was sent.
+       Fix: sendReact() now returns bool; local echo only runs if it returned true.
+    2. onReactReceived() had a !known guard that scanned ch->messages for the reacted msgid
+       and silently dropped the reaction if not found. MacBook could receive a valid TAGMSG
+       for a message outside its chathistory window (joined late, < 100 message replay) and
+       discard it. Fix: removed the guard; rendering already ignores orphaned ch->reactions
+       entries if the message line is not in the view.
+  - Commits: ce192b9 (/nick + unread color), 101990f (v0.25.38 release), 04e4355 (reactions)
+No regressions. No known issues.
+Next priorities: hero screenshots (3 needed); ServerId/BufferId strong types;
+virtual scrolling for very busy channels.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-16 (gear icon size, nick panel header alignment, nickDock font platform split)
 What changed:
   - Gear (Preferences) icon in sidebar header reduced from 24px to 18px iconSize. Button

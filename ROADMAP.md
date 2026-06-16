@@ -278,6 +278,16 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] WHO skip with extended-join — onUserJoined() skips redundant WHO when extended-join CAP is active; eliminates 400–700 B/s upload on busy channels (v0.25.35, 2026-06-15)
 - [x] 306 built-in themes — 251 base16 themes added alongside original 55, named with -base16 suffix (v0.25.36, 2026-06-15)
 - [x] `[buffer] separator` theme key — controls divider line color; falls back to border color (v0.25.36, 2026-06-15)
+- [x] Topic font-size QSS fix — setStyleSheet("font-size: Xpt") on topic label so Qt6 QSS engine doesn't override setFont() (v0.25.37, 2026-06-15)
+- [x] macOS Preferences padding — QCheckBox/QRadioButton padding: 3px 0 to stop smooshed appearance on native controls (v0.25.37, 2026-06-15)
+- [x] Dedicated Manage Servers button in sidebar header — domain_add SVG icon button next to ⚙; MenuIcons::manageServers/hamburger/gear added (v0.25.38, 2026-06-16)
+- [x] Right-click anywhere on message for React/Reply — contextMenuEvent falls back to ChatLine::id so any click on the message body triggers the menu, not just the narrow timestamp (v0.25.38, 2026-06-16)
+- [x] Local reaction echo — sendReact() immediately applies reaction to ch->reactions before server echo; emoji row appears under message on sender's own client (v0.25.38, 2026-06-16)
+- [x] Icon sizing unified — all sidebar header and panel toolbar buttons explicitly sized; hamburger/gear/domain-add routed through DPR-aware MenuIcons::fromSvg (v0.25.38, 2026-06-16)
+- [x] nickDock font platform split — defaults to 9 pt on Linux/FreeBSD, 13 pt on macOS (Retina); config key font_nick_dock (v0.25.38, 2026-06-16)
+- [x] /nick label fix — selfNickChanged was never emitted because m_nick was set preemptively in setNick(); NICK handler now also checks newNick == m_nick (v0.25.38+, 2026-06-16)
+- [x] Unread count badge theme color — SidebarDelegate::m_unreadColor set from sidebarUnread theme key; full opacity instead of 60%-alpha text color (v0.25.38+, 2026-06-16)
+- [x] Reaction cross-client fix — sendReact returns bool; local echo is conditional on actual send; !known guard removed from onReactReceived so reactions for messages outside chathistory window are no longer silently dropped (v0.25.38+, 2026-06-16)
 
 ---
 
