@@ -736,7 +736,7 @@ void ChatView::drawPreviewCard(QPainter &p, const ChatLine &line, int screenY) c
     const QFontMetrics fmB(boldFont);
     const QFontMetrics fm(m_font);
 
-    const int newline = line.text.indexOf('\n');
+    const qsizetype newline = line.text.indexOf('\n');
     const QString titleStr  = newline >= 0 ? line.text.left(newline) : line.text;
     const QString domainStr = newline >= 0 ? line.text.mid(newline + 1) : QString();
 
