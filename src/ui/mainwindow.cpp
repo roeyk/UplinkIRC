@@ -2361,6 +2361,15 @@ if (obj == m_input && event->type() == QEvent::Resize) {
             m_input->setTextCursor(tc);
             return true;
         }
+        case Qt::Key_S: {
+            QTextCursor tc = m_input->textCursor();
+            const bool on = !tc.charFormat().fontStrikeOut();
+            tc.insertText(QString(QChar(0x1E)));
+            QTextCharFormat cf; cf.setFontStrikeOut(on);
+            tc.setCharFormat(cf);
+            m_input->setTextCursor(tc);
+            return true;
+        }
         case Qt::Key_O: {
             QTextCursor tc = m_input->textCursor();
             tc.insertText(QString(QChar(0x0F)));
