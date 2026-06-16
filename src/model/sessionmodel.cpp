@@ -41,7 +41,7 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
             if (!guard) return;
             if (!val.isEmpty()) {
                 static const QLatin1String kSent("<keychain>");
-                const QStringList parts = val.split(QChar('\x00'));
+                const QStringList parts = val.split(QChar('\x1F'));
                 auto fill = [&](QString ServerConfig::*fp, int i) {
                     if (shared.get()->*fp == kSent)
                         shared.get()->*fp = parts.value(i);

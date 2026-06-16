@@ -376,7 +376,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
                 const QString opp = KeychainHelper::read(s.name + QLatin1String(":proxy_pass"));
                 existing = op + '\x00' + osa + '\x00' + ons + '\x00' + opp;
             }
-            QStringList cur = existing.split(QChar('\x00'));
+            QStringList cur = existing.split(QChar('\x1F'));
             while (cur.size() < 4) cur.append(QString{});
             auto upd = [&](int i, const QString &val) -> QString {
                 if (val.isEmpty())            { cur[i] = {}; return {}; }
@@ -390,7 +390,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
             const bool hasAny = std::any_of(cur.cbegin(), cur.cend(),
                                              [](const QString &v){ return !v.isEmpty(); });
             if (hasAny)
-                KeychainHelper::write(bundleKey, cur.join(QChar('\x00')));
+                KeychainHelper::write(bundleKey, cur.join(QChar('\x1F')));
             else
                 KeychainHelper::remove(bundleKey);
             KeychainHelper::remove(s.name + QLatin1String(":password"));
