@@ -246,13 +246,21 @@ realname = "Uplink User"
 channels = "#linux"
 ```
 
+You can also connect to a server on the fly without editing config:
+
+```
+/server irc.libera.chat              # SSL on port 6697
+/server irc.example.org:6667         # plain text on port 6667
+/connect irc.oftc.net                # alias for /server
+```
+
 ### Uplink disconnected — will it reconnect?
 
 Yes. Uplink reconnects automatically after an unexpected disconnect using exponential backoff: it waits 5 seconds, then 10, 20, 40, and caps at 60 seconds per attempt. A countdown message appears in the server buffer each time. Once reconnected, it re-joins all channels you had open — both those in your config and any you joined manually during the session.
 
-If you disconnect deliberately with `/quit` or the **Disconnect** option in the sidebar right-click menu, no reconnect is attempted.
+If you disconnect deliberately with `/quit`, `/disconnect`, or the **Disconnect** option in the sidebar right-click menu, no reconnect is attempted.
 
-You can also right-click a server in the sidebar and choose **Reconnect** to connect immediately without waiting.
+You can also right-click a server in the sidebar and choose **Reconnect** to connect immediately without waiting, or use `/connect` to reconnect the current server.
 
 ### Does Uplink enforce TLS automatically?
 

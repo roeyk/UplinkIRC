@@ -385,7 +385,10 @@ channels = "#linux, #archlinux"
 | `/version [nick]` | Request VERSION (nick optional) |
 | `/ctcp <target> <cmd> [args]` | Send a CTCP request |
 | `/sysinfo` | Post OS / CPU / GPU / RAM / uptime to channel |
-| `/clear` | Clear the chat buffer |
+| `/clear` | Clear the chat buffer (purges history) |
+| `/connect [host[:port]]` | Reconnect, or connect to any server |
+| `/server [host[:port]]` | Alias for `/connect` |
+| `/disconnect` | Close the current server and all its channels |
 | `/quote <raw>` | Send a raw IRC line |
 | `/quit [message]` | Disconnect from the current server |
 | `/help` | List all commands in the chat buffer |

@@ -772,6 +772,16 @@ channels = "#linux, #archlinux"</pre>
       Set <code>ssl = false</code> with port <code>6667</code> only when TLS is genuinely unavailable: a local test IRCd on <code>127.0.0.1</code>, a private LAN server with no certificate, a bouncer listening on loopback, or a <code>.onion</code> address where Tor provides its own encryption.
     </div>
 
+    <p>You can also connect to any server on the fly without editing config — just type a command in the input box:</p>
+
+    <pre>/server irc.libera.chat             # connects over SSL on port 6697 (default)
+/server irc.example.org:6667        # connects plain-text on port 6667
+/connect irc.oftc.net               # /connect is an alias for /server</pre>
+
+    <p>The server appears in the sidebar immediately. Your nick is inherited from your first configured server. The sidebar label is derived from the hostname — <code>irc.chatjunkies.org</code> shows as <strong>CHATJUNKIES</strong>.</p>
+
+    <p>To close a server you connected to ad-hoc, right-click it in the sidebar and choose <strong>Close Server</strong>, or type <code>/disconnect</code>. The server is removed from the sidebar but not saved to config — it won't reappear on next launch unless you add it to config.</p>
+
     <p>Common IRC networks and their TLS hostnames:</p>
     <table>
       <tr><th>Network</th><th>Host</th><th>Port</th></tr>
@@ -832,6 +842,9 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
 
     <h3>Editing a server</h3>
     <p>Select the server in the list, click <strong>Edit</strong>, make your changes, and click <strong>OK</strong>. The server disconnects and reconnects with the updated settings immediately.</p>
+
+    <h3>Reordering servers</h3>
+    <p>Select a server in the list and click <strong>▲</strong> or <strong>▼</strong> to move it up or down. The new order is saved to <code>config.toml</code> when you click <strong>OK</strong>. You can also right-click a server header in the sidebar and choose <strong>Move Up</strong> or <strong>Move Down</strong>.</p>
 
     <h3>Removing a server</h3>
     <p>Select the server in the list and click <strong>Remove</strong>. The server disconnects, is removed from the sidebar, and is deleted from <code>config.toml</code>.</p>
@@ -1502,7 +1515,7 @@ channels  = "#uplink"</pre>
       <li>Channels with new activity show a small <strong>forum icon</strong> after the channel name. Channels where your nick was mentioned show a yellow <strong>lightbulb icon</strong> instead.</li>
       <li>The server heading shows a <strong>globe icon</strong> when connected. The globe turns <strong>red</strong> when the server status pane has unread messages — click the server name to open it and clear the indicator.</li>
       <li>Right-click a channel for options: <strong>Open in Pane</strong> (view it alongside the current channel), Rejoin, Leave, Close. See <a href="#channel-panes">Channel panes</a>.</li>
-      <li>Right-click a server for: Disconnect, Reconnect.</li>
+      <li>Right-click a server for: Disconnect, Reconnect, <strong>Close Server</strong> (removes from sidebar without deleting from config), <strong>Move Up</strong>, <strong>Move Down</strong> (reorder servers — saved to config).</li>
       <li>Drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.</li>
       <li>Click the <strong>close button</strong> in the top-left corner of the sidebar panel to collapse the sidebar so the chat fills the card. A <strong>reveal button</strong> appears at the bottom-left of the chat area — click it to bring the sidebar back.</li>
     </ul>
