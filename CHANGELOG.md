@@ -1,6 +1,23 @@
 # Changelog
 
 <!--
+SESSION SUMMARY — 2026-06-17 (server management, /connect, CTCP fix, /clear fix)
+What changed:
+  - Right-click server context menu: added Close Server (disconnect + remove from sidebar,
+    keeps config), Move Up, Move Down (reorder servers, persisted to config).
+  - Manage Servers dialog: added ▲/▼ buttons to reorder servers.
+  - New commands: /connect and /server to connect to arbitrary servers by host[:port] with
+    auto-detected SSL (port 6667 = plain, else SSL). /disconnect to close current server.
+  - Sidebar labels for ad-hoc servers use short network names (strip irc. prefix and TLD),
+    e.g. irc.chatjunkies.org → CHATJUNKIES.
+  - Fixed duplicate CTCP VERSION/PING replies caused by echo-message cap echoing outgoing
+    requests back to the sender — self-echo CTCP requests are now skipped.
+  - Fixed /clear not persisting: previously only cleared the visual widget, now also purges
+    the in-memory message buffer so messages don't reappear when switching channels.
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-17 (soju server admin docs)
 What changed:
   - Added "soju server administration" section to docs/howto.html covering server-side
