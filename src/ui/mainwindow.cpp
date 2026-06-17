@@ -4758,7 +4758,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
                          msg.type == MessageType::Notice);
     if (autoPreview && isText) {
         static const QRegularExpression urlRe(
-            R"(https?://[^\s<>"]+)",
+            R"(https?://[^ \t\r\n<>"]+)",
             QRegularExpression::CaseInsensitiveOption);
         auto it = urlRe.globalMatch(msg.text);
         while (it.hasNext()) {

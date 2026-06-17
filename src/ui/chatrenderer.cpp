@@ -8,7 +8,7 @@
 namespace ChatRenderer {
 
 static const QRegularExpression s_urlRe(
-    R"((https?://[^\s<>"]+))",
+    R"((https?://[^ \t\r\n<>"]+))",
     QRegularExpression::CaseInsensitiveOption);
 
 QString htmlAttr(const QString &s)
