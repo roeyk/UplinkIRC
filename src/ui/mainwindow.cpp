@@ -559,7 +559,11 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_dispatcher = new CommandDispatcher(m_model, &m_config, this, this);
     connect(m_dispatcher, &CommandDispatcher::switchChannel,  this, &MainWindow::switchToChannel);
     connect(m_dispatcher, &CommandDispatcher::focusInput,     this, [this]{ if (m_input) m_input->setFocus(); });
-    connect(m_dispatcher, &CommandDispatcher::clearChat,      this, [this]{ if (m_chatView) m_chatView->clear(); });
+    connect(m_dispatcher, &CommandDispatcher::clearChat,      this, [this]{
+        if (m_chatView) m_chatView->clear();
+        auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
+        if (ch) ch->messages.clear();
+    });
     connect(m_dispatcher, &CommandDispatcher::openChannelList,this, &MainWindow::openChannelList);
     connect(m_dispatcher, &CommandDispatcher::replyBarCleared, this, &MainWindow::clearReplyBar);
 }
