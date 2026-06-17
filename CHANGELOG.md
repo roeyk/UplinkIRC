@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.25.43
+
+### Fixed
+- **Server identity collision** — multiple server entries sharing the same hostname (e.g. a direct connection and a bouncer connection to the same server) no longer interfere with each other. Server identity is now based on the unique config name rather than the hostname.
+- **Duplicate server name guard** — the Manage Servers dialog now rejects adding or renaming a server to a name that already exists.
+- **Sidebar order sync** — reordering servers in the Manage Servers dialog now takes effect immediately in the sidebar without requiring a restart.
+- **Log directory migration** — existing log directories using the old hostname-based layout are automatically renamed to the new name-based layout on startup, preserving chat history.
+
 <!--
 SESSION SUMMARY — 2026-06-17 (server management, /connect, CTCP fix, stability)
 What changed:

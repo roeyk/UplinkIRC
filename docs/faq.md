@@ -222,7 +222,7 @@ nick = "yournick"
 
 ### Can I connect to multiple servers at once?
 
-Yes. Add multiple `[[server]]` blocks in your config — each gets its own entry in the sidebar and connects independently.
+Yes. Add multiple `[[server]]` blocks in your config — each gets its own entry in the sidebar and connects independently. Each server must have a unique `name`. You can even have two entries pointing at the same host (e.g. a direct connection and a bouncer connection) as long as the names differ.
 
 ```toml
 [[server]]
