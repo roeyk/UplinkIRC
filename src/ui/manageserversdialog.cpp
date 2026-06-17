@@ -4,6 +4,7 @@
 #include "menuicons.h"
 
 #include <QDialogButtonBox>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QListWidget>
@@ -67,12 +68,27 @@ void ManageServersDialog::refreshList()
         m_list->setCurrentRow(0);
 }
 
+bool ManageServersDialog::nameExists(const QString &name, int excludeRow) const
+{
+    for (int i = 0; i < m_servers.size(); ++i) {
+        if (i == excludeRow) continue;
+        if (m_servers[i].name.compare(name, Qt::CaseInsensitive) == 0)
+            return true;
+    }
+    return false;
+}
+
 void ManageServersDialog::addServer()
 {
     ServerDialog dlg(this);
     if (dlg.exec() != QDialog::Accepted) return;
     ServerConfig sc = dlg.serverConfig();
     if (sc.host.isEmpty()) return;
+    if (nameExists(sc.name)) {
+        QMessageBox::warning(this, "Duplicate Name",
+            QString("A server named \"%1\" already exists.").arg(sc.name));
+        return;
+    }
     m_servers.append(sc);
     refreshList();
     m_list->setCurrentRow(static_cast<int>(m_servers.size()) - 1);
@@ -86,6 +102,11 @@ void ManageServersDialog::editServer()
     if (dlg.exec() != QDialog::Accepted) return;
     ServerConfig sc = dlg.serverConfig();
     if (sc.host.isEmpty()) return;
+    if (nameExists(sc.name, row)) {
+        QMessageBox::warning(this, "Duplicate Name",
+            QString("A server named \"%1\" already exists.").arg(sc.name));
+        return;
+    }
     m_servers[row] = sc;
     refreshList();
 }
