@@ -9,6 +9,23 @@
 - **Log directory migration** — existing log directories using the old hostname-based layout are automatically renamed to the new name-based layout on startup, preserving chat history.
 
 <!--
+SESSION SUMMARY — 2026-06-17 (ServerId refactor, duplicate guard, sidebar sync, log migration)
+What changed:
+  - ServerId refactored from hostname to server config name — fixes collision when multiple
+    server entries share the same host (e.g. direct + bouncer to irc.linuxdojo.org).
+    IrcClient now carries m_serverName alongside m_host; all 119 signal emissions use
+    the name. SessionModel lookups, removeServer, updateServer, clientFor all match by name.
+  - Duplicate server name guard in Manage Servers dialog — blocks add/edit if name exists.
+  - Sidebar reorders live after Manage Servers dialog closes (syncSidebarOrderFromConfig).
+  - Log dir migration at startup: hostname-based dirs renamed to name-based dirs.
+  - Removed dead syncServers() method.
+  - Docs updated: configuration.md (name must be unique), howto.html (server dialog field
+    reference), faq.md (multiple servers can share a host with different names).
+  - Released as v0.25.43. CI, Release, and Pages all green.
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-17 (server management, /connect, CTCP fix, stability)
 What changed:
   - Right-click server context menu: added Close Server (disconnect + remove from sidebar,
