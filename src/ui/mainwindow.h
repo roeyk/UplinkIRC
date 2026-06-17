@@ -158,6 +158,7 @@ private:
     QString     m_historyDraft;
 
     void syncSidebarOrderToConfig();
+    void syncSidebarOrderFromConfig();
     QTreeWidgetItem *findServerItem (const QString &host) const;
     QTreeWidgetItem *findChannelItem(const QString &host, const QString &channel) const;
 

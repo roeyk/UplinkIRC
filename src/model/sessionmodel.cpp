@@ -87,6 +87,14 @@ static QRegularExpression buildHighlightRe(const QString &words)
     return QRegularExpression(parts.join('|'), QRegularExpression::CaseInsensitiveOption);
 }
 
+static QString sanitizeFilename(QString s)
+{
+    const QString bad = QStringLiteral("/\\:*?\"<>|");
+    for (QChar c : bad)
+        s.replace(c, '_');
+    return s;
+}
+
 void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
 {
     if (addToConfig)
@@ -111,6 +119,18 @@ void SessionModel::loadConfig(const Config &cfg)
     m_config = cfg;
     for (const auto &entry : cfg.ignoreList)
         m_ignoredNicks.insert(entry.nick, entry.flags);
+
+    // Migrate log dirs from hostname-based to name-based layout
+    const QString logsBase = QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                             + "/.config/uplink/logs/";
+    for (const ServerConfig &sc : cfg.servers) {
+        if (sc.name.isEmpty() || sc.name == sc.host) continue;
+        const QString oldDir = logsBase + sanitizeFilename(sc.host);
+        const QString newDir = logsBase + sanitizeFilename(sc.name);
+        if (QDir(oldDir).exists() && !QDir(newDir).exists())
+            QDir().rename(oldDir, newDir);
+    }
+
     for (const ServerConfig &sc : cfg.servers)
         if (!sc.disabled)
             spawnSession(sc, false);
@@ -199,13 +219,7 @@ void SessionModel::monitorStatus(ServerId host)
 // Logging
 // ---------------------------------------------------------------------------
 
-static QString sanitizeFilename(QString s)
-{
-    const QString bad = QStringLiteral("/\\:*?\"<>|");
-    for (QChar c : bad)
-        s.replace(c, '_');
-    return s;
-}
+
 
 void SessionModel::logMessage(const QString &host, const QString &target, const Message &msg)
 {
@@ -335,18 +349,6 @@ void SessionModel::updateServer(ServerId oldHost, const ServerConfig &sc)
 {
     removeServer(oldHost);
     addServer(sc);
-}
-
-void SessionModel::syncServers(const QList<ServerConfig> &servers)
-{
-    for (const ServerConfig &sc : servers) {
-        for (ServerConfig &existing : m_config.servers) {
-            if (existing.name == sc.name) {
-                existing.channels = sc.channels;
-                break;
-            }
-        }
-    }
 }
 
 void SessionModel::closeBuffer(ServerId host, BufferId target)

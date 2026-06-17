@@ -25,7 +25,6 @@ public:
     void closeServer(ServerId host);
     bool connectServer(ServerId host);
     void updateServer(ServerId oldHost, const ServerConfig &sc);
-    void syncServers(const QList<ServerConfig> &servers);
     void closeBuffer(ServerId host, BufferId target);
 
     // Read access for UI

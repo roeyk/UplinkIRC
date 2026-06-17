@@ -918,6 +918,7 @@ void MainWindow::connectPreferences()
         }
         m_config.servers = updated;
         Config::save(m_config, Config::defaultPath(), true);
+        syncSidebarOrderFromConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::aboutRequested, this, [this]{
@@ -1238,6 +1239,7 @@ void MainWindow::setupSidebar()
             }
             m_config.servers = updated;
             Config::save(m_config, Config::defaultPath(), true);
+            syncSidebarOrderFromConfig();
         });
         shBox->addWidget(m_serversBtn);
 
@@ -2638,6 +2640,23 @@ void MainWindow::syncSidebarOrderToConfig()
     if (reordered.size() == m_config.servers.size()) {
         m_config.servers = reordered;
         Config::save(m_config, Config::defaultPath(), true);
+    }
+}
+
+void MainWindow::syncSidebarOrderFromConfig()
+{
+    for (int ci = 0; ci < m_config.servers.size(); ++ci) {
+        const QString &name = m_config.servers[ci].name;
+        for (int si = ci; si < m_sidebar->topLevelItemCount(); ++si) {
+            if (m_sidebar->topLevelItem(si)->data(0, Qt::UserRole).toString() == name) {
+                if (si != ci) {
+                    auto *item = m_sidebar->takeTopLevelItem(si);
+                    m_sidebar->insertTopLevelItem(ci, item);
+                    item->setExpanded(true);
+                }
+                break;
+            }
+        }
     }
 }
 
