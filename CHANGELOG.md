@@ -1,7 +1,7 @@
 # Changelog
 
 <!--
-SESSION SUMMARY — 2026-06-17 (server management, /connect, CTCP fix, /clear fix)
+SESSION SUMMARY — 2026-06-17 (server management, /connect, CTCP fix, stability)
 What changed:
   - Right-click server context menu: added Close Server (disconnect + remove from sidebar,
     keeps config), Move Up, Move Down (reorder servers, persisted to config).
@@ -14,7 +14,14 @@ What changed:
     requests back to the sender — self-echo CTCP requests are now skipped.
   - Fixed /clear not persisting: previously only cleared the visual widget, now also purges
     the in-memory message buffer so messages don't reappear when switching channels.
+  - Fixed chat view layout thrashing: bottom third of chat would flicker rapidly when content
+    was near viewport threshold. wrapWidth() now reserves scrollbar width permanently.
+  - Resource audit: ASan+UBSan tests all clean. Pruned m_scrollPositions and m_renderStart
+    on channel/server close. Capped m_expandedEventGroups at 200 entries. Avatar base64
+    cache was already properly bounded.
+  - All docs updated across commands.md, howto.html, faq.md, index.html, README.md, ROADMAP.md.
 No regressions. No known issues.
+Next priorities: new hero screenshots for uplinkirc.chat (URGENT); ServerId/BufferId strong types.
 -->
 
 <!--
