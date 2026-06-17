@@ -1,6 +1,16 @@
 # Changelog
 
 <!--
+SESSION SUMMARY — 2026-06-17 (soju server admin docs)
+What changed:
+  - Added "soju server administration" section to docs/howto.html covering server-side
+    setup: install, config, user management (sojuctl), adding upstream networks via
+    BouncerServ, managing networks/channels in the SQLite database, and a common-gotchas
+    troubleshooting table. Nav sidebar updated with the new section link.
+No code changes. Documentation only.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-17 (emoji button transparent bg)
 What changed:
   - Emoji picker button (😊) had an opaque background on macOS — the default QPushButton

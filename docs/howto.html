@@ -475,6 +475,7 @@
     <li><a href="#multi-server">Two servers at once</a></li>
     <li><a href="#znc">ZNC bouncer</a></li>
     <li><a href="#soju">soju bouncer</a></li>
+    <li><a href="#soju-admin">soju server admin</a></li>
     <li><a href="#chathistory">Chat history replay</a></li>
     <li><a href="#websocket">WebSocket transport</a></li>
   </ul>
@@ -1274,6 +1275,126 @@ channels        = "#debian"</pre>
 
     <div class="note">
       <strong>Chat history replay</strong> is automatic on ZNC, soju, and Ergo IRCd (and any server supporting the <code>chathistory</code> or <code>draft/chathistory</code> CAP). Uplink requests the last 100 messages for each channel on join. History messages appear dimmed in gray with their original timestamps so you can tell them apart from live messages.
+    </div>
+  </section>
+
+  <!-- SOJU SERVER ADMIN -->
+  <section id="soju-admin">
+    <h2>soju server administration</h2>
+
+    <p>This section covers setting up and managing soju on the server side. The examples use FreeBSD, but the commands are the same on Linux — only the paths differ.</p>
+
+    <h3>Install soju</h3>
+    <pre># FreeBSD
+pkg install soju
+
+# Arch Linux
+pacman -S soju
+
+# From source (any platform)
+go install git.sr.ht/~emersion/soju/cmd/...@latest</pre>
+
+    <h3>Configuration file</h3>
+    <p>The soju config lives at <code>/usr/local/etc/soju/config</code> on FreeBSD or <code>/etc/soju/config</code> on Linux. A minimal config:</p>
+    <pre>db sqlite3 /var/db/soju/main.db
+listen ircs://:6697
+tls /path/to/fullchain.pem /path/to/privkey.pem
+hostname irc.example.com
+listen unix+admin://</pre>
+
+    <p>The <code>listen unix+admin://</code> line creates the admin socket that <code>sojuctl</code> uses. Without it, <code>sojuctl</code> commands will fail with a "no such file or directory" error.</p>
+
+    <div class="tip">
+      <strong>Custom port:</strong> if you run an IRC server on the same host, use a different port for soju — e.g. <code>listen ircs://:7778</code>. Clients connect to the soju port, not the IRC server port.
+    </div>
+
+    <h3>Start soju</h3>
+    <pre># FreeBSD
+service soju start
+
+# systemd (Linux)
+systemctl start soju
+
+# Check it's running
+ps aux | grep soju</pre>
+
+    <h3>Create a user</h3>
+    <pre>sudo sojuctl user create -username alice -password secretpass</pre>
+    <p>To see available commands:</p>
+    <pre>sudo sojuctl help</pre>
+
+    <div class="note">
+      <strong>There is no <code>user list</code> command.</strong> To see existing users, query the database directly:
+      <pre>sudo sqlite3 /var/db/soju/main.db "SELECT username FROM User;"</pre>
+    </div>
+
+    <h3>Reset a user's password</h3>
+    <pre>sudo sojuctl user update alice -password newpassword</pre>
+
+    <h3>Check user status</h3>
+    <pre>sudo sojuctl user status alice</pre>
+    <p>This shows how many upstream networks the user has and whether they are connected.</p>
+
+    <h3>Add an upstream network</h3>
+    <p>Connect to soju with your IRC client, then message BouncerServ:</p>
+    <pre>/msg BouncerServ network create -addr ircs://irc.example.com:6697 -nick alice</pre>
+
+    <p>To authenticate to the upstream server, add a NickServ IDENTIFY command:</p>
+    <pre>/msg BouncerServ network create -addr ircs://irc.example.com:6697 -nick alice -connect-command "PRIVMSG NickServ :IDENTIFY myircpassword"</pre>
+
+    <div class="note">
+      <strong>Two separate passwords.</strong> The soju password authenticates your client to the bouncer. The IRC password (NickServ / SASL) authenticates soju to the upstream IRC server. They are unrelated.
+    </div>
+
+    <p>To see what flags <code>network create</code> accepts on your version:</p>
+    <pre>/msg BouncerServ help network create</pre>
+
+    <h3>Check and manage networks</h3>
+    <pre>/msg BouncerServ network status</pre>
+    <p>Or from the server shell:</p>
+    <pre>sudo sqlite3 /var/db/soju/main.db \
+  "SELECT id, name, addr, nick FROM Network WHERE user = (SELECT id FROM User WHERE username = 'alice');"</pre>
+
+    <p>Delete a network by name via BouncerServ:</p>
+    <pre>/msg BouncerServ network delete irc.example.com</pre>
+
+    <p>Or delete by ID directly in the database:</p>
+    <pre>sudo sqlite3 /var/db/soju/main.db "DELETE FROM Network WHERE id = 3;"
+sudo service soju restart</pre>
+
+    <h3>Manage channels in the database</h3>
+    <p>soju remembers which channels you have joined. To see them:</p>
+    <pre>sudo sqlite3 /var/db/soju/main.db "SELECT id, network, name FROM Channel WHERE network = 5;"</pre>
+
+    <p>To remove a stale or mistyped channel:</p>
+    <pre>sudo sqlite3 /var/db/soju/main.db "DELETE FROM Channel WHERE id = 7;"</pre>
+
+    <div class="tip">
+      <strong>Easier way:</strong> just <code>/part #badchannel</code> from your client — soju removes it from its database automatically.
+    </div>
+
+    <h3>Common gotchas</h3>
+    <table>
+      <tr><th>Problem</th><th>Cause</th><th>Fix</th></tr>
+      <tr><td><code>sojuctl</code> says "no such file or directory"</td><td>soju is not running, or <code>listen unix+admin://</code> is missing from config</td><td>Start soju and check the config</td></tr>
+      <tr><td><code>sojuctl</code> says "permission denied"</td><td>The admin socket is owned by the soju user</td><td>Run with <code>sudo</code></td></tr>
+      <tr><td>Nick shows as <code>alice_</code> or <code>alice__</code></td><td>Another connection is already using that nick — often a duplicate network or a ghost from a crashed session</td><td>Delete the duplicate network; <code>/raw KILL alice_</code> if you have IRC oper access</td></tr>
+      <tr><td>Duplicate channels in your client</td><td>Channels listed in both the client config and soju's database — or two networks connecting to the same server</td><td>Remove <code>channels</code> from the client config and let soju manage them; delete duplicate networks</td></tr>
+      <tr><td>"Cannot interact with channels … Did you mean to use a specific network?"</td><td>You are typing in soju's control connection, not the upstream network</td><td>Set <code>bouncer_network</code> in your client config, or put <code>username/networkname</code> in the Username field</td></tr>
+      <tr><td>NickServ authentication fails</td><td>The <code>-connect-command</code> was on a network you deleted; the new auto-created network doesn't have it</td><td>Re-add the connect command: <code>/msg BouncerServ network update networkname -connect-command "PRIVMSG NickServ :IDENTIFY password"</code></td></tr>
+    </table>
+
+    <h3>Database location</h3>
+    <p>soju stores everything in a SQLite database. The path is set in the config file (<code>db sqlite3 /path/to/main.db</code>). Useful tables:</p>
+    <table>
+      <tr><th>Table</th><th>Contents</th></tr>
+      <tr><td><code>User</code></td><td>Bouncer user accounts (username, hashed password, admin flag)</td></tr>
+      <tr><td><code>Network</code></td><td>Upstream IRC server connections (address, nick, credentials)</td></tr>
+      <tr><td><code>Channel</code></td><td>Joined channels per network</td></tr>
+    </table>
+
+    <div class="warning">
+      <strong>Always restart soju after editing the database directly.</strong> soju caches state in memory — changes to the SQLite file are not picked up until restart.
     </div>
   </section>
 
