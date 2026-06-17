@@ -99,8 +99,9 @@ PreferencesDialog::PreferencesDialog(const Config &cfg, QWidget *parent)
         themeBtn->setText(item->text());
         emit themeChanged(item->text());
     };
-    connect(themeList, &QListWidget::itemClicked,   this, applyTheme);
-    connect(themeList, &QListWidget::itemActivated, this, applyTheme);
+    connect(themeList, &QListWidget::itemClicked,        this, applyTheme);
+    connect(themeList, &QListWidget::itemActivated,     this, applyTheme);
+    connect(themeList, &QListWidget::currentItemChanged, this, applyTheme);
 
     vbox->addSpacing(3);
     vbox->addWidget(sectionLabel("App Icon"));
