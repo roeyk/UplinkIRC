@@ -1804,7 +1804,7 @@ void MainWindow::setupInputBar()
 
     m_emojiBtn = new QPushButton("😊");
     m_emojiBtn->setFixedSize(30, 30);
-    m_emojiBtn->setStyleSheet("QPushButton { padding: 0; font-size: 16px; }");
+    m_emojiBtn->setStyleSheet("QPushButton { padding: 0; font-size: 16px; background: transparent; border: none; }");
     m_emojiBtn->setVisible(m_showEmojiBtn);
     m_emojiBtn->setToolTip("Emoji picker");
 
