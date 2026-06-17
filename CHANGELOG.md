@@ -703,6 +703,24 @@ No regressions. No known issues.
 Next priorities: test Delete on direct connection and via soju; ASan/UBSan run.
 -->
 
+<!--
+SESSION SUMMARY — 2026-06-16 (emoji picker width fix)
+What changed:
+  - Emoji picker popup was clipping emojis on the right edge (all platforms, noticed on Mac).
+    The fixed width calculation did not account for the vertical scrollbar eating into the
+    viewport. Replaced the hardcoded +16 padding with a runtime computation that queries the
+    actual scrollbar width, so the grid is fully visible on all platforms.
+No regressions. No known issues.
+Next priorities: test Delete on direct connection and via soju; ASan/UBSan run.
+-->
+
+## v0.25.42 — 2026-06-16
+
+### Fixed
+- **Emoji picker clipping** — rightmost column of emojis was cut off on all platforms. The popup width now accounts for the vertical scrollbar by querying the actual scrollbar extent at runtime instead of using an undersized hardcoded padding value.
+
+---
+
 ## v0.25.41 — 2026-06-16
 
 ### Fixed
