@@ -2774,6 +2774,13 @@ void MainWindow::onServerClosed(const QString &host)
         closeChannelPane(host, ch);
     }
 
+    // Prune per-channel caches for this server
+    const QString prefix = host + '\t';
+    for (auto it = m_scrollPositions.begin(); it != m_scrollPositions.end(); )
+        it = it.key().startsWith(prefix) ? m_scrollPositions.erase(it) : ++it;
+    for (auto it = m_renderStart.begin(); it != m_renderStart.end(); )
+        it = it.key().startsWith(prefix) ? m_renderStart.erase(it) : ++it;
+
     const int idx = m_sidebar->indexOfTopLevelItem(srv);
     delete m_sidebar->takeTopLevelItem(idx);
 
@@ -2802,6 +2809,11 @@ void MainWindow::onChannelRemoved(const QString &host, const QString &channel)
     auto *item = findChannelItem(host, channel);
     if (item) delete item;
     closeChannelPane(host, channel);
+
+    const QString key = host + '\t' + channel;
+    m_scrollPositions.remove(key);
+    m_renderStart.remove(key);
+
     onSidebarSelectionChanged();
 }
 
@@ -2864,10 +2876,13 @@ void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
     QList<Message> group(ch->messages.cbegin() + start, ch->messages.cbegin() + j);
 
     const bool expand = !m_expandedEventGroups.contains(groupId);
-    if (expand)
+    if (expand) {
+        if (m_expandedEventGroups.size() >= 200)
+            m_expandedEventGroups.clear();
         m_expandedEventGroups.insert(groupId);
-    else
+    } else {
         m_expandedEventGroups.remove(groupId);
+    }
 
     ChatRenderer::Context ctx;
     ctx.coloredNicks = m_config.ui.coloredNicks;
