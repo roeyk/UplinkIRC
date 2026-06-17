@@ -567,7 +567,8 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
     bool allSelfSigned = true;
     for (const auto &e : errors) {
         if (e.error() != QSslError::SelfSignedCertificate &&
-            e.error() != QSslError::SelfSignedCertificateInChain) {
+            e.error() != QSslError::SelfSignedCertificateInChain &&
+            e.error() != QSslError::HostNameMismatch) {
             allSelfSigned = false;
             break;
         }

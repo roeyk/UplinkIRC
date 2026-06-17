@@ -687,6 +687,22 @@ No regressions. Known issue: REDACT blocked pending Ergo restart.
 Next priorities: Ergo restart + REDACT retest; Ctrl+scroll zoom; ServerId/BufferId strong types.
 -->
 
+<!--
+SESSION SUMMARY — 2026-06-17 (REDACT/message deletion debugging, Ergo server config)
+What changed:
+  - Debugged draft/message-redaction not working on direct Ergo connections.
+  - Root cause: Ergo was not advertising the cap due to three missing config conditions:
+    1. No persistent history database configured (SQLite/MySQL/PostgreSQL required).
+    2. history.persistent.enabled was missing.
+    3. allow-individual-delete was placed directly under history: instead of history.retention:.
+  - Ergo package binary lacked SQLite support; rebuilt from source with make build_full.
+  - pkg lock applied to prevent pkg upgrade from overwriting the custom binary.
+  - No Uplink code changes — this was entirely a server-side config issue.
+  - Updated docs/howto.html (deletion section) and docs/ircv3.md with Ergo server requirements.
+No regressions. No known issues.
+Next priorities: test Delete on direct connection and via soju; ASan/UBSan run.
+-->
+
 ## v0.25.41 — 2026-06-16
 
 ### Fixed

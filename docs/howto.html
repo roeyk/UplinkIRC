@@ -2303,6 +2303,14 @@ al[Shift+Tab]     →  alice:           (cycle back)
 
     <div class="note">
       <strong>Server support required:</strong> the <strong>Delete</strong> option only appears when the server has acknowledged the <code>draft/message-redaction</code> capability during the CAP handshake. You can only delete your own messages.
+      <br><br>
+      For <strong>Ergo</strong> server operators, three things must be configured in <code>ircd.yaml</code>:
+      <ol>
+        <li>A persistent history database — SQLite, MySQL, or PostgreSQL — under <code>datastore:</code>. The default Ergo package binary may not include SQLite support; if so, rebuild from source with <code>make build_full</code>.</li>
+        <li>Persistent history enabled under <code>history.persistent.enabled: true</code>.</li>
+        <li><code>allow-individual-delete: true</code> under <code>history.retention:</code> — <em>not</em> directly under <code>history:</code>.</li>
+      </ol>
+      After applying these changes, reload or restart Ergo. <code>draft/message-redaction</code> will then appear in the server's CAP LS and the Delete option will be available.
     </div>
   </section>
 
