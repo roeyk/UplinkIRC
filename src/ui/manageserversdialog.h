@@ -16,6 +16,8 @@ private:
     void addServer();
     void editServer();
     void removeServer();
+    void moveUp();
+    void moveDown();
     void refreshList();
 
     QListWidget          *m_list;

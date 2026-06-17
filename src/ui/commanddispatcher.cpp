@@ -338,6 +338,46 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
         m_model->sendRaw(host, args);
     } else if (cmd == "/quit") {
         if (auto *cl = m_model->clientFor(host)) cl->quit(args);
+    } else if (cmd == "/disconnect") {
+        m_model->closeServer(host);
+    } else if (cmd == "/connect" || cmd == "/server") {
+        const QString target = args.trimmed();
+        if (target.isEmpty()) {
+            if (auto *cl = m_model->clientFor(host))
+                cl->reconnect();
+            else
+                m_model->connectServer(host);
+        } else if (!m_model->connectServer(ServerId{target})) {
+            QString h = target.section(' ', 0, 0);
+            quint16 port = 6697;
+            bool ssl = true;
+            if (h.contains(':')) {
+                bool ok = false;
+                quint16 p = h.section(':', -1).toUShort(&ok);
+                if (ok) {
+                    port = p;
+                    h = h.section(':', 0, -2);
+                }
+            }
+            if (h.endsWith('+')) {
+                h.chop(1);
+            } else if (port == 6667) {
+                ssl = false;
+            }
+            QString nick;
+            for (const auto &sc : std::as_const(m_config->servers))
+                if (!sc.nick.isEmpty()) { nick = sc.nick; break; }
+            if (nick.isEmpty())
+                nick = qEnvironmentVariable("USER", "Uplink");
+            ServerConfig sc;
+            sc.host = h;
+            sc.port = port;
+            sc.ssl  = ssl;
+            sc.nick = nick;
+            sc.user = nick;
+            sc.realname = nick;
+            m_model->addServer(sc);
+        }
     } else if (cmd == "/away") {
         QString msg = args.trimmed();
         if (msg.isEmpty()) {
@@ -666,6 +706,9 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
             "  /monitor add|del|list|clear|status [nick]  — watch list (MONITOR)",
             "  /clear                      — clear the chat buffer",
             "  /quote <raw>  /raw <raw>    — send a raw IRC line",
+            "  /connect [host[:port]]      — reconnect, or connect to a server",
+            "  /server [host[:port]]       — alias for /connect",
+            "  /disconnect                 — close the current server and all its channels",
             "  /quit [message]             — disconnect from server",
         };
         for (const QString &line : lines)

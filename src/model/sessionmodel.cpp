@@ -293,6 +293,44 @@ void SessionModel::removeServer(ServerId host)
     }
 }
 
+void SessionModel::closeServer(ServerId host)
+{
+    for (int i = 0; i < m_clients.size(); ++i) {
+        if (m_clients[i]->host() == host.str()) {
+            m_clients[i]->quit("Closing");
+            m_clients[i]->deleteLater();
+            m_clients.removeAt(i);
+            break;
+        }
+    }
+    m_sessions.removeIf([&](const ServerSession &s){ return s.host == host.str(); });
+
+    const QString hostSeg = "/" + sanitizeFilename(host.str()) + "/";
+    for (auto it = m_logFiles.begin(); it != m_logFiles.end(); ) {
+        if (it.key().contains(hostSeg)) {
+            it.value()->close();
+            delete it.value();
+            it = m_logFiles.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    emit serverClosed(host);
+}
+
+bool SessionModel::connectServer(ServerId host)
+{
+    if (session(host)) return true;
+    for (const auto &sc : std::as_const(m_config.servers)) {
+        if (sc.host == host.str() || sc.name == host.str()) {
+            spawnSession(sc, false);
+            return true;
+        }
+    }
+    return false;
+}
+
 void SessionModel::updateServer(ServerId oldHost, const ServerConfig &sc)
 {
     removeServer(oldHost);

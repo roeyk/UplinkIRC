@@ -792,10 +792,11 @@ void IrcClient::processLine(const QString &line)
         if (text.startsWith('\x01') && text.endsWith('\x01')) {
             const QString ctcp    = text.mid(1, text.size() - 2);
             const QString ctcpCmd = ctcp.section(' ', 0, 0).toUpper();
+            const bool selfEcho   = (msg.nick == m_nick);
             if (ctcpCmd == "ACTION") {
                 emit actionReceived(m_host, target,
                                     msg.nick, ctcp.mid(7), serverTime, false, msgid);
-            } else if (ctcpCmd == "VERSION") {
+            } else if (!selfEcho && ctcpCmd == "VERSION") {
                 const QString rkey = msg.nick + ":VERSION";
                 const qint64  now  = QDateTime::currentMSecsSinceEpoch();
                 if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {
@@ -805,7 +806,7 @@ void IrcClient::processLine(const QString &line)
                     sendRaw("NOTICE " + msg.nick + " :\x01VERSION Uplink " UPLINK_VERSION "\x01");
                     emit serverMessage(m_host, "CTCP VERSION from " + msg.nick);
                 }
-            } else if (ctcpCmd == "PING") {
+            } else if (!selfEcho && ctcpCmd == "PING") {
                 const QString rkey = msg.nick + ":PING";
                 const qint64  now  = QDateTime::currentMSecsSinceEpoch();
                 if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {

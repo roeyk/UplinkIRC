@@ -23,10 +23,14 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
     auto *btnAdd    = new PillButton("Add");
     auto *btnEdit   = new PillButton("Edit");
     auto *btnRemove = new PillButton("Remove");
+    auto *btnUp     = new PillButton("▲");
+    auto *btnDown   = new PillButton("▼");
 
     connect(btnAdd,    &QPushButton::clicked, this, &ManageServersDialog::addServer);
     connect(btnEdit,   &QPushButton::clicked, this, &ManageServersDialog::editServer);
     connect(btnRemove, &QPushButton::clicked, this, &ManageServersDialog::removeServer);
+    connect(btnUp,     &QPushButton::clicked, this, &ManageServersDialog::moveUp);
+    connect(btnDown,   &QPushButton::clicked, this, &ManageServersDialog::moveDown);
     connect(m_list, &QListWidget::itemDoubleClicked, this, &ManageServersDialog::editServer);
 
     auto *btnBar = new QHBoxLayout;
@@ -34,6 +38,8 @@ ManageServersDialog::ManageServersDialog(const QList<ServerConfig> &servers, QWi
     btnBar->addWidget(btnEdit);
     btnBar->addWidget(btnRemove);
     btnBar->addStretch();
+    btnBar->addWidget(btnUp);
+    btnBar->addWidget(btnDown);
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     buttons->button(QDialogButtonBox::Ok)->setIcon(MenuIcons::confirm());
@@ -90,4 +96,22 @@ void ManageServersDialog::removeServer()
     if (row < 0 || row >= m_servers.size()) return;
     m_servers.removeAt(row);
     refreshList();
+}
+
+void ManageServersDialog::moveUp()
+{
+    const int row = m_list->currentRow();
+    if (row <= 0 || row >= m_servers.size()) return;
+    m_servers.swapItemsAt(row, row - 1);
+    refreshList();
+    m_list->setCurrentRow(row - 1);
+}
+
+void ManageServersDialog::moveDown()
+{
+    const int row = m_list->currentRow();
+    if (row < 0 || row >= m_servers.size() - 1) return;
+    m_servers.swapItemsAt(row, row + 1);
+    refreshList();
+    m_list->setCurrentRow(row + 1);
 }

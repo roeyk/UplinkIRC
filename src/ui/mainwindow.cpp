@@ -1975,6 +1975,8 @@ void MainWindow::connectModel()
             [this](ServerId id){ onServerConnected(id.str()); });
     connect(m_model, &SessionModel::serverDisconnected, this,
             [this](ServerId id){ onServerDisconnected(id.str()); });
+    connect(m_model, &SessionModel::serverClosed, this,
+            [this](ServerId id){ onServerClosed(id.str()); });
     connect(m_model, &SessionModel::channelAdded, this,
             [this](ServerId h, BufferId ch){ onChannelAdded(h.str(), ch.str()); });
     connect(m_model, &SessionModel::channelRemoved, this,
@@ -2446,11 +2448,11 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, c
 
         if (prefix.startsWith('/')) {
             static const QStringList commands = {
-                "/away", "/back", "/ban", "/caps", "/clear", "/ctcp",
-                "/deop", "/devoice", "/invite", "/j", "/join",
+                "/away", "/back", "/ban", "/caps", "/clear", "/connect", "/ctcp",
+                "/deop", "/devoice", "/disconnect", "/invite", "/j", "/join",
                 "/close", "/kick", "/leave", "/me", "/mode", "/motd", "/msg",
                 "/nick", "/notice", "/op", "/part", "/ping", "/time",
-                "/quit", "/quote", "/raw", "/sysinfo", "/topic",
+                "/quit", "/quote", "/raw", "/server", "/sysinfo", "/topic",
                 "/unban", "/version", "/voice", "/whois",
             };
             for (const QString &cmd : commands)
@@ -2621,6 +2623,20 @@ void MainWindow::hideEmojiAutocomplete()
 // Sidebar helpers
 // ---------------------------------------------------------------------------
 
+void MainWindow::syncSidebarOrderToConfig()
+{
+    QList<ServerConfig> reordered;
+    for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
+        const QString host = m_sidebar->topLevelItem(i)->data(0, Qt::UserRole).toString();
+        for (const auto &sc : std::as_const(m_config.servers))
+            if (sc.host == host) { reordered.append(sc); break; }
+    }
+    if (reordered.size() == m_config.servers.size()) {
+        m_config.servers = reordered;
+        Config::save(m_config, Config::defaultPath(), true);
+    }
+}
+
 QTreeWidgetItem *MainWindow::findServerItem(const QString &host) const
 {
     for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
@@ -2648,12 +2664,25 @@ QTreeWidgetItem *MainWindow::findChannelItem(const QString &host, const QString 
 // Model → UI slots
 // ---------------------------------------------------------------------------
 
+static QString shortNetworkName(const QString &host)
+{
+    QString h = host;
+    if (h.startsWith("irc.", Qt::CaseInsensitive))
+        h = h.mid(4);
+    const auto dot = h.lastIndexOf('.');
+    if (dot > 0)
+        h = h.left(dot);
+    return h;
+}
+
 void MainWindow::onServerAdded(const QString &host)
 {
     if (findServerItem(host)) return;
-    QString label = host;
+    QString label;
     for (const auto &sc : std::as_const(m_config.servers))
         if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
+    if (label.isEmpty())
+        label = shortNetworkName(host);
     auto *item = new QTreeWidgetItem(m_sidebar);
     item->setText(0, label.toUpper());
     item->setData(0, Qt::UserRole,     host);
@@ -2728,6 +2757,26 @@ void MainWindow::onServerDisconnected(const QString &host)
         for (const QString &bn : sess->botNicks)
             m_botIconIdx.remove(bn);
     }
+}
+
+void MainWindow::onServerClosed(const QString &host)
+{
+    auto *srv = findServerItem(host);
+    if (!srv) return;
+
+    // Close any open panes for channels on this server
+    for (int i = srv->childCount() - 1; i >= 0; --i) {
+        const QString ch = srv->child(i)->data(0, Qt::UserRole + 1).toString();
+        closeChannelPane(host, ch);
+    }
+
+    const int idx = m_sidebar->indexOfTopLevelItem(srv);
+    delete m_sidebar->takeTopLevelItem(idx);
+
+    if (m_signalBars && host == m_model->activeHost().str())
+        m_signalBars->setState(SignalBars::State::Disconnected);
+
+    onSidebarSelectionChanged();
 }
 
 void MainWindow::onChannelAdded(const QString &host, const QString &channel)
@@ -3056,9 +3105,11 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
     if (!item) return;
     QString label = channel;
     if (channel == "(server)") {
-        label = host;
+        label = QString();
         for (const auto &sc : std::as_const(m_config.servers))
             if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
+        if (label.isEmpty())
+            label = shortNetworkName(host);
     }
     if (channel == "(server)") {
         const bool connected = [&]{
@@ -3068,7 +3119,7 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
             const QColor col = count > 0 ? QColor("#e06c75") : QColor();
             item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::connectedServer(col)));
         }
-        item->setText(0, label);
+        item->setText(0, label.toUpper());
     } else {
         if (count > 0 && m_model->hasMention(ServerId{host}, BufferId{channel}))
             item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::mention(QColor("#FFD700"))));
@@ -3492,6 +3543,29 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
             menu->addAction("Reconnect", this, [this, host]{
                 if (auto *cl = m_model->clientFor(ServerId{host}))
                     cl->reconnect();
+            });
+        }
+        menu->addAction("Close Server", this, [this, host]{
+            m_model->closeServer(ServerId{host});
+        });
+        menu->addSeparator();
+        const int idx = m_sidebar->indexOfTopLevelItem(item);
+        if (idx > 0) {
+            menu->addAction("Move Up", this, [this, idx]{
+                auto *moved = m_sidebar->takeTopLevelItem(idx);
+                m_sidebar->insertTopLevelItem(idx - 1, moved);
+                moved->setExpanded(true);
+                m_sidebar->setCurrentItem(moved);
+                syncSidebarOrderToConfig();
+            });
+        }
+        if (idx < m_sidebar->topLevelItemCount() - 1) {
+            menu->addAction("Move Down", this, [this, idx]{
+                auto *moved = m_sidebar->takeTopLevelItem(idx);
+                m_sidebar->insertTopLevelItem(idx + 1, moved);
+                moved->setExpanded(true);
+                m_sidebar->setCurrentItem(moved);
+                syncSidebarOrderToConfig();
             });
         }
     } else if (channel.startsWith('#') || channel.startsWith('&')) {
