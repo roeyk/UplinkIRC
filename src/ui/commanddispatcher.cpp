@@ -382,7 +382,7 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
         QString msg = args.trimmed();
         if (msg.isEmpty()) {
             for (const auto &sc : std::as_const(m_config->servers))
-                if (sc.host == host.str()) { msg = sc.awayMessage; break; }
+                if (sc.name == host.str()) { msg = sc.awayMessage; break; }
         }
         if (msg.isEmpty()) msg = QStringLiteral("Away");
         m_model->sendRaw(host, "AWAY :" + msg);

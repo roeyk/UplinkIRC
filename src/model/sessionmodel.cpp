@@ -51,7 +51,7 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
                 fill(&ServerConfig::nickservPassword, 2);
                 fill(&ServerConfig::proxyPass,        3);
             } else {
-                emit guard->socketError(shared->host,
+                emit guard->socketError(shared->name,
                     "Keychain: no credentials stored for \"" + shared->name +
                     "\" — open Edit Server and re-save");
             }
@@ -98,7 +98,7 @@ void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
     sess.nick        = sc.nick;
     sess.highlightRe = buildHighlightRe(m_config.ui.highlightWords);
     m_sessions.append(sess);
-    emit serverAdded(ServerId{sc.host});
+    emit serverAdded(ServerId{sc.name});
 
     auto *client = new IrcClient(this);
     attachClient(client, sc);
@@ -270,15 +270,15 @@ void SessionModel::addServer(const ServerConfig &sc)
 void SessionModel::removeServer(ServerId host)
 {
     for (int i = 0; i < m_clients.size(); ++i) {
-        if (m_clients[i]->host() == host.str()) {
+        if (m_clients[i]->serverName() == host.str()) {
             m_clients[i]->quit("Removed");
             m_clients[i]->deleteLater();
             m_clients.removeAt(i);
             break;
         }
     }
-    m_sessions.removeIf([&](const ServerSession &s){ return s.host == host.str(); });
-    m_config.servers.removeIf([&](const ServerConfig &s){ return s.host == host.str(); });
+    m_sessions.removeIf([&](const ServerSession &s){ return s.name == host.str(); });
+    m_config.servers.removeIf([&](const ServerConfig &s){ return s.name == host.str(); });
     emit serverDisconnected(host);
 
     const QString hostSeg = "/" + sanitizeFilename(host.str()) + "/";
@@ -296,14 +296,14 @@ void SessionModel::removeServer(ServerId host)
 void SessionModel::closeServer(ServerId host)
 {
     for (int i = 0; i < m_clients.size(); ++i) {
-        if (m_clients[i]->host() == host.str()) {
+        if (m_clients[i]->serverName() == host.str()) {
             m_clients[i]->quit("Closing");
             m_clients[i]->deleteLater();
             m_clients.removeAt(i);
             break;
         }
     }
-    m_sessions.removeIf([&](const ServerSession &s){ return s.host == host.str(); });
+    m_sessions.removeIf([&](const ServerSession &s){ return s.name == host.str(); });
 
     const QString hostSeg = "/" + sanitizeFilename(host.str()) + "/";
     for (auto it = m_logFiles.begin(); it != m_logFiles.end(); ) {
@@ -323,7 +323,7 @@ bool SessionModel::connectServer(ServerId host)
 {
     if (session(host)) return true;
     for (const auto &sc : std::as_const(m_config.servers)) {
-        if (sc.host == host.str() || sc.name == host.str()) {
+        if (sc.name == host.str() || sc.host == host.str()) {
             spawnSession(sc, false);
             return true;
         }
@@ -341,7 +341,7 @@ void SessionModel::syncServers(const QList<ServerConfig> &servers)
 {
     for (const ServerConfig &sc : servers) {
         for (ServerConfig &existing : m_config.servers) {
-            if (existing.host == sc.host) {
+            if (existing.name == sc.name) {
                 existing.channels = sc.channels;
                 break;
             }
@@ -357,7 +357,7 @@ void SessionModel::closeBuffer(ServerId host, BufferId target)
     const bool isChannel = target.str().startsWith('#') || target.str().startsWith('&');
     if (isChannel) {
         for (IrcClient *cl : m_clients)
-            if (cl->host() == host.str()) { cl->part(target.str()); break; }
+            if (cl->serverName() == host.str()) { cl->part(target.str()); break; }
     }
 
     sess->channels.remove(target.str().toLower());
@@ -377,7 +377,7 @@ void SessionModel::closeBuffer(ServerId host, BufferId target)
 ServerSession *SessionModel::session(ServerId host)
 {
     for (auto &s : m_sessions)
-        if (s.host == host.str()) return &s;
+        if (s.name == host.str()) return &s;
     return nullptr;
 }
 
@@ -390,7 +390,7 @@ Channel *SessionModel::channel(ServerId host, BufferId name)
 IrcClient *SessionModel::clientFor(ServerId host)
 {
     for (IrcClient *cl : m_clients)
-        if (cl->host() == host.str()) return cl;
+        if (cl->serverName() == host.str()) return cl;
     return nullptr;
 }
 
@@ -639,13 +639,13 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
         cl->setMonitorList(m_config.monitorList);
 
     // Pre-create server buffer and configured channels in the session
-    auto *sess = session(ServerId{cfg.host});
+    auto *sess = session(ServerId{cfg.name});
     if (!sess) return;
     sess->serverBuffer(); // ensure "(server)" exists
     for (const auto &ch : cfg.channels) {
         auto &c  = sess->getOrCreate(ch.name);
         c.name   = ch.name;
-        emit channelAdded(ServerId{cfg.host}, BufferId{ch.name});
+        emit channelAdded(ServerId{cfg.name}, BufferId{ch.name});
     }
 }
 
@@ -695,13 +695,13 @@ void SessionModel::onConnected(const QString &host)
 
     IrcClient *cl = nullptr;
     for (IrcClient *c : m_clients)
-        if (c->host() == host) { cl = c; break; }
+        if (c->serverName() == host) { cl = c; break; }
     if (!cl) return;
 
     // Join configured channels (with keys)
     QSet<QString> configChans;
     for (const ServerConfig &sc : m_config.servers) {
-        if (sc.host != host) continue;
+        if (sc.name != host) continue;
         for (const ChannelConfig &cc : sc.channels) {
             cl->join(cc.name, cc.password);
             configChans.insert(cc.name.toLower());
@@ -1279,7 +1279,7 @@ void SessionModel::onMonitorOffline(const QString &host, const QStringList &nick
 void SessionModel::pinCertificate(ServerId host, const QString &fingerprint)
 {
     for (auto &sc : m_config.servers) {
-        if (sc.host == host.str()) {
+        if (sc.name == host.str()) {
             sc.pinnedFingerprint = fingerprint;
             Config::save(m_config, Config::defaultPath());
             break;

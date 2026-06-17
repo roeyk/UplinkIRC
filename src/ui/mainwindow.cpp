@@ -902,18 +902,18 @@ void MainWindow::connectPreferences()
         const QList<ServerConfig> updated = dlg.servers();
         for (const ServerConfig &old : m_config.servers) {
             const bool stillPresent = std::any_of(updated.begin(), updated.end(),
-                [&](const ServerConfig &s){ return s.host == old.host; });
+                [&](const ServerConfig &s){ return s.name == old.name; });
             if (!stillPresent)
-                m_model->removeServer(ServerId{old.host});
+                m_model->removeServer(ServerId{old.name});
         }
         for (const ServerConfig &sc : updated) {
             const ServerConfig *existing = nullptr;
             for (const ServerConfig &old : m_config.servers)
-                if (old.host == sc.host) { existing = &old; break; }
+                if (old.name == sc.name) { existing = &old; break; }
             if (!existing) {
                 m_model->addServer(sc);
             } else if (*existing != sc) {
-                m_model->updateServer(ServerId{existing->host}, sc);
+                m_model->updateServer(ServerId{existing->name}, sc);
             }
         }
         m_config.servers = updated;
@@ -947,18 +947,18 @@ void MainWindow::connectPreferences()
             if (!sess.connected) continue;
             // Always update local nickMeta for own nick so tooltip reflects new values
             if (!displayName.isEmpty())
-                m_model->onUserMetaChanged(ServerId{sess.host}, sess.nick, "display-name", displayName);
+                m_model->onUserMetaChanged(ServerId{sess.name}, sess.nick, "display-name", displayName);
             if (!avatarUrl.isEmpty())
-                m_model->onUserMetaChanged(ServerId{sess.host}, sess.nick, "avatar", avatarUrl);
-            auto *cl = m_model->clientFor(ServerId{sess.host});
+                m_model->onUserMetaChanged(ServerId{sess.name}, sess.nick, "avatar", avatarUrl);
+            auto *cl = m_model->clientFor(ServerId{sess.name});
             if (!cl || !cl->hasCap("draft/metadata-2")) {
                 skipped << sess.name;
                 continue;
             }
-            m_model->sendRaw(ServerId{sess.host}, "METADATA * SET display-name :" + displayName);
+            m_model->sendRaw(ServerId{sess.name}, "METADATA * SET display-name :" + displayName);
             const bool localPath = avatarUrl.startsWith('/') || QUrl(avatarUrl).isLocalFile();
             if (!localPath)
-                m_model->sendRaw(ServerId{sess.host}, "METADATA * SET avatar :" + avatarUrl);
+                m_model->sendRaw(ServerId{sess.name}, "METADATA * SET avatar :" + avatarUrl);
             sent << sess.name;
         }
         if (!avatarUrl.isEmpty()) fetchAvatar(avatarUrl);
@@ -1222,18 +1222,18 @@ void MainWindow::setupSidebar()
             const QList<ServerConfig> updated = dlg.servers();
             for (const ServerConfig &old : m_config.servers) {
                 const bool stillPresent = std::any_of(updated.begin(), updated.end(),
-                    [&](const ServerConfig &s){ return s.host == old.host; });
+                    [&](const ServerConfig &s){ return s.name == old.name; });
                 if (!stillPresent)
-                    m_model->removeServer(ServerId{old.host});
+                    m_model->removeServer(ServerId{old.name});
             }
             for (const ServerConfig &sc : updated) {
                 const ServerConfig *existing = nullptr;
                 for (const ServerConfig &old : m_config.servers)
-                    if (old.host == sc.host) { existing = &old; break; }
+                    if (old.name == sc.name) { existing = &old; break; }
                 if (!existing) {
                     m_model->addServer(sc);
                 } else if (*existing != sc) {
-                    m_model->updateServer(ServerId{existing->host}, sc);
+                    m_model->updateServer(ServerId{existing->name}, sc);
                 }
             }
             m_config.servers = updated;
@@ -2633,7 +2633,7 @@ void MainWindow::syncSidebarOrderToConfig()
     for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
         const QString host = m_sidebar->topLevelItem(i)->data(0, Qt::UserRole).toString();
         for (const auto &sc : std::as_const(m_config.servers))
-            if (sc.host == host) { reordered.append(sc); break; }
+            if (sc.name == host) { reordered.append(sc); break; }
     }
     if (reordered.size() == m_config.servers.size()) {
         m_config.servers = reordered;
@@ -2684,7 +2684,7 @@ void MainWindow::onServerAdded(const QString &host)
     if (findServerItem(host)) return;
     QString label;
     for (const auto &sc : std::as_const(m_config.servers))
-        if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
+        if (sc.name == host && !sc.name.isEmpty()) { label = sc.name; break; }
     if (label.isEmpty())
         label = shortNetworkName(host);
     auto *item = new QTreeWidgetItem(m_sidebar);
@@ -3126,7 +3126,7 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
     if (channel == "(server)") {
         label = QString();
         for (const auto &sc : std::as_const(m_config.servers))
-            if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
+            if (sc.name == host && !sc.name.isEmpty()) { label = sc.name; break; }
         if (label.isEmpty())
             label = shortNetworkName(host);
     }
@@ -4652,7 +4652,7 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
 
     QString serverName = host;
     for (const auto &sc : std::as_const(m_config.servers))
-        if (sc.host == host && !sc.name.isEmpty()) { serverName = sc.name; break; }
+        if (sc.name == host && !sc.name.isEmpty()) { serverName = sc.name; break; }
 
     if (channel == "(server)") {
         m_topicLabel->clear();
