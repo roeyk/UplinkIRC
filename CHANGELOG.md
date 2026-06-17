@@ -1,6 +1,16 @@
 # Changelog
 
 <!--
+SESSION SUMMARY — 2026-06-17 (emoji button transparent bg)
+What changed:
+  - Emoji picker button (😊) had an opaque background on macOS — the default QPushButton
+    styling drew a visible box around the emoji. Fixed by adding background: transparent
+    and border: none to the button's inline stylesheet (mainwindow.cpp:1807).
+No regressions. No known issues.
+Next priorities: ASan/UBSan run + heaptrack profile analysis; ServerId/BufferId strong types.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-16 (icon swap, close-channel UI fix, warning cleanup, v0.25.40 release)
 What changed:
   - Preferences button icon swapped from settings.svg (gear) to manage_accounts Material Symbol.
@@ -714,9 +724,10 @@ No regressions. No known issues.
 Next priorities: test Delete on direct connection and via soju; ASan/UBSan run.
 -->
 
-## v0.25.42 — 2026-06-16
+## v0.25.42 — 2026-06-17
 
 ### Fixed
+- **Emoji button background** — the 😊 picker button had an opaque background on macOS instead of blending into the input bar. Now transparent with no border.
 - **Emoji picker clipping** — rightmost column of emojis was cut off on all platforms. The popup width now accounts for the vertical scrollbar by querying the actual scrollbar extent at runtime instead of using an undersized hardcoded padding value.
 
 ---
