@@ -562,6 +562,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     connect(m_dispatcher, &CommandDispatcher::focusInput,     this, [this]{ if (m_input) m_input->setFocus(); });
     connect(m_dispatcher, &CommandDispatcher::clearChat,      this, [this]{ if (m_chatView) m_chatView->clear(); });
     connect(m_dispatcher, &CommandDispatcher::openChannelList,this, &MainWindow::openChannelList);
+    connect(m_dispatcher, &CommandDispatcher::openChannelPane,this, &MainWindow::openChannelPane);
     connect(m_dispatcher, &CommandDispatcher::replyBarCleared, this, &MainWindow::clearReplyBar);
 }
 
@@ -2927,6 +2928,8 @@ void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
     ctx.chatPt       = m_config.ui.fontSizes.chat;
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
+    ctx.themeAccent  = m_theme.accent;
+    ctx.themePlaceholder = m_theme.placeholder;
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -3064,9 +3067,11 @@ void MainWindow::onMessageAdded(const QString &host, const QString &channel, con
         ctx.chatPt       = m_config.ui.fontSizes.chat;
         ctx.validTheme   = m_theme.valid;
         ctx.themeText    = m_theme.text;
+        ctx.themeAccent  = m_theme.accent;
+        ctx.themePlaceholder = m_theme.placeholder;
         ctx.selfNickRe   = m_selfNickRe;
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
+        ctx.highlightRe  = m_highlightRe;
+        ctx.showTimestamps = m_config.ui.showTimestamps;
         ctx.channel      = ch;
         return ctx;
     };
@@ -3243,9 +3248,11 @@ void MainWindow::onMessageRedacted(const QString &host, const QString &channel, 
         ctx.chatPt       = m_config.ui.fontSizes.chat;
         ctx.validTheme   = m_theme.valid;
         ctx.themeText    = m_theme.text;
+        ctx.themeAccent  = m_theme.accent;
+        ctx.themePlaceholder = m_theme.placeholder;
         ctx.selfNickRe   = m_selfNickRe;
-    ctx.highlightRe  = m_highlightRe;
-    ctx.showTimestamps = m_config.ui.showTimestamps;
+        ctx.highlightRe  = m_highlightRe;
+        ctx.showTimestamps = m_config.ui.showTimestamps;
         ctx.channel      = ch;
         return ctx;
     };
@@ -3895,6 +3902,8 @@ void MainWindow::refreshPaneChatView(ChannelPane *pane)
     ctx.chatPt       = m_config.ui.fontSizes.chat;
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
+    ctx.themeAccent  = m_theme.accent;
+    ctx.themePlaceholder = m_theme.placeholder;
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -4276,6 +4285,8 @@ void MainWindow::refreshChatView(const QString &host, const QString &channel, bo
     ctx.chatPt       = m_config.ui.fontSizes.chat;
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
+    ctx.themeAccent  = m_theme.accent;
+    ctx.themePlaceholder = m_theme.placeholder;
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -4391,6 +4402,8 @@ void MainWindow::loadOlderMessages()
     ctx.chatPt       = m_config.ui.fontSizes.chat;
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
+    ctx.themeAccent  = m_theme.accent;
+    ctx.themePlaceholder = m_theme.placeholder;
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -4738,6 +4751,8 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
     ctx.chatPt       = m_config.ui.fontSizes.chat;
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
+    ctx.themeAccent  = m_theme.accent;
+    ctx.themePlaceholder = m_theme.placeholder;
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;
@@ -4833,6 +4848,8 @@ QString MainWindow::formatMessage(const Message &msg) const
     ctx.chatPt       = m_config.ui.fontSizes.chat;
     ctx.validTheme   = m_theme.valid;
     ctx.themeText    = m_theme.text;
+    ctx.themeAccent  = m_theme.accent;
+    ctx.themePlaceholder = m_theme.placeholder;
     ctx.selfNickRe   = m_selfNickRe;
     ctx.highlightRe  = m_highlightRe;
     ctx.showTimestamps = m_config.ui.showTimestamps;

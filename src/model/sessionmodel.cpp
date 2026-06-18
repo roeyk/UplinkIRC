@@ -489,7 +489,13 @@ void SessionModel::sendRaw(ServerId host, const QString &line)
 
 void SessionModel::localMessage(ServerId host, BufferId target, const QString &text)
 {
+    const bool existed = channel(host, target) != nullptr;
     postMessage(host.str(), target.str(), Message::make(MessageType::Server, "", text));
+
+    // Synthetic local result buffers are created through localMessage rather
+    // than IRC joins, so notify the sidebar/pane UI when a new one appears.
+    if (!existed && channel(host, target))
+        emit channelAdded(host, target);
 }
 
 QString SessionModel::selfNick(ServerId host)
