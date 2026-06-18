@@ -32,6 +32,18 @@ uplink_test(tst_config
     LIBS tomlplusplus::tomlplusplus Qt6Keychain::Qt6Keychain
 )
 
+uplink_test(tst_richsearch
+    SOURCES
+        tst_richsearch.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/display.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/displayhighlight.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryeval.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryoptions.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryparser.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/richsearch.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/tokenizer.cpp
+)
+
 # ---------------------------------------------------------------------------
 # Fuzz target — two build modes:
 #   Standalone replay (default): any compiler, reads files from argv
