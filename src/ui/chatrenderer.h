@@ -18,6 +18,9 @@ struct Context {
     int               chatPt{10};
     bool              validTheme{false};
     QString           themeText;
+    // Theme colors used by renderer-owned local command output segments.
+    QString           themeAccent;
+    QString           themePlaceholder;
     QRegularExpression selfNickRe;   // pre-compiled; invalid = no highlight
     QRegularExpression highlightRe;  // extra keyword highlights; invalid = none
     bool               showTimestamps{true};
