@@ -23,6 +23,7 @@
 #include "ui/chatrenderer.h"
 #include "ui/chatview.h"
 #include "config/config.h"
+#include "search/richsearch.h"
 #include "net/addresscheck.h"
 
 #include <QApplication>
@@ -1940,6 +1941,20 @@ void MainWindow::setupInputBar()
         const QString text = m_input->toPlainText();
         m_sendBtn->setEnabled(!text.trimmed().isEmpty());
         checkEmojiAutocomplete(text);
+        const QString richSearchHelp = RichSearch::argumentHelp(text);
+
+        // Show live parser guidance only for the rich-search command family.
+        if (!richSearchHelp.isEmpty()) {
+            statusBar()->show();
+            statusBar()->showMessage(richSearchHelp);
+
+        // Clear only the slash-command help owned by this feature when the
+        // input no longer contains a rich-search command.
+        } else if (statusBar()->currentMessage().startsWith(u'/')) {
+            statusBar()->clearMessage();
+            statusBar()->hide();
+        }
+
         // Auto-resize: 1 to 4 lines
         const int lineH = m_input->fontMetrics().lineSpacing();
         const int margins = m_input->contentsMargins().top() + m_input->contentsMargins().bottom() + 8;
@@ -2431,12 +2446,67 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, c
     const QTextCursor tc = input->textCursor();
     const QString text = tc.block().text();
     const int pos = tc.positionInBlock();
+    const QStringList argumentChoices = RichSearch::completionChoices(text, pos);
+
+    // Enumerated rich-search arguments such as `view=` list their values in
+    // the current buffer instead of inserting a default.
+    if (!argumentChoices.isEmpty()) {
+        QStringList sortedChoices = argumentChoices;
+        sortedChoices.sort(Qt::CaseInsensitive);
+        m_model->localMessage(
+            ServerId{host},
+            BufferId{channel},
+            text.mid(text.lastIndexOf(' ', pos - 1) + 1) + QStringLiteral(" ")
+                + sortedChoices.join(QStringLiteral("  ")));
+        m_tabActive = false;
+        m_tabCandidates.clear();
+        return;
+    }
+
+    enum class CompletionKind { CommandOrArgument, Nick };
+    CompletionKind completionKind = CompletionKind::CommandOrArgument;
+
+    auto nicknameSelectorCandidates = [&](const QString &prefix) {
+        const qsizetype eq = prefix.indexOf(u'=');
+        if (eq == -1)
+            return QStringList{};
+
+        const QString key = prefix.left(eq).toLower();
+        if (key != QStringLiteral("origin") && key != QStringLiteral("nick")
+            && key != QStringLiteral("nickname") && key != QStringLiteral("mention")) {
+            return QStringList{};
+        }
+
+        QStringList candidates;
+        auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
+        if (!ch)
+            return candidates;
+
+        const QString valuePrefix = prefix.mid(eq + 1);
+
+        // Complete only the selector value while preserving each nick's
+        // canonical casing from the current nick list.
+        for (const auto &entry : std::as_const(ch->nicks)) {
+            if (entry.nick.startsWith(valuePrefix, Qt::CaseInsensitive))
+                candidates << prefix.left(eq + 1) + entry.nick;
+        }
+
+        candidates.sort(Qt::CaseInsensitive);
+        candidates.removeDuplicates();
+        return candidates;
+    };
 
     if (!m_tabActive) {
         // Start a new cycle: derive prefix from text before cursor
         const qsizetype wordStart = text.lastIndexOf(' ', pos - 1) + 1;
         const QString prefix = text.mid(wordStart, pos - wordStart);
-        if (prefix.isEmpty()) return;
+        // Empty nick prefixes are ignored, but rich-search command arguments
+        // can complete from an empty prefix so `/last <Tab>` cycles parameters.
+        if (prefix.isEmpty()) {
+            int searchWordStart = -1;
+            if (RichSearch::completeArgument(text, pos, &searchWordStart).isEmpty())
+                return;
+        }
 
         m_tabPrefix    = prefix;
         m_tabWordStart = static_cast<int>(wordStart);
@@ -2447,22 +2517,36 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, c
         if (prefix.startsWith('/')) {
             static const QStringList commands = {
                 "/away", "/back", "/ban", "/caps", "/clear", "/ctcp",
+                "/common",
                 "/deop", "/devoice", "/invite", "/j", "/join",
-                "/close", "/kick", "/leave", "/me", "/mode", "/motd", "/msg",
+                "/close", "/kick", "/last", "/lastmention", "/leave",
+                "/me", "/mentions", "/mode", "/motd", "/msg",
                 "/nick", "/notice", "/op", "/part", "/ping", "/time",
-                "/quit", "/quote", "/raw", "/sysinfo", "/topic",
+                "/quit", "/quote", "/raw", "/search", "/sysinfo", "/topic",
                 "/unban", "/version", "/voice", "/whois",
             };
             for (const QString &cmd : commands)
                 if (cmd.startsWith(prefix, Qt::CaseInsensitive))
                     m_tabCandidates << cmd;
         } else {
-            auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
-            if (ch) {
-                for (const auto &e : std::as_const(ch->nicks))
-                    if (e.nick.startsWith(prefix, Qt::CaseInsensitive))
-                        m_tabCandidates << e.nick;
-                m_tabCandidates.sort(Qt::CaseInsensitive);
+            // Rich-search commands own their argument vocabulary. Keep this
+            // hook small so the UI path does not duplicate parser details.
+            m_tabCandidates = RichSearch::completeArgument(text, pos, &m_tabWordStart);
+            const QStringList nickSelectorMatches = nicknameSelectorCandidates(prefix);
+            if (!nickSelectorMatches.isEmpty()) {
+                m_tabCandidates = nickSelectorMatches;
+                m_tabWordStart = static_cast<int>(wordStart);
+                completionKind = CompletionKind::Nick;
+            }
+            if (m_tabCandidates.isEmpty()) {
+                auto *ch = m_model->channel(ServerId{host}, BufferId{channel});
+                if (ch) {
+                    for (const auto &e : std::as_const(ch->nicks))
+                        if (e.nick.startsWith(prefix, Qt::CaseInsensitive))
+                            m_tabCandidates << e.nick;
+                    m_tabCandidates.sort(Qt::CaseInsensitive);
+                    completionKind = CompletionKind::Nick;
+                }
             }
         }
     }
@@ -2470,12 +2554,25 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, c
 
     if (m_tabCandidates.isEmpty()) return;
 
+    // Nick completions mimic HexChat: show all case-insensitive candidates
+    // instead of guessing when several nicks match.
+    if (completionKind == CompletionKind::Nick && m_tabCandidates.size() > 1) {
+        m_tabCandidates.sort(Qt::CaseInsensitive);
+        m_model->localMessage(
+            ServerId{host},
+            BufferId{channel},
+            m_tabCandidates.join(QStringLiteral("  ")));
+        m_tabActive = false;
+        m_tabCandidates.clear();
+        return;
+    }
+
     const QString completed = m_tabCandidates[m_tabCandidateIndex];
     m_tabCandidateIndex = static_cast<int>((m_tabCandidateIndex + 1) % m_tabCandidates.size());
 
     // Nicks at line start get ": ", everything else at end-of-line gets " "
     QString suffix;
-    if (pos == static_cast<int>(text.length()))
+    if (pos == static_cast<int>(text.length()) && !completed.endsWith(u'='))
         suffix = (m_tabWordStart == 0 && !completed.startsWith('/'))
             ? QStringLiteral(": ") : QStringLiteral(" ");
 
@@ -2485,6 +2582,13 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, c
     editCursor.setPosition(blockStart + pos, QTextCursor::KeepAnchor);
     editCursor.insertText(completed + suffix);
     input->setTextCursor(editCursor);
+
+    // Selector-key completions intentionally stop at `key=`. Reset the cycle
+    // so a follow-up Tab can list or complete values for that key.
+    if (completed.endsWith(u'=')) {
+        m_tabActive = false;
+        m_tabCandidates.clear();
+    }
 }
 
 void MainWindow::handleHistoryUp()

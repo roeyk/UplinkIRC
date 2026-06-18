@@ -35,6 +35,7 @@ uplink_test(tst_config
 uplink_test(tst_richsearch
     SOURCES
         tst_richsearch.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/completion.cpp
         ${CMAKE_SOURCE_DIR}/src/search/common.cpp
         ${CMAKE_SOURCE_DIR}/src/search/display.cpp
         ${CMAKE_SOURCE_DIR}/src/search/displayhighlight.cpp
