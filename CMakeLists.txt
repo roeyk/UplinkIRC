@@ -67,6 +67,7 @@ qt_add_executable(Uplink WIN32
     src/search/display.cpp
     src/search/displayhighlight.cpp
     src/search/internal.h
+    src/search/mentions.cpp
     src/search/queryoptions.cpp
     src/search/queryeval.cpp
     src/search/queryparser.cpp
