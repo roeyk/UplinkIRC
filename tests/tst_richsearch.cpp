@@ -20,6 +20,9 @@ private slots:
     void supportsContextAndOther();
     void rendersCommonChannels();
     void rendersCommonChannelsAcrossNetworks();
+    void completesSearchArguments();
+    void completesCommonArguments();
+    void showsArgumentHelp();
 };
 
 static Message msg(const QString &nick, const QString &text, int minutesAgo = 0)
@@ -278,6 +281,85 @@ void TstRichSearch::rendersCommonChannelsAcrossNetworks()
 
     QVERIFY(lines.contains(QStringLiteral("OFTC/alice: #debian")));
     QVERIFY(lines.contains(QStringLiteral("exclusive to #here: bob")));
+}
+
+void TstRichSearch::completesSearchArguments()
+{
+    int wordStart = -1;
+    const QString input = QStringLiteral("/search spa");
+    const QStringList matches = RichSearch::completeArgument(
+        input,
+        input.size(),
+        &wordStart);
+
+    QCOMPARE(wordStart, 8);
+    QVERIFY(matches.contains(QStringLiteral("span=")));
+    QVERIFY(matches.contains(QStringLiteral("span=2d")));
+
+    wordStart = -1;
+    const QString emptyInput = QStringLiteral("/last ");
+    const QStringList emptyMatches = RichSearch::completeArgument(
+        emptyInput,
+        emptyInput.size(),
+        &wordStart);
+
+    QCOMPARE(wordStart, 6);
+    QVERIFY(emptyMatches.contains(QStringLiteral("text=")));
+    QVERIFY(emptyMatches.contains(QStringLiteral("nickname=")));
+    QVERIFY(emptyMatches.contains(QStringLiteral("--notimestamp")));
+
+    wordStart = -1;
+    const QString viewKeyInput = QStringLiteral("/search vi");
+    const QStringList viewKeyMatches = RichSearch::completeArgument(
+        viewKeyInput,
+        viewKeyInput.size(),
+        &wordStart);
+
+    QCOMPARE(wordStart, 8);
+    QCOMPARE(viewKeyMatches, QStringList{QStringLiteral("view=")});
+
+    wordStart = -1;
+    const QString viewValueInput = QStringLiteral("/search view=p");
+    const QStringList viewValueMatches = RichSearch::completeArgument(
+        viewValueInput,
+        viewValueInput.size(),
+        &wordStart);
+
+    QCOMPARE(wordStart, 8);
+    QCOMPARE(viewValueMatches, QStringList{QStringLiteral("view=pane")});
+    QVERIFY(RichSearch::completeArgument(
+        QStringLiteral("/search view="),
+        QStringLiteral("/search view=").size(),
+        &wordStart).isEmpty());
+    QCOMPARE(RichSearch::completionChoices(
+        QStringLiteral("/search view="),
+        QStringLiteral("/search view=").size()),
+        (QStringList{QStringLiteral("inline"), QStringLiteral("pane"), QStringLiteral("tab")}));
+}
+
+void TstRichSearch::completesCommonArguments()
+{
+    int wordStart = -1;
+    const QString input = QStringLiteral("/common scope=n");
+    const QStringList matches = RichSearch::completeArgument(
+        input,
+        input.size(),
+        &wordStart);
+
+    QCOMPARE(wordStart, 8);
+    QCOMPARE(matches, QStringList{QStringLiteral("scope=network")});
+}
+
+void TstRichSearch::showsArgumentHelp()
+{
+    const QString searchHelp = RichSearch::argumentHelp(QStringLiteral("/search "));
+    QVERIFY(searchHelp.contains(QStringLiteral("text=")));
+    QVERIFY(searchHelp.contains(QStringLiteral("span=Nd|Nh|Nm")));
+
+    const QString commonHelp = RichSearch::argumentHelp(QStringLiteral("/common "));
+    QCOMPARE(commonHelp, QStringLiteral("/common scope=global|network"));
+
+    QVERIFY(RichSearch::argumentHelp(QStringLiteral("/join #halloy")).isEmpty());
 }
 
 QTEST_MAIN(TstRichSearch)
