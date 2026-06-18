@@ -379,6 +379,7 @@
       <a href="index.html#security">Security</a>
       <a href="howto.html">Full Guide</a>
       <a href="quality.html" style="color:var(--gb-yellow)">Quality</a>
+      <a href="quality.html#ai-in-development">AI</a>
       <a class="nav-gh" href="https://github.com/noderelay/UplinkIRC">GitHub ↗</a>
       <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle light/dark theme">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -892,6 +893,48 @@
           8 warning flags catch narrowing, shadowing, sign mismatches, C-style casts, and
           non-virtual destructors at compile time — before they become runtime bugs.
           The codebase compiles clean at all 8 levels with GCC 16.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI IN DEVELOPMENT -->
+<section id="ai-in-development">
+  <div class="wrap">
+    <span class="section-tag c-yellow">Transparency</span>
+    <h2>AI in development</h2>
+    <p class="section-sub">
+      Yes, we use AI coding tools. Here's why that doesn't change what you're getting.
+    </p>
+
+    <p style="margin-top:1.5rem; font-size:0.92rem; color:var(--gb-fg1); line-height:1.7">
+      UplinkIRC is built by a team of 8 hobbyist volunteers, some with professional development backgrounds, and over 100 years of combined time on IRC networks. AI helped us write code faster. It didn't decide what the security model should be, which IRCv3 caps to support, or how to handle credentials. Those calls came from people who've been using and building on IRC for decades. The tool doesn't replace the judgment — it just types faster than we do.
+    </p>
+
+    <div class="principle-grid" style="margin-top:1.5rem">
+      <div class="principle-card">
+        <h3 style="color:var(--gb-green)">Security is deliberate</h3>
+        <p>
+          TLS enforced by default — invalid certs disconnect immediately. Passwords stored in the OS keychain, not config files. Config written atomically with 0600 permissions. CTCP replies rate-limited per nick. DCC filenames sanitized against CTCP injection. Link previews block RFC 1918 and loopback to prevent LAN probing. None of this is accidental.
+        </p>
+      </div>
+      <div class="principle-card">
+        <h3 style="color:var(--gb-green)">Protocol knowledge is real</h3>
+        <p>
+          21 IRCv3 capabilities with full CAP LS 302 negotiation, SASL PLAIN and EXTERNAL, STS policy enforcement, bouncer-specific extensions for ZNC and soju. You don't get these right by prompting an LLM — you get them right by reading the specs and testing against live servers.
+        </p>
+      </div>
+      <div class="principle-card">
+        <h3 style="color:var(--gb-aqua)">Tested and shipped</h3>
+        <p>
+          Unit tests for IRC parsing and HTML rendering, including malformed input. CI pipeline across Linux, Windows, macOS, and FreeBSD. 50+ releases with a real changelog. This is a maintained project with discipline, not a one-shot dump.
+        </p>
+      </div>
+      <div class="principle-card">
+        <h3 style="color:var(--gb-orange)">The code is public</h3>
+        <p>
+          The project is open source, the code is auditable, and the security decisions are documented. Anyone who wants to evaluate it is welcome to read it. The question isn't "was AI used" — it's "is this safe?" The answer is in the codebase.
         </p>
       </div>
     </div>
