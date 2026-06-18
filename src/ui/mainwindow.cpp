@@ -1041,13 +1041,13 @@ void MainWindow::applyFontSizes()
     const QString &fam = m_config.ui.fontFamily;
     const FontSizes &fs = m_config.ui.fontSizes;
 
-    auto makeFont = [&](int pt) {
+    auto makeFont = [&](double pt) {
         QFont f;
         f.setFamilies({fam,
                        QStringLiteral("Noto Color Emoji"),
                        QStringLiteral("Segoe UI Emoji"),
                        QStringLiteral("Apple Color Emoji")});
-        f.setPointSize(pt);
+        f.setPointSizeF(pt);
         return f;
     };
 
@@ -1111,7 +1111,14 @@ void MainWindow::applyFontSizes()
     if (m_topicText) {
         const QFont tf = makeFont(fs.topicText);
         m_topicText->setFont(tf);
-        m_topicText->setStyleSheet(QString("font-size: %1pt;").arg(tf.pointSize()));
+        m_topicText->setStyleSheet(QString("font-size: %1pt;").arg(tf.pointSizeF()));
+        // Re-wrap content with the new inline font size (rich text ignores setFont)
+        auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
+        if (ch && !ch->topic.isEmpty()) {
+            const QString html = ChatRenderer::linkifyTopic(ch->topic);
+            m_topicText->setText(QString("<span style='font-size:%1pt;'>%2</span>")
+                                 .arg(tf.pointSizeF()).arg(html));
+        }
     }
     if (m_userInfoLabel) m_userInfoLabel->setFont(makeFont(fs.topicBar));
     if (m_topicSetByLabel)
@@ -1153,6 +1160,7 @@ void MainWindow::setupSidebar()
     m_sidebar->setIndentation(8);
     m_sidebar->setMinimumWidth(112);
     m_sidebar->setObjectName("sidebar");
+    m_sidebar->viewport()->installEventFilter(this);
     m_sidebarDelegate = new SidebarDelegate(m_sidebar);
     m_sidebarDelegate->setShowCounts(m_config.ui.showUnreadCounts);
     if (m_theme.valid)
@@ -1288,6 +1296,7 @@ void MainWindow::setupNickPanel()
 {
     m_nickList = new QListWidget;
     m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
+    m_nickList->viewport()->installEventFilter(this);
     m_nickList->setSpacing(0);
     m_nickList->setUniformItemSizes(true);
     m_nickDelegate = new NickDelegate(m_nickList);
@@ -1495,6 +1504,8 @@ void MainWindow::setupChatArea()
     tdHbox->addWidget(m_topicText, 1);
     m_topicDisplay->setObjectName("topicDisplay");
     m_topicDisplay->setVisible(m_showTopic);
+    m_topicText->installEventFilter(this);
+    m_topicLabel->installEventFilter(this);
     m_topicDisplay->installEventFilter(this);
     m_primaryHeader->installEventFilter(this);
 
@@ -1572,6 +1583,7 @@ void MainWindow::setupChatArea()
     });
     connect(m_chatView, &ChatView::loadOlderRequested, this, &MainWindow::loadOlderMessages);
     m_chatView->installEventFilter(this);
+    m_chatView->viewport()->installEventFilter(this);
 
     m_linkPreview = new LinkPreview(this);
 
@@ -2188,10 +2200,77 @@ void MainWindow::connectModel()
 // Event filter — Tab completion + input history
 // ---------------------------------------------------------------------------
 
+double *MainWindow::fontFieldForWidget(QObject *obj, const QPoint &pos)
+{
+    auto *w = qobject_cast<QWidget *>(obj);
+    if (!w) return nullptr;
+
+    auto isOrChild = [&](QWidget *parent) {
+        for (QWidget *p = w; p; p = p->parentWidget())
+            if (p == parent) return true;
+        return false;
+    };
+
+    // Check pane widgets first
+    for (auto *pane : std::as_const(m_orderedPanes)) {
+        if (isOrChild(pane->chatView()))  return &m_config.ui.fontSizes.chat;
+        if (isOrChild(pane->nickList()))   return &m_config.ui.fontSizes.nickList;
+        if (isOrChild(pane->input()))      return &m_config.ui.fontSizes.input;
+    }
+
+    if (m_topicText    && isOrChild(m_topicText))    return &m_config.ui.fontSizes.topicText;
+    if (m_topicDisplay && isOrChild(m_topicDisplay)) return &m_config.ui.fontSizes.topicText;
+    if (m_nickList     && isOrChild(m_nickList))      return &m_config.ui.fontSizes.nickList;
+    if (m_nickPanel    && isOrChild(m_nickPanel))     return &m_config.ui.fontSizes.nickDock;
+    if (m_chatView     && isOrChild(m_chatView))     return &m_config.ui.fontSizes.chat;
+    if (m_sidebar      && isOrChild(m_sidebar)) {
+        // Server vs channel: check what item is under the mouse
+        if (!pos.isNull()) {
+            auto *item = m_sidebar->itemAt(m_sidebar->viewport()->mapFrom(w, pos));
+            if (item && !item->parent())
+                return &m_config.ui.fontSizes.serverHeader;
+        }
+        return &m_config.ui.fontSizes.sidebar;
+    }
+    if (m_nickPrefix   && isOrChild(m_nickPrefix))   return &m_config.ui.fontSizes.inputNick;
+    if (m_input        && isOrChild(m_input))        return &m_config.ui.fontSizes.input;
+
+    return nullptr;
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (!m_chatView)
         return QMainWindow::eventFilter(obj, event);
+
+    // Ctrl+wheel or Ctrl+Plus/Minus: zoom the focused region's font
+    auto applyZoom = [this](QObject *target, double delta, const QPoint &pos = {}) -> bool {
+        double *field = fontFieldForWidget(target, pos);
+        if (!field) return false;
+        *field = qBound(6.0, *field + delta, 32.0);
+        applyFontSizes();
+        saveConfig();
+        return true;
+    };
+
+    if (event->type() == QEvent::Wheel) {
+        auto *we = static_cast<QWheelEvent *>(event);
+        if (we->modifiers() & Qt::ControlModifier) {
+            if (applyZoom(obj, we->angleDelta().y() > 0 ? 0.5 : -0.5,
+                          we->position().toPoint()))
+                return true;
+        }
+    }
+    if (event->type() == QEvent::KeyPress) {
+        auto *ke = static_cast<QKeyEvent *>(event);
+        if (ke->modifiers() & Qt::ControlModifier) {
+            double delta = 0;
+            if (ke->key() == Qt::Key_Plus || ke->key() == Qt::Key_Equal) delta = 0.5;
+            else if (ke->key() == Qt::Key_Minus) delta = -0.5;
+            if (delta != 0 && applyZoom(obj, delta))
+                return true;
+        }
+    }
 
     if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
         auto *ke = static_cast<QKeyEvent *>(event);
@@ -2699,7 +2778,8 @@ void MainWindow::onServerAdded(ServerId host)
     item->setData(0, Qt::UserRole + 1, QString("(server)"));
     item->setExpanded(true);
     item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QFont f(m_config.ui.fontFamily, m_config.ui.fontSizes.serverHeader);
+    QFont f(m_config.ui.fontFamily);
+    f.setPointSizeF(m_config.ui.fontSizes.serverHeader);
     f.setBold(true);
     item->setFont(0, f);
     item->setForeground(0, QColor("#6c7086"));
@@ -3684,7 +3764,7 @@ void MainWindow::openChannelPane(ServerId host, BufferId channel)
     {
         const FontSizes &fs = m_config.ui.fontSizes;
         const QString   &fam = m_config.ui.fontFamily;
-        auto makeFont = [&](int pt){ QFont f(fam,pt); f.setStyleHint(QFont::Monospace); return f; };
+        auto makeFont = [&](double pt){ QFont f(fam); f.setPointSizeF(pt); f.setStyleHint(QFont::Monospace); return f; };
         const QFont chatFont = makeFont(fs.chat);
         pane->chatView()->setFont(chatFont);
         pane->nickList()->setFont(makeFont(fs.nickList));
@@ -4673,7 +4753,7 @@ void MainWindow::refreshTopicBar(ServerId host, BufferId channel)
 
         if (m_topicText) {
             const QString topicHtml = ChatRenderer::linkifyTopic(ch ? ch->topic : QString());
-            const int topicPt = m_config.ui.fontSizes.topicText;
+            const double topicPt = m_config.ui.fontSizes.topicText;
             m_topicText->setText(topicHtml.isEmpty()
                 ? topicHtml
                 : QString("<span style='font-size:%1pt;'>%2</span>").arg(topicPt).arg(topicHtml));
@@ -4893,12 +4973,14 @@ void MainWindow::saveConfig(bool migratePasswords)
 {
     m_configSaving = true;
     Config::save(m_config, Config::defaultPath(), migratePasswords);
-    m_configSaving = false;
 
     // Some editors replace the file (delete + create) which removes the watch
     const QString path = Config::defaultPath();
     if (m_configWatcher.files().isEmpty())
         m_configWatcher.addPath(path);
+
+    // Keep the guard up long enough for the async watcher notification to arrive
+    QTimer::singleShot(1000, this, [this]{ m_configSaving = false; });
 }
 
 void MainWindow::onConfigFileChanged()

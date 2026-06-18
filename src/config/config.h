@@ -75,22 +75,22 @@ struct ServerConfig {
 };
 
 struct FontSizes {
-    int toolbar{10};      // hamburger button
-    int serverHeader{9};  // network name section label
-    int sidebar{10};      // channel list
-    int chat{10};         // message area
-    int nickList{10};     // user list panel
+    double toolbar{10};      // hamburger button
+    double serverHeader{9};  // network name section label
+    double sidebar{10};      // channel list
+    double chat{10};         // message area
+    double nickList{10};     // user list panel
 #if defined(Q_OS_MAC)
-    int nickDock{13};     // "Users (N)" dock title
+    double nickDock{13};     // "Users (N)" dock title
 #else
-    int nickDock{9};      // "Users (N)" dock title
+    double nickDock{9};      // "Users (N)" dock title
 #endif
-    int topicBar{11};     // #channel label in topic bar
-    int topicText{11};    // actual topic text
-    int inputNick{10};    // your nick label
-    int input{10};        // message typing area
-    int typing{9};        // "nick is typing..." indicator
-    int emoji{16};        // emoji in chat messages
+    double topicBar{11};     // #channel label in topic bar
+    double topicText{11};    // actual topic text
+    double inputNick{10};    // your nick label
+    double input{10};        // message typing area
+    double typing{9};        // "nick is typing..." indicator
+    double emoji{16};        // emoji in chat messages
 };
 
 struct UiConfig {

@@ -136,22 +136,22 @@ Config Config::load(const QString &path)
             cfg.ui.nickBrackets    = ustr("nick_brackets", "<>");
             cfg.ui.notifications   = (*ui)["notifications"].value_or(true);
             cfg.ui.fontFamily      = ustr("font_family", kDefaultFontFamily);
-            cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10);
-            cfg.ui.fontSizes.serverHeader = (*ui)["font_server_header"].value_or(9);
-            cfg.ui.fontSizes.sidebar      = (*ui)["font_sidebar"].value_or(10);
-            cfg.ui.fontSizes.chat         = (*ui)["font_chat"].value_or(10);
-            cfg.ui.fontSizes.nickList     = (*ui)["font_nick_list"].value_or(10);
+            cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10.0);
+            cfg.ui.fontSizes.serverHeader = (*ui)["font_server_header"].value_or(9.0);
+            cfg.ui.fontSizes.sidebar      = (*ui)["font_sidebar"].value_or(10.0);
+            cfg.ui.fontSizes.chat         = (*ui)["font_chat"].value_or(10.0);
+            cfg.ui.fontSizes.nickList     = (*ui)["font_nick_list"].value_or(10.0);
 #if defined(Q_OS_MAC)
-            cfg.ui.fontSizes.nickDock     = (*ui)["font_nick_dock"].value_or(13);
+            cfg.ui.fontSizes.nickDock     = (*ui)["font_nick_dock"].value_or(13.0);
 #else
-            cfg.ui.fontSizes.nickDock     = (*ui)["font_nick_dock"].value_or(9);
+            cfg.ui.fontSizes.nickDock     = (*ui)["font_nick_dock"].value_or(9.0);
 #endif
-            cfg.ui.fontSizes.topicBar     = (*ui)["font_topic_bar"].value_or(10);
-            cfg.ui.fontSizes.topicText    = (*ui)["font_topic_text"].value_or(10);
-            cfg.ui.fontSizes.inputNick    = (*ui)["font_input_nick"].value_or(10);
-            cfg.ui.fontSizes.input        = (*ui)["font_input"].value_or(10);
-            cfg.ui.fontSizes.typing       = (*ui)["font_typing"].value_or(9);
-            cfg.ui.fontSizes.emoji        = (*ui)["font_emoji"].value_or(16);
+            cfg.ui.fontSizes.topicBar     = (*ui)["font_topic_bar"].value_or(10.0);
+            cfg.ui.fontSizes.topicText    = (*ui)["font_topic_text"].value_or(10.0);
+            cfg.ui.fontSizes.inputNick    = (*ui)["font_input_nick"].value_or(10.0);
+            cfg.ui.fontSizes.input        = (*ui)["font_input"].value_or(10.0);
+            cfg.ui.fontSizes.typing       = (*ui)["font_typing"].value_or(9.0);
+            cfg.ui.fontSizes.emoji        = (*ui)["font_emoji"].value_or(16.0);
         }
 
         // [privacy]

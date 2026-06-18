@@ -14,8 +14,8 @@ namespace ChatRenderer {
 struct Context {
     bool              coloredNicks{false};
     QString           nickBrackets;
-    int               emojiPt{10};
-    int               chatPt{10};
+    double            emojiPt{10};
+    double            chatPt{10};
     bool              validTheme{false};
     QString           themeText;
     QRegularExpression selfNickRe;   // pre-compiled; invalid = no highlight
@@ -41,6 +41,6 @@ QColor  nickColor     (const QString &nick);
 QString htmlAttr      (const QString &s);
 QString ircToHtml     (const QString &raw);
 QString linkifyHtml   (const QString &html);
-QString wrapEmojiHtml (const QString &html, int ptSize);
+QString wrapEmojiHtml (const QString &html, double ptSize);
 
 } // namespace ChatRenderer

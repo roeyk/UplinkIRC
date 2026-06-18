@@ -134,6 +134,9 @@ private:
     void       showSearchBar();
     void       clearReplyBar();
 
+    // Font zoom (Ctrl+wheel / Ctrl+±)
+    double *fontFieldForWidget(QObject *obj, const QPoint &pos = {});
+
     // Tab completion
     void handleTabComplete(QPlainTextEdit *input, ServerId host, BufferId channel);
     void repositionSendBtn();

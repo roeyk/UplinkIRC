@@ -4,7 +4,7 @@
 
 class QListWidget;
 class QPushButton;
-class QSpinBox;
+class QDoubleSpinBox;
 class QLabel;
 
 class FontDialog : public QDialog
@@ -16,21 +16,21 @@ public:
     FontSizes  selectedSizes()  const;
 
 private:
-    QListWidget   *m_familyList;
-    QPushButton   *m_familyBtn;
-    QSpinBox      *m_spToolbar;
-    QSpinBox      *m_spServerHeader;
-    QSpinBox      *m_spSidebar;
-    QSpinBox      *m_spChat;
-    QSpinBox      *m_spNickList;
-    QSpinBox      *m_spNickDock;
-    QSpinBox      *m_spTopicBar;
-    QSpinBox      *m_spTopicText;
-    QSpinBox      *m_spInputNick;
-    QSpinBox      *m_spInput;
-    QSpinBox      *m_spTyping;
-    QSpinBox      *m_spEmoji;
-    QLabel        *m_preview;
+    QListWidget      *m_familyList;
+    QPushButton      *m_familyBtn;
+    QDoubleSpinBox   *m_spToolbar;
+    QDoubleSpinBox   *m_spServerHeader;
+    QDoubleSpinBox   *m_spSidebar;
+    QDoubleSpinBox   *m_spChat;
+    QDoubleSpinBox   *m_spNickList;
+    QDoubleSpinBox   *m_spNickDock;
+    QDoubleSpinBox   *m_spTopicBar;
+    QDoubleSpinBox   *m_spTopicText;
+    QDoubleSpinBox   *m_spInputNick;
+    QDoubleSpinBox   *m_spInput;
+    QDoubleSpinBox   *m_spTyping;
+    QDoubleSpinBox   *m_spEmoji;
+    QLabel           *m_preview;
 
-    static QSpinBox *makeSpinBox(int value);
+    static QDoubleSpinBox *makeSpinBox(double value);
 };

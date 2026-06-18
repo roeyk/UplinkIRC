@@ -1,7 +1,7 @@
 #include "fontdialog.h"
 #include "menuicons.h"
 
-#include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QLabel>
 #include <QFrame>
 #include <QListWidget>
@@ -43,7 +43,9 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     auto applyFamily = [this](QListWidgetItem *item) {
         if (!item) return;
         m_familyBtn->setText(item->text());
-        m_preview->setFont(QFont(item->text(), m_spChat->value()));
+        QFont f(item->text());
+        f.setPointSizeF(m_spChat->value());
+        m_preview->setFont(f);
     };
     connect(m_familyList, &QListWidget::itemClicked,   this, applyFamily);
     connect(m_familyList, &QListWidget::itemActivated, this, applyFamily);
@@ -66,10 +68,14 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     m_preview->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     m_preview->setContentsMargins(8, 6, 8, 6);
     m_preview->setMinimumHeight(36);
-    m_preview->setFont(QFont(family, sizes.chat));
+    QFont previewFont(family);
+    previewFont.setPointSizeF(sizes.chat);
+    m_preview->setFont(previewFont);
 
-    connect(m_spChat, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int pt){
-        m_preview->setFont(QFont(m_familyBtn->text(), pt));
+    connect(m_spChat, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this](double pt){
+        QFont f(m_familyBtn->text());
+        f.setPointSizeF(pt);
+        m_preview->setFont(f);
     });
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -88,7 +94,7 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     grid->setHorizontalSpacing(12);
     grid->setVerticalSpacing(6);
 
-    struct SizeRow { const char *l1; QSpinBox *s1; const char *l2; QSpinBox *s2; };
+    struct SizeRow { const char *l1; QDoubleSpinBox *s1; const char *l2; QDoubleSpinBox *s2; };
     const SizeRow rows[] = {
         { "Chat",        m_spChat,         "Input",        m_spInput        },
         { "Sidebar",     m_spSidebar,      "Nick List",    m_spNickList     },
@@ -121,10 +127,12 @@ FontDialog::FontDialog(const QString &family, const FontSizes &sizes, QWidget *p
     layout->addWidget(buttons);
 }
 
-QSpinBox *FontDialog::makeSpinBox(int value)
+QDoubleSpinBox *FontDialog::makeSpinBox(double value)
 {
-    auto *sb = new QSpinBox;
-    sb->setRange(6, 32);
+    auto *sb = new QDoubleSpinBox;
+    sb->setRange(6.0, 32.0);
+    sb->setSingleStep(0.5);
+    sb->setDecimals(1);
     sb->setSuffix(" pt");
     sb->setValue(value);
     return sb;

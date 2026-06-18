@@ -139,7 +139,7 @@ QString ircToHtml(const QString &raw)
     return out;
 }
 
-QString wrapEmojiHtml(const QString &html, int ptSize)
+QString wrapEmojiHtml(const QString &html, double ptSize)
 {
     const QString open  = QString("<span style='font-size:%1pt'>").arg(ptSize);
     const QString close = QStringLiteral("</span>");
