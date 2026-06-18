@@ -10,7 +10,7 @@ accent       = "#D75F00"
 
 [sidebar]
 background   = "#AF0000"
-text         = "#5F8700"
+text         = "#CBCBCB"
 active       = "#444444"
 unread       = "#D75F00"
 mention      = "#BCBCBC"
@@ -31,7 +31,7 @@ keyword      = "#D70000"
 
 [nicklist]
 background   = "#AF0000"
-text         = "#5F8700"
+text         = "#CBCBCB"
 op           = "#D75F00"
 halfop       = "#005FAF"
 voice        = "#8700AF"
@@ -39,6 +39,6 @@ away         = "#008700"
 
 [input]
 background   = "#AF0000"
-text         = "#444444"
+text         = "#CBCBCB"
 placeholder  = "#5F8700"
 nick_color   = "#8700AF"
