@@ -60,33 +60,33 @@ protected:
 
 private slots:
     // Model → UI
-    void onServerAdded      (const QString &host);
-    void onServerConnected  (const QString &host);
-    void onServerDisconnected(const QString &host);
-    void onServerClosed     (const QString &host);
-    void onChannelAdded     (const QString &host, const QString &channel);
-    void onChannelRemoved   (const QString &host, const QString &channel);
-    void onMessageAdded     (const QString &host, const QString &channel, const Message &msg);
-    void onTopicChanged     (const QString &host, const QString &channel, const QString &topic);
-    void onNickListChanged     (const QString &host, const QString &channel);
-    void onNickAdded           (const QString &host, const QString &channel, const QString &nick);
-    void onNickRemoved         (const QString &host, const QString &channel, const QString &nick);
-    void onNickRenamed         (const QString &host, const QString &channel,
+    void onServerAdded      (ServerId host);
+    void onServerConnected  (ServerId host);
+    void onServerDisconnected(ServerId host);
+    void onServerClosed     (ServerId host);
+    void onChannelAdded     (ServerId host, BufferId channel);
+    void onChannelRemoved   (ServerId host, BufferId channel);
+    void onMessageAdded     (ServerId host, BufferId channel, const Message &msg);
+    void onTopicChanged     (ServerId host, BufferId channel, const QString &topic);
+    void onNickListChanged     (ServerId host, BufferId channel);
+    void onNickAdded           (ServerId host, BufferId channel, const QString &nick);
+    void onNickRemoved         (ServerId host, BufferId channel, const QString &nick);
+    void onNickRenamed         (ServerId host, BufferId channel,
                                 const QString &oldNick, const QString &newNick);
     void onNickListContextMenu  (const QPoint &pos);
     void onSidebarContextMenu   (const QPoint &pos);
-    void onUnreadChanged    (const QString &host, const QString &channel, int count);
-    void onReactionsChanged (const QString &host, const QString &channel, const QString &msgid);
-    void onSelfNickChanged  (const QString &host, const QString &nick);
-    void onMessageRedacted   (const QString &host, const QString &channel, const QString &msgid);
+    void onUnreadChanged    (ServerId host, BufferId channel, int count);
+    void onReactionsChanged (ServerId host, BufferId channel, const QString &msgid);
+    void onSelfNickChanged  (ServerId host, const QString &nick);
+    void onMessageRedacted   (ServerId host, BufferId channel, const QString &msgid);
 
     // UI → Model
     void onSidebarSelectionChanged();
     void onInputSubmit();
-    void dispatchInput(const QString &text, const QString &host, const QString &channel);
+    void dispatchInput(const QString &text, ServerId host, BufferId channel);
 
     // Typing
-    void onTypingReceived(const QString &host, const QString &channel,
+    void onTypingReceived(ServerId host, BufferId channel,
                           const QString &nick, const QString &state);
 
 private:
@@ -100,18 +100,18 @@ private:
     void connectModel();
     void connectPreferences();
 
-    void switchToChannel(const QString &host, const QString &channel);
-    void openChannelList(const QString &host);
-    void refreshChatView(const QString &host, const QString &channel, bool resetToLatest = true);
+    void switchToChannel(ServerId host, BufferId channel);
+    void openChannelList(ServerId host);
+    void refreshChatView(ServerId host, BufferId channel, bool resetToLatest = true);
     void loadOlderMessages();
-    void refreshNickList(const QString &host, const QString &channel);
-    void scheduleNickRefresh(const QString &host, const QString &channel);
-    void refreshTopicBar(const QString &host, const QString &channel);
+    void refreshNickList(ServerId host, BufferId channel);
+    void scheduleNickRefresh(ServerId host, BufferId channel);
+    void refreshTopicBar(ServerId host, BufferId channel);
     void appendMessage  (const Message &msg, bool autoPreview = false);
     void applyFontSizes();
     void updateTypingLabel();
-    void openChannelPane (const QString &host, const QString &channel);
-    void closeChannelPane(const QString &host, const QString &channel);
+    void openChannelPane (ServerId host, BufferId channel);
+    void closeChannelPane(ServerId host, BufferId channel);
     ChannelPane *paneAt(const QPoint &globalPos) const;
     bool         isOverPrimary(const QPoint &globalPos) const;
     void refreshPaneChatView(ChannelPane *pane);
@@ -123,10 +123,10 @@ private:
 
     QString    formatMessage(const Message &msg) const;
     void       toggleEventGroupInView(ChatView *view, const QString &groupId,
-                                      const QString &host, const QString &channel);
+                                      ServerId host, BufferId channel);
     void       handleChatViewContextMenu(ChatView *view, const QString &anchor,
                                          const QPoint &globalPos,
-                                         const QString &host, const QString &channel);
+                                         ServerId host, BufferId channel);
     void       showNickContextMenu(const QString &nick, const QPoint &globalPos);
     QString    msgidAtViewPos(const QPoint &viewPos) const;
     void       doSearch(bool backward);
@@ -134,7 +134,7 @@ private:
     void       clearReplyBar();
 
     // Tab completion
-    void handleTabComplete(QPlainTextEdit *input, const QString &host, const QString &channel);
+    void handleTabComplete(QPlainTextEdit *input, ServerId host, BufferId channel);
     void repositionSendBtn();
     void updateFormatIndicator();
     QStringList m_tabCandidates;
@@ -159,8 +159,8 @@ private:
 
     void syncSidebarOrderToConfig();
     void syncSidebarOrderFromConfig();
-    QTreeWidgetItem *findServerItem (const QString &host) const;
-    QTreeWidgetItem *findChannelItem(const QString &host, const QString &channel) const;
+    QTreeWidgetItem *findServerItem (const ServerId &host) const;
+    QTreeWidgetItem *findChannelItem(const ServerId &host, const BufferId &channel) const;
 
     // Widgets
     QTreeWidget      *m_sidebar;
@@ -245,7 +245,7 @@ private:
     QList<QString>                m_avatarCacheOrder;  // FIFO eviction order
     QSet<QString>                 m_avatarFetching;    // in-flight URLs
     void fetchAvatar(const QString &url);
-    QString nickTooltip(const QString &nick, const QString &host) const;
+    QString nickTooltip(const QString &nick, const ServerId &host) const;
 
     QRegularExpression m_selfNickRe;  // pre-compiled highlight regex for active host's nick
     QRegularExpression m_highlightRe; // extra keyword highlights from config
@@ -256,12 +256,12 @@ private:
     LinkPreview  *m_linkPreview{nullptr};
     QString       m_hoveredUrl;
     QPoint        m_hoverGlobalPos;
-    struct PreviewCtx { QString host, channel, msgid; };
+    struct PreviewCtx { ServerId host; BufferId channel; QString msgid; };
     QHash<QString, PreviewCtx> m_previewChannels; // url → {host, channel, msgid}
     QQueue<QUrl>  m_previewQueue;
     bool          m_previewFetchBusy{false};
     QTimer       *m_previewWatchdog{nullptr};
-    void enqueuePreview(const QUrl &url, const QString &host, const QString &channel, const QString &msgid);
+    void enqueuePreview(const QUrl &url, ServerId host, BufferId channel, const QString &msgid);
     void processPreviewQueue();
     QMap<QString, DccSend*> m_pendingPassiveSends;
     Config        m_config;

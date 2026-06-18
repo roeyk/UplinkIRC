@@ -10,11 +10,11 @@
 #include <QTableView>
 #include <QVBoxLayout>
 
-ChannelListDialog::ChannelListDialog(const QString &host, QWidget *parent)
+ChannelListDialog::ChannelListDialog(ServerId host, QWidget *parent)
     : QDialog(parent)
-    , m_host(host)
+    , m_host(std::move(host))
 {
-    setWindowTitle(tr("Channel List — %1").arg(host));
+    setWindowTitle(tr("Channel List — %1").arg(m_host.str()));
     resize(700, 480);
     setAttribute(Qt::WA_DeleteOnClose, false);
 
@@ -129,5 +129,5 @@ void ChannelListDialog::joinSelected()
     const QModelIndex nameIdx = m_proxy->index(idx.row(), 0);
     const QString channel = m_proxy->data(nameIdx).toString();
     if (!channel.isEmpty())
-        emit joinRequested(m_host, channel);
+        emit joinRequested(m_host, BufferId{channel});
 }

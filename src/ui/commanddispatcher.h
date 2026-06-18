@@ -18,11 +18,11 @@ public:
                   const QString &replyMsgid);
 
 signals:
-    void switchChannel(const QString &host, const QString &channel);
+    void switchChannel(ServerId host, BufferId channel);
     void focusInput();
     void clearChat();
     void replyBarCleared();
-    void openChannelList(const QString &host);
+    void openChannelList(ServerId host);
 
 private:
     SessionModel *m_model;

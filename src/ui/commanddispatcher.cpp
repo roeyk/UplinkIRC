@@ -304,12 +304,12 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
         const QString body   = args.section(' ', 1);
         m_model->sendMessage(host, BufferId{target}, body);
         if (!target.startsWith('#') && !target.startsWith('&'))
-            emit switchChannel(host.str(), target);
+            emit switchChannel(host, BufferId{target});
     } else if (cmd == "/query") {
         const QString target = args.trimmed().section(' ', 0, 0);
         if (!target.isEmpty()) {
             m_model->openPM(host, target);
-            emit switchChannel(host.str(), target);
+            emit switchChannel(host, BufferId{target});
             emit focusInput();
         }
     } else if (cmd == "/ns") {
@@ -420,7 +420,7 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
                 val.isEmpty() ? "Avatar cleared." : "Avatar URL set to: " + val);
         }
     } else if (cmd == "/list") {
-        emit openChannelList(host.str());
+        emit openChannelList(host);
     } else if (cmd == "/motd") {
         m_model->sendRaw(host, args.isEmpty() ? "MOTD" : "MOTD " + args.trimmed());
     } else if (cmd == "/stats") {

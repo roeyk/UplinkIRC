@@ -1,4 +1,5 @@
 #pragma once
+#include "model/ids.h"
 #include <QMetaObject>
 #include <QWidget>
 #include <QString>
@@ -14,10 +15,10 @@ class QToolButton;
 class ChannelPane : public QWidget {
     Q_OBJECT
 public:
-    explicit ChannelPane(const QString &host, const QString &channel, QWidget *parent = nullptr);
-    const QString &host()    const { return m_host; }
-    const QString &channel() const { return m_channel; }
-    QString        key()     const { return m_host + "|" + m_channel.toLower(); }
+    explicit ChannelPane(ServerId host, BufferId channel, QWidget *parent = nullptr);
+    const ServerId &host()    const { return m_host; }
+    const BufferId &channel() const { return m_channel; }
+    QString         key()     const { return m_host.str() + "|" + m_channel.str().toLower(); }
     ChatView     *chatView() const { return m_chatView; }
     QListWidget  *nickList() const { return m_nickList; }
     QPlainTextEdit *input()  const { return m_input; }
@@ -36,8 +37,8 @@ signals:
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 private:
-    QString               m_host;
-    QString               m_channel;
+    ServerId              m_host;
+    BufferId              m_channel;
     QMetaObject::Connection m_topicIconConn;
     QWidget      *m_header{nullptr};
     QPoint        m_dragStartPos;

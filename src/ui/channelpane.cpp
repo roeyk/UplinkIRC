@@ -18,8 +18,8 @@
 #include <QDesktopServices>
 #include <QUrl>
 
-ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *parent)
-    : QWidget(parent), m_host(host), m_channel(channel)
+ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
+    : QWidget(parent), m_host(std::move(host)), m_channel(std::move(channel))
 {
     auto *vbox = new QVBoxLayout(this);
     vbox->setContentsMargins(0, 0, 0, 0);
@@ -39,7 +39,7 @@ ChannelPane::ChannelPane(const QString &host, const QString &channel, QWidget *p
     m_topicToggle->setAutoRaise(false);
     m_topicToggle->setCheckable(true);
 
-    auto *nameLabel = new QLabel(channel);
+    auto *nameLabel = new QLabel(m_channel.str());
     nameLabel->setObjectName("paneChannelLabel");
     QFont f = nameLabel->font();
     f.setBold(true);

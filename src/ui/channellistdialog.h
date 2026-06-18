@@ -1,4 +1,5 @@
 #pragma once
+#include "model/ids.h"
 #include <QDialog>
 #include <QString>
 
@@ -12,9 +13,9 @@ class QSortFilterProxyModel;
 class ChannelListDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit ChannelListDialog(const QString &host, QWidget *parent = nullptr);
+    explicit ChannelListDialog(ServerId host, QWidget *parent = nullptr);
 
-    QString host() const { return m_host; }
+    const ServerId &host() const { return m_host; }
     bool    isFetching() const { return m_fetching; }
 
     void reset();
@@ -24,13 +25,13 @@ public slots:
     void onListEnd(int total);
 
 signals:
-    void joinRequested(const QString &host, const QString &channel);
-    void refreshRequested(const QString &host);
+    void joinRequested(ServerId host, BufferId channel);
+    void refreshRequested(ServerId host);
 
 private:
     void joinSelected();
 
-    QString                m_host;
+    ServerId               m_host;
     bool                   m_fetching{false};
     int                    m_count{0};
 
