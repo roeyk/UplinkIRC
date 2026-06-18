@@ -1498,7 +1498,7 @@ channels = "#uplink"</pre>
 
     <ul>
       <li><strong>☰ Hamburger</strong> — opens a menu with: About Uplink, <strong>Check for Updates</strong>, <strong>Manage Servers</strong>, Documentation, Open Config, Reload Config, and <strong>Quit Uplink</strong>.</li>
-      <li><strong>⚙ Gear</strong> — opens <strong>Preferences</strong> (themes, font sizes, UI toggles, app icon, profile).</li>
+      <li><strong>⚙ Gear</strong> — opens <strong>Preferences</strong> with pages: Appearance (theme, app icon, font config), Chat Window (timestamps, nick brackets, link previews), Interface (input bar toggles, typing indicator), Notifications (tray notifications, highlight words), Logging, and Profile.</li>
       <li><strong>▸ Topic button</strong> — shows or hides the topic text below the header. Icon is grey when topic is hidden, accent-colored when visible.</li>
       <li><strong>#channel (+modes)</strong> — the active channel name and its mode string.</li>
       <li><strong>🔍 Search</strong> — opens the search bar (same as Ctrl+F).</li>
@@ -1691,7 +1691,7 @@ channels = "#uplink"</pre>
     </table>
 
     <h3>Enabling / disabling</h3>
-    <p>The typing indicator can be toggled from <strong>⚙ → Typing Indicator</strong> in Preferences, or in config:</p>
+    <p>The typing indicator can be toggled from <strong>Preferences → Interface → Typing Indicator</strong>, or in config:</p>
     <pre>[ui]
 typing_indicator = true   # set to false to disable completely</pre>
 
@@ -1963,7 +1963,7 @@ METADATA * SET avatar :https://example.com/avatar.png</pre>
       <li>A <strong>red dot</strong> means there are unread messages in any channel.</li>
     </ul>
 
-    <p>To control the notification dot, go to <strong>⚙ → Tray Notifications</strong> in Preferences, or set in config:</p>
+    <p>To control the notification dot, go to <strong>Preferences → Notifications → Tray Notifications</strong>, or set in config:</p>
     <pre>notifications = true   # green dot on tray for mentions/PMs</pre>
   </section>
 
@@ -2527,7 +2527,7 @@ nicks = ["alice", "bob"]</pre>
     <p>History replay messages (from bouncers or <code>chathistory</code>) are <strong>not</strong> logged — only live messages.</p>
 
     <h3>Turning logging on or off</h3>
-    <p>Click <strong>⚙</strong> to open <strong>Preferences</strong> and check or uncheck <strong>Log Messages to Disk</strong>. Or set it in config:</p>
+    <p>Open <strong>Preferences → Logging</strong> and check or uncheck <strong>Log Messages to Disk</strong>. Or set it in config:</p>
     <pre>[ui]
 log_messages = true    # off by default — opt-in</pre>
     <p>Logging is <strong>off by default</strong>. Enable it in Preferences or by setting <code>log_messages = true</code> in config.</p>
@@ -2536,7 +2536,7 @@ log_messages = true    # off by default — opt-in</pre>
   <!-- LINK PREVIEWS -->
   <section id="link-previews">
     <h2>Link previews</h2>
-    <p>Link previews are <strong>disabled by default</strong>. To enable them, click <strong>⚙</strong> to open <strong>Preferences</strong> and check <strong>Link Previews</strong>, or add the following to <code>config.toml</code>:</p>
+    <p>Link previews are <strong>disabled by default</strong>. To enable them, open <strong>Preferences → Chat Window</strong> and check <strong>Link Previews</strong>, or add the following to <code>config.toml</code>:</p>
     <pre>[privacy]
 link_previews = true</pre>
 
@@ -2646,7 +2646,7 @@ theme = "catppuccin-mocha"</pre>
   <!-- FONTS -->
   <section id="fonts">
     <h2>Font sizes</h2>
-    <p>Every part of the UI has its own independent font size. Go to <strong>⚙ → Font Config...</strong> in Preferences and drag the sliders, or set them in config:</p>
+    <p>Every part of the UI has its own independent font size. Open <strong>Preferences → Appearance → Font Config...</strong> and drag the sliders, or set them in config:</p>
 
     <pre>[ui]
 font_family = "IBM Plex Mono"   # any installed monospace font
@@ -2692,7 +2692,7 @@ font_typing = 9    # "nick is typing..." indicator</pre>
     <pre>[ui]
 nick_brackets = "[]"   # square brackets</pre>
 
-    <p>You can also change this live from <strong>⚙ → Nick Brackets</strong> in Preferences.</p>
+    <p>You can also change this live from <strong>Preferences → Chat Window → Nick Brackets</strong>.</p>
   </section>
 
   <!-- PANELS -->
@@ -2710,7 +2710,7 @@ nick_brackets = "[]"   # square brackets</pre>
     <h3>Topic display</h3>
     <p>A text bar showing the full channel topic drops below the channel header row. Toggle it three ways:</p>
     <ul>
-      <li><strong>Globally</strong> — <strong>⚙ → Show Topic Bar</strong> in Preferences, or set <code>show_topic = true</code> in config. Applies to the main channel view.</li>
+      <li><strong>Globally</strong> — <strong>Preferences → Chat Window → Show Topic Bar</strong>, or set <code>show_topic = true</code> in config. Applies to the main channel view.</li>
       <li><strong>Per pane</strong> — each channel pane has a <strong>▸ topic / ▾ topic</strong> oval button in its header. Click to show or hide that pane's topic independently. The topic bar appears automatically when a pane first opens if the channel has a topic set.</li>
       <li><strong>Primary column header</strong> — when panes are open, the same oval topic button appears in the primary channel's header. It is independent of the global Preferences toggle.</li>
     </ul>

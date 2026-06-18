@@ -107,14 +107,14 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `show_nick_prefix` | bool | `true` | Show your nickname label next to the message input box |
 | `show_topic` | bool | `true` | Show the channel topic bar below the channel header row |
 | `show_emoji_button` | bool | `false` | Show the 😊 emoji picker button next to the input box. Also works via `:shortcode:` typing. |
-| `show_send_button` | bool | `true` | Show the paper-plane send button inside the input box. Equivalent to pressing Enter. Disable if you prefer a cleaner input area. Toggle live from **Preferences → Show Send Button**. |
+| `show_send_button` | bool | `true` | Show the paper-plane send button inside the input box. Equivalent to pressing Enter. Disable if you prefer a cleaner input area. Toggle live from **Preferences → Interface → Show Send Button**. |
 | `colored_nicks` | bool | `true` | Give each nickname a unique color in chat and the nick list |
 | `typing_indicator` | bool | `true` | Show "nick is typing…" notifications (IRCv3 `draft/typing`) and send your own |
-| `hanging_indent` | bool | `true` | Indent wrapped message lines past the timestamp+nick column so they align with the message text. Toggle live from **Preferences → Hanging Indent**. |
-| `log_messages` | bool | `false` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Opt-in — off by default. Toggle from **Preferences → Log Messages to Disk**. |
-| `show_unread_counts` | bool | `true` | Show a small bold count badge next to the unread indicator icon in the sidebar. Counts mentions and activity separately. Turn off from **Preferences → Show Unread Message Counts**. |
-| `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Tray Notifications**. |
-| `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
+| `hanging_indent` | bool | `true` | Indent wrapped message lines past the timestamp+nick column so they align with the message text. Toggle live from **Preferences → Chat Window → Hanging Indent**. |
+| `log_messages` | bool | `false` | Write all messages to `~/.config/uplink/logs/<server>/<channel>.log`. History replay is not logged. Opt-in — off by default. Toggle from **Preferences → Logging → Log Messages to Disk**. |
+| `show_unread_counts` | bool | `true` | Show a small bold count badge next to the unread indicator icon in the sidebar. Counts mentions and activity separately. Turn off from **Preferences → Interface → Show Unread Message Counts**. |
+| `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Notifications → Tray Notifications**. |
+| `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Chat Window → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `app_icon` | string | `"flat-black"` | Which app icon variant to use. 15 choices: `"flat-black"` (default), `"black-old-orange"`, `"black-orange"`, `"original-black"`, `"original-flat-shine"`, `"colorful-blueish"`, `"colorful-greenblue"`, `"colorful-hotbluepink"`, `"colorful-orange"`, `"colorful-purple"`, `"gruvbox-blue"`, `"gruvbox-colorful"`, `"gruvbox-orange"`, `"gruvbox-purple"`, `"gruvbox-yellow"`. Change from **Preferences → Appearance** (visual grid picker). Old `"dark"`/`"light"` values are auto-migrated to `"flat-black"`. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
 | `font_toolbar` | integer | `10` | Font size (pt) for the ☰ button |
@@ -129,7 +129,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `font_server_header` | integer | `9` | Font size (pt) for server/section header rows in the sidebar |
 | `font_emoji` | integer | `16` | Font size (pt) for emoji characters in chat messages — independent of `font_chat` so emoji stay readable at small font sizes |
 
-All font sizes and the theme can be changed live from **Preferences → Font Config...** and the theme list in **Preferences** without editing the file.
+All font sizes and the theme can be changed live from **Preferences → Appearance → Font Config...** and the theme list in **Preferences → Appearance** without editing the file.
 
 ---
 
@@ -189,7 +189,7 @@ Controls features that make outgoing network requests triggered by incoming data
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `link_previews` | bool | `false` | Fetch page titles and thumbnail images for URLs posted in chat. When enabled, Uplink makes background HTTP requests to linked sites — the linked site receives your IP address and user-agent. Disabled by default. Toggle from **Preferences → Link Previews** or set here. |
+| `link_previews` | bool | `false` | Fetch page titles and thumbnail images for URLs posted in chat. When enabled, Uplink makes background HTTP requests to linked sites — the linked site receives your IP address and user-agent. Disabled by default. Toggle from **Preferences → Chat Window → Link Previews** or set here. |
 
 ```toml
 [privacy]
@@ -807,7 +807,7 @@ display_name = "Alice Smith"
 avatar_url = "https://example.com/avatar.png"
 ```
 
-The block is written automatically when you use the **Preferences → Profile** section or the `/displayname` and `/avatar` commands. You can also edit it directly.
+The block is written automatically when you use the **Preferences → Profile** page or the `/displayname` and `/avatar` commands. You can also edit it directly.
 
 | Key | Type | Description |
 |---|---|---|
