@@ -68,6 +68,7 @@
 #include <QToolTip>
 #include <QCursor>
 #include <QMouseEvent>
+#include <QWheelEvent>
 #include <QTextDocument>
 #include <QTextFrame>
 #include <QTextCursor>
@@ -354,6 +355,8 @@ static constexpr int kInputHistoryCap = 100;
 static constexpr int kMaxExtraPanes   = 3;
 static constexpr int kRenderWindow    = 150; // messages rendered per channel view
 static constexpr int kRenderChunk     = 50;  // messages loaded per scroll-to-top
+static constexpr int kMinChatFontPt   = 7;
+static constexpr int kMaxChatFontPt   = 32;
 
 
 // Clips all child widgets to a rounded rect via a bitmap mask.
@@ -456,6 +459,16 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     auto *ctrlF = new QShortcut(QKeySequence::Find, this);
     connect(ctrlF, &QShortcut::activated, this, &MainWindow::showSearchBar);
+
+    auto *zoomIn = new QShortcut(QKeySequence::ZoomIn, this);
+    connect(zoomIn, &QShortcut::activated, this, [this]{
+        adjustFocusedFontSize(1);
+    });
+
+    auto *zoomOut = new QShortcut(QKeySequence::ZoomOut, this);
+    connect(zoomOut, &QShortcut::activated, this, [this]{
+        adjustFocusedFontSize(-1);
+    });
 
     statusBar()->hide();
 
@@ -1126,6 +1139,84 @@ void MainWindow::applyFontSizes()
     }
 }
 
+// Applies a font-size delta to whichever primary UI region currently has focus.
+//
+// Called by Ctrl++/Ctrl+- shortcuts. `delta` is normally +1 or -1 point. This
+// forwards to `adjustFontSizeForWidget`, which decides whether chat, sidebar,
+// or nick-list font settings should change.
+void MainWindow::adjustFocusedFontSize(int delta)
+{
+    adjustFontSizeForWidget(QApplication::focusWidget(), delta);
+}
+
+// Applies a font-size delta to the UI region that owns `widget`.
+//
+// Called by keyboard shortcuts and Ctrl+wheel event handling. `widget` may be a
+// child viewport, chat view, sidebar, nick list, or pane widget. The function
+// updates in-memory UI font sizes, reapplies fonts, and shows a transient
+// status message. It does not persist changes to config.
+void MainWindow::adjustFontSizeForWidget(QWidget *widget, int delta)
+{
+    // Treat focus/scroll events on child widgets as belonging to their owning
+    // region, such as a list viewport inside the sidebar.
+    auto ownsWidget = [widget](QWidget *owner) {
+        return owner && widget && (widget == owner || owner->isAncestorOf(widget));
+    };
+
+    QList<int *> fontSizes{
+        &m_config.ui.fontSizes.chat,
+        &m_config.ui.fontSizes.topicBar,
+        &m_config.ui.fontSizes.topicText,
+        &m_config.ui.fontSizes.inputNick,
+        &m_config.ui.fontSizes.input,
+    };
+    QString label = tr("Chat font size");
+
+    // The channel list/sidebar owns network and buffer navigation; zoom both
+    // channel rows and network headers so the tree remains visually coherent.
+    if (ownsWidget(m_sidebar)) {
+        fontSizes = {
+            &m_config.ui.fontSizes.sidebar,
+            &m_config.ui.fontSizes.serverHeader,
+        };
+        label = tr("Channel list font size");
+
+    // The active user list owns nickname inspection for the primary pane.
+    } else if (ownsWidget(m_nickList)) {
+        fontSizes = {&m_config.ui.fontSizes.nickList};
+        label = tr("User list font size");
+
+    // Extra panes have their own chat and user-list widgets.
+    } else {
+        for (ChannelPane *pane : std::as_const(m_orderedPanes)) {
+            if (ownsWidget(pane->nickList())) {
+                fontSizes = {&m_config.ui.fontSizes.nickList};
+                label = tr("User list font size");
+                break;
+            }
+            if (ownsWidget(pane->chatView())) {
+                label = tr("Chat font size");
+                break;
+            }
+        }
+    }
+
+    const int next = qBound(kMinChatFontPt, *fontSizes.first() + delta, kMaxChatFontPt);
+
+    // Clamp-bound requests are no-ops, keeping repeated shortcuts harmless.
+    if (next == *fontSizes.first())
+        return;
+
+    // Apply the same delta to every font size in the selected region so chat,
+    // topic, and input text remain visually synchronized.
+    for (int *fontSize : fontSizes)
+        *fontSize = qBound(kMinChatFontPt, *fontSize + delta, kMaxChatFontPt);
+
+    applyFontSizes();
+    statusBar()->show();
+    statusBar()->showMessage(tr("%1: %2 pt").arg(label).arg(next), 1800);
+}
+
 static QIcon makeMenuIcon(const QColor &color)
 {
     return MenuIcons::hamburger(color);
@@ -1140,6 +1231,7 @@ void MainWindow::setupSidebar()
 {
     m_sidebar = new QTreeWidget;
     m_sidebar->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_sidebar));
+    m_sidebar->viewport()->installEventFilter(this);
     m_sidebar->setHeaderHidden(true);
     m_sidebar->setRootIsDecorated(false);
     m_sidebar->setItemsExpandable(false);
@@ -1280,6 +1372,7 @@ void MainWindow::setupNickPanel()
 {
     m_nickList = new QListWidget;
     m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
+    m_nickList->viewport()->installEventFilter(this);
     m_nickList->setSpacing(0);
     m_nickList->setUniformItemSizes(true);
     m_nickDelegate = new NickDelegate(m_nickList);
@@ -1564,6 +1657,7 @@ void MainWindow::setupChatArea()
     });
     connect(m_chatView, &ChatView::loadOlderRequested, this, &MainWindow::loadOlderMessages);
     m_chatView->installEventFilter(this);
+    m_chatView->viewport()->installEventFilter(this);
 
     m_linkPreview = new LinkPreview(this);
 
@@ -2213,6 +2307,17 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (!m_chatView)
         return QMainWindow::eventFilter(obj, event);
+
+    if (event->type() == QEvent::Wheel) {
+        auto *wheel = static_cast<QWheelEvent *>(event);
+        if (wheel->modifiers() & Qt::ControlModifier) {
+            const int delta = wheel->angleDelta().y();
+            if (delta != 0) {
+                adjustFontSizeForWidget(qobject_cast<QWidget *>(obj), delta > 0 ? 1 : -1);
+                return true;
+            }
+        }
+    }
 
     if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
         auto *ke = static_cast<QKeyEvent *>(event);
@@ -3538,6 +3643,11 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
 
     setWindowTitle("Uplink — " + channel + " @ " + host);
     updateTypingLabel();
+
+    // Channel switches are conversation navigation; return typing focus to the
+    // active chat input so the next keystroke can send to the selected buffer.
+    if (m_input)
+        m_input->setFocus();
 }
 
 void MainWindow::openChannelList(const QString &host)
@@ -3659,6 +3769,8 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
                                     QColor(m_theme.border));
 
     pane->input()->installEventFilter(this);
+    pane->chatView()->viewport()->installEventFilter(this);
+    pane->nickList()->viewport()->installEventFilter(this);
     connect(pane->chatView(), &ChatView::anchorActivated, this,
             [this, pane](const QString &anchor, const QPoint &gp, Qt::MouseButton btn){
         if (anchor.startsWith(QLatin1String("evgrp:"))) {

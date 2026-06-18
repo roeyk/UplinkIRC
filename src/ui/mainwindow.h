@@ -108,6 +108,8 @@ private:
     void refreshTopicBar(const QString &host, const QString &channel);
     void appendMessage  (const Message &msg, bool autoPreview = false);
     void applyFontSizes();
+    void adjustFocusedFontSize(int delta);
+    void adjustFontSizeForWidget(QWidget *widget, int delta);
     void updateTypingLabel();
     void openChannelPane (const QString &host, const QString &channel);
     void closeChannelPane(const QString &host, const QString &channel);
