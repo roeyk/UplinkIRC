@@ -7,6 +7,8 @@
 - **Duplicate server name guard** — the Manage Servers dialog now rejects adding or renaming a server to a name that already exists.
 - **Sidebar order sync** — reordering servers in the Manage Servers dialog now takes effect immediately in the sidebar without requiring a restart.
 - **Log directory migration** — existing log directories using the old hostname-based layout are automatically renamed to the new name-based layout on startup, preserving chat history.
+- **URL splitting on no-break spaces** — URLs containing Unicode no-break spaces (U+00A0) are no longer incorrectly split into separate links.
+- **Light theme text contrast** — improved text contrast on 72 light themes where foreground colors were too close to the background, making text hard to read.
 
 <!--
 SESSION SUMMARY — 2026-06-17 (ServerId refactor, duplicate guard, sidebar sync, log migration)
