@@ -16,6 +16,7 @@ static constexpr int kMaxBytes     = 32768;   // 32 KB
 static constexpr int kMaxImgBytes  = 2097152; // 2 MB
 static constexpr int kMaxCache     = 50;
 static constexpr int kTimeoutMs    = 6000;
+static constexpr int kImgTimeoutMs = 15000;
 static constexpr int kMaxRedirects = 3;
 
 // Returns true if the URL should be blocked without a DNS lookup.
@@ -288,7 +289,7 @@ void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const 
     // a separate redirect counter, and a missing thumbnail is preferable to SSRF.
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                      QNetworkRequest::ManualRedirectPolicy);
-    req.setTransferTimeout(kTimeoutMs);
+    req.setTransferTimeout(kImgTimeoutMs);
 
     auto *imgReply = m_nam->get(req);
     auto  imgBuf   = std::make_shared<QByteArray>();
@@ -315,6 +316,12 @@ void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const 
             }
 
             QPixmap pm;
+            if (imgReply->error() != QNetworkReply::NoError) {
+                qDebug() << "[LP] image download incomplete, skipping decode";
+                insertCache(pageUrl.toString(), {title, {}});
+                emit cardReady(pageUrl, title, {});
+                return;
+            }
             if (!imgBuf->isEmpty()) {
                 QBuffer buf(imgBuf.get());
                 buf.open(QIODevice::ReadOnly);
