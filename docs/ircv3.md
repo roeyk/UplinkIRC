@@ -327,7 +327,7 @@ The `avatar_url` config key and the Preferences Avatar URL field accept local fi
 ```toml
 [profile]
 display_name = "Alice Smith"
-avatar_url   = "https://example.com/avatar.png"
+avatar_url = "https://example.com/avatar.png"
 ```
 
 No additional configuration is required — metadata is received, fetched, and displayed automatically whenever the server supports `draft/metadata-2`.
@@ -340,14 +340,14 @@ Enable per server with `websocket = true` in the server block (see [configuratio
 
 ```toml
 [[server]]
-name      = "The Lounge"
-host      = "lounge.example.com"
-port      = 9000
-ssl       = true
+name = "The Lounge"
+host = "lounge.example.com"
+port = 9000
+ssl = true
 websocket = true
-nick      = "yournick"
-user      = "uplink"
-realname  = "Uplink User"
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
 ```
 
 ### `cap-notify`

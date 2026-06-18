@@ -712,7 +712,7 @@ cmake --build build</pre>
       <tr><td>Windows</td><td><code>%USERPROFILE%\.config\uplink\config.toml</code></td></tr>
     </table>
 
-    <p>Edit the file in any text editor. To apply changes, click <strong>☰ → Reload Config</strong> — Uplink restarts automatically and picks up all changes. You can also click <strong>☰ → Open Config</strong> to open the file in your system editor directly from Uplink.</p>
+    <p>Edit the file in any text editor. Uplink watches the file for changes — if you add or remove a <code>[[server]]</code> block while the app is running, the sidebar updates automatically. For other changes (theme, UI toggles, font sizes), click <strong>☰ → Reload Config</strong> to restart and apply everything. You can also click <strong>☰ → Open Config</strong> to open the file in your system editor directly from Uplink.</p>
   </section>
 
   <!-- SET NICK -->
@@ -724,7 +724,7 @@ cmake --build build</pre>
 name = "LinuxDojo"
 host = "irc.linuxdojo.org"
 port = 6697
-ssl  = true
+ssl = true
 <span style="color:var(--peach)">nick = "alice"</span>       # ← change this to your nick
 user = "uplink"
 realname = "Uplink User"
@@ -739,16 +739,16 @@ channels = "#uplink"</pre>
     <p>LinuxDojo is the default server. You only need to set your nickname — everything else is already configured.</p>
 
     <pre>[[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "alice"
-user     = "uplink"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "alice"
+user = "uplink"
 realname = "Uplink User"
 channels = "#uplink"</pre>
 
-    <p>Click <strong>☰ → Reload Config</strong> — Uplink restarts and the server appears in the sidebar and connects automatically.</p>
+    <p>Save the file — Uplink detects the change and the server appears in the sidebar and connects automatically.</p>
   </section>
 
   <!-- CONNECT ANY -->
@@ -757,12 +757,12 @@ channels = "#uplink"</pre>
     <p>Add a <code>[[server]]</code> block for every server you want to connect to. The double brackets (<code>[[]]</code>) mean "add another entry to the list" — this is standard TOML array-of-tables syntax.</p>
 
     <pre>[[server]]
-name     = "Libera.Chat"
-host     = "irc.libera.chat"
-port     = 6697
-ssl      = true
-nick     = "alice"
-user     = "uplink"
+name = "Libera.Chat"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "alice"
+user = "uplink"
 realname = "Uplink User"
 channels = "#linux, #archlinux"</pre>
 
@@ -799,12 +799,12 @@ channels = "#linux, #archlinux"</pre>
     <p>Set the <code>channels</code> key in a server block to a comma-separated list. Uplink joins them all automatically on connect.</p>
 
     <pre>[[server]]
-name     = "Libera.Chat"
-host     = "irc.libera.chat"
-port     = 6697
-ssl      = true
-nick     = "alice"
-user     = "uplink"
+name ="Libera.Chat"
+host ="irc.libera.chat"
+port =6697
+ssl =true
+nick ="alice"
+user ="uplink"
 realname = "Uplink User"
 channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
 
@@ -858,11 +858,11 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
     <p>If you want to keep a server in your config without connecting to it on startup, set <code>disabled = true</code> in the server block:</p>
     <pre>[[server]]
 disabled = true
-name     = "Libera"
-host     = "irc.libera.chat"
-port     = 6697
-ssl      = true
-nick     = "yournick"
+name ="Libera"
+host ="irc.libera.chat"
+port =6697
+ssl =true
+nick ="yournick"
 channels = "#linux"</pre>
     <p>Uplink skips the server completely — no connection attempt, no sidebar entry — but preserves the block and writes it back on every config save. Re-enable it any time by removing the line or setting it to <code>false</code>.</p>
 
@@ -887,11 +887,11 @@ channels = "#linux"</pre>
     <h3>Quit message</h3>
     <p>The quit message is shown to other users when you disconnect: <code>*** yournick has quit (your message)</code>.</p>
     <pre>[[server]]
-name         = "LinuxDojo"
-host         = "irc.linuxdojo.org"
-port         = 6697
-ssl          = true
-nick         = "yournick"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
 quit_message = "Later!"</pre>
     <p>This is used when you disconnect normally or type <code>/quit</code> with no argument. To override for a single disconnect: <code>/quit See you tomorrow</code>. If unset, Uplink sends <code>"Uplink"</code>.</p>
     <p><strong>GUI:</strong> Open <strong>☰ → Manage Servers → Edit → Quit Message</strong>.</p>
@@ -899,11 +899,11 @@ quit_message = "Later!"</pre>
     <h3>Away message</h3>
     <p>The away message is sent when you type <code>/away</code> with no argument. Users who message you while you are away receive it as an automatic server reply.</p>
     <pre>[[server]]
-name         = "LinuxDojo"
-host         = "irc.linuxdojo.org"
-port         = 6697
-ssl          = true
-nick         = "yournick"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
 away_message = "Away from keyboard — back soon"</pre>
     <table>
       <thead><tr><th>Command</th><th>Behaviour</th></tr></thead>
@@ -917,16 +917,16 @@ away_message = "Away from keyboard — back soon"</pre>
 
     <h3>Full example with both</h3>
     <pre>[[server]]
-name         = "LinuxDojo"
-host         = "irc.linuxdojo.org"
-port         = 6697
-ssl          = true
-nick         = "yournick"
-user         = "uplink"
-realname     = "Uplink User"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname ="Uplink User"
 quit_message = "Later!"
 away_message = "Away from keyboard — back soon"
-channels     = "#uplink, #linux"</pre>
+channels = "#uplink, #linux"</pre>
   </section>
 
   <hr />
@@ -967,14 +967,14 @@ channels     = "#uplink, #linux"</pre>
     <p>If you have a registered nick on a server, add <code>nickserv_password</code>. Uplink sends <code>PRIVMSG NickServ :IDENTIFY yourpassword</code> automatically after connecting.</p>
 
     <pre>[[server]]
-name              = "LinuxDojo"
-host              = "irc.linuxdojo.org"
-port              = 6697
-ssl               = true
-nick              = "alice"
-user              = "uplink"
-realname          = "Uplink User"
-channels          = "#uplink"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "alice"
+user = "uplink"
+realname = "Uplink User"
+channels = "#uplink"
 nickserv_password = "mysecretpassword"   # ← add this</pre>
 
     <p>The server buffer shows <code>Sent NickServ IDENTIFY</code> when it fires. For networks that support SASL, use that instead (below) — SASL identifies you before you even appear on the network.</p>
@@ -986,15 +986,15 @@ nickserv_password = "mysecretpassword"   # ← add this</pre>
     <p>SASL is the preferred way to authenticate on Libera.Chat, OFTC, and other modern IRC networks. It logs you in during the connection handshake, before you appear to other users.</p>
 
     <pre>[[server]]
-name          = "Libera.Chat"
-host          = "irc.libera.chat"
-port          = 6697
-ssl           = true
-nick          = "alice"
-user          = "uplink"
-realname      = "Uplink User"
-channels      = "#linux"
-sasl_user     = "alice"            # ← your registered nick
+name = "Libera.Chat"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "alice"
+user = "uplink"
+realname = "Uplink User"
+channels = "#linux"
+sasl_user ="alice"            # ← your registered nick
 sasl_password = "mysecretpassword" # ← your NickServ password</pre>
 
     <p>The server buffer shows <code>SASL authentication successful</code> on connect. If it fails, the connection continues — you'll just appear without services authentication.</p>
@@ -1027,17 +1027,17 @@ openssl req -newkey ec -pkeyopt ec_paramgen_curve:P-384 -nodes -x509 -days 3650 
 
     <h3>3. Configure Uplink</h3>
     <pre>[[server]]
-name          = "Libera.Chat"
-host          = "irc.libera.chat"
-port          = 6697
-ssl           = true
-nick          = "alice"
-user          = "uplink"
-realname      = "Uplink User"
-channels      = "#linux"
+name = "Libera.Chat"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "alice"
+user = "uplink"
+realname = "Uplink User"
+channels = "#linux"
 sasl_external = true
-client_cert   = "/home/alice/.irc/client.crt"
-client_key    = "/home/alice/.irc/client.key"</pre>
+client_cert = "/home/alice/.irc/client.crt"
+client_key = "/home/alice/.irc/client.key"</pre>
 
     <p>Uplink loads the certificate before the TLS handshake, negotiates <code>AUTHENTICATE EXTERNAL</code>, and sends an empty response. Both RSA and EC (ECDSA) PEM keys are supported.</p>
     <p>You can also set the cert and key paths from the Server dialog: <strong>☰ → Manage Servers → Edit</strong>, then tick <strong>SASL EXTERNAL</strong> and browse to your files.</p>
@@ -1088,25 +1088,25 @@ client_key    = "/home/alice/.irc/client.key"</pre>
 theme = "catppuccin-mocha"
 
 [[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "alice"
-user     = "uplink"
+name ="LinuxDojo"
+host ="irc.linuxdojo.org"
+port =6697
+ssl =true
+nick ="alice"
+user ="uplink"
 realname = "Uplink User"
 channels = "#uplink"
 
 [[server]]
-name          = "Libera.Chat"
-host          = "irc.libera.chat"
-port          = 6697
-ssl           = true
-nick          = "alice"
-user          = "uplink"
-realname      = "Uplink User"
-channels      = "#linux, #archlinux"
-sasl_user     = "alice"
+name = "Libera.Chat"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "alice"
+user = "uplink"
+realname = "Uplink User"
+channels = "#linux, #archlinux"
+sasl_user ="alice"
 sasl_password = "mysecretpassword"</pre>
 
     <p>Each server's channels appear under its heading in the sidebar. Click any channel to switch to it.</p>
@@ -1149,18 +1149,18 @@ sasl_password = "mysecretpassword"</pre>
     <pre>[[server]]
 # Uplink connects to ZNC, which connects to Libera on your behalf.
 # host/port point at your ZNC server, not at irc.libera.chat.
-name            = "ZNC → Libera"
-host            = "znc.example.com"   # your ZNC server
-port            = 6697
-ssl             = true
-nick            = "alice"
-user            = "alice"
-realname        = "Alice Smith"
-sasl_user       = "alice"             # ZNC username
-sasl_password   = "hunter2"           # ZNC password
-bouncer         = "znc"
+name = "ZNC → Libera"
+host = "znc.example.com"   # your ZNC server
+port = 6697
+ssl = true
+nick = "alice"
+user = "alice"
+realname = "Alice Smith"
+sasl_user = "alice"             # ZNC username
+sasl_password = "hunter2"           # ZNC password
+bouncer = "znc"
 bouncer_network = "libera"            # network name inside ZNC
-channels        = "#linux, #archlinux"</pre>
+channels = "#linux, #archlinux"</pre>
 
     <h3>What ZNC mode enables</h3>
     <p>Setting <code>bouncer = "znc"</code> (or selecting ZNC in the dialog) tells Uplink to negotiate two ZNC-specific IRCv3 capabilities:</p>
@@ -1173,32 +1173,32 @@ channels        = "#linux, #archlinux"</pre>
     <h3>Multiple networks on one ZNC</h3>
     <p>ZNC can carry several IRC networks simultaneously. Add a separate Uplink server entry for each one — same host, port, and credentials, only <code>bouncer_network</code> changes:</p>
     <pre>[[server]]
-name            = "ZNC → Libera"
-host            = "znc.example.com"
-port            = 6697
-ssl             = true
-nick            = "alice"
-user            = "alice"
-realname        = "Alice Smith"
-sasl_user       = "alice"
-sasl_password   = "hunter2"
-bouncer         = "znc"
+name = "ZNC → Libera"
+host = "znc.example.com"
+port = 6697
+ssl = true
+nick = "alice"
+user = "alice"
+realname = "Alice Smith"
+sasl_user = "alice"
+sasl_password = "hunter2"
+bouncer = "znc"
 bouncer_network = "libera"
-channels        = "#linux"
+channels = "#linux"
 
 [[server]]
-name            = "ZNC → OFTC"
-host            = "znc.example.com"
-port            = 6697
-ssl             = true
-nick            = "alice"
-user            = "alice"
-realname        = "Alice Smith"
-sasl_user       = "alice"
-sasl_password   = "hunter2"
-bouncer         = "znc"
+name = "ZNC → OFTC"
+host = "znc.example.com"
+port = 6697
+ssl = true
+nick = "alice"
+user = "alice"
+realname = "Alice Smith"
+sasl_user = "alice"
+sasl_password = "hunter2"
+bouncer = "znc"
 bouncer_network = "oftc"
-channels        = "#debian"</pre>
+channels = "#debian"</pre>
 
     <div class="tip">
       <strong>Not sure what your network is named in ZNC?</strong> Connect once without setting the bouncer type, then type <code>/znc ListNetworks</code> in the server buffer. ZNC will reply with the exact names to use.
@@ -1234,17 +1234,17 @@ channels        = "#debian"</pre>
 
     <h3>Config file equivalent</h3>
     <pre>[[server]]
-name            = "soju → Libera"
-host            = "soju.example.com"
-port            = 6697
-ssl             = true
-nick            = "alice"
-user            = "alice"
-realname        = "Alice Smith"
-password        = "alice:hunter2"   # soju: username:password
-bouncer         = "soju"
+name = "soju → Libera"
+host = "soju.example.com"
+port = 6697
+ssl = true
+nick = "alice"
+user = "alice"
+realname = "Alice Smith"
+password = "alice:hunter2"   # soju: username:password
+bouncer = "soju"
 bouncer_network = "libera"          # omit if soju only manages one network
-channels        = "#linux"</pre>
+channels = "#linux"</pre>
 
     <h3>What soju mode enables</h3>
     <table>
@@ -1257,30 +1257,30 @@ channels        = "#linux"</pre>
     <h3>Multiple networks on one soju</h3>
     <p>Add one Uplink server entry per IRC network. The password is the same — only <code>bouncer_network</code> changes:</p>
     <pre>[[server]]
-name            = "soju → Libera"
-host            = "soju.example.com"
-port            = 6697
-ssl             = true
-nick            = "alice"
-user            = "alice"
-realname        = "Alice Smith"
-password        = "alice:hunter2"
-bouncer         = "soju"
+name = "soju → Libera"
+host = "soju.example.com"
+port = 6697
+ssl = true
+nick = "alice"
+user = "alice"
+realname = "Alice Smith"
+password = "alice:hunter2"
+bouncer = "soju"
 bouncer_network = "libera"
-channels        = "#linux"
+channels = "#linux"
 
 [[server]]
-name            = "soju → OFTC"
-host            = "soju.example.com"
-port            = 6697
-ssl             = true
-nick            = "alice"
-user            = "alice"
-realname        = "Alice Smith"
-password        = "alice:hunter2"
-bouncer         = "soju"
+name = "soju → OFTC"
+host = "soju.example.com"
+port = 6697
+ssl = true
+nick = "alice"
+user = "alice"
+realname = "Alice Smith"
+password = "alice:hunter2"
+bouncer = "soju"
 bouncer_network = "oftc"
-channels        = "#debian"</pre>
+channels = "#debian"</pre>
 
     <div class="tip">
       <strong>Not sure what your network names are?</strong> Connect once without setting <code>bouncer_network</code>. soju will list all available networks in the server buffer automatically via <code>soju.im/bouncer-networks</code>.
@@ -1442,12 +1442,12 @@ sudo service soju restart</pre>
     <h3>Connecting to an Ergo server with history</h3>
     <p>No special config is needed on the client side. A normal SSL server entry works:</p>
     <pre>[[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name ="LinuxDojo"
+host ="irc.linuxdojo.org"
+port =6697
+ssl =true
+nick ="yournick"
+user ="uplink"
 realname = "Uplink User"
 channels = "#uplink, #linux"</pre>
 
@@ -1471,15 +1471,15 @@ channels = "#uplink, #linux"</pre>
     <p>To use WebSocket, add <code>websocket = true</code> to the server block. When <code>ssl = true</code> is also set, Uplink connects with <code>wss://</code> (encrypted). When <code>ssl = false</code>, it uses <code>ws://</code> (plain).</p>
 
     <pre>[[server]]
-name      = "The Lounge"
-host      = "lounge.example.com"
-port      = 9000
-ssl       = true
+name = "The Lounge"
+host = "lounge.example.com"
+port = 9000
+ssl = true
 websocket = true
-nick      = "alice"
-user      = "uplink"
-realname  = "Uplink User"
-channels  = "#uplink"</pre>
+nick = "alice"
+user = "uplink"
+realname = "Uplink User"
+channels = "#uplink"</pre>
 
     <div class="note">
       <strong>Everything works the same.</strong> SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect, and the ping watchdog all function identically over WebSocket.
@@ -1910,7 +1910,7 @@ typing_indicator = true   # set to false to disable completely</pre>
     <p>You can also set your profile directly in <code>~/.config/uplink/config.toml</code>:</p>
     <pre>[profile]
 display_name = "Alice Smith"
-avatar_url   = "https://example.com/avatar.png"</pre>
+avatar_url = "https://example.com/avatar.png"</pre>
     <p>Values are loaded on startup and published on each connect to a supporting server.</p>
 
     <h3>How it works under the hood</h3>
@@ -2479,11 +2479,11 @@ al[Shift+Tab]     →  alice:           (cycle back)
     <h3>Config format</h3>
     <p>The ignore list is saved in <code>config.toml</code> and restored automatically on the next launch:</p>
     <pre>[[ignore.entry]]
-nick  = "spammer"
+nick = "spammer"
 flags = ["pm", "notice", "invite"]
 
 [[ignore.entry]]
-nick  = "recruiter"
+nick = "recruiter"
 flags = ["invite"]    # invites only — messages still visible</pre>
   </section>
 
@@ -2648,15 +2648,15 @@ theme = "catppuccin-mocha"</pre>
     <p>Every part of the UI has its own independent font size. Go to <strong>⚙ → Font Config...</strong> in Preferences and drag the sliders, or set them in config:</p>
 
     <pre>[ui]
-font_family   = "IBM Plex Mono"   # any installed monospace font
+font_family = "IBM Plex Mono"   # any installed monospace font
 
 # Each zone is independently sized (all in points)
-font_chat     = 11   # message area
-font_sidebar  = 10   # server/channel list
+font_chat = 11   # message area
+font_sidebar = 10   # server/channel list
 font_nick_list= 10   # user list on the right
-font_input    = 11   # message input box
+font_input = 11   # message input box
 font_topic_bar= 10   # topic bar at the top
-font_typing   = 9    # "nick is typing..." indicator</pre>
+font_typing = 9    # "nick is typing..." indicator</pre>
 
     <p>Changes from the Font Config dialog are applied and saved immediately — no restart needed.</p>
   </section>
@@ -2905,10 +2905,10 @@ rm -f ~/.config/uplink/uplink.conf</code></pre>
   }
 
   // ── Page search ────────────────────────────────────────
-  const searchInput  = document.getElementById('page-search');
-  const searchCount  = document.getElementById('search-count');
+  const searchInput = document.getElementById('page-search');
+  const searchCount = document.getElementById('search-count');
   const searchNavBtns = document.getElementById('search-nav-btns');
-  const mainEl       = document.querySelector('main');
+  const mainEl = document.querySelector('main');
 
   let marks = [];
   let current = -1;
@@ -3009,8 +3009,8 @@ rm -f ~/.config/uplink/uplink.conf</code></pre>
   /* ── dark / light toggle ── */
   (function() {
     const root = document.documentElement;
-    const btn  = document.getElementById('themeToggle');
-    const KEY  = 'uplink-theme';
+    const btn = document.getElementById('themeToggle');
+    const KEY = 'uplink-theme';
     const saved = localStorage.getItem(KEY);
     if (saved) root.setAttribute('data-theme', saved);
     btn.addEventListener('click', () => {

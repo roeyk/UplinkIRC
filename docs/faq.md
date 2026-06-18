@@ -94,7 +94,9 @@ ls -l ~/.config/uplink/config.toml
 
 ### My config change isn't taking effect
 
-Edit `config.toml`, then click **☰ → Reload Config** — Uplink restarts immediately and picks up all changes, including server list, channels, theme, and any other settings.
+Uplink watches `config.toml` for external changes. If you edit the file in a text editor while Uplink is running, server additions and removals are picked up automatically — new servers appear in the sidebar within a second.
+
+For other changes (theme, UI toggles, font sizes), click **☰ → Reload Config** — Uplink restarts immediately and picks up everything.
 
 ### TOML parse error on startup
 
@@ -116,12 +118,12 @@ Add a `channels` key to the `[[server]]` block — comma-separated, all on one l
 
 ```toml
 [[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
 channels = "#uplink, #linux"
 ```
@@ -135,11 +137,11 @@ Set `disabled = true` in the server block:
 ```toml
 [[server]]
 disabled = true
-name     = "Libera"
-host     = "irc.libera.chat"
-port     = 6697
-ssl      = true
-nick     = "yournick"
+name = "Libera"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "yournick"
 channels = "#linux"
 ```
 
@@ -155,11 +157,11 @@ Add `quit_message` to the server block:
 
 ```toml
 [[server]]
-name         = "LinuxDojo"
-host         = "irc.linuxdojo.org"
-port         = 6697
-ssl          = true
-nick         = "yournick"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
 quit_message = "Later!"
 ```
 
@@ -175,11 +177,11 @@ Add `away_message` to the server block:
 
 ```toml
 [[server]]
-name         = "LinuxDojo"
-host         = "irc.linuxdojo.org"
-port         = 6697
-ssl          = true
-nick         = "yournick"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
 away_message = "Away from keyboard — back soon"
 ```
 
@@ -210,7 +212,7 @@ Set `ssl = false` (with port `6667`) only in these cases:
 name = "Local test"
 host = "127.0.0.1"
 port = 6667
-ssl  = false
+ssl = false
 nick = "yournick"
 ```
 
@@ -226,22 +228,22 @@ Yes. Add multiple `[[server]]` blocks in your config — each gets its own entry
 
 ```toml
 [[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
 channels = "#uplink"
 
 [[server]]
-name     = "Libera"
-host     = "irc.libera.chat"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name = "Libera"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
 channels = "#linux"
 ```
@@ -274,11 +276,11 @@ Add `proxy_host` and `proxy_port` to the server block in `config.toml`:
 
 ```toml
 [[server]]
-name       = "LinuxDojo via Tor"
-host       = "irc.linuxdojo.org"
-port       = 6697
-ssl        = true
-nick       = "yournick"
+name = "LinuxDojo via Tor"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
 proxy_host = "127.0.0.1"
 proxy_port = 9050          # Tor's default SOCKS5 port
 ```
@@ -338,15 +340,15 @@ Set the `password` field for bouncer authentication, and set `bouncer = "znc"` o
 
 ```toml
 [[server]]
-name     = "ZNC — Libera"
-host     = "znc.example.com"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name = "ZNC — Libera"
+host = "znc.example.com"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
 password = "joe/libera:mysecretpassword"
-bouncer  = "znc"
+bouncer = "znc"
 channels = "#linux"
 ```
 
@@ -356,17 +358,17 @@ With `bouncer = "znc"`, Uplink negotiates `znc.in/playback` and replays missed m
 
 ```toml
 [[server]]
-name            = "soju — Libera"
-host            = "soju.example.com"
-port            = 6697
-ssl             = true
-nick            = "yournick"
-user            = "uplink"
-realname        = "Uplink User"
-password        = "joe:mysecretpassword"
-bouncer         = "soju"
+name = "soju — Libera"
+host = "soju.example.com"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+password = "joe:mysecretpassword"
+bouncer = "soju"
 bouncer_network = "libera"
-channels        = "#linux"
+channels = "#linux"
 ```
 
 With `bouncer = "soju"`, Uplink negotiates `soju.im/bouncer-networks` (lists your networks in the server buffer), `soju.im/read` (syncs your read position across clients), and `soju.im/no-implicit-names`.
@@ -486,11 +488,11 @@ Add `nickserv_password` to your server block in `config.toml`. Uplink will send 
 
 ```toml
 [[server]]
-name              = "LinuxDojo"
-host              = "irc.linuxdojo.org"
-port              = 6697
-ssl               = true
-nick              = "yournick"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
 nickserv_password = "yourpassword"
 ```
 
@@ -502,12 +504,12 @@ Add `sasl_user` and `sasl_password` to your server block:
 
 ```toml
 [[server]]
-name          = "Libera"
-host          = "irc.libera.chat"
-port          = 6697
-ssl           = true
-nick          = "yournick"
-sasl_user     = "yournick"
+name = "Libera"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "yournick"
+sasl_user = "yournick"
 sasl_password = "yourpassword"
 ```
 
@@ -540,17 +542,17 @@ This tells services to trust connections presenting that certificate. After addi
 
 ```toml
 [[server]]
-name          = "Libera"
-host          = "irc.libera.chat"
-port          = 6697
-ssl           = true
-nick          = "yournick"
-user          = "uplink"
-realname      = "Uplink User"
-channels      = "#linux"
+name = "Libera"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+channels = "#linux"
 sasl_external = true
-client_cert   = "/home/joe/.irc/client.crt"
-client_key    = "/home/joe/.irc/client.key"
+client_cert = "/home/joe/.irc/client.crt"
+client_key = "/home/joe/.irc/client.key"
 ```
 
 You can also set cert and key paths from the GUI: **☰ → Manage Servers → Edit** → check **Use SASL EXTERNAL** → Browse for cert and key files.
@@ -611,11 +613,11 @@ The ignore list is saved in `config.toml` and persists across sessions:
 
 ```toml
 [[ignore.entry]]
-nick  = "spammer"
+nick = "spammer"
 flags = ["pm", "notice", "invite"]
 
 [[ignore.entry]]
-nick  = "recruiter"
+nick = "recruiter"
 flags = ["invite"]    # invites only — their messages still visible
 ```
 
@@ -1241,12 +1243,12 @@ Some servers and bouncers (e.g. The Lounge) are only reachable over WebSocket. A
 
 ```toml
 [[server]]
-name      = "The Lounge"
-host      = "lounge.example.com"
-port      = 9000
-ssl       = true
+name = "The Lounge"
+host = "lounge.example.com"
+port = 9000
+ssl = true
 websocket = true
-nick      = "alice"
+nick = "alice"
 ```
 
 When `ssl = true`, Uplink uses `wss://` (encrypted). When `ssl = false`, it uses `ws://`. All other features — SASL, reconnect, IRCv3 CAP negotiation, SOCKS5 proxy — work identically over WebSocket.

@@ -245,11 +245,11 @@ The config file is created automatically on first launch. You only need to fill 
 
 ```toml
 [[server]]
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
 channels = "#uplink"
 ```
@@ -261,71 +261,71 @@ channels = "#uplink"
 [ui]
 # Theme name — must match a .toml file in themes/ (without the extension).
 # Leave as "default" for the native OS look (recommended on Windows).
-theme             = "catppuccin-mocha"
+theme = "catppuccin-mocha"
 
 # Show your nick label in the input bar (e.g. "uplink ▸ ...")
-show_nick_prefix  = true
+show_nick_prefix = true
 
 # Drop the topic text below the info bar
-show_topic        = true
+show_topic = true
 
 # Show the 😊 emoji picker button next to the input box
 # You can also always type :shortcode: to search emoji inline
 show_emoji_button = true
 
 # Unique color per nick in chat and nick list
-colored_nicks     = true
+colored_nicks = true
 
 # Send and receive IRCv3 draft/typing indicators
-typing_indicator  = true
+typing_indicator = true
 
 # Nick bracket style in chat messages
 # "<>" = <nick>  "[]" = [nick]  "::::" = ::nick::  "" = nick (no brackets)
-nick_brackets     = "<>"
+nick_brackets = "<>"
 
 # Green dot on tray icon for mentions/PMs when window is not focused
-notifications     = true
+notifications = true
 
 # App icon variant: "dark" | "light" | "light-default" | "avatar"
-app_icon          = "dark"
+app_icon = "dark"
 
 # Font family. On Windows defaults to "Consolas"; elsewhere "IBM Plex Mono".
-font_family       = "IBM Plex Mono"
+font_family = "IBM Plex Mono"
 
 # Independent font sizes (pt) for every UI zone
-font_sidebar      = 10
-font_chat         = 10
-font_nick_list    = 10
-font_topic_bar    = 10
-font_input_nick   = 10
-font_input        = 10
-font_typing       = 9
+font_sidebar = 10
+font_chat = 10
+font_nick_list = 10
+font_topic_bar = 10
+font_input_nick = 10
+font_input = 10
+font_typing = 9
 
 # ── Server ───────────────────────────────────────────────────────────────────
 [[server]]
 # Friendly display name shown in the sidebar header
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
 
 # SASL PLAIN — authenticate before appearing on the network
-# sasl_user     = "yournick"
+# sasl_user = "yournick"
 # sasl_password = "yourpassword"
 
 # SASL EXTERNAL — certificate-based auth (no password; identity from TLS cert)
 # sasl_external = true
-# client_cert   = "/home/joe/.irc/client.crt"
-# client_key    = "/home/joe/.irc/client.key"
+# client_cert = "/home/joe/.irc/client.crt"
+# client_key = "/home/joe/.irc/client.key"
 
 # NickServ IDENTIFY sent automatically on connect (alternative to SASL)
 # nickserv_password = "yourpassword"
 
 # Bouncer mode: "znc" or "soju"
-# bouncer         = "soju"
+# bouncer = "soju"
 # bouncer_network = "libera"   # soju only: which network to attach to
 
 # Channels to auto-join on connect (comma-separated)
@@ -336,7 +336,7 @@ channels = "#uplink, #linux"
 name = "Libera"
 host = "irc.libera.chat"
 port = 6697
-ssl  = true
+ssl = true
 nick = "yournick"
 user = "uplink"
 realname = "Uplink User"

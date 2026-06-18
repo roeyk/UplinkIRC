@@ -27,61 +27,61 @@ This is a complete config file showing every available option.
 
 ```toml
 [ui]
-theme             = "catppuccin-mocha"  # omit or set "default" for native look on Windows
-show_nick_prefix  = true
-show_topic        = true
+theme = "catppuccin-mocha"  # omit or set "default" for native look on Windows
+show_nick_prefix = true
+show_topic = true
 show_emoji_button = true               # shows 😊 button next to input bar
-show_send_button  = true               # shows paper-plane send button in the input box
-colored_nicks     = true
-typing_indicator  = true
-hanging_indent    = true               # wrap long messages past the timestamp+nick column
-log_messages        = false            # write all messages to ~/.config/uplink/logs/ (opt-in)
-show_unread_counts  = true             # show message count badges in the sidebar
-notifications       = true             # green dot on tray icon for mentions/PMs when unfocused
-nick_brackets     = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
-app_icon          = "dark"
-font_family       = "IBM Plex Mono"   # Windows default is "Consolas"
-font_toolbar      = 10
-font_sidebar      = 10
-font_chat         = 10
-font_nick_list    = 10
-font_nick_dock    = 9     # nick panel header font size (macOS default: 13)
-font_topic_bar    = 10
-font_input_nick   = 10
-font_input        = 10
-font_typing       = 9
+show_send_button = true               # shows paper-plane send button in the input box
+colored_nicks = true
+typing_indicator = true
+hanging_indent = true               # wrap long messages past the timestamp+nick column
+log_messages = false            # write all messages to ~/.config/uplink/logs/ (opt-in)
+show_unread_counts = true             # show message count badges in the sidebar
+notifications = true             # green dot on tray icon for mentions/PMs when unfocused
+nick_brackets = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
+app_icon = "dark"
+font_family = "IBM Plex Mono"   # Windows default is "Consolas"
+font_toolbar = 10
+font_sidebar = 10
+font_chat = 10
+font_nick_list = 10
+font_nick_dock = 9     # nick panel header font size (macOS default: 13)
+font_topic_bar = 10
+font_input_nick = 10
+font_input = 10
+font_typing = 9
 font_server_header = 9   # server/section header rows in the sidebar
-font_emoji        = 16   # emoji size in chat messages (independent of font_chat)
+font_emoji = 16   # emoji size in chat messages (independent of font_chat)
 
 [privacy]
 link_previews = false              # set to true to enable URL preview cards in chat
 
 [profile]
 display_name = "Alice Smith"           # shown in nick list tooltip (draft/metadata-2)
-avatar_url   = "https://example.com/avatar.png"  # https:// URL or /local/path
+avatar_url = "https://example.com/avatar.png"  # https:// URL or /local/path
 
 [[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
-# sasl_user         = "yournick"       # uncomment to enable SASL PLAIN
-# sasl_password     = "yourpassword"
+# sasl_user = "yournick"       # uncomment to enable SASL PLAIN
+# sasl_password = "yourpassword"
 # nickserv_password = "yourpassword"   # alternative: NickServ IDENTIFY on connect
-# bouncer           = "soju"           # "znc" or "soju" — enables bouncer-specific caps
-# bouncer_network   = "libera"         # znc or soju: network name (see Bouncer section)
-# proxy_host        = "127.0.0.1"      # SOCKS5 proxy hostname (omit for direct connection)
-# proxy_port        = 1080             # SOCKS5 proxy port (default 1080)
-# proxy_user        = ""               # optional: proxy username
-# proxy_pass        = ""               # optional: proxy password
-# ssl_fingerprint   = ""               # pin a self-signed cert SHA-256 fingerprint (set automatically on first connect)
-# websocket         = false            # connect via WebSocket (ws:// or wss://) instead of raw TCP
-# disabled          = false            # set to true to keep in config but skip on startup
-# quit_message      = "Later!"         # shown to others when you disconnect (default: "Uplink")
-# away_message      = "AFK"            # used by /away with no argument (default: sends "Away")
+# bouncer = "soju"           # "znc" or "soju" — enables bouncer-specific caps
+# bouncer_network = "libera"         # znc or soju: network name (see Bouncer section)
+# proxy_host = "127.0.0.1"      # SOCKS5 proxy hostname (omit for direct connection)
+# proxy_port = 1080             # SOCKS5 proxy port (default 1080)
+# proxy_user = ""               # optional: proxy username
+# proxy_pass = ""               # optional: proxy password
+# ssl_fingerprint = ""               # pin a self-signed cert SHA-256 fingerprint (set automatically on first connect)
+# websocket = false            # connect via WebSocket (ws:// or wss://) instead of raw TCP
+# disabled = false            # set to true to keep in config but skip on startup
+# quit_message = "Later!"         # shown to others when you disconnect (default: "Uplink")
+# away_message = "AFK"            # used by /away with no argument (default: sends "Away")
 
 [[server.channel]]
 name = "#uplink"
@@ -91,7 +91,7 @@ name = "#linux"
 
 # Per-type ignore — channel messages always visible
 [[ignore.entry]]
-nick  = "spammer"
+nick = "spammer"
 flags = ["pm", "notice", "invite"]
 ```
 
@@ -170,15 +170,15 @@ nick_brackets = ""
 
 ```toml
 [ui]
-theme             = "nord"
-colored_nicks     = true
-typing_indicator  = true
-notifications     = true
-app_icon          = "dark"
-font_family       = "IBM Plex Mono"
-font_chat         = 12
-font_sidebar      = 10
-font_input        = 11
+theme = "nord"
+colored_nicks = true
+typing_indicator = true
+notifications = true
+app_icon = "dark"
+font_family = "IBM Plex Mono"
+font_chat = 12
+font_sidebar = 10
+font_input = 11
 ```
 
 ---
@@ -236,12 +236,12 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 
 ```toml
 [[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
 
 [[server.channel]]
@@ -259,7 +259,7 @@ Set `ssl = false` and use port `6667` (the standard plaintext IRC port) when the
 name = "Local test"
 host = "127.0.0.1"
 port = 6667
-ssl  = false
+ssl = false
 nick = "yournick"
 ```
 
@@ -270,7 +270,7 @@ nick = "yournick"
 name = "Home LAN"
 host = "192.168.1.10"
 port = 6667
-ssl  = false
+ssl = false
 nick = "yournick"
 ```
 
@@ -278,24 +278,24 @@ nick = "yournick"
 
 ```toml
 [[server]]
-name     = "ZNC local"
-host     = "127.0.0.1"
-port     = 6667
-ssl      = false
-nick     = "yournick"
+name = "ZNC local"
+host = "127.0.0.1"
+port = 6667
+ssl = false
+nick = "yournick"
 password = "username/network:password"
-bouncer  = "znc"
+bouncer = "znc"
 ```
 
 **Tor hidden service** — `.onion` IRC servers route traffic through Tor, which provides its own layer of encryption. Some `.onion` servers offer only a plain port:
 
 ```toml
 [[server]]
-name       = "IRC over Tor"
-host       = "exampleonionaddress.onion"
-port       = 6667
-ssl        = false
-nick       = "yournick"
+name = "IRC over Tor"
+host = "exampleonionaddress.onion"
+port = 6667
+ssl = false
+nick = "yournick"
 proxy_host = "127.0.0.1"
 proxy_port = 9050
 ```
@@ -322,7 +322,7 @@ Uplink stores all passwords (`password`, `sasl_password`, `nickserv_password`) i
 
 ```toml
 [[server]]
-name     = "LinuxDojo"
+name = "LinuxDojo"
 ...
 nickserv_password = "<keychain>"   # the actual value is in the OS keychain
 ```
@@ -339,14 +339,14 @@ If the server uses NickServ and does not support SASL, add `nickserv_password`. 
 
 ```toml
 [[server]]
-name              = "LinuxDojo"
-host              = "irc.linuxdojo.org"
-port              = 6697
-ssl               = true
-nick              = "yournick"
-user              = "uplink"
-realname          = "Uplink User"
-channels          = "#uplink"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+channels = "#uplink"
 nickserv_password = "yourpassword"
 ```
 
@@ -385,17 +385,17 @@ This adds your certificate's SHA-512 fingerprint to your account. From then on, 
 
 ```toml
 [[server]]
-name          = "Libera"
-host          = "irc.libera.chat"
-port          = 6697
-ssl           = true
-nick          = "yournick"
-user          = "uplink"
-realname      = "Uplink User"
-channels      = "#linux"
+name = "Libera"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+channels = "#linux"
 sasl_external = true
-client_cert   = "/home/joe/.irc/client.crt"
-client_key    = "/home/joe/.irc/client.key"
+client_cert = "/home/joe/.irc/client.crt"
+client_key = "/home/joe/.irc/client.key"
 ```
 
 The server buffer shows `SASL authentication successful` when it works. Uplink presents the certificate during the TLS handshake, negotiates `AUTHENTICATE EXTERNAL`, and sends an empty response — the server derives your identity from the cert's fingerprint.
@@ -410,15 +410,15 @@ If the server supports SASL (Libera.Chat, OFTC, and others), use `sasl_user` and
 
 ```toml
 [[server]]
-name          = "Libera"
-host          = "irc.libera.chat"
-port          = 6697
-ssl           = true
-nick          = "yournick"
-user          = "uplink"
-realname      = "Uplink User"
-channels      = "#linux"
-sasl_user     = "yournick"
+name = "Libera"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+channels = "#linux"
+sasl_user = "yournick"
 sasl_password = "yourpassword"
 ```
 
@@ -444,33 +444,33 @@ When `znc.in/playback` is available, Uplink sends `PRIVMSG *playback :PLAY * 0` 
 # Uplink connects to ZNC, which connects to Libera on your behalf.
 # host/port point at your ZNC server, not at the IRC network.
 [[server]]
-name            = "ZNC — Libera"
-host            = "znc.example.com"   # your ZNC server, not the IRC network
-port            = 6697
-ssl             = true
-nick            = "yournick"
-user            = "uplink"
-realname        = "Uplink User"
-sasl_user       = "joe"               # ZNC username
-sasl_password   = "mysecretpassword"  # ZNC password
-bouncer         = "znc"
+name = "ZNC — Libera"
+host = "znc.example.com"   # your ZNC server, not the IRC network
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+sasl_user = "joe"               # ZNC username
+sasl_password = "mysecretpassword"  # ZNC password
+bouncer = "znc"
 bouncer_network = "libera"            # network name inside ZNC
-channels        = "#linux, #archlinux"
+channels = "#linux, #archlinux"
 ```
 
 **Alternative — embed the full string in `password`:** if you prefer the old-style format or your ZNC requires it:
 
 ```toml
 [[server]]
-name     = "ZNC — Libera"
-host     = "znc.example.com"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name = "ZNC — Libera"
+host = "znc.example.com"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
 password = "joe/libera:mysecretpassword"
-bouncer  = "znc"
+bouncer = "znc"
 channels = "#linux, #archlinux"
 ```
 
@@ -478,32 +478,32 @@ If your ZNC instance carries multiple networks, add one `[[server]]` block per n
 
 ```toml
 [[server]]
-name            = "ZNC — Libera"
-host            = "znc.example.com"
-port            = 6697
-ssl             = true
-nick            = "yournick"
-user            = "uplink"
-realname        = "Uplink User"
-sasl_user       = "joe"
-sasl_password   = "mysecretpassword"
-bouncer         = "znc"
+name = "ZNC — Libera"
+host = "znc.example.com"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+sasl_user = "joe"
+sasl_password = "mysecretpassword"
+bouncer = "znc"
 bouncer_network = "libera"
-channels        = "#linux"
+channels = "#linux"
 
 [[server]]
-name            = "ZNC — OFTC"
-host            = "znc.example.com"
-port            = 6697
-ssl             = true
-nick            = "yournick"
-user            = "uplink"
-realname        = "Uplink User"
-sasl_user       = "joe"
-sasl_password   = "mysecretpassword"
-bouncer         = "znc"
+name = "ZNC — OFTC"
+host = "znc.example.com"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+sasl_user = "joe"
+sasl_password = "mysecretpassword"
+bouncer = "znc"
 bouncer_network = "oftc"
-channels        = "#debian"
+channels = "#debian"
 ```
 
 ### Connecting to soju
@@ -518,17 +518,17 @@ If your soju instance only carries one network, no network selection is needed:
 
 ```toml
 [[server]]
-name          = "soju"
-host          = "soju.example.com"
-port          = 6697
-ssl           = true
-nick          = "yournick"
-user          = "yournick"
-realname      = "Uplink User"
-sasl_user     = "yournick"
+name = "soju"
+host = "soju.example.com"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "yournick"
+realname = "Uplink User"
+sasl_user = "yournick"
 sasl_password = "yourpassword"
-bouncer       = "soju"
-channels      = "#uplink"
+bouncer = "soju"
+channels = "#uplink"
 ```
 
 #### Multi-network soju
@@ -539,18 +539,18 @@ When your soju instance carries multiple networks (Libera, OFTC, a self-hosted E
 
 ```toml
 [[server]]
-name            = "soju — Libera"
-host            = "soju.example.com"
-port            = 6697
-ssl             = true
-nick            = "yournick"
-user            = "yournick"
-realname        = "Uplink User"
-sasl_user       = "yournick"
-sasl_password   = "yourpassword"
-bouncer         = "soju"
+name = "soju — Libera"
+host = "soju.example.com"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "yournick"
+realname = "Uplink User"
+sasl_user = "yournick"
+sasl_password = "yourpassword"
+bouncer = "soju"
 bouncer_network = "libera"
-channels        = "#linux"
+channels = "#linux"
 ```
 
 Uplink sends `yournick/libera` as the SASL username. Add one `[[server]]` block per network, changing only `bouncer_network` and `channels`.
@@ -559,17 +559,17 @@ Uplink sends `yournick/libera` as the SASL username. Add one `[[server]]` block 
 
 ```toml
 [[server]]
-name          = "soju — Libera"
-host          = "soju.example.com"
-port          = 6697
-ssl           = true
-nick          = "yournick"
-user          = "yournick"
-realname      = "Uplink User"
-sasl_user     = "yournick/libera"
+name = "soju — Libera"
+host = "soju.example.com"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "yournick"
+realname = "Uplink User"
+sasl_user = "yournick/libera"
 sasl_password = "yourpassword"
-bouncer       = "soju"
-channels      = "#linux"
+bouncer = "soju"
+channels = "#linux"
 ```
 
 > **Do not combine both options.** If `sasl_user` already contains `username/network`, leave `bouncer_network` unset. Setting both causes Uplink to produce `username/network/network` as the SASL username, which soju will reject.
@@ -604,14 +604,14 @@ Each server can connect through a SOCKS5 proxy independently. This is useful for
 
 ```toml
 [[server]]
-name       = "LinuxDojo via Tor"
-host       = "irc.linuxdojo.org"
-port       = 6697
-ssl        = true
-nick       = "yournick"
-user       = "uplink"
-realname   = "Uplink User"
-channels   = "#uplink"
+name = "LinuxDojo via Tor"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+channels = "#uplink"
 proxy_host = "127.0.0.1"
 proxy_port = 9050
 ```
@@ -624,13 +624,13 @@ If your proxy requires a username and password:
 
 ```toml
 [[server]]
-name       = "Work IRC"
-host       = "irc.example.com"
-port       = 6697
-ssl        = true
-nick       = "yournick"
-user       = "uplink"
-realname   = "Uplink User"
+name = "Work IRC"
+host = "irc.example.com"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
 proxy_host = "proxy.corp.example.com"
 proxy_port = 1080
 proxy_user = "myuser"
@@ -658,15 +658,15 @@ This is useful for IRC servers or bouncers accessible only over HTTP/S (e.g. The
 
 ```toml
 [[server]]
-name      = "The Lounge"
-host      = "lounge.example.com"
-port      = 9000
-ssl       = true
+name = "The Lounge"
+host = "lounge.example.com"
+port = 9000
+ssl = true
 websocket = true
-nick      = "yournick"
-user      = "uplink"
-realname  = "Uplink User"
-channels  = "#uplink"
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+channels = "#uplink"
 ```
 
 All features work identically over WebSocket — SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect backoff, and ping watchdog.
@@ -694,7 +694,7 @@ For password-protected channels, use `[[server.channel]]` sub-tables with a `key
 name = "LinuxDojo"
 host = "irc.linuxdojo.org"
 port = 6697
-ssl  = true
+ssl = true
 nick = "yournick"
 
 [[server.channel]]
@@ -702,7 +702,7 @@ name = "#uplink"
 
 [[server.channel]]
 name = "#private"
-key  = "secretkey"
+key = "secretkey"
 ```
 
 Both formats load correctly. On the next save (via **Manage Servers** or **Reload Config**), channels are written in the table format with keys preserved.
@@ -721,11 +721,11 @@ The block is written automatically when you use `/ignore` or the right-click →
 
 ```toml
 [[ignore.entry]]
-nick  = "spammer"
+nick = "spammer"
 flags = ["pm", "notice", "invite"]
 
 [[ignore.entry]]
-nick  = "recruiter"
+nick = "recruiter"
 flags = ["invite"]            # block invites only, still see PMs and channel messages
 ```
 
@@ -804,7 +804,7 @@ Stores your IRCv3 `draft/metadata-2` display name and avatar. Values are publish
 ```toml
 [profile]
 display_name = "Alice Smith"
-avatar_url   = "https://example.com/avatar.png"
+avatar_url = "https://example.com/avatar.png"
 ```
 
 The block is written automatically when you use the **Preferences → Profile** section or the `/displayname` and `/avatar` commands. You can also edit it directly.
@@ -838,7 +838,7 @@ Both commands save the value to config automatically. On the next connect to a s
 ```toml
 [profile]
 display_name = "Alice Smith"
-avatar_url   = "https://example.com/avatar.png"
+avatar_url = "https://example.com/avatar.png"
 ```
 
 **Example with a local avatar (visible only to you):**
@@ -846,7 +846,7 @@ avatar_url   = "https://example.com/avatar.png"
 ```toml
 [profile]
 display_name = "Alice"
-avatar_url   = "/home/alice/Pictures/avatar.png"
+avatar_url = "/home/alice/Pictures/avatar.png"
 ```
 
 > **Note:** `draft/metadata-2` is supported by [Ergo](https://ergo.chat/) and [soju](https://soju.im/). Most traditional networks (Libera, OFTC) do not support it. Uplink silently skips publishing if the server does not advertise the capability.
@@ -860,11 +860,11 @@ Set `disabled = true` in a server block to keep it in your config without connec
 ```toml
 [[server]]
 disabled = true
-name     = "Libera"
-host     = "irc.libera.chat"
-port     = 6697
-ssl      = true
-nick     = "yournick"
+name = "Libera"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "yournick"
 channels = "#linux"
 ```
 
@@ -886,11 +886,11 @@ The message sent to the server when you disconnect — visible to other users in
 
 ```toml
 [[server]]
-name         = "LinuxDojo"
-host         = "irc.linuxdojo.org"
-port         = 6697
-ssl          = true
-nick         = "yournick"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
 quit_message = "Later!"
 ```
 
@@ -913,11 +913,11 @@ The message sent to the server when you type `/away` with no argument. Other use
 
 ```toml
 [[server]]
-name         = "LinuxDojo"
-host         = "irc.linuxdojo.org"
-port         = 6697
-ssl          = true
-nick         = "yournick"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
 away_message = "Away from keyboard — back soon"
 ```
 
@@ -941,36 +941,36 @@ You can still pass a one-off message to override it:
 
 ```toml
 [[server]]
-name         = "LinuxDojo"
-host         = "irc.linuxdojo.org"
-port         = 6697
-ssl          = true
-nick         = "yournick"
-user         = "uplink"
-realname     = "Uplink User"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
 quit_message = "Later!"
 away_message = "Away from keyboard — back soon"
-channels     = "#uplink, #linux"
+channels = "#uplink, #linux"
 ```
 
 Different servers can have different messages:
 
 ```toml
 [[server]]
-name         = "LinuxDojo"
-host         = "irc.linuxdojo.org"
-port         = 6697
-ssl          = true
-nick         = "yournick"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
 quit_message = "Later!"
 away_message = "AFK"
 
 [[server]]
-name         = "Libera"
-host         = "irc.libera.chat"
-port         = 6697
-ssl          = true
-nick         = "yournick"
+name = "Libera"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "yournick"
 quit_message = "Disconnecting"
 away_message = "Away from keyboard"
 ```
@@ -986,26 +986,26 @@ Add as many `[[server]]` blocks as you need. Each server appears in the sidebar 
 theme = "catppuccin-mocha"
 
 [[server]]
-name     = "LinuxDojo"
-host     = "irc.linuxdojo.org"
-port     = 6697
-ssl      = true
-nick     = "yournick"
-user     = "uplink"
+name = "LinuxDojo"
+host = "irc.linuxdojo.org"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
 realname = "Uplink User"
 
 [[server.channel]]
 name = "#uplink"
 
 [[server]]
-name          = "Libera"
-host          = "irc.libera.chat"
-port          = 6697
-ssl           = true
-nick          = "yournick"
-user          = "uplink"
-realname      = "Uplink User"
-sasl_user     = "yournick"
+name = "Libera"
+host = "irc.libera.chat"
+port = 6697
+ssl = true
+nick = "yournick"
+user = "uplink"
+realname = "Uplink User"
+sasl_user = "yournick"
 sasl_password = "yourpassword"
 
 [[server.channel]]
@@ -1109,10 +1109,10 @@ When you choose **Pin Certificate**, Uplink adds this line to your server block:
 
 ```toml
 [[server]]
-name            = "MyServer"
-host            = "irc.myserver.example"
-port            = 6697
-ssl             = true
+name = "MyServer"
+host = "irc.myserver.example"
+port = 6697
+ssl = true
 ssl_fingerprint = "AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45:67:89:AB:CD:EF:01:23:45"
 ```
 

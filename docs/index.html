@@ -736,12 +736,12 @@
     <div class="install-block">
       <div class="label">~/.config/uplink/config.toml</div>
       <div><span class="arg">[[server]]</span></div>
-      <div><span class="arg">name     = </span><span class="cmd">"LinuxDojo"</span></div>
-      <div><span class="arg">host     = </span><span class="cmd">"irc.linuxdojo.org"</span></div>
-      <div><span class="arg">port     = </span><span class="cmd">6697</span></div>
-      <div><span class="arg">ssl      = </span><span class="cmd">true</span></div>
-      <div><span class="arg">nick     = </span><span class="cmd">"alice"</span>        <span class="cmt"># ← change this</span></div>
-      <div><span class="arg">user     = </span><span class="cmd">"uplink"</span></div>
+      <div><span class="arg">name = </span><span class="cmd">"LinuxDojo"</span></div>
+      <div><span class="arg">host = </span><span class="cmd">"irc.linuxdojo.org"</span></div>
+      <div><span class="arg">port = </span><span class="cmd">6697</span></div>
+      <div><span class="arg">ssl = </span><span class="cmd">true</span></div>
+      <div><span class="arg">nick = </span><span class="cmd">"alice"</span>        <span class="cmt"># ← change this</span></div>
+      <div><span class="arg">user = </span><span class="cmd">"uplink"</span></div>
       <div><span class="arg">realname = </span><span class="cmd">"Uplink User"</span></div>
       <div><span class="arg">channels = </span><span class="cmd">"#uplink"</span></div>
     </div>
@@ -846,7 +846,7 @@
 
   /* ── dark / light toggle ── */
   const root = document.documentElement;
-  const btn  = document.getElementById('themeToggle');
+  const btn = document.getElementById('themeToggle');
   const STORAGE_KEY = 'uplink-theme';
 
   const saved = localStorage.getItem(STORAGE_KEY);
