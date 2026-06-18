@@ -2658,7 +2658,19 @@ font_input = 11   # message input box
 font_topic_bar= 10   # topic bar at the top
 font_typing = 9    # "nick is typing..." indicator</pre>
 
-    <p>Changes from the Font Config dialog are applied and saved immediately — no restart needed.</p>
+    <p>Changes from the Font Config dialog are applied and saved immediately — no restart needed. Font sizes support half-point values (e.g. <code>10.5</code>) for fine-grained control.</p>
+
+    <h3>Quick zoom with Ctrl+scroll</h3>
+    <p>Hold <strong>Ctrl</strong> and scroll the mouse wheel over any UI region to zoom its font up or down by 0.5 pt per tick. You can also use <strong>Ctrl+Plus</strong> and <strong>Ctrl+Minus</strong>. Each region zooms independently:</p>
+    <ul>
+      <li><strong>Chat area</strong> — message text</li>
+      <li><strong>Nick list</strong> — user names</li>
+      <li><strong>Sidebar</strong> — server names and channel names zoom independently (hover over one or the other)</li>
+      <li><strong>Input box</strong> — your typing area</li>
+      <li><strong>Topic text</strong> — the topic display below the header</li>
+      <li><strong>Nick panel header</strong> — the user count area</li>
+    </ul>
+    <p>Changes are saved to <code>config.toml</code> immediately and persist across restarts.</p>
   </section>
 
   <!-- BRACKETS -->

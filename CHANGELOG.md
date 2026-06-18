@@ -6,14 +6,19 @@
 - **Link preview image limit** — raised from 200 KB to 2 MB so retina screenshots and larger images decode into thumbnails instead of silently failing.
 - **Link preview partial decode** — truncated image downloads (from timeout or size cap) now emit a card without a thumbnail instead of displaying a half-grey broken image. Image fetch timeout increased from 6 s to 15 s.
 
+### Added
+- **Config hot-reload** — Uplink watches `config.toml` for external changes. Server additions and removals made in a text editor are picked up automatically without restarting.
+- **Font zoom** — Ctrl+mousewheel or Ctrl+Plus/Minus zooms the font for whichever UI region the cursor is over (chat, nick list, sidebar, input, topic text, nick panel). Sidebar distinguishes server vs channel items. Half-point (0.5) steps for smooth scaling. Changes persist to config immediately.
+
 ### Improved
 - **ServerId/BufferId strong types** — replaced raw `QString` host/channel parameters with strong types across MainWindow, CommandDispatcher, ChannelPane, and ChannelListDialog. Eliminates a class of parameter-swap bugs at compile time.
+- **Clean config formatting** — config.toml writer and all documentation now use plain `key = value` with no column-alignment padding.
 
 ### Cleanup
 - Removed link preview debug trace logging.
 
 <!--
-SESSION SUMMARY — 2026-06-18 (link preview fixes, strong type refactor)
+SESSION SUMMARY — 2026-06-18 (link preview fixes, strong types, hot-reload, font zoom)
 What changed:
   - Diagnosed link previews failing for linuxdojo.org URLs: root cause was DNS
     split-horizon — LuCI dnsmasq override and /etc/hosts on fortis both resolved
@@ -28,7 +33,16 @@ What changed:
   - ServerId/BufferId strong types refactored across UI layer (8 files, ~100 call sites).
     17 signal-connection lambdas eliminated, ~80 redundant wrapping sites removed.
   - Debug trace logging removed from linkpreview.cpp and mainwindow.cpp.
-  - Docs updated: faq.md and howto.html corrected from "200 KB" to "2 MB".
+  - Config hot-reload via QFileSystemWatcher — server additions/removals from external
+    text editors picked up automatically. saveConfig() wrapper suppresses watcher
+    feedback loop with 1-second guard.
+  - Font zoom: Ctrl+scroll/Ctrl+± per UI region with 0.5pt steps. FontSizes struct
+    changed from int to double. Font dialog uses QDoubleSpinBox. Sidebar distinguishes
+    server vs channel items via itemAt(). Topic text re-wraps inline HTML on zoom.
+  - Config writer stripped of column-alignment padding — clean key = value format.
+    All docs (README, howto, FAQ, configuration, ircv3, index) updated to match.
+  - Docs updated: hot-reload documented in FAQ and howto. Image limit corrected.
+  - Roadmap: all items complete (ServerId/BufferId was the last).
 No regressions. No known issues.
 -->
 

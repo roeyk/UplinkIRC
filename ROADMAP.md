@@ -297,6 +297,9 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Sidebar header icon swap — Preferences → manage_accounts; Manage Servers → add_link at 32×32/28×28 (v0.25.40, 2026-06-16)
 - [x] Link preview image limit raised — 200 KB → 2 MB; retina screenshots no longer truncated and fail to decode (v0.25.44, 2026-06-18)
 - [x] Link preview partial image rejection — truncated downloads (timeout/size cap) emit title-only card instead of displaying broken grey-filled thumbnail; image timeout 6s → 15s (v0.25.44, 2026-06-18)
+- [x] Config hot-reload — QFileSystemWatcher on config.toml; server additions/removals from external text editors picked up automatically without restarting (v0.25.44, 2026-06-18)
+- [x] Font zoom — Ctrl+mousewheel/Ctrl+± per UI region (chat, nick list, sidebar, input, topic, nick panel); server vs channel independent in sidebar; 0.5pt steps; FontSizes int→double; Font dialog QDoubleSpinBox (v0.25.44, 2026-06-18)
+- [x] Clean config formatting — config writer and all docs stripped of column-alignment padding; plain key = value (v0.25.44, 2026-06-18)
 
 ---
 

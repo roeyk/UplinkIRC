@@ -64,6 +64,9 @@ Slash command completion works the same way:
 | **Ctrl+W** | Minimize to system tray — Uplink keeps running in the background; left-click the tray icon to restore the window |
 | **Close button (×)** | Same as Ctrl+W — minimizes to tray rather than quitting |
 | **Ctrl+F** | Open the message search bar in the current buffer |
+| **Ctrl+Plus** / **Ctrl+=** | Increase font size by 0.5 pt for the focused UI region |
+| **Ctrl+Minus** | Decrease font size by 0.5 pt for the focused UI region |
+| **Ctrl+Scroll wheel** | Zoom font size for the UI region under the cursor (0.5 pt per tick) |
 | **Escape** (search bar open) | Close the search bar and clear the highlight |
 | **Escape** (reply pending) | Cancel the pending reply without sending |
 
