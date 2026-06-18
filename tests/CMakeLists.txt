@@ -45,6 +45,19 @@ uplink_test(tst_richsearch
         ${CMAKE_SOURCE_DIR}/src/search/tokenizer.cpp
 )
 
+uplink_test(tst_richmentions
+    SOURCES
+        tst_richmentions.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/display.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/displayhighlight.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/mentions.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryeval.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryoptions.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryparser.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/richsearch.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/tokenizer.cpp
+)
+
 # ---------------------------------------------------------------------------
 # Fuzz target — two build modes:
 #   Standalone replay (default): any compiler, reads files from argv
