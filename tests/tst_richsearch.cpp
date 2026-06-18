@@ -18,6 +18,8 @@ private slots:
     void originTracksLoadedNickChanges();
     void originTracksKnownAccounts();
     void supportsContextAndOther();
+    void rendersCommonChannels();
+    void rendersCommonChannelsAcrossNetworks();
 };
 
 static Message msg(const QString &nick, const QString &text, int minutesAgo = 0)
@@ -218,6 +220,64 @@ void TstRichSearch::supportsContextAndOther()
 
     QCOMPARE(lines.size(), 3);
     QVERIFY(withoutHighlightControls(lines[1]).contains(QStringLiteral("<alice> needle")));
+}
+
+void TstRichSearch::rendersCommonChannels()
+{
+    ServerSession session;
+    session.name = QStringLiteral("Libera");
+    session.host = QStringLiteral("irc.libera.chat");
+    session.nick = QStringLiteral("roey");
+    session.getOrCreate(QStringLiteral("#here")).setNicks({
+        QStringLiteral("roey"),
+        QStringLiteral("alice"),
+        QStringLiteral("bob"),
+    });
+    session.getOrCreate(QStringLiteral("#rust")).setNicks({
+        QStringLiteral("alice"),
+        QStringLiteral("carol"),
+    });
+
+    const QStringList lines = RichSearch::renderCommon(
+        QList<ServerSession>{session},
+        ServerId{QStringLiteral("irc.libera.chat")},
+        BufferId{QStringLiteral("#here")},
+        RichSearch::CommonScope::Network);
+
+    QCOMPARE(lines, QStringList({
+        QStringLiteral("alice: #rust"),
+        QStringLiteral("exclusive to #here: bob"),
+    }));
+}
+
+void TstRichSearch::rendersCommonChannelsAcrossNetworks()
+{
+    ServerSession libera;
+    libera.name = QStringLiteral("Libera");
+    libera.host = QStringLiteral("irc.libera.chat");
+    libera.nick = QStringLiteral("roey");
+    libera.getOrCreate(QStringLiteral("#here")).setNicks({
+        QStringLiteral("roey"),
+        QStringLiteral("alice"),
+        QStringLiteral("bob"),
+    });
+
+    ServerSession oftc;
+    oftc.name = QStringLiteral("OFTC");
+    oftc.host = QStringLiteral("irc.oftc.net");
+    oftc.nick = QStringLiteral("roey");
+    oftc.getOrCreate(QStringLiteral("#debian")).setNicks({
+        QStringLiteral("alice"),
+    });
+
+    const QStringList lines = RichSearch::renderCommon(
+        QList<ServerSession>{libera, oftc},
+        ServerId{QStringLiteral("irc.libera.chat")},
+        BufferId{QStringLiteral("#here")},
+        RichSearch::CommonScope::Global);
+
+    QVERIFY(lines.contains(QStringLiteral("OFTC/alice: #debian")));
+    QVERIFY(lines.contains(QStringLiteral("exclusive to #here: bob")));
 }
 
 QTEST_MAIN(TstRichSearch)
