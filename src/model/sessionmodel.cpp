@@ -6,6 +6,7 @@
 #include <QPointer>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QRegularExpression>
 #include <QSet>
 #include <QStandardPaths>
@@ -13,6 +14,67 @@
 SessionModel::SessionModel(QObject *parent)
     : QObject(parent)
 {}
+
+// Reads a server password from a local file just before connecting.
+//
+// Called by `resolveAndConnect` for Halloy-compatible `password_file` support.
+// `path` is the configured file path and `firstLineOnly` matches Halloy's
+// default safety behavior. Returns the file contents to use as PASS, or an
+// empty string on failure. It performs no network or UI work.
+static QString readPasswordFile(const QString &path, bool firstLineOnly)
+{
+    QString expanded = path;
+
+    // Match common config-file convention by expanding "~/..." to the current
+    // user's home directory before QFile tries to open it.
+    if (expanded.startsWith(QStringLiteral("~/")))
+        expanded.replace(0, 1, QDir::homePath());
+
+    QFile file(QFileInfo(expanded).absoluteFilePath());
+
+    // A missing or unreadable file is handled by the caller as a local
+    // connection error, before any IRC credentials are sent.
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return {};
+
+    QString value = QString::fromUtf8(file.readAll());
+
+    // Halloy defaults to the first line so accidental editor newlines do not
+    // become part of the password.
+    if (firstLineOnly) {
+        const qsizetype newline = value.indexOf(u'\n');
+        if (newline != -1)
+            value.truncate(newline);
+        value.remove(u'\r');
+    }
+
+    return value;
+}
+
+// Converts a password read from `password_file` into the ZNC PASS form when
+// needed.
+//
+// Called by `resolveAndConnect` after reading `ServerConfig::passwordFile`.
+// `server` is the pending in-memory config. Returns either the original
+// password or `user/network:password` for ZNC configs that provide
+// `user=.../...`. It does not write the derived secret back to disk.
+static QString passwordForBouncer(const ServerConfig &server, const QString &password)
+{
+    // Only ZNC needs the username/network prefix in the PASS value.
+    if (server.bouncerType != BouncerType::ZNC)
+        return password;
+
+    // If the file already contains a complete ZNC PASS value, preserve it.
+    if (password.contains(u':'))
+        return password;
+
+    // ZNC's common form is username/network:password. Reuse the configured
+    // `user` field when it already names a ZNC network.
+    if (server.user.contains(u'/'))
+        return server.user + QStringLiteral(":") + password;
+
+    return password;
+}
 
 // Resolve any "<keychain>" sentinel fields asynchronously, then connect.
 // If no sentinels are present the connection is started immediately.
@@ -23,6 +85,26 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
     auto shared    = std::make_shared<ServerConfig>(std::move(sc));
     auto remaining = std::make_shared<int>(0);
     QPointer<IrcClient> guard(client);
+
+    // password_file is resolved at connect time so plaintext does not need to
+    // live in config.toml. An explicit password or keychain sentinel wins.
+    if (shared->password.isEmpty() && !shared->passwordFile.isEmpty()) {
+        const QString filePassword = readPasswordFile(
+            shared->passwordFile,
+            shared->passwordFileFirstLineOnly);
+
+        // An empty result means the file was missing, unreadable, or contained
+        // no usable password. Abort before connecting so no partial credentials
+        // are sent.
+        if (filePassword.isEmpty()) {
+            emit client->socketError(
+                shared->host,
+                "Password file could not be read for \"" + shared->name + "\"");
+            return;
+        }
+
+        shared->password = passwordForBouncer(*shared, filePassword);
+    }
 
     auto done = [shared, remaining, guard]() {
         if (guard && --(*remaining) == 0)

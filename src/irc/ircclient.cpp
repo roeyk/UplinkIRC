@@ -564,6 +564,33 @@ void IrcClient::onReadyRead()
 
 void IrcClient::onSslErrors(const QList<QSslError> &errors)
 {
+    const auto chain = m_useWs
+        ? m_wsSocket->sslConfiguration().peerCertificateChain()
+        : m_socket->peerCertificateChain();
+    if (chain.isEmpty()) {
+        emit socketError(m_host, "TLS error: no peer certificate");
+        sockDisconnect();
+        return;
+    }
+    const QString fp = QString::fromLatin1(
+        chain.first().digest(QCryptographicHash::Sha256).toHex(':').toUpper());
+
+    // A configured certificate pin is an explicit trust decision for this exact
+    // certificate. When it matches, accept all validation errors for that cert,
+    // including private-IP hostname mismatch and self-signed trust failures.
+    if (!m_pinnedFingerprint.isEmpty()) {
+        if (m_pinnedFingerprint.compare(fp, Qt::CaseInsensitive) == 0) {
+            if (m_useWs) m_wsSocket->ignoreSslErrors(errors);
+            else         m_socket->ignoreSslErrors(errors);
+            return;
+        }
+        emit socketError(m_host,
+            QString("TLS: certificate fingerprint mismatch!\nPinned: %1\nGot:    %2")
+                .arg(m_pinnedFingerprint, fp));
+        sockDisconnect();
+        return;
+    }
+
     bool allSelfSigned = true;
     for (const auto &e : errors) {
         if (e.error() != QSslError::SelfSignedCertificate &&
@@ -578,30 +605,6 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
         for (const auto &e : errors)
             msgs << e.errorString();
         emit socketError(m_host, "TLS error: " + msgs.join("; "));
-        sockDisconnect();
-        return;
-    }
-
-    const auto chain = m_useWs
-        ? m_wsSocket->sslConfiguration().peerCertificateChain()
-        : m_socket->peerCertificateChain();
-    if (chain.isEmpty()) {
-        emit socketError(m_host, "TLS error: no peer certificate");
-        sockDisconnect();
-        return;
-    }
-    const QString fp = QString::fromLatin1(
-        chain.first().digest(QCryptographicHash::Sha256).toHex(':').toUpper());
-
-    if (!m_pinnedFingerprint.isEmpty()) {
-        if (m_pinnedFingerprint.compare(fp, Qt::CaseInsensitive) == 0) {
-            if (m_useWs) m_wsSocket->ignoreSslErrors(errors);
-            else         m_socket->ignoreSslErrors(errors);
-            return;
-        }
-        emit socketError(m_host,
-            QString("TLS: certificate fingerprint mismatch!\nPinned: %1\nGot:    %2")
-                .arg(m_pinnedFingerprint, fp));
         sockDisconnect();
         return;
     }

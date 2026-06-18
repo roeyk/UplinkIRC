@@ -3,7 +3,10 @@ find_package(Qt6 REQUIRED COMPONENTS Test Core Gui)
 function(uplink_test TARGET)
     cmake_parse_arguments("" "" "" "SOURCES;LIBS" ${ARGN})
     add_executable(${TARGET} ${_SOURCES})
-    target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+    target_include_directories(${TARGET} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src
+        ${QTKEYCHAIN_COMPAT_INCLUDE}
+    )
     target_link_libraries(${TARGET} PRIVATE Qt6::Test Qt6::Core ${_LIBS})
     add_test(NAME ${TARGET} COMMAND ${TARGET})
 endfunction()
@@ -19,6 +22,14 @@ uplink_test(tst_chatformat
         tst_chatformat.cpp
         ${CMAKE_SOURCE_DIR}/src/ui/chatrenderer.cpp
     LIBS Qt6::Gui
+)
+
+uplink_test(tst_config
+    SOURCES
+        tst_config.cpp
+        ${CMAKE_SOURCE_DIR}/src/config/config.cpp
+        ${CMAKE_SOURCE_DIR}/src/config/keychainhelper.cpp
+    LIBS tomlplusplus::tomlplusplus Qt6Keychain::Qt6Keychain
 )
 
 # ---------------------------------------------------------------------------
