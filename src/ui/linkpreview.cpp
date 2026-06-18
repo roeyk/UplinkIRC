@@ -13,7 +13,7 @@
 #include <memory>
 
 static constexpr int kMaxBytes     = 32768;   // 32 KB
-static constexpr int kMaxImgBytes  = 204800;  // 200 KB
+static constexpr int kMaxImgBytes  = 2097152; // 2 MB
 static constexpr int kMaxCache     = 50;
 static constexpr int kTimeoutMs    = 6000;
 static constexpr int kMaxRedirects = 3;
