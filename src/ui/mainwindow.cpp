@@ -1588,14 +1588,11 @@ void MainWindow::setupChatArea()
     connect(m_linkPreview, &LinkPreview::cardReady, this,
             [this](const QUrl &pageUrl, const QString &title, const QPixmap &thumbnail){
         const QString urlStr = pageUrl.toString();
-        qDebug() << "[LP] cardReady received:" << urlStr << "title:" << title
-                 << "hasThumb:" << !thumbnail.isNull();
         m_previewWatchdog->stop();
         m_previewFetchBusy = false;
 
         auto it = m_previewChannels.find(urlStr);
         if (it == m_previewChannels.end()) {
-            qDebug() << "[LP] URL not in previewChannels, skipping";
             processPreviewQueue();
             return;
         }
@@ -4250,7 +4247,6 @@ void MainWindow::enqueuePreview(const QUrl &url, const QString &host, const QStr
     if (m_previewChannels.contains(key)) return;
     if (m_previewQueue.size() >= 10) return;
     if (m_previewChannels.size() >= 100) return;
-    qDebug() << "[LP] enqueue:" << key << "msgid:" << msgid;
     m_previewChannels.insert(key, {host, channel, msgid});
     m_previewQueue.enqueue(url);
     processPreviewQueue();
