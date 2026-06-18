@@ -9,6 +9,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
+#include <QDebug>
 #include <memory>
 
 static constexpr int kMaxBytes     = 32768;   // 32 KB
@@ -154,7 +155,8 @@ void LinkPreview::resolveAndFetchHover(const QUrl &url)
 // then calls doPageFetch. Used for both initial fetches and redirect follow-ups.
 void LinkPreview::resolveAndFetch(const QUrl &url)
 {
-    if (isBlockedBySchemeOrLiteral(url)) return;
+    qDebug() << "[LP] resolveAndFetch:" << url;
+    if (isBlockedBySchemeOrLiteral(url)) { qDebug() << "[LP] blocked by scheme/literal"; return; }
 
     if (m_redirectCount == 0) {
         const QString key = url.toString();
@@ -176,11 +178,12 @@ void LinkPreview::resolveAndFetch(const QUrl &url)
     m_dnsId = QHostInfo::lookupHost(url.host(), this,
         [this, url, gen](const QHostInfo &info) {
             m_dnsId = 0;
-            if (gen != m_fetchGen) return;  // superseded by a newer fetch()
-            if (info.error() != QHostInfo::NoError) return;
-            if (info.addresses().isEmpty()) return;
+            if (gen != m_fetchGen) { qDebug() << "[LP] DNS superseded"; return; }
+            if (info.error() != QHostInfo::NoError) { qDebug() << "[LP] DNS error:" << info.errorString(); return; }
+            if (info.addresses().isEmpty()) { qDebug() << "[LP] DNS no addresses"; return; }
             for (const QHostAddress &a : info.addresses())
-                if (isPrivateAddress(a)) return;
+                if (isPrivateAddress(a)) { qDebug() << "[LP] DNS private addr:" << a; return; }
+            qDebug() << "[LP] DNS ok, doPageFetch";
             doPageFetch(url);
         });
 }
@@ -189,6 +192,7 @@ void LinkPreview::doPageFetch(const QUrl &url)
 {
     if (isImageUrl(url)) {
         const QString filename = url.fileName();
+        qDebug() << "[LP] direct image URL, title:" << (filename.isEmpty() ? url.host() : filename);
         fetchImage(url, filename.isEmpty() ? url.host() : filename, url);
         return;
     }
@@ -254,7 +258,8 @@ void LinkPreview::doPageFetch(const QUrl &url)
 // DNS-checks the image URL before fetching, same policy as page fetches.
 void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl)
 {
-    if (isBlockedBySchemeOrLiteral(imageUrl)) return;
+    qDebug() << "[LP] fetchImage:" << imageUrl;
+    if (isBlockedBySchemeOrLiteral(imageUrl)) { qDebug() << "[LP] image blocked"; return; }
 
     if (m_imgDnsId) {
         QHostInfo::abortHostLookup(m_imgDnsId);
@@ -264,10 +269,11 @@ void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QU
     m_imgDnsId = QHostInfo::lookupHost(imageUrl.host(), this,
         [this, pageUrl, title, imageUrl](const QHostInfo &info) {
             m_imgDnsId = 0;
-            if (info.error() != QHostInfo::NoError) return;
-            if (info.addresses().isEmpty()) return;
+            if (info.error() != QHostInfo::NoError) { qDebug() << "[LP] img DNS error:" << info.errorString(); return; }
+            if (info.addresses().isEmpty()) { qDebug() << "[LP] img DNS no addrs"; return; }
             for (const QHostAddress &a : info.addresses())
-                if (isPrivateAddress(a)) return;
+                if (isPrivateAddress(a)) { qDebug() << "[LP] img DNS private:" << a; return; }
+            qDebug() << "[LP] img DNS ok, doImageFetch";
             doImageFetch(pageUrl, title, imageUrl);
         });
 }
@@ -296,11 +302,13 @@ void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const 
 
     connect(imgReply, &QNetworkReply::finished, this,
         [this, imgReply, imgBuf, pageUrl, title] {
-            // Redirect on image URL: emit card without thumbnail rather than following.
+            qDebug() << "[LP] imgReply finished, error:" << imgReply->error()
+                     << "buf:" << imgBuf->size() << "bytes";
             const QVariant redir =
                 imgReply->attribute(QNetworkRequest::RedirectionTargetAttribute);
             imgReply->deleteLater();
             if (redir.isValid()) {
+                qDebug() << "[LP] image redirect, emitting card without thumb";
                 insertCache(pageUrl.toString(), {title, {}});
                 emit cardReady(pageUrl, title, {});
                 return;
@@ -312,21 +320,23 @@ void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const 
                 buf.open(QIODevice::ReadOnly);
                 QImageReader reader(&buf);
                 const QSize srcSize = reader.size();
+                qDebug() << "[LP] image srcSize:" << srcSize << "valid:" << srcSize.isValid();
                 if (srcSize.isValid() && srcSize.width() <= 4096 && srcSize.height() <= 4096) {
                     reader.setScaledSize(srcSize.scaled(360, 220, Qt::KeepAspectRatio));
                     QImage img = reader.read();
+                    qDebug() << "[LP] image decoded:" << !img.isNull();
                     if (!img.isNull())
                         pm = QPixmap::fromImage(std::move(img));
                 }
             }
 
-            // Store compressed PNG bytes; the QPixmap lifetime is just the signal call
             QByteArray pngData;
             if (!pm.isNull()) {
                 QBuffer pngBuf(&pngData);
                 pngBuf.open(QIODevice::WriteOnly);
                 pm.save(&pngBuf, "PNG");
             }
+            qDebug() << "[LP] emitting cardReady, title:" << title << "hasThumb:" << !pm.isNull();
             insertCache(pageUrl.toString(), {title, pngData});
             emit cardReady(pageUrl, title, pm);
         });
