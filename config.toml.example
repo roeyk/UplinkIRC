@@ -7,12 +7,12 @@
 # The value "<keychain>" is a sentinel meaning "fetch from keychain".
 
 [ui]
-theme             = "catppuccin-mocha"  # theme name from themes/ folder
-show_nick_prefix  = true                # show your nick next to the input box
-show_topic        = true                # show the topic bar at the top
-show_emoji_button = false               # show emoji picker button (😊) next to input box
-show_send_button  = true                # show send button (paper-plane) in the input box
-colored_nicks     = true                # give each nick a unique color
+theme = "catppuccin-mocha"  # theme name from themes/ folder
+show_nick_prefix = true     # show your nick next to the input box
+show_topic = true           # show the topic bar at the top
+show_emoji_button = false   # show emoji picker button next to input box
+show_send_button = true     # show send button (paper-plane) in the input box
+colored_nicks = true        # give each nick a unique color
 
 # ─── Profile ──────────────────────────────────────────────────────────────────
 #
@@ -35,20 +35,20 @@ colored_nicks     = true                # give each nick a unique color
 
 [profile]
 display_name = "Alice Smith"                    # friendly name shown in nick tooltip
-avatar_url   = "https://example.com/avatar.png" # https:// URL or /local/path.png
+avatar_url = "https://example.com/avatar.png"   # https:// URL or /local/path.png
 
 # ─── Servers ──────────────────────────────────────────────────────────────────
 
 [[server]]
-# disabled = true                   # uncomment to keep this server in config but skip it on startup
-name     = "LinuxDojo"            # display name in the sidebar
-host     = "irc.linuxdojo.org"    # server hostname
-port     = 6697                   # 6697 = standard TLS port
-ssl      = true                   # always use TLS
-nick     = "yournick"             # change this to your nickname
-user     = "uplink"               # username in your hostmask
-realname = "Uplink User"          # shown in WHOIS
-channels = "#uplink, #linux"      # channels to join on connect (comma-separated)
+# disabled = true             # uncomment to keep this server in config but skip it on startup
+name = "LinuxDojo"            # display name in the sidebar
+host = "irc.linuxdojo.org"    # server hostname
+port = 6697                   # 6697 = standard TLS port
+ssl = true                    # always use TLS
+nick = "yournick"             # change this to your nickname
+user = "uplink"               # username in your hostmask
+realname = "Uplink User"      # shown in WHOIS
+channels = "#uplink, #linux"  # channels to join on connect (comma-separated)
 
 # quit_message — sent to the server when you disconnect or type /quit with no argument.
 # Leave blank (or omit) to use the default: "Uplink".
@@ -65,7 +65,7 @@ away_message = "Away from keyboard"
 # password = "joe/network:mypassword"
 
 # Optional: SASL authentication
-# sasl_user     = "yournick"
+# sasl_user = "yournick"
 # sasl_password = "yourpassword"
 
 # Optional: NickServ IDENTIFY on connect (use SASL if the server supports it)
@@ -75,14 +75,14 @@ away_message = "Away from keyboard"
 # Add more [[server]] blocks to connect to additional networks.
 
 # [[server]]
-# disabled     = true               # uncomment to keep this server but not connect on startup
-# name         = "Libera"
-# host         = "irc.libera.chat"
-# port         = 6697
-# ssl          = true
-# nick         = "yournick"
-# user         = "uplink"
-# realname     = "Uplink User"
-# channels     = "#linux, #archlinux"
+# disabled = true
+# name = "Libera"
+# host = "irc.libera.chat"
+# port = 6697
+# ssl = true
+# nick = "yournick"
+# user = "uplink"
+# realname = "Uplink User"
+# channels = "#linux, #archlinux"
 # quit_message = "Disconnecting"
 # away_message = "brb"

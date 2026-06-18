@@ -434,6 +434,10 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     setupInputBar();
     connectModel();
     applyFontSizes();
+
+    m_configWatcher.addPath(Config::defaultPath());
+    connect(&m_configWatcher, &QFileSystemWatcher::fileChanged,
+            this, &MainWindow::onConfigFileChanged);
     QTimer::singleShot(0, this, [this]{
         if (m_input) {
             const int lineH   = m_input->fontMetrics().lineSpacing();
@@ -745,7 +749,7 @@ void MainWindow::connectPreferences()
                 "QToolButton { background: transparent; border: none; }"
                 "QToolButton:hover { background: rgba(255,255,255,0.08); border-radius: 4px; }"
             );
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::fontConfigRequested, this, [this]{
@@ -753,7 +757,7 @@ void MainWindow::connectPreferences()
         if (dlg.exec() == QDialog::Accepted) {
             m_config.ui.fontFamily = dlg.selectedFamily();
             m_config.ui.fontSizes  = dlg.selectedSizes();
-            Config::save(m_config, Config::defaultPath());
+            saveConfig();
             QFont appFont(m_config.ui.fontFamily);
             appFont.setStyleHint(QFont::Monospace);
             QApplication::setFont(appFont);
@@ -766,7 +770,7 @@ void MainWindow::connectPreferences()
         m_config.ui.appIcon = key;
         setWindowIcon(AppIcons::appIcon(key));
         if (m_tray) m_tray->setBaseIcon(AppIcons::appIcon(key));
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::topicBarToggled, this, [this](bool on){
@@ -783,7 +787,7 @@ void MainWindow::connectPreferences()
             if (m_nickList) m_nickList->verticalScrollBar()->setValue(scrollPos);
             if (m_sidebar)  m_sidebar->verticalScrollBar()->setValue(sbScroll);
         });
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::nickPrefixToggled, this, [this](bool on){
@@ -792,25 +796,25 @@ void MainWindow::connectPreferences()
         m_nickPrefix->setVisible(on);
         for (auto *p : std::as_const(m_orderedPanes))
             p->setNickVisible(on);
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::emojiBtnToggled, this, [this](bool on){
         m_showEmojiBtn = on;
         m_config.ui.showEmojiButton = on;
         m_emojiBtn->setVisible(on);
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::sendBtnToggled, this, [this](bool on){
         m_config.ui.showSendButton = on;
         m_sendBtn->setVisible(on);
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::typingIndicatorToggled, this, [this](bool on){
         m_config.ui.typingIndicator = on;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
         if (!on) {
             m_typingOutTimer->stop();
             m_typingActive = false;
@@ -827,36 +831,36 @@ void MainWindow::connectPreferences()
 
     connect(m_prefsDialog, &PreferencesDialog::notificationsToggled, this, [this](bool on){
         m_config.ui.notifications = on;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
         if (m_tray)
             m_tray->setNotificationsEnabled(on);
     });
 
     connect(m_prefsDialog, &PreferencesDialog::coloredNicksToggled, this, [this](bool on){
         m_config.ui.coloredNicks = on;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
         if (!m_model->activeHost().isEmpty() && !m_model->activeChannel().isEmpty())
             refreshNickList(m_model->activeHost(), m_model->activeChannel());
     });
 
     connect(m_prefsDialog, &PreferencesDialog::hangingIndentToggled, this, [this](bool on){
         m_config.ui.hangingIndent = on;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::loggingToggled, this, [this](bool on){
         m_config.ui.logMessages = on;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::linkPreviewsToggled, this, [this](bool on){
         m_config.ui.linkPreviews = on;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::unreadCountsToggled, this, [this](bool on){
         m_config.ui.showUnreadCounts = on;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
         m_sidebarDelegate->setShowCounts(on);
         if (!on) {
             // Clear all stored counts from sidebar items
@@ -871,13 +875,13 @@ void MainWindow::connectPreferences()
 
     connect(m_prefsDialog, &PreferencesDialog::timestampsToggled, this, [this](bool on){
         m_config.ui.showTimestamps = on;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
         refreshChatView(m_model->activeHost(), m_model->activeChannel());
     });
 
     connect(m_prefsDialog, &PreferencesDialog::highlightWordsChanged, this, [this](const QString &words){
         m_config.ui.highlightWords = words;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
         m_highlightRe = words.trimmed().isEmpty() ? QRegularExpression{}
             : [&]() {
                 QStringList parts;
@@ -893,7 +897,7 @@ void MainWindow::connectPreferences()
 
     connect(m_prefsDialog, &PreferencesDialog::nickBracketsChanged, this, [this](const QString &br){
         m_config.ui.nickBrackets = br;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::manageServersRequested, this, [this]{
@@ -917,7 +921,7 @@ void MainWindow::connectPreferences()
             }
         }
         m_config.servers = updated;
-        Config::save(m_config, Config::defaultPath(), true);
+        saveConfig(true);
         syncSidebarOrderFromConfig();
     });
 
@@ -939,7 +943,7 @@ void MainWindow::connectPreferences()
         const QString oldAvatarUrl = m_config.profileAvatarUrl;
         m_config.profileDisplayName = displayName;
         m_config.profileAvatarUrl   = avatarUrl;
-        Config::save(m_config, Config::defaultPath());
+        saveConfig();
         // Evict stale cached avatar so the new one is fetched and displayed
         if (!oldAvatarUrl.isEmpty() && oldAvatarUrl != avatarUrl)
             m_avatarCache.remove(oldAvatarUrl);
@@ -1238,7 +1242,7 @@ void MainWindow::setupSidebar()
                 }
             }
             m_config.servers = updated;
-            Config::save(m_config, Config::defaultPath(), true);
+            saveConfig(true);
             syncSidebarOrderFromConfig();
         });
         shBox->addWidget(m_serversBtn);
@@ -2622,7 +2626,7 @@ void MainWindow::syncSidebarOrderToConfig()
     }
     if (reordered.size() == m_config.servers.size()) {
         m_config.servers = reordered;
-        Config::save(m_config, Config::defaultPath(), true);
+        saveConfig(true);
     }
 }
 
@@ -4024,7 +4028,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
                     m_model->localMessage(host, m_model->activeChannel(),
                                           "No longer ignoring " + key);
                 }
-                Config::save(m_config, Config::defaultPath());
+                saveConfig();
                 scheduleNickRefresh(host, m_model->activeChannel());
             });
         };
@@ -4039,7 +4043,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
                     &QAction::triggered, this, [this, host, key] {
                 m_model->clearIgnore(key);
                 m_config.ignoreList.removeIf([&](const IgnoreEntry &e){ return e.nick == key; });
-                Config::save(m_config, Config::defaultPath());
+                saveConfig();
                 m_model->localMessage(host, m_model->activeChannel(),
                                       "No longer ignoring " + key);
                 scheduleNickRefresh(host, m_model->activeChannel());
@@ -4882,5 +4886,51 @@ void MainWindow::fetchAvatar(const QString &url)
         QPixmap px;
         if (px.loadFromData(reply->readAll()))
             cacheAndRefresh(px);
+    });
+}
+
+void MainWindow::saveConfig(bool migratePasswords)
+{
+    m_configSaving = true;
+    Config::save(m_config, Config::defaultPath(), migratePasswords);
+    m_configSaving = false;
+
+    // Some editors replace the file (delete + create) which removes the watch
+    const QString path = Config::defaultPath();
+    if (m_configWatcher.files().isEmpty())
+        m_configWatcher.addPath(path);
+}
+
+void MainWindow::onConfigFileChanged()
+{
+    if (m_configSaving) return;
+
+    // Re-add the watch — editors that do atomic save (write tmp + rename) remove it
+    const QString path = Config::defaultPath();
+    if (m_configWatcher.files().isEmpty())
+        QTimer::singleShot(500, this, [this, path]{ m_configWatcher.addPath(path); });
+
+    // Debounce — some editors fire multiple events per save
+    QTimer::singleShot(300, this, [this]{
+        const Config fresh = Config::load(Config::defaultPath());
+
+        // Diff server lists — add new, remove deleted
+        QSet<QString> freshNames, currentNames;
+        for (const auto &s : fresh.servers)    freshNames.insert(s.name);
+        for (const auto &s : m_config.servers) currentNames.insert(s.name);
+
+        for (const auto &s : fresh.servers) {
+            if (!currentNames.contains(s.name)) {
+                m_config.servers.append(s);
+                m_model->addServer(s);
+            }
+        }
+
+        for (qsizetype i = m_config.servers.size() - 1; i >= 0; --i) {
+            if (!freshNames.contains(m_config.servers[i].name)) {
+                m_model->removeServer(ServerId{m_config.servers[i].name});
+                m_config.servers.removeAt(i);
+            }
+        }
     });
 }

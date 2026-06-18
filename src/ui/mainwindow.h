@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QFileSystemWatcher>
 #include <QQueue>
 #include <QRegularExpression>
 #include <QStringList>
@@ -266,6 +267,12 @@ private:
     QMap<QString, DccSend*> m_pendingPassiveSends;
     Config        m_config;
     Theme         m_theme;
+
+    // Config file watcher — hot-reloads servers added via text editor
+    QFileSystemWatcher m_configWatcher;
+    bool               m_configSaving{false};
+    void saveConfig(bool migratePasswords = false);
+    void onConfigFileChanged();
 
     bool    m_showNickPrefix{true};
     bool    m_showEmojiBtn{false};

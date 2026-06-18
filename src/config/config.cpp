@@ -302,34 +302,34 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     auto boolStr = [](bool b) -> const char * { return b ? "true" : "false"; };
 
     out << "[ui]\n";
-    out << "theme             = " << tomlQuote(cfg.ui.theme)          << "\n";
-    out << "show_nick_prefix  = " << boolStr(cfg.ui.showNickPrefix)   << "\n";
-    out << "show_topic        = " << boolStr(cfg.ui.showTopic)        << "\n";
-    out << "show_emoji_button = " << boolStr(cfg.ui.showEmojiButton)  << "\n";
-    out << "show_send_button  = " << boolStr(cfg.ui.showSendButton)   << "\n";
-    out << "colored_nicks     = " << boolStr(cfg.ui.coloredNicks)     << "\n";
-    out << "typing_indicator  = " << boolStr(cfg.ui.typingIndicator)  << "\n";
-    out << "hanging_indent    = " << boolStr(cfg.ui.hangingIndent)    << "\n";
-    out << "log_messages        = " << boolStr(cfg.ui.logMessages)        << "\n";
-    out << "show_unread_counts  = " << boolStr(cfg.ui.showUnreadCounts)  << "\n";
-    out << "show_timestamps     = " << boolStr(cfg.ui.showTimestamps)    << "\n";
-    out << "highlight_words     = " << tomlQuote(cfg.ui.highlightWords)  << "\n";
-    out << "app_icon            = " << tomlQuote(cfg.ui.appIcon)          << "\n";
-    out << "nick_brackets     = " << tomlQuote(cfg.ui.nickBrackets)   << "\n";
-    out << "notifications     = " << boolStr(cfg.ui.notifications)    << "\n";
-    out << "font_family       = " << tomlQuote(cfg.ui.fontFamily)     << "\n";
-    out << "font_toolbar       = " << cfg.ui.fontSizes.toolbar      << "\n";
+    out << "theme = " << tomlQuote(cfg.ui.theme) << "\n";
+    out << "show_nick_prefix = " << boolStr(cfg.ui.showNickPrefix) << "\n";
+    out << "show_topic = " << boolStr(cfg.ui.showTopic) << "\n";
+    out << "show_emoji_button = " << boolStr(cfg.ui.showEmojiButton) << "\n";
+    out << "show_send_button = " << boolStr(cfg.ui.showSendButton) << "\n";
+    out << "colored_nicks = " << boolStr(cfg.ui.coloredNicks) << "\n";
+    out << "typing_indicator = " << boolStr(cfg.ui.typingIndicator) << "\n";
+    out << "hanging_indent = " << boolStr(cfg.ui.hangingIndent) << "\n";
+    out << "log_messages = " << boolStr(cfg.ui.logMessages) << "\n";
+    out << "show_unread_counts = " << boolStr(cfg.ui.showUnreadCounts) << "\n";
+    out << "show_timestamps = " << boolStr(cfg.ui.showTimestamps) << "\n";
+    out << "highlight_words = " << tomlQuote(cfg.ui.highlightWords) << "\n";
+    out << "app_icon = " << tomlQuote(cfg.ui.appIcon) << "\n";
+    out << "nick_brackets = " << tomlQuote(cfg.ui.nickBrackets) << "\n";
+    out << "notifications = " << boolStr(cfg.ui.notifications) << "\n";
+    out << "font_family = " << tomlQuote(cfg.ui.fontFamily) << "\n";
+    out << "font_toolbar = " << cfg.ui.fontSizes.toolbar << "\n";
     out << "font_server_header = " << cfg.ui.fontSizes.serverHeader << "\n";
-    out << "font_sidebar       = " << cfg.ui.fontSizes.sidebar      << "\n";
-    out << "font_chat          = " << cfg.ui.fontSizes.chat         << "\n";
-    out << "font_nick_list     = " << cfg.ui.fontSizes.nickList     << "\n";
-    out << "font_nick_dock     = " << cfg.ui.fontSizes.nickDock     << "\n";
-    out << "font_topic_bar     = " << cfg.ui.fontSizes.topicBar     << "\n";
-    out << "font_topic_text    = " << cfg.ui.fontSizes.topicText    << "\n";
-    out << "font_input_nick    = " << cfg.ui.fontSizes.inputNick    << "\n";
-    out << "font_input         = " << cfg.ui.fontSizes.input        << "\n";
-    out << "font_typing        = " << cfg.ui.fontSizes.typing       << "\n";
-    out << "font_emoji         = " << cfg.ui.fontSizes.emoji        << "\n\n";
+    out << "font_sidebar = " << cfg.ui.fontSizes.sidebar << "\n";
+    out << "font_chat = " << cfg.ui.fontSizes.chat << "\n";
+    out << "font_nick_list = " << cfg.ui.fontSizes.nickList << "\n";
+    out << "font_nick_dock = " << cfg.ui.fontSizes.nickDock << "\n";
+    out << "font_topic_bar = " << cfg.ui.fontSizes.topicBar << "\n";
+    out << "font_topic_text = " << cfg.ui.fontSizes.topicText << "\n";
+    out << "font_input_nick = " << cfg.ui.fontSizes.inputNick << "\n";
+    out << "font_input = " << cfg.ui.fontSizes.input << "\n";
+    out << "font_typing = " << cfg.ui.fontSizes.typing << "\n";
+    out << "font_emoji = " << cfg.ui.fontSizes.emoji << "\n\n";
 
     out << "[privacy]\n";
     out << "link_previews = " << boolStr(cfg.ui.linkPreviews) << "\n\n";
@@ -339,13 +339,13 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
         if (!cfg.profileDisplayName.isEmpty())
             out << "display_name = " << tomlQuote(cfg.profileDisplayName) << "\n";
         if (!cfg.profileAvatarUrl.isEmpty())
-            out << "avatar_url   = " << tomlQuote(cfg.profileAvatarUrl) << "\n";
+            out << "avatar_url = " << tomlQuote(cfg.profileAvatarUrl) << "\n";
         out << "\n";
     }
 
     for (const auto &entry : cfg.ignoreList) {
         out << "[[ignore.entry]]\n";
-        out << "nick  = " << tomlQuote(entry.nick) << "\n";
+        out << "nick = " << tomlQuote(entry.nick) << "\n";
         QStringList flagNames;
         if (entry.flags & IgnoreType::PM)     flagNames << "\"pm\"";
         if (entry.flags & IgnoreType::Notice) flagNames << "\"notice\"";
@@ -405,51 +405,51 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
         }
 
         out << "[[server]]\n";
-        out << "name     = " << tomlQuote(s.name)     << "\n";
-        out << "host     = " << tomlQuote(s.host)     << "\n";
-        out << "port     = " << s.port                << "\n";
-        out << "ssl      = " << boolStr(s.ssl)        << "\n";
-        out << "nick     = " << tomlQuote(s.nick)     << "\n";
-        out << "user     = " << tomlQuote(s.user)     << "\n";
+        out << "name = " << tomlQuote(s.name) << "\n";
+        out << "host = " << tomlQuote(s.host) << "\n";
+        out << "port = " << s.port << "\n";
+        out << "ssl = " << boolStr(s.ssl) << "\n";
+        out << "nick = " << tomlQuote(s.nick) << "\n";
+        out << "user = " << tomlQuote(s.user) << "\n";
         out << "realname = " << tomlQuote(s.realname) << "\n";
         if (!savedPw.isEmpty())
-            out << "password          = " << tomlQuote(savedPw) << "\n";
+            out << "password = " << tomlQuote(savedPw) << "\n";
         if (!s.saslUser.isEmpty())
-            out << "sasl_user         = " << tomlQuote(s.saslUser) << "\n";
+            out << "sasl_user = " << tomlQuote(s.saslUser) << "\n";
         if (!savedSasl.isEmpty())
-            out << "sasl_password     = " << tomlQuote(savedSasl) << "\n";
+            out << "sasl_password = " << tomlQuote(savedSasl) << "\n";
         if (s.saslExternal)
-            out << "sasl_external     = true\n";
+            out << "sasl_external = true\n";
         if (!s.clientCertFile.isEmpty())
-            out << "client_cert       = " << tomlQuote(s.clientCertFile) << "\n";
+            out << "client_cert = " << tomlQuote(s.clientCertFile) << "\n";
         if (!s.clientKeyFile.isEmpty())
-            out << "client_key        = " << tomlQuote(s.clientKeyFile) << "\n";
+            out << "client_key = " << tomlQuote(s.clientKeyFile) << "\n";
         if (!savedNs.isEmpty())
             out << "nickserv_password = " << tomlQuote(savedNs) << "\n";
         if (s.bouncerType == BouncerType::ZNC)
-            out << "bouncer           = \"znc\"\n";
+            out << "bouncer = \"znc\"\n";
         else if (s.bouncerType == BouncerType::Soju)
-            out << "bouncer           = \"soju\"\n";
+            out << "bouncer = \"soju\"\n";
         if (!s.bouncerNetwork.isEmpty())
-            out << "bouncer_network   = " << tomlQuote(s.bouncerNetwork) << "\n";
+            out << "bouncer_network = " << tomlQuote(s.bouncerNetwork) << "\n";
         if (!s.proxyHost.isEmpty()) {
-            out << "proxy_host        = " << tomlQuote(s.proxyHost) << "\n";
-            out << "proxy_port        = " << s.proxyPort << "\n";
+            out << "proxy_host = " << tomlQuote(s.proxyHost) << "\n";
+            out << "proxy_port = " << s.proxyPort << "\n";
             if (!s.proxyUser.isEmpty())
-                out << "proxy_user        = " << tomlQuote(s.proxyUser) << "\n";
+                out << "proxy_user = " << tomlQuote(s.proxyUser) << "\n";
             if (!savedProxyPass.isEmpty())
-                out << "proxy_pass        = " << tomlQuote(savedProxyPass) << "\n";
+                out << "proxy_pass = " << tomlQuote(savedProxyPass) << "\n";
         }
         if (!s.pinnedFingerprint.isEmpty())
-            out << "ssl_fingerprint   = " << tomlQuote(s.pinnedFingerprint) << "\n";
+            out << "ssl_fingerprint = " << tomlQuote(s.pinnedFingerprint) << "\n";
         if (s.websocket)
-            out << "websocket         = true\n";
+            out << "websocket = true\n";
         if (s.disabled)
-            out << "disabled          = true\n";
+            out << "disabled = true\n";
         if (!s.quitMessage.isEmpty())
-            out << "quit_message      = " << tomlQuote(s.quitMessage) << "\n";
+            out << "quit_message = " << tomlQuote(s.quitMessage) << "\n";
         if (!s.awayMessage.isEmpty())
-            out << "away_message      = " << tomlQuote(s.awayMessage) << "\n";
+            out << "away_message = " << tomlQuote(s.awayMessage) << "\n";
         const bool hasKeys = std::any_of(s.channels.begin(), s.channels.end(),
                                           [](const ChannelConfig &c){ return !c.password.isEmpty(); });
         if (hasKeys) {
@@ -460,14 +460,14 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
                     ? storePassword(ch.password, s.name + ":channel:" + ch.name, "key")
                     : ch.password;
                 if (!savedKey.isEmpty())
-                    out << "key  = " << tomlQuote(savedKey) << "\n";
+                    out << "key = " << tomlQuote(savedKey) << "\n";
             }
         } else {
             QStringList names;
             for (const auto &ch : s.channels)
                 names << ch.name;
             if (!names.isEmpty())
-                out << "channels          = " << tomlQuote(names.join(", ")) << "\n";
+                out << "channels = " << tomlQuote(names.join(", ")) << "\n";
         }
         out << "\n";
     }
