@@ -11,6 +11,18 @@
 - **Light theme text contrast** — improved text contrast on 72 light themes where foreground colors were too close to the background, making text hard to read.
 
 <!--
+SESSION SUMMARY — 2026-06-17 (URL regex, light theme contrast)
+What changed:
+  - URL regex fix: no-break spaces (U+00A0) no longer split URLs into separate links.
+    Regex word-boundary anchors updated in ChatFormat to treat NBSP like a regular character.
+  - Light theme contrast fix: 72 light themes had foreground colors too close to the
+    background, making text hard to read. Adjusted fg/accent values for readability.
+  - CHANGELOG updated with both fixes.
+  - Verified on Mac — themes render correctly.
+No regressions. No known issues.
+-->
+
+<!--
 SESSION SUMMARY — 2026-06-17 (ServerId refactor, duplicate guard, sidebar sync, log migration)
 What changed:
   - ServerId refactored from hostname to server config name — fixes collision when multiple
