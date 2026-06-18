@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.25.44
+
+### Fixed
+- **Link preview image limit** — raised from 200 KB to 2 MB so retina screenshots and larger images decode into thumbnails instead of silently failing.
+- **Link preview partial decode** — truncated image downloads (from timeout or size cap) now emit a card without a thumbnail instead of displaying a half-grey broken image. Image fetch timeout increased from 6 s to 15 s.
+
+<!--
+SESSION SUMMARY — 2026-06-18 (link preview fixes)
+What changed:
+  - Diagnosed link previews failing for linuxdojo.org URLs: root cause was DNS
+    split-horizon — LuCI dnsmasq override and /etc/hosts on fortis both resolved
+    linuxdojo.org to 192.168.1.32 (RFC1918), which the SSRF guard correctly blocked.
+    Fixed by removing the DNS overrides; no code change needed for that part.
+  - Image fetch limit raised from 200 KB to 2 MB — retina screenshots (1–2 MB PNGs)
+    were being truncated and failing to decode.
+  - Image fetch timeout raised from 6 s to 15 s — slower connections (WiFi) could
+    timeout mid-download, producing partial images with grey fill.
+  - Truncated image downloads now skip decode entirely and emit a title-only card
+    instead of displaying a broken thumbnail.
+  - Docs updated: faq.md and howto.html corrected from "200 KB" to "2 MB".
+No regressions. No known issues.
+-->
+
 ## 0.25.43
 
 ### Fixed

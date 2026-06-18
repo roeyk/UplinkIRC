@@ -295,6 +295,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Search icon 24×24 — search button icon size increased from 20×20 to 24×24 (v0.25.39, 2026-06-16)
 - [x] Close channel refreshes UI — onChannelRemoved calls onSidebarSelectionChanged() so info bar and nick list update immediately to the auto-selected channel (v0.25.40, 2026-06-16)
 - [x] Sidebar header icon swap — Preferences → manage_accounts; Manage Servers → add_link at 32×32/28×28 (v0.25.40, 2026-06-16)
+- [x] Link preview image limit raised — 200 KB → 2 MB; retina screenshots no longer truncated and fail to decode (v0.25.44, 2026-06-18)
+- [x] Link preview partial image rejection — truncated downloads (timeout/size cap) emit title-only card instead of displaying broken grey-filled thumbnail; image timeout 6s → 15s (v0.25.44, 2026-06-18)
 
 ---
 
