@@ -6,8 +6,14 @@
 - **Link preview image limit** — raised from 200 KB to 2 MB so retina screenshots and larger images decode into thumbnails instead of silently failing.
 - **Link preview partial decode** — truncated image downloads (from timeout or size cap) now emit a card without a thumbnail instead of displaying a half-grey broken image. Image fetch timeout increased from 6 s to 15 s.
 
+### Improved
+- **ServerId/BufferId strong types** — replaced raw `QString` host/channel parameters with strong types across MainWindow, CommandDispatcher, ChannelPane, and ChannelListDialog. Eliminates a class of parameter-swap bugs at compile time.
+
+### Cleanup
+- Removed link preview debug trace logging.
+
 <!--
-SESSION SUMMARY — 2026-06-18 (link preview fixes)
+SESSION SUMMARY — 2026-06-18 (link preview fixes, strong type refactor)
 What changed:
   - Diagnosed link previews failing for linuxdojo.org URLs: root cause was DNS
     split-horizon — LuCI dnsmasq override and /etc/hosts on fortis both resolved
@@ -19,6 +25,9 @@ What changed:
     timeout mid-download, producing partial images with grey fill.
   - Truncated image downloads now skip decode entirely and emit a title-only card
     instead of displaying a broken thumbnail.
+  - ServerId/BufferId strong types refactored across UI layer (8 files, ~100 call sites).
+    17 signal-connection lambdas eliminated, ~80 redundant wrapping sites removed.
+  - Debug trace logging removed from linkpreview.cpp and mainwindow.cpp.
   - Docs updated: faq.md and howto.html corrected from "200 KB" to "2 MB".
 No regressions. No known issues.
 -->
