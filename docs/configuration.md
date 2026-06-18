@@ -39,7 +39,7 @@ log_messages = false            # write all messages to ~/.config/uplink/logs/ (
 show_unread_counts = true             # show message count badges in the sidebar
 notifications = true             # green dot on tray icon for mentions/PMs when unfocused
 nick_brackets = "<>"               # "<>" [nick] "()" "{}" "::::" or "" for none
-app_icon = "dark"
+app_icon = "flat-black"
 font_family = "IBM Plex Mono"   # Windows default is "Consolas"
 font_toolbar = 10
 font_sidebar = 10
@@ -115,7 +115,7 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `show_unread_counts` | bool | `true` | Show a small bold count badge next to the unread indicator icon in the sidebar. Counts mentions and activity separately. Turn off from **Preferences → Show Unread Message Counts**. |
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Tray Notifications**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
-| `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`. Change from **Preferences** (click **⚙**) → **App Icon**. |
+| `app_icon` | string | `"flat-black"` | Which app icon variant to use. 15 choices: `"flat-black"` (default), `"black-old-orange"`, `"black-orange"`, `"original-black"`, `"original-flat-shine"`, `"colorful-blueish"`, `"colorful-greenblue"`, `"colorful-hotbluepink"`, `"colorful-orange"`, `"colorful-purple"`, `"gruvbox-blue"`, `"gruvbox-colorful"`, `"gruvbox-orange"`, `"gruvbox-purple"`, `"gruvbox-yellow"`. Change from **Preferences → Appearance** (visual grid picker). Old `"dark"`/`"light"` values are auto-migrated to `"flat-black"`. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
 | `font_toolbar` | integer | `10` | Font size (pt) for the ☰ button |
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
@@ -174,7 +174,7 @@ theme = "nord"
 colored_nicks = true
 typing_indicator = true
 notifications = true
-app_icon = "dark"
+app_icon = "flat-black"
 font_family = "IBM Plex Mono"
 font_chat = 12
 font_sidebar = 10
@@ -230,7 +230,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 | `websocket` | bool | no | Connect via WebSocket instead of a raw TCP socket. When `ssl = true`, uses `wss://`; when `ssl = false`, uses `ws://`. Useful for servers behind web infrastructure (e.g. The Lounge). Defaults to `false`. |
 | `quit_message` | string | no | Message broadcast to the server when you disconnect or type `/quit` with no argument. Defaults to `"Uplink"` when omitted or blank. You can always override it for a single disconnect with `/quit <message>`. |
 | `away_message` | string | no | Default away message sent when you type `/away` with no argument. When omitted or blank, `/away` sends `"Away"` as a fallback. You can always override for a single session with `/away <message>`. Use `/back` to clear away status. |
-| `disabled` | bool | no | When `true`, the server block is kept in `config.toml` and written back on every save, but Uplink skips it completely on startup — no connection attempt, no sidebar entry. Toggle from **☰ → Manage Servers → Edit → Disabled** checkbox. Defaults to `false`. |
+| `disabled` | bool | no | When `true`, the server block is kept in `config.toml` and written back on every save, but Uplink skips it completely on startup — no connection attempt, no sidebar entry. Toggle from **☰ → Manage Servers** → select the server → **Disabled** checkbox in the Connection section. Defaults to `false`. |
 
 ### Minimal server block
 
@@ -639,7 +639,7 @@ proxy_pass = "mypassword"
 
 ### GUI setup
 
-Go to **☰ → Manage Servers → Add** (or **Edit**) and fill in the **SOCKS5 Proxy** section at the bottom of the dialog. Leave the host field blank to connect directly without a proxy.
+Go to **☰ → Manage Servers** and click **Add** (or select an existing server) to fill in the **SOCKS5 Proxy** section in the right panel. Leave the host field blank to connect directly without a proxy.
 
 ### Notes
 
@@ -814,7 +814,7 @@ The block is written automatically when you use the **Preferences → Profile** 
 | `display_name` | string | Friendly name shown in the nick list tooltip alongside your IRC nick. Does not replace your nick. |
 | `avatar_url` | string | URL to your avatar image, or a local file path (e.g. `/home/you/avatar.png`). A web URL is broadcast to the server via `METADATA SET` and visible to other users. A local path is displayed only to you — it is never sent to the server. Leave blank to publish no avatar. |
 
-**Setting from Preferences:** Open **Preferences** (click **⚙** in the channel header) and scroll to the **Profile** section. Fill in your Display Name and/or Avatar URL, then click **Apply to connected servers**.
+**Setting from Preferences:** Open **Preferences** (click **⚙** in the channel header) and select the **Profile** page from the left navigation. Fill in your Display Name and/or Avatar URL, then click **Apply to connected servers**.
 
 **Setting from commands:**
 
@@ -870,7 +870,7 @@ channels = "#linux"
 
 This is the safe alternative to commenting out a `[[server]]` block. Commented-out entries are not parsed by Uplink and will be **permanently removed** the next time the app writes the config file. `disabled = true` is the correct way to temporarily skip a server.
 
-**GUI:** Open **☰ → Manage Servers → Edit** and tick the **Disabled** checkbox at the top of the dialog. Uncheck it to re-enable the server — it will connect immediately.
+**GUI:** Open **☰ → Manage Servers**, select the server, and tick the **Disabled** checkbox in the Connection section on the right. Uncheck it to re-enable the server — it will connect immediately.
 
 **Re-enabling:** Remove the `disabled = true` line (or set it to `false`) and reload the config with **☰ → Reload Config**, or use the GUI checkbox.
 
@@ -903,7 +903,7 @@ You can also set it per-disconnect using `/quit`:
 /quit Heading to bed        # uses "Heading to bed" just this once
 ```
 
-**GUI:** Open **☰ → Manage Servers → Edit** and fill in **Quit Message** in the Identity section.
+**GUI:** Open **☰ → Manage Servers**, select the server, and fill in **Quit Message** in the Identity section on the right.
 
 ---
 
@@ -933,7 +933,7 @@ You can still pass a one-off message to override it:
 /back                             # always clears away status regardless of config
 ```
 
-**GUI:** Open **☰ → Manage Servers → Edit** and fill in **Away Message** in the Identity section.
+**GUI:** Open **☰ → Manage Servers**, select the server, and fill in **Away Message** in the Identity section on the right.
 
 ---
 
@@ -1040,7 +1040,7 @@ Popular picks:
 | `one-dark` | Atom One Dark |
 | `default` | Built-in fallback theme |
 
-Themes can be switched live from the **Preferences** dialog (click **⚙** in the channel header) without restarting.
+Themes can be switched live from the **Preferences → Appearance** page (click **⚙** in the channel header) without restarting.
 
 ### Theme search path
 

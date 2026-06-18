@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.25.45
+
+### Added
+- **15 app icon variants** — visual grid picker in Preferences → Appearance replaces the old Dark/Light radio buttons. Styles include flat, colorful, gruvbox, and original variants. Icon changes update the window, system tray, and KDE Plasma taskbar live. Old "dark"/"light" config values are auto-migrated.
+- **Website icon rotation** — the Uplink website randomly selects one of the 15 app icons on each page load.
+
+### Improved
+- **Preferences dialog redesigned** — Konversation-style layout with a flat navigation list on the left (Appearance, Chat Window, Interface, Notifications, Logging, Profile) and content pages on the right. Each section has its own page with room to breathe.
+- **Manage Servers dialog redesigned** — integrated two-panel layout replaces the old list-with-popup approach. Server list on the left, server settings form on the right. Selecting a server loads its settings inline — no more separate Edit dialog. Add, Remove, and reorder controls sit below the server list.
+
 ## 0.25.44
 
 ### Fixed

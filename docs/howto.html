@@ -808,7 +808,7 @@ user ="uplink"
 realname = "Uplink User"
 channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
 
-    <p>You can also set channels from the GUI: click <strong>☰ → Manage Servers → Edit</strong> and fill in the Auto-join field.</p>
+    <p>You can also set channels from the GUI: open <strong>☰ → Manage Servers</strong>, select the server, and fill in the Auto-join field on the right.</p>
     <p>To join a channel while connected without editing the config, type <code>/join #channelname</code> in the input box.</p>
   </section>
 
@@ -817,12 +817,12 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
   <!-- MANAGE SERVERS -->
   <section id="manage-servers">
     <h2>Manage Servers dialog</h2>
-    <p>Click <strong>☰ → Manage Servers...</strong> to add, edit, or remove servers from the UI — no need to edit <code>config.toml</code> by hand for most settings. Changes take effect immediately.</p>
+    <p>Click <strong>☰ → Manage Servers...</strong> to add, edit, or remove servers from the UI — no need to edit <code>config.toml</code> by hand for most settings. The dialog uses an integrated two-panel layout: server list on the left, server settings form on the right. Selecting a server loads its settings inline. Changes take effect immediately.</p>
 
     <h3>Adding a server</h3>
     <div class="step-row"><span class="step">1</span><div>Click <strong>☰ → Manage Servers...</strong></div></div>
-    <div class="step-row"><span class="step">2</span><div>Click <strong>Add</strong> to open the server form.</div></div>
-    <div class="step-row"><span class="step">3</span><div>Fill in the fields (see table below) and click <strong>OK</strong>.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Click <strong>Add</strong> below the server list.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Fill in the fields in the right panel (see table below) and click <strong>OK</strong>.</div></div>
     <div class="step-row"><span class="step">4</span><div>The server is added to the sidebar and begins connecting immediately.</div></div>
 
     <table>
@@ -832,7 +832,8 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
         <tr><td><strong>Identity</strong></td><td>Nick, Username, Real Name, Quit Message, Away Message</td></tr>
         <tr><td><strong>Authentication</strong></td><td>Server Password (bouncers / password-protected servers); SASL User + SASL Password (SASL PLAIN); SASL EXTERNAL checkbox + Client Cert + Client Key — each has a Browse button to pick the file; NickServ password (auto-identifies on connect)</td></tr>
         <tr><td><strong>Channels</strong></td><td>Auto-join — comma-separated (e.g. <code>#uplink, #linux</code>). See note below for password-protected channels.</td></tr>
-        <tr><td><strong>Bouncer</strong></td><td>Type: None / ZNC / Soju. Network name (soju only).</td></tr>
+        <tr><td><strong>Bouncer</strong></td><td>Type: None / ZNC / Soju. Network field (appears for both ZNC and Soju).</td></tr>
+        <tr><td><strong>SOCKS5 Proxy</strong></td><td>Host, Port, Username (optional), Password (optional). Leave host blank for direct connection.</td></tr>
       </tbody>
     </table>
 
@@ -841,7 +842,7 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
     </div>
 
     <h3>Editing a server</h3>
-    <p>Select the server in the list, click <strong>Edit</strong>, make your changes, and click <strong>OK</strong>. The server disconnects and reconnects with the updated settings immediately.</p>
+    <p>Select the server in the left panel — its settings load in the right panel. Edit the fields you want to change and click <strong>OK</strong>. The server disconnects and reconnects with the updated settings immediately.</p>
 
     <h3>Reordering servers</h3>
     <p>Select a server in the list and click <strong>▲</strong> or <strong>▼</strong> to move it up or down. The new order is saved to <code>config.toml</code> when you click <strong>OK</strong>. You can also right-click a server header in the sidebar and choose <strong>Move Up</strong> or <strong>Move Down</strong>.</p>
@@ -868,10 +869,10 @@ channels = "#linux"</pre>
 
     <h3>Using the GUI</h3>
     <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Manage Servers...</strong></div></div>
-    <div class="step-row"><span class="step">2</span><div>Select the server and click <strong>Edit</strong>.</div></div>
-    <div class="step-row"><span class="step">3</span><div>Tick the <strong>Disabled</strong> checkbox at the top of the Connection section and click <strong>OK</strong>.</div></div>
+    <div class="step-row"><span class="step">2</span><div>Select the server in the left panel.</div></div>
+    <div class="step-row"><span class="step">3</span><div>Tick the <strong>Disabled</strong> checkbox in the Connection section on the right and click <strong>OK</strong>.</div></div>
     <div class="step-row"><span class="step">4</span><div>The server disconnects immediately and disappears from the sidebar. Its config is preserved.</div></div>
-    <p>To re-enable, open Edit Server again and uncheck <strong>Disabled</strong> — the server reconnects immediately.</p>
+    <p>To re-enable, select the server again and uncheck <strong>Disabled</strong> — the server reconnects immediately.</p>
 
     <div class="callout callout-warning">
       <strong>Don't comment out <code>[[server]]</code> blocks.</strong> Commented entries are not parsed by Uplink. The next time the app writes <code>config.toml</code> — which happens on any Preferences change, theme switch, or <code>/ignore</code> command — it does a full rewrite from memory and the commented block is permanently removed. Use <code>disabled = true</code> instead.
@@ -894,7 +895,7 @@ ssl = true
 nick = "yournick"
 quit_message = "Later!"</pre>
     <p>This is used when you disconnect normally or type <code>/quit</code> with no argument. To override for a single disconnect: <code>/quit See you tomorrow</code>. If unset, Uplink sends <code>"Uplink"</code>.</p>
-    <p><strong>GUI:</strong> Open <strong>☰ → Manage Servers → Edit → Quit Message</strong>.</p>
+    <p><strong>GUI:</strong> Open <strong>☰ → Manage Servers</strong>, select the server, and fill in <strong>Quit Message</strong> in the Identity section on the right.</p>
 
     <h3>Away message</h3>
     <p>The away message is sent when you type <code>/away</code> with no argument. Users who message you while you are away receive it as an automatic server reply.</p>
@@ -913,7 +914,7 @@ away_message = "Away from keyboard — back soon"</pre>
         <tr><td><code>/back</code></td><td>Always clears away regardless of config</td></tr>
       </tbody>
     </table>
-    <p><strong>GUI:</strong> Open <strong>☰ → Manage Servers → Edit → Away Message</strong>.</p>
+    <p><strong>GUI:</strong> Open <strong>☰ → Manage Servers</strong>, select the server, and fill in <strong>Away Message</strong> in the Identity section on the right.</p>
 
     <h3>Full example with both</h3>
     <pre>[[server]]
@@ -943,7 +944,7 @@ channels = "#uplink, #linux"</pre>
     </table>
     <p>After saving, your config file will show <code>"&lt;keychain&gt;"</code> as a sentinel in place of the actual secret:</p>
     <pre>nickserv_password = "&lt;keychain&gt;"   # actual value is in the OS keychain</pre>
-    <p>When you open <strong>Edit Server</strong> for a server with a keychain-stored password, the password field shows a placeholder — <em>Stored in keychain — type to change, clear to remove</em> — rather than the sentinel as masked dots. This makes it clear a password exists. Leaving the field unchanged and saving preserves the keychain entry. Typing a new password overwrites it. Explicitly clearing the field removes the entry.</p>
+    <p>When you select a server in <strong>Manage Servers</strong> that has a keychain-stored password, the password field shows a placeholder — <em>Stored in keychain — type to change, clear to remove</em> — rather than the sentinel as masked dots. This makes it clear a password exists. Leaving the field unchanged and saving preserves the keychain entry. Typing a new password overwrites it. Explicitly clearing the field removes the entry.</p>
     <p>All password fields have a <strong>👁 show/hide toggle</strong> — click the eye icon on the right edge of any password field to reveal the value, and click again to re-mask it.</p>
     <div class="callout callout-tip">
       <strong>Upgrading from an older version?</strong> Any plaintext password already in your config is migrated to the keychain automatically the next time you save your server settings. No manual steps needed.
@@ -952,7 +953,7 @@ channels = "#uplink, #linux"</pre>
       <strong>Headless / no keychain daemon?</strong> If the OS keychain is unavailable (e.g. a server without a running secret service), the password field will read back as empty. Enter your password in the server dialog when a keychain becomes available and it will be stored then. Check your terminal output for <code>qWarning</code> messages from Uplink if authentication is failing unexpectedly.
     </div>
     <div class="callout callout-warning">
-      <strong>Seeing a red "Keychain: no password stored for…" error in the server buffer?</strong> This means your config file has <code>&lt;keychain&gt;</code> as a sentinel, but no matching entry exists in the OS keychain — the password was never written there (or the entry was cleared). Fix: open <strong>Edit Server</strong>, type your password in the affected field, and save. Uplink will write it to the keychain and authenticate normally from that point on.
+      <strong>Seeing a red "Keychain: no password stored for…" error in the server buffer?</strong> This means your config file has <code>&lt;keychain&gt;</code> as a sentinel, but no matching entry exists in the OS keychain — the password was never written there (or the entry was cleared). Fix: open <strong>☰ → Manage Servers</strong>, select the server, type your password in the affected field, and save. Uplink will write it to the keychain and authenticate normally from that point on.
     </div>
     <div class="callout callout-warning">
       <strong>KDE wallet keeps prompting when changing preferences (font, theme, toggles)?</strong> This was a bug fixed in v0.24.3. Every config save was attempting a keychain write even for unrelated changes. Update to v0.24.3 or later to resolve it. If you cannot update immediately, keeping the wallet unlocked for your session will suppress the prompts.
@@ -1040,7 +1041,7 @@ client_cert = "/home/alice/.irc/client.crt"
 client_key = "/home/alice/.irc/client.key"</pre>
 
     <p>Uplink loads the certificate before the TLS handshake, negotiates <code>AUTHENTICATE EXTERNAL</code>, and sends an empty response. Both RSA and EC (ECDSA) PEM keys are supported.</p>
-    <p>You can also set the cert and key paths from the Server dialog: <strong>☰ → Manage Servers → Edit</strong>, then tick <strong>SASL EXTERNAL</strong> and browse to your files.</p>
+    <p>You can also set the cert and key paths from the GUI: open <strong>☰ → Manage Servers</strong>, select the server, then tick <strong>SASL EXTERNAL</strong> in the Authentication section and browse to your files.</p>
 
     <div class="warn">
       <strong>Do not set <code>sasl_user</code> / <code>sasl_password</code> alongside <code>sasl_external</code></strong> — only one SASL mechanism is used per connection.
@@ -1138,7 +1139,7 @@ sasl_password = "mysecretpassword"</pre>
     <div class="step-row"><span class="step">3</span><div>Fill in <strong>Identity</strong>: set <strong>Nick</strong>, <strong>Username</strong>, and <strong>Real Name</strong> to whatever you normally use on IRC. These are sent through ZNC to the IRC network.</div></div>
     <div class="step-row"><span class="step">4</span><div>Under <strong>Authentication</strong>: set <strong>SASL User</strong> to your ZNC username and <strong>SASL Password</strong> to your ZNC password. Leave the Server Password field blank. Uplink uses these to assemble the <code>username/network:password</code> string ZNC expects.</div></div>
     <div class="step-row"><span class="step">5</span><div>Under <strong>Channels → Auto-join</strong>, list the channels you want to join: <code>#linux, #archlinux</code></div></div>
-    <div class="step-row"><span class="step">6</span><div>Under <strong>Bouncer → Type</strong>, select <strong>ZNC</strong>. A <strong>Network</strong> field appears — enter the ZNC network name here (e.g. <code>libera</code>). Click <strong>OK</strong>, then <strong>OK</strong> again in Manage Servers.</div></div>
+    <div class="step-row"><span class="step">6</span><div>Under <strong>Bouncer → Type</strong>, select <strong>ZNC</strong>. A <strong>Network</strong> field appears — enter the ZNC network name here (e.g. <code>libera</code>). Click <strong>OK</strong>.</div></div>
 
     <div class="note">
       <strong>Old-style password format still works.</strong> If you prefer, put the full <code>username/network:password</code> string directly in the Server Password field and leave SASL User, SASL Password, and Network blank. Uplink sends it as-is.
@@ -1225,7 +1226,7 @@ channels = "#debian"</pre>
     <pre>alice:hunter2</pre>
 
     <h3>Setting up soju in Manage Servers</h3>
-    <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Manage Servers → Add</strong>.</div></div>
+    <div class="step-row"><span class="step">1</span><div>Open <strong>☰ → Manage Servers</strong> and click <strong>Add</strong>.</div></div>
     <div class="step-row"><span class="step">2</span><div><strong>Host</strong>: your soju server hostname. <strong>Port</strong>: typically <code>6697</code> SSL. Check <strong>Use SSL/TLS</strong>.</div></div>
     <div class="step-row"><span class="step">3</span><div><strong>Identity</strong>: fill in Nick, Username, and Real Name as usual.</div></div>
     <div class="step-row"><span class="step">4</span><div><strong>Server Password</strong>: enter <code>username:password</code>. Example: <code>alice:hunter2</code>. Leave SASL fields blank.</div></div>
@@ -1485,7 +1486,7 @@ channels = "#uplink"</pre>
       <strong>Everything works the same.</strong> SASL, IRCv3 CAP negotiation, STS, SOCKS5 proxy, reconnect, and the ping watchdog all function identically over WebSocket.
     </div>
 
-    <p>You can also enable WebSocket from the GUI: <strong>☰ → Manage Servers → Edit</strong> and tick the <strong>Use WebSocket</strong> checkbox.</p>
+    <p>You can also enable WebSocket from the GUI: open <strong>☰ → Manage Servers</strong>, select the server, and tick the <strong>Use WebSocket</strong> checkbox in the Connection section on the right.</p>
   </section>
 
   <hr />
@@ -1874,7 +1875,7 @@ typing_indicator = true   # set to false to disable completely</pre>
 
     <h4>Via Preferences</h4>
     <ol>
-      <li>Open <strong>Preferences</strong> (click the <strong>⚙ gear icon</strong> in the channel header) and scroll to the <strong>Profile</strong> section at the bottom.</li>
+      <li>Open <strong>Preferences</strong> (click the <strong>⚙ gear icon</strong> in the channel header) and select the <strong>Profile</strong> page from the left navigation.</li>
       <li>Enter your <strong>Display Name</strong> — the friendly name other users see in the tooltip (e.g. <em>Alice Smith</em>). It does not replace your IRC nick.</li>
       <li>
         Enter your <strong>Avatar URL</strong> — a full <code>https://</code> link to an image file. Or click <strong>Browse...</strong> to pick a local image from your computer.
@@ -2614,7 +2615,7 @@ link_previews = true</pre>
     <h2>Picking a theme</h2>
     <p>Uplink ships with 306 built-in color themes. The fastest way is to try them live:</p>
 
-    <div class="step-row"><span class="step">1</span><div>Click the <strong>⚙ gear icon</strong> in the channel header to open <strong>Preferences</strong>.</div></div>
+    <div class="step-row"><span class="step">1</span><div>Click the <strong>⚙ gear icon</strong> in the channel header to open <strong>Preferences</strong>, then select the <strong>Appearance</strong> page.</div></div>
     <div class="step-row"><span class="step">2</span><div>Click the <strong>theme button</strong> (shows your current theme name) to expand the list.</div></div>
     <div class="step-row"><span class="step">3</span><div>Use <kbd>↑</kbd> / <kbd>↓</kbd> to browse, then press <kbd>Enter</kbd> or click a theme to apply it. The list stays open so you can keep trying themes.</div></div>
     <div class="step-row"><span class="step">4</span><div>The choice is saved automatically to <code>config.toml</code>. Click the theme button again to collapse the list.</div></div>
@@ -2754,16 +2755,25 @@ hanging_indent = true   # default on</pre>
   <!-- APP ICON -->
   <section id="app-icon">
     <h2>App icon variant</h2>
-    <p>Uplink has two icon variants. Switch at runtime from <strong>⚙ → App Icon</strong> in Preferences, or set in config:</p>
+    <p>Uplink ships with 15 icon variants across flat, colorful, gruvbox, and original styles. Pick one from the visual grid in <strong>Preferences → Appearance</strong> — the icon updates the window, system tray, and KDE Plasma taskbar live.</p>
 
+    <p>Or set it directly in config:</p>
     <pre>[ui]
-app_icon = "dark"   # "dark" | "light"</pre>
+app_icon = "flat-black"</pre>
 
     <table>
-      <tr><th>Value</th><th>Description</th></tr>
-      <tr><td><code>"dark"</code></td><td>Dark icon (default)</td></tr>
-      <tr><td><code>"light"</code></td><td>Light icon, recommended for light OS themes</td></tr>
+      <tr><th>Value</th><th>Style</th></tr>
+      <tr><td><code>"flat-black"</code></td><td>Flat black (default)</td></tr>
+      <tr><td><code>"gruvbox-orange"</code></td><td>Gruvbox warm orange</td></tr>
+      <tr><td><code>"colorful-blueish"</code></td><td>Colorful blue tones</td></tr>
+      <tr><td><code>"colorful-purple"</code></td><td>Colorful purple</td></tr>
+      <tr><td><code>"original-black"</code></td><td>Original style, black</td></tr>
     </table>
+    <p>15 variants total: <code>flat-black</code>, <code>black-old-orange</code>, <code>black-orange</code>, <code>original-black</code>, <code>original-flat-shine</code>, <code>colorful-blueish</code>, <code>colorful-greenblue</code>, <code>colorful-hotbluepink</code>, <code>colorful-orange</code>, <code>colorful-purple</code>, <code>gruvbox-blue</code>, <code>gruvbox-colorful</code>, <code>gruvbox-orange</code>, <code>gruvbox-purple</code>, <code>gruvbox-yellow</code>.</p>
+
+    <div class="callout callout-tip">
+      <strong>Upgrading from an older version?</strong> Old <code>"dark"</code> and <code>"light"</code> config values are auto-migrated to <code>"flat-black"</code> on launch.
+    </div>
   </section>
 
   <!-- NOTIFICATIONS -->

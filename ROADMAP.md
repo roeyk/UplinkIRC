@@ -300,6 +300,10 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Config hot-reload — QFileSystemWatcher on config.toml; server additions/removals from external text editors picked up automatically without restarting (v0.25.44, 2026-06-18)
 - [x] Font zoom — Ctrl+mousewheel/Ctrl+± per UI region (chat, nick list, sidebar, input, topic, nick panel); server vs channel independent in sidebar; 0.5pt steps; FontSizes int→double; Font dialog QDoubleSpinBox (v0.25.44, 2026-06-18)
 - [x] Clean config formatting — config writer and all docs stripped of column-alignment padding; plain key = value (v0.25.44, 2026-06-18)
+- [x] Preferences dialog redesigned (v0.25.45) — Konversation-style flat nav list + stacked content pages; 6 pages: Appearance, Chat Window, Interface, Notifications, Logging, Profile
+- [x] 15 app icon variants (v0.25.45) — visual grid picker in Preferences; flat, colorful, gruvbox, original styles; live update to window, tray, and KDE Plasma taskbar; old dark/light config values auto-migrated
+- [x] Manage Servers dialog redesigned (v0.25.45) — integrated two-panel layout; server list on left, inline editing form on right; no more separate Edit Server popup
+- [x] Website icon rotation (v0.25.45) — docs pages randomly rotate through 15 app icons on each page load
 
 ---
 
