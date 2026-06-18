@@ -555,7 +555,7 @@
       <span>Uplink How-To Guide
         <span class="sub">Everything from installation to tweaks, step by step.</span>
       </span>
-      <img src="assets/uplink-icon-192.png" alt="Uplink logo" style="width:128px;height:128px;flex-shrink:0;margin-top:64px;">
+      <img data-uplink-icon src="assets/uplink-icon-192.png" alt="Uplink logo" style="width:128px;height:128px;flex-shrink:0;margin-top:64px;">
     </h1>
 
     <h2>What is Uplink?</h2>
@@ -3029,6 +3029,20 @@ rm -f ~/.config/uplink/uplink.conf</code></pre>
       const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
       root.setAttribute('data-theme', next);
       localStorage.setItem(KEY, next);
+    });
+  })();
+
+  /* ── random app icon rotation ── */
+  (function() {
+    const icons = [
+      'black-old-orange','black-orange','colorful-blueish','colorful-greenblue',
+      'colorful-hotbluepink','colorful-orange','colorful-purple','flat-black',
+      'gruvbox-blue','gruvbox-colorful','gruvbox-orange','gruvbox-purple',
+      'gruvbox-yellow','original-black','original-flat-shine'
+    ];
+    const pick = icons[Math.floor(Math.random() * icons.length)];
+    document.querySelectorAll('[data-uplink-icon]').forEach(function(img) {
+      img.src = 'assets/icons/' + pick + '.png';
     });
   })();
 </script>

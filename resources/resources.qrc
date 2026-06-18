@@ -1,8 +1,21 @@
 <RCC>
     <qresource prefix="/icons">
-        <file alias="uplink-dark.png">../assets/uplink-dark.png</file>
-        <file alias="uplink-light.png">../assets/uplink-light.png</file>
-        <file alias="about-logo.png">../assets/uplink-dark.png</file>
+        <file alias="black-old-orange.png">../assets/icons/black-old-orange.png</file>
+        <file alias="black-orange.png">../assets/icons/black-orange.png</file>
+        <file alias="colorful-blueish.png">../assets/icons/colorful-blueish.png</file>
+        <file alias="colorful-greenblue.png">../assets/icons/colorful-greenblue.png</file>
+        <file alias="colorful-hotbluepink.png">../assets/icons/colorful-hotbluepink.png</file>
+        <file alias="colorful-orange.png">../assets/icons/colorful-orange.png</file>
+        <file alias="colorful-purple.png">../assets/icons/colorful-purple.png</file>
+        <file alias="flat-black.png">../assets/icons/flat-black.png</file>
+        <file alias="gruvbox-blue.png">../assets/icons/gruvbox-blue.png</file>
+        <file alias="gruvbox-colorful.png">../assets/icons/gruvbox-colorful.png</file>
+        <file alias="gruvbox-orange.png">../assets/icons/gruvbox-orange.png</file>
+        <file alias="gruvbox-purple.png">../assets/icons/gruvbox-purple.png</file>
+        <file alias="gruvbox-yellow.png">../assets/icons/gruvbox-yellow.png</file>
+        <file alias="original-black.png">../assets/icons/original-black.png</file>
+        <file alias="original-flat-shine.png">../assets/icons/original-flat-shine.png</file>
+        <file alias="about-logo.png">../assets/icons/flat-black.png</file>
         <file alias="banner.png">icons/banner.png</file>
         <file alias="menu.svg">icons/menu.svg</file>
         <file alias="settings.svg">icons/settings.svg</file>

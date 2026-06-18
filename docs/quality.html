@@ -371,7 +371,7 @@
 <nav>
   <div class="nav-inner">
     <a class="nav-logo" href="index.html">
-      <img src="assets/uplink-icon-64.png" alt="" width="26" height="26">Uplink
+      <img data-uplink-icon src="assets/uplink-icon-192.png" alt="" width="26" height="26">Uplink
     </a>
     <div class="nav-links">
       <a href="index.html">Home</a>
@@ -920,6 +920,20 @@
       localStorage.setItem('uplink-theme', next);
     });
   }
+
+  /* ── random app icon rotation ── */
+  (function() {
+    const icons = [
+      'black-old-orange','black-orange','colorful-blueish','colorful-greenblue',
+      'colorful-hotbluepink','colorful-orange','colorful-purple','flat-black',
+      'gruvbox-blue','gruvbox-colorful','gruvbox-orange','gruvbox-purple',
+      'gruvbox-yellow','original-black','original-flat-shine'
+    ];
+    const pick = icons[Math.floor(Math.random() * icons.length)];
+    document.querySelectorAll('[data-uplink-icon]').forEach(function(img) {
+      img.src = 'assets/icons/' + pick + '.png';
+    });
+  })();
 </script>
 </body>
 </html>

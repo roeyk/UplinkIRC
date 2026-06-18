@@ -445,7 +445,7 @@
 <!-- NAV -->
 <nav>
   <div class="nav-inner">
-    <a class="nav-logo" href="#"><img src="assets/uplink-icon-64.png" alt="" width="26" height="26">Uplink</a>
+    <a class="nav-logo" href="#"><img data-uplink-icon src="assets/uplink-icon-192.png" alt="" width="26" height="26">Uplink</a>
     <div class="nav-links">
       <a href="#download">Download</a>
       <a href="#ircv3">IRCv3</a>
@@ -470,7 +470,7 @@
 <!-- HERO -->
 <header>
   <div class="wrap">
-    <img class="hero-icon" src="assets/uplink-icon-192.png" alt="Uplink app icon" width="92" height="92">
+    <img class="hero-icon" data-uplink-icon src="assets/uplink-icon-192.png" alt="Uplink app icon" width="92" height="92">
     <div class="eyebrow"><b>v0.25.44</b> <i>·</i> Qt6 / C++ <i>·</i> MIT <i>·</i> 21 IRCv3 caps</div>
     <h1>IRC, with everything<br>the protocol can do <span class="hl">today</span>.</h1>
     <p class="hero-sub">
@@ -816,7 +816,7 @@
 <!-- FOOTER -->
 <footer>
   <div class="wrap">
-    <img src="assets/uplink-icon-64.png" alt="" width="40" height="40" style="display:block; margin: 0 auto 0.75rem;">
+    <img data-uplink-icon src="assets/uplink-icon-192.png" alt="" width="40" height="40" style="display:block; margin: 0 auto 0.75rem;">
     <div class="footer-logo">Uplink v0.25.44</div>
     <div class="footer-links">
       <a href="https://github.com/noderelay/UplinkIRC">GitHub</a>
@@ -857,6 +857,20 @@
     root.setAttribute('data-theme', next);
     localStorage.setItem(STORAGE_KEY, next);
   });
+
+  /* ── random app icon rotation ── */
+  (function() {
+    const icons = [
+      'black-old-orange','black-orange','colorful-blueish','colorful-greenblue',
+      'colorful-hotbluepink','colorful-orange','colorful-purple','flat-black',
+      'gruvbox-blue','gruvbox-colorful','gruvbox-orange','gruvbox-purple',
+      'gruvbox-yellow','original-black','original-flat-shine'
+    ];
+    const pick = icons[Math.floor(Math.random() * icons.length)];
+    document.querySelectorAll('[data-uplink-icon]').forEach(function(img) {
+      img.src = 'assets/icons/' + pick + '.png';
+    });
+  })();
 </script>
 
 </body>

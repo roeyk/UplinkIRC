@@ -5,6 +5,8 @@
 class QButtonGroup;
 class QCheckBox;
 class QLineEdit;
+class QListWidget;
+class QStackedWidget;
 
 class PreferencesDialog : public QDialog
 {
@@ -36,6 +38,16 @@ signals:
     void profileSetRequested(const QString &displayName, const QString &avatarUrl);
 
 private:
+    QWidget *createAppearancePage(const Config &cfg, const QColor &accent);
+    QWidget *createChatWindowPage(const Config &cfg);
+    QWidget *createInterfacePage(const Config &cfg);
+    QWidget *createNotificationsPage(const Config &cfg);
+    QWidget *createLoggingPage(const Config &cfg);
+    QWidget *createProfilePage(const Config &cfg, const QColor &accent);
+
+    QListWidget    *m_navList{nullptr};
+    QStackedWidget *m_pages{nullptr};
+
     QCheckBox *m_topicCheck{nullptr};
     QCheckBox *m_nickPrefixCheck{nullptr};
     QCheckBox *m_emojiCheck{nullptr};

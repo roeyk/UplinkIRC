@@ -110,7 +110,7 @@ struct UiConfig {
     bool      showTimestamps{true};
     QString   highlightWords{};   // comma-separated extra highlight keywords
     bool      showUnreadCounts{true};
-    QString   appIcon{"dark"};
+    QString   appIcon{"flat-black"};
     QString   nickBrackets{"<>"};
 };
 

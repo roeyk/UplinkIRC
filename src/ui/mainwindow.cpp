@@ -55,8 +55,10 @@
 #include <QTimer>
 #include <QSettings>
 #include <QDateTime>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QStandardPaths>
 #include <QTextStream>
 #include <QProcess>
 #include <QPainter>
@@ -420,7 +422,15 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     }
 
     setWindowTitle("Uplink");
-    setWindowIcon(AppIcons::appIcon(m_config.ui.appIcon));
+    const QIcon appIcon = AppIcons::appIcon(m_config.ui.appIcon);
+    QApplication::setWindowIcon(appIcon);
+    setWindowIcon(appIcon);
+    {
+        const QString iconDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+            + QStringLiteral("/icons/hicolor/256x256/apps");
+        QDir().mkpath(iconDir);
+        appIcon.pixmap(256, 256).save(iconDir + QStringLiteral("/uplink-irc.png"));
+    }
     resize(kDefaultWindowW, kDefaultWindowH);
 
     ThemeLoader::apply(m_config.ui.theme);
@@ -448,7 +458,7 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
         m_tray = new TrayIcon(model, this);
-        m_tray->setBaseIcon(AppIcons::trayIcon());
+        m_tray->setBaseIcon(AppIcons::appIcon(m_config.ui.appIcon));
         m_tray->setNotificationsEnabled(m_config.ui.notifications);
     }
 
@@ -768,8 +778,23 @@ void MainWindow::connectPreferences()
 
     connect(m_prefsDialog, &PreferencesDialog::appIconChanged, this, [this](const QString &key){
         m_config.ui.appIcon = key;
-        setWindowIcon(AppIcons::appIcon(key));
-        if (m_tray) m_tray->setBaseIcon(AppIcons::appIcon(key));
+        const QIcon icon = AppIcons::appIcon(key);
+        QApplication::setWindowIcon(icon);
+        setWindowIcon(icon);
+        if (m_tray) m_tray->setBaseIcon(icon);
+        const QString iconDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+            + QStringLiteral("/icons/hicolor/256x256/apps");
+        QDir().mkpath(iconDir);
+        icon.pixmap(256, 256).save(iconDir + QStringLiteral("/uplink-irc.png"));
+        QProcess::startDetached(QStringLiteral("gtk-update-icon-cache"),
+            {QStringLiteral("-f"), QStringLiteral("-t"),
+             QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)
+                + QStringLiteral("/icons/hicolor/")});
+        QProcess::startDetached(QStringLiteral("dbus-send"),
+            {QStringLiteral("--session"), QStringLiteral("--type=signal"),
+             QStringLiteral("/KIconLoader"),
+             QStringLiteral("org.kde.KIconLoader.iconChanged"),
+             QStringLiteral("int32:0")});
         saveConfig();
     });
 

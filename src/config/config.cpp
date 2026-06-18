@@ -132,7 +132,9 @@ Config Config::load(const QString &path)
             cfg.ui.showUnreadCounts  = (*ui)["show_unread_counts"].value_or(true);
             cfg.ui.showTimestamps    = (*ui)["show_timestamps"].value_or(true);
             cfg.ui.highlightWords    = ustr("highlight_words", "");
-            cfg.ui.appIcon           = ustr("app_icon", "dark");
+            cfg.ui.appIcon           = ustr("app_icon", "flat-black");
+            if (cfg.ui.appIcon == "dark")  cfg.ui.appIcon = "flat-black";
+            if (cfg.ui.appIcon == "light") cfg.ui.appIcon = "original-flat-shine";
             cfg.ui.nickBrackets    = ustr("nick_brackets", "<>");
             cfg.ui.notifications   = (*ui)["notifications"].value_or(true);
             cfg.ui.fontFamily      = ustr("font_family", kDefaultFontFamily);
