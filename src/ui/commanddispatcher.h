@@ -23,6 +23,7 @@ signals:
     void clearChat();
     void replyBarCleared();
     void openChannelList(const QString &host);
+    void openChannelPane(const QString &host, const QString &channel);
 
 private:
     SessionModel *m_model;
