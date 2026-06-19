@@ -2,6 +2,9 @@
 
 ## 0.25.45
 
+### Fixed
+- **Website icon alpha fringe** — removed semi-transparent edge pixels from all 15 app icon PNGs that caused visible background halos on the landing page.
+
 ### Added
 - **15 app icon variants** — visual grid picker in Preferences → Appearance replaces the old Dark/Light radio buttons. Styles include flat, colorful, gruvbox, and original variants. Icon changes update the window, system tray, and KDE Plasma taskbar live. Old "dark"/"light" config values are auto-migrated.
 - **Website icon rotation** — the Uplink website randomly selects one of the 15 app icons on each page load.
