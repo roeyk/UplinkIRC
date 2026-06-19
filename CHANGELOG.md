@@ -1,6 +1,20 @@
 # Changelog
 
 <!--
+Session 2026-06-19:
+- Investigated 590 MB RSS memory usage reported via KDE System Monitor
+- Added malloc_trim(0) on channel switch + 60s periodic timer to return freed pages to OS
+- Lowered M_TRIM_THRESHOLD to 64 KB for more aggressive glibc heap trimming
+- Removed m_avatarBase64Cache (redundant double-storage of avatar images); base64 now
+  generated on demand when building tooltip HTML
+- Shrunk cache caps: avatar 200→80, nick meta 1000→300, ChatView max lines 5000→2000,
+  link preview cache 50→20, per-channel preview cap 8→4, QPixmapCache 4→2 MB
+- No regressions found. No new bugs discovered.
+- Next priorities: measure RSS after these changes; if still high, profile with heaptrack
+  for leak/fragmentation sources; continue MainWindow controller extractions.
+-->
+
+<!--
 Session 2026-06-18:
 - Cleaned alpha fringe from all 15 website app icon PNGs (background halos on site)
 - Addressed full external code review: fixed keychain migration delimiter bug,
@@ -18,6 +32,13 @@ Session 2026-06-18:
 - Next priorities: start MainWindow controller extractions (DccController first),
   ChatView deferred layout, review CodeQL findings when first scan completes.
 -->
+
+## 0.25.46
+
+### Improved
+- **Memory usage reduction** — periodic `malloc_trim(0)` (every 60 s + on channel switch) returns freed glibc heap pages to the OS; `M_TRIM_THRESHOLD` lowered to 64 KB for more aggressive reclamation.
+- **Avatar cache slimmed** — removed redundant `m_avatarBase64Cache` (base64-encoded PNG strings generated on demand for tooltips instead of pre-cached); avatar cache cap reduced from 200 to 80 entries.
+- **Cache caps tightened** — ChatView max lines 5 000 → 2 000; link preview cache 50 → 20; per-channel preview cap 8 → 4; nick metadata cap 1 000 → 300; `QPixmapCache` limit 4 → 2 MB.
 
 ## 0.25.45
 
