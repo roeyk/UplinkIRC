@@ -245,7 +245,6 @@ private:
     // Avatar image cache
     QNetworkAccessManager        *m_avatarNam{nullptr};
     QHash<QString, QPixmap>       m_avatarCache;       // URL → scaled pixmap
-    QHash<QString, QString>       m_avatarBase64Cache; // URL → base64(PNG) for tooltip
     QList<QString>                m_avatarCacheOrder;  // FIFO eviction order
     QSet<QString>                 m_avatarFetching;    // in-flight URLs
     void fetchAvatar(const QString &url);

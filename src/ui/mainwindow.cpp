@@ -1,3 +1,6 @@
+#if defined(__linux__) && !defined(__MUSL__)
+#include <malloc.h>
+#endif
 #include "mainwindow.h"
 #include "ui/commanddispatcher.h"
 #include "irc/ircclient.h"
@@ -572,6 +575,12 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
         s.setValue("panes", paneList);
         s.setValue("primarySlot", m_primarySlot);
     });
+
+#if defined(__linux__) && !defined(__MUSL__)
+    auto *trimTimer = new QTimer(this);
+    connect(trimTimer, &QTimer::timeout, this, []{ malloc_trim(0); });
+    trimTimer->start(60000);
+#endif
 
     m_dispatcher = new CommandDispatcher(m_model, &m_config, this, this);
     connect(m_dispatcher, &CommandDispatcher::switchChannel,  this, &MainWindow::switchToChannel);
@@ -4489,6 +4498,10 @@ void MainWindow::refreshChatView(ServerId host, BufferId channel, bool resetToLa
                 m_chatView->scrollToBottom();
         });
     }
+
+#if defined(__linux__) && !defined(__MUSL__)
+    malloc_trim(0);
+#endif
 }
 
 void MainWindow::loadOlderMessages()
@@ -4596,7 +4609,11 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
         const bool hasAvatarImage = meta && !meta->avatarUrl.isEmpty()
                                     && m_avatarCache.contains(meta->avatarUrl);
         if (hasAvatarImage) {
-            const QString b64 = m_avatarBase64Cache.value(meta->avatarUrl);
+            QByteArray pngBytes;
+            QBuffer avatarBuf(&pngBytes);
+            avatarBuf.open(QIODevice::WriteOnly);
+            m_avatarCache[meta->avatarUrl].save(&avatarBuf, "PNG");
+            const QString b64 = QString::fromLatin1(pngBytes.toBase64());
             QStringList lines;
             if (!meta->displayName.isEmpty())
                 lines << QLatin1String("Name:") + meta->displayName.toHtmlEscaped();
@@ -4977,21 +4994,15 @@ void MainWindow::fetchAvatar(const QString &url)
     auto cacheAndRefresh = [this, url](QPixmap px) {
         if (px.isNull()) return;
         px = px.scaled(36, 36, Qt::KeepAspectRatio, Qt::FastTransformation);
-        static constexpr int kAvatarCacheCap = 200;
+        static constexpr int kAvatarCacheCap = 80;
         if (!m_avatarCache.contains(url)) {
             if (m_avatarCacheOrder.size() >= kAvatarCacheCap) {
                 const QString evicted = m_avatarCacheOrder.takeFirst();
                 m_avatarCache.remove(evicted);
-                m_avatarBase64Cache.remove(evicted);
             }
             m_avatarCacheOrder.append(url);
         }
-        QByteArray pngBytes;
-        QBuffer pngBuf(&pngBytes);
-        pngBuf.open(QIODevice::WriteOnly);
-        px.save(&pngBuf, "PNG");
         m_avatarCache.insert(url, px);
-        m_avatarBase64Cache.insert(url, QString::fromLatin1(pngBytes.toBase64()));
         scheduleNickRefresh(m_model->activeHost(), m_model->activeChannel());
     };
 

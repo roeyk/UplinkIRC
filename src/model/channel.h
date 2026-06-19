@@ -173,7 +173,7 @@ struct Channel {
         rebuildNickIndex();
     }
 
-    static constexpr int kPreviewCap = 8;
+    static constexpr int kPreviewCap = 4;
 
     void addPreview(const QString &url, const PreviewCard &card)
     {

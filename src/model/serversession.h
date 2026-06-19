@@ -21,7 +21,7 @@ struct ServerSession {
     QRegularExpression highlightRe; // extra keyword highlights; rebuilt from config
 
     QSet<QString> botNicks;     // lowercased nicks with +B user mode (global)
-    static constexpr int kNickMetaCap = 1000;
+    static constexpr int kNickMetaCap = 300;
     QHash<QString, NickMeta> nickMeta; // lowercase nick → metadata; capped at kNickMetaCap
 
     void setNickMeta(const QString &lowerNick, const QString &key, const QString &value)

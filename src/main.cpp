@@ -15,10 +15,11 @@
 int main(int argc, char *argv[])
 {
 #if defined(__linux__) && !defined(__MUSL__)
-    mallopt(M_ARENA_MAX, 2); // cap glibc arenas; default (8×cores) wastes ~300 MiB RSS
+    mallopt(M_ARENA_MAX, 2);
+    mallopt(M_TRIM_THRESHOLD, 64 * 1024);
 #endif
     QApplication app(argc, argv);
-    QPixmapCache::setCacheLimit(4096); // 4 MB — default is unlimited
+    QPixmapCache::setCacheLimit(2048); // 2 MB
     app.setApplicationName("Uplink");
     app.setApplicationVersion(UPLINK_VERSION);
 
