@@ -4193,6 +4193,10 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01PING " + QString::number(ts) + "\x01");
         });
 
+        connect(ctcpSub->addAction("Time"), &QAction::triggered, this, [this, host, nick]{
+            m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01TIME\x01");
+        });
+
         connect(ctcpSub->addAction("Version"), &QAction::triggered, this, [this, host, nick]{
             m_model->sendRaw(host, "PRIVMSG " + nick + " :\x01VERSION\x01");
         });
