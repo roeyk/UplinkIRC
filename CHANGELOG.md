@@ -1,5 +1,24 @@
 # Changelog
 
+<!--
+Session 2026-06-18:
+- Cleaned alpha fringe from all 15 website app icon PNGs (background halos on site)
+- Addressed full external code review: fixed keychain migration delimiter bug,
+  DCC double-cleanup/QPointer guards, passive DCC 120s timeout, DCC quoted filename
+  parsing, SSRF DNS-rebinding (pinRequestToAddress), TLS prompt accuracy, update
+  check JSON parsing with QJsonDocument
+- Added CodeQL CI workflow (security-and-quality, push/PR/weekly)
+- Added ctest to all CI matrix jobs (was sanitizer-only)
+- Added CMake UPLINK_VENDOR_DEPS option for packaging builds
+- Cleaned up: consolidated kKeychainSentinel to config.h, ChatView resize skip on
+  height-only change, capped m_botIconIdx at 500, sidebar null check
+- Updated quality.html with CodeQL and CI pipeline sections
+- Added MainWindow refactor plan and ChatView perf items to ROADMAP
+- No regressions found. No known issues left open from this session.
+- Next priorities: start MainWindow controller extractions (DccController first),
+  ChatView deferred layout, review CodeQL findings when first scan completes.
+-->
+
 ## 0.25.45
 
 ### Fixed

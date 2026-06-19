@@ -187,6 +187,8 @@ ctest --test-dir build
 
 Tests cover the IRC message parser (prefix parsing, IRCv3 tags, tag value unescaping, numerics, malformed input) and the chat formatter (HTML escaping, IRC formatting codes, color codes, linkification). Pass `-DUPLINK_BUILD_TESTS=OFF` to CMake to skip them if Qt6 Test is not installed.
 
+For distribution packaging, pass `-DUPLINK_VENDOR_DEPS=OFF` to require system-installed dependencies instead of auto-downloading missing ones.
+
 ### Install dependencies first
 
 <details>
