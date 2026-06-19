@@ -339,7 +339,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] DCC passive filename sanitization — strip all control chars from remote-supplied DCC filenames to prevent CTCP envelope injection (2026-06-05)
 - [x] DCC passive receive: peer validation skipped when expectedIP is private/zero — first inbound TCP connection accepted without identity check; add per-transfer write timeout and document the limitation (`dccreceive.cpp:98-103`)
 - [x] DCC send: no receiver IP validation — first peer to connect gets the file; add expected-peer check to `DccSend::listen()`, reject others (`dccsend.cpp:102-111`)
-- [x] Link preview SSRF: DNS rebinding gap — QNAM re-resolves after pre-check; extend `addresscheck.h` to cover CG-NAT (`100.64.0.0/10`), documentation ranges (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`), unspecified (`0.0.0.0/8`), IPv4-mapped private (`::ffff:0:0/96`) (`linkpreview.cpp:169-200`)
+- [x] Link preview SSRF: DNS rebinding gap — extended `addresscheck.h` to cover CG-NAT, documentation, unspecified, IPv4-mapped private ranges; then closed the TOCTOU gap entirely by pinning requests to the validated resolved IP via `pinRequestToAddress()` with `setPeerVerifyName()` for HTTPS SNI (2026-06-18)
 - [x] `sendRaw`: no 512-byte IRC line cap — add `.left(510)` before write; oversized lines are partially delivered or rejected by server (`ircclient.cpp`)
 - [x] `onConnected`: `NICK`/`USER` only call `stripCrlf`, not `validIrcToken` — malformed nick from bad config produces a broken `USER` line (`ircclient.cpp`)
 - [x] DCC send filename: normal send path only replaces spaces, not control chars — create shared `safeDccFilename()` helper used by all DCC SEND paths (`dccsend.cpp:92-95` vs `mainwindow.cpp:1469-1477`)
@@ -348,6 +348,14 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] `Channel::previews`: cap stored HTML string length per entry — `kPreviewCap=100` limits count but not per-entry size (`channel.h`)
 - [x] KWallet/keychain popup on every preference change — `Config::save()` called `storePassword()` unconditionally; now guarded by `migratePasswords` flag, only true for server dialog saves (v0.24.3)
 - [x] README vs code: README says "plaintext not supported" but `connectToHost()` is reachable when `ssl=false` — enforce TLS-only in code or update README (`ircclient.cpp:103-107`)
+- [x] Keychain migration delimiter bug — first-time migration joined with `\x00` but split with `\x1F`, stuffing all four passwords into slot 0; fixed to use `\x1F` consistently (2026-06-18)
+- [x] DCC double-cleanup — `m_done`/`m_finished` terminal-state guards in DccReceive/DccSend; QPointer in all MainWindow DCC lambdas; prevents use-after-free on cancel/error/finish races (2026-06-18)
+- [x] Passive DCC timeout — stale `m_pendingPassiveSends` entries cleaned up after 120s (2026-06-18)
+- [x] DCC SEND quoted filename parsing — handles `"my file.txt"` from other clients; control characters stripped (2026-06-18)
+- [x] TLS certificate prompt accuracy — no longer labels hostname mismatches as "self-signed"; generic "could not be verified" text with accurate action wording (2026-06-18)
+- [x] CodeQL CI — `security-and-quality` query suite on push, PR, and weekly schedule (2026-06-18)
+- [x] CI ctest on all platforms — tests now run on Linux, Windows, and macOS matrix jobs, not just sanitizer (2026-06-18)
+- [x] CMake `UPLINK_VENDOR_DEPS` option — default ON; set OFF for packaging to fail on missing system deps (2026-06-18)
 
 ---
 
@@ -399,6 +407,9 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] `selfNickRe` (`QRegularExpression`): verify compiled once per nick change at call site, not reconstructed per `formatMessage` call (`chatrenderer.cpp`) — already correct
 - [x] DCC ACK coalescing: send ACK every 64 KB and on completion, not every `readyRead` — reduces write syscalls on fast links (`dccreceive.cpp`)
 - [x] CI: add Linux ASan/UBSan sanitizer job (`-DUPLINK_ENABLE_SANITIZERS=ON` Debug build); add `clang-tidy` or CodeQL static analysis (`.github/workflows/ci.yml`, `CMakeLists.txt:145-149`)
+- [x] Consolidate `kKeychainSentinel` — was defined in 4 files; moved to `config.h` as a single `inline const QString` (2026-06-18)
+- [x] Cap `m_botIconIdx` — unbounded growth per unique bot nick; capped at 500 entries with FIFO eviction (2026-06-18)
+- [x] Update check JSON parsing — replaced regex `tag_name` extraction with `QJsonDocument`; added 15s transfer timeout (2026-06-18)
 
 ---
 

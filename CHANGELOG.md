@@ -4,8 +4,19 @@
 
 ### Fixed
 - **Website icon alpha fringe** — removed semi-transparent edge pixels from all 15 app icon PNGs that caused visible background halos on the landing page.
+- **Keychain migration delimiter** — first-time credential migration used `\x00` to join fields but `\x1F` to split them, causing all four passwords to land in slot 0. Now uses `\x1F` consistently.
+- **DCC double-cleanup** — added `m_done`/`m_finished` terminal-state guards to `DccReceive` and `DccSend`; all MainWindow DCC lambdas now use `QPointer` instead of raw pointers to prevent use-after-free on cancel/error/finish races.
+- **Passive DCC timeout** — stale `m_pendingPassiveSends` entries are cleaned up after 120 seconds if the remote never replies.
+- **DCC quoted filenames** — incoming `DCC SEND "my file.txt" ...` from other clients now parses correctly; control characters are stripped.
+- **Link preview SSRF DNS pinning** — page, hover, and image fetches now connect to the validated resolved IP directly via `pinRequestToAddress()`, with `setPeerVerifyName()` for HTTPS SNI. Closes the DNS-rebinding TOCTOU gap.
+- **TLS certificate prompt** — no longer says "self-signed" for hostname mismatches; now says "could not be verified" with accurate action text.
+- **Update check** — replaced regex JSON parsing with `QJsonDocument`; added 15-second transfer timeout.
+- **ChatView resize** — height-only window resizes skip the full 5 000-line relayout since line wrapping depends only on width.
 
 ### Added
+- **CodeQL CI** — GitHub CodeQL semantic analysis runs on every push, PR, and weekly with the `security-and-quality` query suite.
+- **CI test coverage** — `ctest` now runs on all three platform matrix jobs (Linux, Windows, macOS), not just the sanitizer job.
+- **CMake `UPLINK_VENDOR_DEPS`** — new option (default ON) controls whether CMake auto-downloads missing dependencies. Set `OFF` for packaging builds to fail on missing system packages.
 - **15 app icon variants** — visual grid picker in Preferences → Appearance replaces the old Dark/Light radio buttons. Styles include flat, colorful, gruvbox, and original variants. Icon changes update the window, system tray, and KDE Plasma taskbar live. Old "dark"/"light" config values are auto-migrated.
 - **Website icon rotation** — the Uplink website randomly selects one of the 15 app icons on each page load.
 
