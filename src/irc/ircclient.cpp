@@ -817,6 +817,17 @@ void IrcClient::processLine(const QString &line)
                     payload.remove(QChar(1)).remove('\0'); // strip CTCP delimiters and nulls
                     sendRaw("NOTICE " + msg.nick + " :\x01PING " + payload + "\x01");
                 }
+            } else if (!selfEcho && ctcpCmd == "TIME") {
+                const QString rkey = msg.nick + ":TIME";
+                const qint64  now  = QDateTime::currentMSecsSinceEpoch();
+                if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {
+                    if (m_ctcpTimestamps.size() >= 500)
+                        m_ctcpTimestamps.erase(m_ctcpTimestamps.begin());
+                    m_ctcpTimestamps.insert(rkey, now);
+                    const QString localTime = QDateTime::currentDateTime().toString(Qt::RFC2822Date);
+                    sendRaw("NOTICE " + msg.nick + " :\x01TIME " + localTime + "\x01");
+                    emit serverMessage(m_serverName, "CTCP TIME from " + msg.nick);
+                }
             } else if (ctcpCmd == "DCC" && msg.nick != m_nick) {
                 const QString dccType = ctcp.section(' ', 1, 1).toUpper();
                 if (dccType == "SEND") {
