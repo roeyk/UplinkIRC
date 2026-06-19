@@ -374,6 +374,21 @@ Items from the lightweight code review (2026-06-04). Ordered roughly by value / 
 - [x] Parser and model unit tests — `IrcParserTest` (prefixes/tags/CTCP/malformed), `ChatFormatTest` (HTML escaping/linkification); `SessionModelTest` deferred (needs mock IrcClient)
 
 ### Bigger / architectural
+
+**MainWindow refactor** — extract controllers from `mainwindow.cpp` (~5 000 lines) one at a time, no visual changes. Each extraction moves a self-contained block of logic into its own class:
+- [ ] `DccController` — all DCC send/receive UI, lifecycle, progress dialogs, passive pending map
+- [ ] `PreviewController` — link preview queue, cache insertion, hide/show preview actions, watchdog timer
+- [ ] `UpdateChecker` — GitHub release check, version comparison, update dialog
+- [ ] `InputController` — autocomplete, input history, emoji replacement, typing state, send button
+- [ ] `NickContextMenuBuilder` — nick right-click actions (message, whois, op, kick, DCC submenu)
+- [ ] `ChatRenderController` — message→ChatLine conversion, reaction/redaction updates, event condensation
+
+**ChatView performance** — reduce cost of relayout and rendering on large backlogs (5 000-line cap):
+- [x] Skip full relayout on height-only resize (width unchanged) (2026-06-18)
+- [ ] Deferred layout — only layout visible lines + a buffer zone; layout remaining lines lazily on scroll
+- [ ] Incremental relayout on width change — reuse cached heights for lines whose wrap width didn't change (e.g. preview cards with fixed width)
+- [ ] Profile `drawLine` paint path — ensure no per-line allocations in the hot paint loop
+
 - [x] Keychain operations async — remove nested `QEventLoop` in `KeychainHelper`; load non-secret config first, then resolve secrets before connecting; avoids reentrancy hazard
 - [x] Targeted chat block updates — `BlockMsgid` userData tags each QTextBlock; onReactionsChanged and onMessageRedacted do targeted insert/replace/remove instead of full rebuild (v0.23.3)
 - [x] IrcParser fuzz target — libFuzzer harness around `IrcParser::parseLine()` for parser regression coverage
