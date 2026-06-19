@@ -206,7 +206,7 @@ Each server gets its own `[[server]]` block. The double brackets (`[[...]]`) def
 
 | Key | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | yes | Display name shown in the sidebar. **Must be unique** — Uplink uses this as the identity key, so two servers cannot share the same name (even if they share the same host). |
+| `name` | string | yes | Display name shown in the sidebar. **Must be unique** — Uplink uses this as the identity key, so two servers cannot share the same name (even if they share the same host). **Renaming a server requires re-entering its password** — passwords are stored in the OS keychain under this name, so a rename loses the keychain association. Open Manage Servers, select the renamed entry, re-enter the password, and save. |
 | `host` | string | yes | IRC server hostname or IP address |
 | `port` | integer | yes | Server port. Standard ports: `6697` for TLS (recommended), `6667` for plain (unencrypted). |
 | `ssl` | bool | yes | Use TLS encryption. Set `true` for any public server — all modern networks support it. Set `false` only for plain connections: local test servers, LAN servers, some bouncers on localhost, or `.onion` addresses where the Tor tunnel provides its own encryption. If the server advertises an STS policy, Uplink enforces TLS automatically regardless of this setting. |

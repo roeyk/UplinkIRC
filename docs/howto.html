@@ -956,6 +956,9 @@ channels = "#uplink, #linux"</pre>
       <strong>Seeing a red "Keychain: no password stored for…" error in the server buffer?</strong> This means your config file has <code>&lt;keychain&gt;</code> as a sentinel, but no matching entry exists in the OS keychain — the password was never written there (or the entry was cleared). Fix: open <strong>☰ → Manage Servers</strong>, select the server, type your password in the affected field, and save. Uplink will write it to the keychain and authenticate normally from that point on.
     </div>
     <div class="callout callout-warning">
+      <strong>Renamed a server in config.toml?</strong> Passwords are stored in the OS keychain under the server's <code>name</code> field. If you change the name (e.g. from <code>znc_libera</code> to <code>soju_libera</code>), the keychain entry stays under the old name and the renamed server will fail to authenticate. Fix: open <strong>☰ → Manage Servers</strong>, select the renamed server, re-enter the password, and save.
+    </div>
+    <div class="callout callout-warning">
       <strong>KDE wallet keeps prompting when changing preferences (font, theme, toggles)?</strong> This was a bug fixed in v0.24.3. Every config save was attempting a keychain write even for unrelated changes. Update to v0.24.3 or later to resolve it. If you cannot update immediately, keeping the wallet unlocked for your session will suppress the prompts.
     </div>
   </section>
