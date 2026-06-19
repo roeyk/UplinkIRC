@@ -522,6 +522,54 @@ static void linkifySegments(TextBuilder &tb, int textStart)
     }
 }
 
+static inline bool isEmojiCodepoint(uint cp)
+{
+    return (cp >= 0x1F000 && cp <= 0x1FAFF)
+        || (cp >= 0x2600  && cp <= 0x27BF)
+        || (cp >= 0x2300  && cp <= 0x23FF)
+        || (cp >= 0xFE00  && cp <= 0xFE0F)
+        || cp == 0x200D
+        || cp == 0x20E3;
+}
+
+static void applyEmojiSize(TextBuilder &tb, int textStart, double emojiPt)
+{
+    if (emojiPt <= 0) return;
+    const QString &t = tb.text;
+    const int len = static_cast<int>(t.size());
+    int i = textStart;
+    while (i < len) {
+        int runStart = -1;
+        while (i < len) {
+            uint cp;
+            int advance;
+            if (t[i].isHighSurrogate() && i + 1 < len && t[i+1].isLowSurrogate()) {
+                cp = QChar::surrogateToUcs4(t[i], t[i+1]);
+                advance = 2;
+            } else {
+                cp = t[i].unicode();
+                advance = 1;
+            }
+            if (isEmojiCodepoint(cp)) {
+                if (runStart < 0) runStart = i;
+                i += advance;
+            } else {
+                break;
+            }
+        }
+        if (runStart >= 0) {
+            QTextCharFormat fmt;
+            fmt.setFontPointSize(emojiPt);
+            ChatSegment seg;
+            seg.start  = runStart;
+            seg.length = i - runStart;
+            seg.format = fmt;
+            tb.segs.append(seg);
+        }
+        if (runStart < 0) ++i;
+    }
+}
+
 static void addSelfNickHighlight(TextBuilder &tb, int textStart, const QRegularExpression &re)
 {
     if (!re.isValid()) return;
@@ -720,6 +768,8 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
         break;
     }
     }
+
+    applyEmojiSize(tb, 0, ctx.emojiPt);
 
     ChatLine line;
     line.text       = tb.text;
