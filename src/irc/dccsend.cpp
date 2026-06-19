@@ -76,13 +76,15 @@ void DccSend::connectOut(quint32 ip, quint16 port)
     connect(m_socket, &QTcpSocket::readyRead,          this, &DccSend::onReadyRead);
     connect(m_socket, &QTcpSocket::bytesWritten,       this, &DccSend::onBytesWritten);
     connect(m_socket, &QAbstractSocket::errorOccurred, this, [this]{
-        emit error(m_socket->errorString());
+        if (!m_finished) emit error(m_socket->errorString());
     });
     m_socket->connectToHost(QHostAddress(ip), port);
 }
 
 void DccSend::cancel()
 {
+    if (m_finished) return;
+    m_finished = true;
     if (m_server) m_server->close();
     if (m_socket) m_socket->abort();
     m_file.close();
@@ -120,7 +122,7 @@ void DccSend::onNewConnection()
     connect(m_socket, &QTcpSocket::readyRead,     this, &DccSend::onReadyRead);
     connect(m_socket, &QTcpSocket::bytesWritten,  this, &DccSend::onBytesWritten);
     connect(m_socket, &QAbstractSocket::errorOccurred, this, [this]{
-        emit error(m_socket->errorString());
+        if (!m_finished) emit error(m_socket->errorString());
     });
     // Stall guard: if no ACK arrives within 60s of starting, abort.
     QTimer::singleShot(60000, this, [this]{
@@ -153,6 +155,7 @@ void DccSend::onBytesWritten(qint64)
 
 void DccSend::sendNextChunk()
 {
+    if (m_finished) return;
     if (!m_socket || m_socket->state() != QAbstractSocket::ConnectedState) return;
     if (m_socket->bytesToWrite() > kChunk * 4) return;
     const QByteArray chunk = m_file.read(kChunk);

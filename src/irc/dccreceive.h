@@ -37,4 +37,5 @@ private:
     quint16     m_port;
     qint64      m_total;
     qint64      m_received{0};
+    bool        m_done{false};
 };

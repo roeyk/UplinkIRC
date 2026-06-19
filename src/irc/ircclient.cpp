@@ -6,6 +6,7 @@
 
 #include <QCryptographicHash>
 #include <QRandomGenerator>
+#include <QRegularExpression>
 #include <QFile>
 #include <QNetworkProxy>
 #include <QSslCertificate>
@@ -565,21 +566,19 @@ void IrcClient::onReadyRead()
 
 void IrcClient::onSslErrors(const QList<QSslError> &errors)
 {
-    bool allSelfSigned = true;
+    bool allPinnable = true;
+    QStringList errorMsgs;
     for (const auto &e : errors) {
+        errorMsgs << e.errorString();
         if (e.error() != QSslError::SelfSignedCertificate &&
             e.error() != QSslError::SelfSignedCertificateInChain &&
             e.error() != QSslError::HostNameMismatch) {
-            allSelfSigned = false;
-            break;
+            allPinnable = false;
         }
     }
 
-    if (!allSelfSigned) {
-        QStringList msgs;
-        for (const auto &e : errors)
-            msgs << e.errorString();
-        emit socketError(m_serverName, "TLS error: " + msgs.join("; "));
+    if (!allPinnable) {
+        emit socketError(m_serverName, "TLS error: " + errorMsgs.join("; "));
         sockDisconnect();
         return;
     }
@@ -821,12 +820,27 @@ void IrcClient::processLine(const QString &line)
             } else if (ctcpCmd == "DCC" && msg.nick != m_nick) {
                 const QString dccType = ctcp.section(' ', 1, 1).toUpper();
                 if (dccType == "SEND") {
-                    const QString fn = ctcp.section(' ', 2, 2);
+                    // Support quoted filenames: DCC SEND "my file.txt" ip port size [token]
+                    const QString afterSend = ctcp.section(' ', 2).trimmed();
+                    QString fn;
+                    QString remainder;
+                    if (afterSend.startsWith('"')) {
+                        const qsizetype closeQuote = afterSend.indexOf('"', 1);
+                        if (closeQuote > 1) {
+                            fn = afterSend.mid(1, closeQuote - 1);
+                            remainder = afterSend.mid(closeQuote + 1).trimmed();
+                        }
+                    }
+                    if (fn.isEmpty()) {
+                        fn = afterSend.section(' ', 0, 0);
+                        remainder = afterSend.section(' ', 1).trimmed();
+                    }
+                    fn.remove(QRegularExpression(QStringLiteral("[\\x00-\\x1f\\x7f]")));
                     bool ok1, ok2, ok3;
-                    const quint32 ip       = ctcp.section(' ', 3, 3).toUInt(&ok1);
-                    const quint16 port     = ctcp.section(' ', 4, 4).toUShort(&ok2);
-                    const qint64  filesize = ctcp.section(' ', 5, 5).toLongLong(&ok3);
-                    const QString token    = ctcp.section(' ', 6, 6);
+                    const quint32 ip       = remainder.section(' ', 0, 0).toUInt(&ok1);
+                    const quint16 port     = remainder.section(' ', 1, 1).toUShort(&ok2);
+                    const qint64  filesize = remainder.section(' ', 2, 2).toLongLong(&ok3);
+                    const QString token    = remainder.section(' ', 3, 3);
                     if (ok1 && ok2 && ok3 && !fn.isEmpty() && filesize > 0) {
                         if (port == 0 && !token.isEmpty())
                             emit dccPassiveOfferReceived(m_serverName, msg.nick, fn, ip, filesize, token);

@@ -86,6 +86,9 @@
 #include <QShortcut>
 #include <QDebug>
 #include <QStyledItemDelegate>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QPointer>
 #if defined(Q_OS_WIN)
 #  include <windows.h>
 #endif
@@ -647,6 +650,7 @@ void MainWindow::setupToolbar()
             auto *nam = new QNetworkAccessManager(this);
             QNetworkRequest req(QUrl("https://api.github.com/repos/noderelay/UplinkIRC/releases/latest"));
             req.setRawHeader("User-Agent", "Uplink/" UPLINK_VERSION);
+            req.setTransferTimeout(15000);
             auto *reply = nam->get(req);
             connect(reply, &QNetworkReply::finished, this, [this, reply, nam]{
                 reply->deleteLater();
@@ -657,8 +661,10 @@ void MainWindow::setupToolbar()
                     return;
                 }
                 const QByteArray body = reply->readAll();
-                const QRegularExpression re(R"_("tag_name"\s*:\s*"v?(\d+)\.(\d+)\.(\d+)")_");
-                const auto m = re.match(body);
+                const QJsonDocument doc = QJsonDocument::fromJson(body);
+                const QString tag = doc.object().value("tag_name").toString();
+                const QRegularExpression re(R"(^v?(\d+)\.(\d+)\.(\d+)$)");
+                const auto m = re.match(tag);
                 if (!m.hasMatch()) {
                     QMessageBox::warning(this, "Update Check", "Could not parse release info.");
                     return;
@@ -2071,8 +2077,9 @@ void MainWindow::connectModel()
     {
         QMessageBox box(this);
         box.setWindowTitle("Untrusted Certificate");
-        box.setText(host.str() + " is using a self-signed certificate.");
-        box.setInformativeText("SHA-256 fingerprint:\n" + fp + "\n\nTrust this certificate?");
+        box.setText(host.str() + " presented a certificate that could not be verified.");
+        box.setInformativeText("SHA-256 fingerprint:\n" + fp
+            + "\n\nTrust this certificate fingerprint for this server?");
         auto *pinBtn  = box.addButton("Pin Certificate", QMessageBox::AcceptRole);
         auto *onceBtn = box.addButton("Accept Once",     QMessageBox::AcceptRole);
         box.addButton("Reject",          QMessageBox::RejectRole);
@@ -2108,6 +2115,7 @@ void MainWindow::connectModel()
         if (savePath.isEmpty()) return;
 
         auto *dcc  = new DccReceive(savePath, ip, port, filesize, this);
+        QPointer<DccReceive> dccGuard(dcc);
         auto *prog = new QProgressDialog("Receiving " + filename + " from " + fromNick,
                                           "Cancel", 0, filesize > INT_MAX ? INT_MAX : static_cast<int>(filesize), this);
         prog->setWindowModality(Qt::NonModal);
@@ -2117,17 +2125,19 @@ void MainWindow::connectModel()
             prog->setValue(static_cast<int>(filesize > INT_MAX
                 ? received * INT_MAX / filesize : received));
         });
-        connect(dcc, &DccReceive::finished, this, [this, prog, dcc](const QString &path){
+        connect(dcc, &DccReceive::finished, this, [this, prog, dccGuard](const QString &path){
             prog->setValue(prog->maximum());
-            dcc->deleteLater();
+            if (dccGuard) dccGuard->deleteLater();
             QMessageBox::information(this, "DCC", "File received:\n" + path);
         });
-        connect(dcc, &DccReceive::error, this, [this, prog, dcc](const QString &msg){
+        connect(dcc, &DccReceive::error, this, [this, prog, dccGuard](const QString &msg){
             prog->close();
-            dcc->deleteLater();
+            if (dccGuard) dccGuard->deleteLater();
             QMessageBox::warning(this, "DCC Error", msg);
         });
-        connect(prog, &QProgressDialog::canceled, dcc, [dcc]{ dcc->cancel(); dcc->deleteLater(); });
+        connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
+            if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
+        });
 
         dcc->start();
         prog->show();
@@ -2158,6 +2168,7 @@ void MainWindow::connectModel()
 
         auto *dcc = new DccReceive(savePath, 0, 0, filesize, this);
         if (!dcc->listenPassive(senderIp)) { dcc->deleteLater(); return; }
+        QPointer<DccReceive> dccGuard(dcc);
 
         IrcClient *client = m_model->clientFor(server);
         const quint32 ourIp   = client ? client->localIpv4() : 0;
@@ -2182,17 +2193,19 @@ void MainWindow::connectModel()
         connect(dcc, &DccReceive::progress, prog, [prog, filesize](qint64 received, qint64){
             prog->setValue(static_cast<int>(filesize > INT_MAX ? received * INT_MAX / filesize : received));
         });
-        connect(dcc, &DccReceive::finished, this, [this, prog, dcc](const QString &path){
+        connect(dcc, &DccReceive::finished, this, [this, prog, dccGuard](const QString &path){
             prog->setValue(prog->maximum());
-            dcc->deleteLater();
+            if (dccGuard) dccGuard->deleteLater();
             QMessageBox::information(this, "DCC", "File received:\n" + path);
         });
-        connect(dcc, &DccReceive::error, this, [this, prog, dcc](const QString &msg){
+        connect(dcc, &DccReceive::error, this, [this, prog, dccGuard](const QString &msg){
             prog->close();
-            dcc->deleteLater();
+            if (dccGuard) dccGuard->deleteLater();
             QMessageBox::warning(this, "DCC Error", msg);
         });
-        connect(prog, &QProgressDialog::canceled, dcc, [dcc]{ dcc->cancel(); dcc->deleteLater(); });
+        connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
+            if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
+        });
         prog->show();
     });
 
@@ -4192,6 +4205,7 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             if (!dcc->listen(localIp ? QHostAddress(localIp) : QHostAddress::Any)) {
                 dcc->deleteLater(); return;
             }
+            QPointer<DccSend> dccGuard(dcc);
 
             const quint32 ip   = localIp;
             const quint16 port = dcc->port();
@@ -4212,16 +4226,18 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
                 prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
             });
-            connect(dcc, &DccSend::finished, prog, [prog, dcc]{
+            connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
                 prog->setValue(prog->maximum());
-                dcc->deleteLater();
+                if (dccGuard) dccGuard->deleteLater();
             });
-            connect(dcc, &DccSend::error, this, [this, prog, dcc](const QString &msg){
+            connect(dcc, &DccSend::error, this, [this, prog, dccGuard](const QString &msg){
                 prog->close();
-                dcc->deleteLater();
+                if (dccGuard) dccGuard->deleteLater();
                 QMessageBox::warning(this, "DCC Error", msg);
             });
-            connect(prog, &QProgressDialog::canceled, dcc, [dcc]{ dcc->cancel(); dcc->deleteLater(); });
+            connect(prog, &QProgressDialog::canceled, dcc, [dccGuard]{
+                if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
+            });
 
             prog->show();
         });
@@ -4237,12 +4253,21 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             const QString fn   = dcc->filename();
             const qint64  size = dcc->filesize();
 
+            QPointer<DccSend> dccGuard(dcc);
             m_pendingPassiveSends.insert(token, dcc);
             m_model->sendRaw(host,
                 "PRIVMSG " + nick + " :\x01""DCC SEND "
                 + fn + " 0 0"
                 + " " + QString::number(size)
                 + " " + token + "\x01");
+
+            // Fix #4: timeout stale passive sends after 120s
+            QTimer::singleShot(120000, this, [this, token, dccGuard]{
+                if (DccSend *d = m_pendingPassiveSends.take(token)) {
+                    d->cancel();
+                    if (dccGuard) dccGuard->deleteLater();
+                }
+            });
 
             auto *prog = new QProgressDialog("Waiting for " + nick + " to accept...",
                                               "Cancel", 0, size > INT_MAX ? INT_MAX : static_cast<int>(size), this);
@@ -4252,20 +4277,19 @@ void MainWindow::showNickContextMenu(const QString &nick, const QPoint &globalPo
             connect(dcc, &DccSend::progress, prog, [prog, size](qint64 sent, qint64){
                 prog->setValue(static_cast<int>(size > INT_MAX ? sent * INT_MAX / size : sent));
             });
-            connect(dcc, &DccSend::finished, prog, [prog, dcc]{
+            connect(dcc, &DccSend::finished, prog, [prog, dccGuard]{
                 prog->setValue(prog->maximum());
-                dcc->deleteLater();
+                if (dccGuard) dccGuard->deleteLater();
             });
-            connect(dcc, &DccSend::error, this, [this, prog, dcc, token](const QString &msg){
+            connect(dcc, &DccSend::error, this, [this, prog, dccGuard, token](const QString &msg){
                 prog->close();
                 m_pendingPassiveSends.remove(token);
-                dcc->deleteLater();
+                if (dccGuard) dccGuard->deleteLater();
                 QMessageBox::warning(this, "DCC Error", msg);
             });
-            connect(prog, &QProgressDialog::canceled, dcc, [this, dcc, token]{
+            connect(prog, &QProgressDialog::canceled, dcc, [this, dccGuard, token]{
                 m_pendingPassiveSends.remove(token);
-                dcc->cancel();
-                dcc->deleteLater();
+                if (dccGuard) { dccGuard->cancel(); dccGuard->deleteLater(); }
             });
             prog->show();
         });

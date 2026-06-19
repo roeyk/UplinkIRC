@@ -145,6 +145,8 @@ quint16 DccReceive::listenPort() const
 
 void DccReceive::cancel()
 {
+    if (m_done) return;
+    m_done = true;
     if (m_server) m_server->close();
     if (m_socket) m_socket->abort();
     if (m_file.isOpen()) {
@@ -156,6 +158,7 @@ void DccReceive::cancel()
 
 void DccReceive::onReadyRead()
 {
+    if (m_done) return;
     const qint64 remaining = m_total - m_received;
     if (remaining <= 0) {
         m_socket->disconnectFromHost();
@@ -195,9 +198,10 @@ void DccReceive::onReadyRead()
 
 void DccReceive::onSocketError()
 {
+    if (m_done) return;
     const QString msg = m_socket ? m_socket->errorString() : QString("Unknown socket error");
     if (m_socket)
-        m_socket->disconnect(this);  // prevent re-entry from abort() in cancel()
+        m_socket->disconnect(this);
     cancel();
     emit error(msg);
 }

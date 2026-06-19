@@ -7,9 +7,14 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+option(UPLINK_VENDOR_DEPS "Download missing dependencies automatically" ON)
+
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Svg WebSockets)
 find_package(Qt6Keychain QUIET)
 if(NOT Qt6Keychain_FOUND)
+    if(NOT UPLINK_VENDOR_DEPS)
+        message(FATAL_ERROR "Qt6Keychain not found. Install qtkeychain-qt6 or set -DUPLINK_VENDOR_DEPS=ON")
+    endif()
     include(FetchContent)
     FetchContent_Declare(qtkeychain
         GIT_REPOSITORY https://github.com/frankosterfeld/qtkeychain.git
@@ -42,6 +47,9 @@ if(NOT Qt6Keychain_FOUND)
 endif()
 find_package(tomlplusplus QUIET)
 if(NOT tomlplusplus_FOUND)
+    if(NOT UPLINK_VENDOR_DEPS)
+        message(FATAL_ERROR "tomlplusplus not found. Install tomlplusplus or set -DUPLINK_VENDOR_DEPS=ON")
+    endif()
     include(FetchContent)
     FetchContent_Declare(tomlplusplus
         GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git

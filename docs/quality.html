@@ -644,8 +644,8 @@
     <span class="section-tag c-red">Static analysis &amp; sanitizers</span>
     <h2>Part of every build, not a one-time check</h2>
     <p class="section-sub">
-      Three tools run against the codebase as part of the standard build workflow.
-      The current build is clean across all three.
+      Four tools run against the codebase as part of the standard build and CI workflow.
+      The current build is clean across all four.
     </p>
 
     <!-- ASan / UBSan -->
@@ -701,9 +701,28 @@
 <span class="t-ok">0 real bugs found · current build is clean</span></div>
     </div>
 
+    <!-- CodeQL -->
+    <div class="terminal" style="margin-top:1.25rem">
+      <div class="terminal-bar">
+        <span class="dot dot-r"></span>
+        <span class="dot dot-y"></span>
+        <span class="dot dot-g"></span>
+        <span class="terminal-label">GitHub CodeQL — security-and-quality</span>
+      </div>
+      <div class="terminal-body"><span class="t-dim">Runs automatically on every push to main, every pull request, and weekly.</span>
+<span class="t-dim">Query suite: <span class="t-info">security-and-quality</span> (broader than default — covers code quality + security)</span>
+
+<span class="t-ok">Semantic analysis · data-flow tracking · taint analysis</span>
+<span class="t-ok">Catches: buffer overflows, use-after-free, SQL/command injection patterns,</span>
+<span class="t-ok">         unvalidated input, resource leaks, null dereferences</span>
+
+<span class="t-dim">Results published to GitHub Security tab → Code scanning alerts</span></div>
+    </div>
+
     <p style="font-size:0.82rem;color:var(--gb-fg4);margin-top:1.25rem">
       Sanitizer build: <code style="color:var(--gb-fg2)">cmake -DUPLINK_ENABLE_SANITIZERS=ON</code> (requires GCC or Clang).
       libFuzzer mode: <code style="color:var(--gb-fg2)">cmake -DUPLINK_BUILD_FUZZ=ON</code> (requires clang).
+      CodeQL: <code style="color:var(--gb-fg2)">.github/workflows/codeql.yml</code> (runs in GitHub Actions).
     </p>
   </div>
 </section>
@@ -771,6 +790,37 @@
 <span class="t-dim"># Optional strict modes:</span>
 <span class="t-dim">option(UPLINK_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)</span>
 <span class="t-dim">option(UPLINK_ENABLE_SANITIZERS  "Enable ASan/UBSan"        OFF)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CI PIPELINE -->
+<section>
+  <div class="wrap">
+    <span class="section-tag c-aqua">Continuous integration</span>
+    <h2>Every push is built, tested, and scanned</h2>
+    <p class="section-sub">
+      Three CI workflows run on every push to main and every pull request.
+      Nothing merges without passing all of them.
+    </p>
+
+    <div class="flag-grid">
+      <div class="flag-card f-aqua">
+        <div class="flag-name">Build matrix</div>
+        <div class="flag-desc">Compiled and tested on Linux (Ubuntu 24.04), Windows (MSVC 2025), and macOS — every push. Tests run on all three platforms, not just Linux.</div>
+      </div>
+      <div class="flag-card f-orange">
+        <div class="flag-name">Sanitizer job</div>
+        <div class="flag-desc">Dedicated ASan + UBSan build on every push. Tests run under full memory and undefined-behavior instrumentation.</div>
+      </div>
+      <div class="flag-card f-purple">
+        <div class="flag-name">CodeQL analysis</div>
+        <div class="flag-desc">GitHub's semantic code scanner runs on every push, every PR, and weekly. Uses the security-and-quality query suite for deep data-flow and taint analysis.</div>
+      </div>
+      <div class="flag-card f-yellow">
+        <div class="flag-name">Release workflow</div>
+        <div class="flag-desc">Tag pushes trigger platform builds that produce Linux, Windows, and macOS binaries attached to GitHub Releases automatically.</div>
+      </div>
     </div>
   </div>
 </section>
@@ -872,11 +922,11 @@
         </p>
       </div>
       <div class="principle-card">
-        <h3 style="color:var(--gb-aqua)">Sanitizer clean</h3>
+        <h3 style="color:var(--gb-aqua)">Analysis clean</h3>
         <p>
-          The test suite runs under AddressSanitizer and UndefinedBehaviorSanitizer as part of the
-          standard build workflow. Zero heap errors, zero stack errors, zero integer overflows,
-          zero null dereferences. clang-tidy and cppcheck are also run each build — both clean.
+          The test suite runs under AddressSanitizer and UndefinedBehaviorSanitizer on every push.
+          Zero heap errors, zero stack errors, zero integer overflows, zero null dereferences.
+          clang-tidy, cppcheck, and GitHub CodeQL also run each build — all clean.
         </p>
       </div>
       <div class="principle-card">

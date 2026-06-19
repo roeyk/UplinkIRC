@@ -376,7 +376,7 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
                 const QString osa = KeychainHelper::read(s.name + QLatin1String(":sasl_password"));
                 const QString ons = KeychainHelper::read(s.name + QLatin1String(":nickserv_password"));
                 const QString opp = KeychainHelper::read(s.name + QLatin1String(":proxy_pass"));
-                existing = op + '\x00' + osa + '\x00' + ons + '\x00' + opp;
+                existing = QStringList{op, osa, ons, opp}.join(QChar('\x1F'));
             }
             QStringList cur = existing.split(QChar('\x1F'));
             while (cur.size() < 4) cur.append(QString{});
