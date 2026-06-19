@@ -215,7 +215,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Window state persistence — sidebar width and nick panel width saved via QSettings on quit, restored on launch; sidebar is drag-resizable; geometry clamped to available screen on startup (v0.25.1); settings path corrected to ~/.config/uplink/uplink.conf (v0.25.1)
 - [x] Nick panel width persistence — QSplitter position saved via QSettings on quit, restored on launch
 - [x] Config editor UI — Manage Servers dialog covers server-level editing
-- [x] Emoji picker — searchable popup grid with :shortcode: autocomplete and auto-substitution
+- [x] Emoji picker — searchable popup grid with :shortcode: autocomplete and auto-substitution; expanded to 1,906 emojis from Unicode 16.0 + gemoji shortcodes (v0.25.47); generator script at scripts/generate_emojidata.py
 - [x] Bot nick indicators — SVG robot/alien icon drawn inline to the right of +B nicks in the user list; randomly assigned per nick per session, stable for the connection duration; colorized to theme accent (v0.25.0; replaces emoji font approach which was unreliable across fontconfig configurations)
 - [x] Configurable nick brackets — `nick_brackets` in `[ui]`; `"<>"` `"[]"` `"::::"` `""` supported; also configurable live from Hamburger → Nick Brackets
 - [x] Autojoin regression fix — editing a server in the GUI no longer wipes auto-join channels; Auto-join field added to Add/Edit Server dialog

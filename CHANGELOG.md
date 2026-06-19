@@ -1,6 +1,17 @@
 # Changelog
 
 <!--
+Session 2026-06-19 (emoji):
+- Expanded emoji table from 622 to 1,906 entries using Unicode emoji-test.txt
+  and GitHub gemoji shortcodes. Added scripts/generate_emojidata.py for future updates.
+- Fixed emoji font size bug: emojiPt config (default 16pt) was only applied in the
+  HTML rendering path (topic bar/tooltips), not in the QTextLayout-based ChatView.
+  Emojis in chat now render at the configured size.
+- No regressions found. No known issues.
+- Next priorities: MainWindow controller extractions, ChatView deferred layout.
+-->
+
+<!--
 Session 2026-06-19:
 - Investigated 590 MB RSS memory usage reported via KDE System Monitor
 - Added malloc_trim(0) on channel switch + 60s periodic timer to return freed pages to OS
@@ -32,6 +43,15 @@ Session 2026-06-18:
 - Next priorities: start MainWindow controller extractions (DccController first),
   ChatView deferred layout, review CodeQL findings when first scan completes.
 -->
+
+## 0.25.47
+
+### Improved
+- **Emoji set expanded** — 622 → 1,906 emojis from Unicode 16.0 emoji-test.txt with GitHub gemoji shortcodes. Covers all standard categories: Smileys, People, Animals, Food, Travel, Activities, Objects, Symbols, Flags.
+- **Emoji generator script** — `scripts/generate_emojidata.py` regenerates `emojidata.h` from upstream Unicode + gemoji data. Run it to update emojis without manual editing.
+
+### Fixed
+- **Emoji font size in chat** — the `font_emoji` setting (default 16pt) was only applied in the HTML rendering path (topic bar, tooltips). The actual chat view (QTextLayout) rendered emojis at regular text size. Now correctly applies the configured size in the chat display.
 
 ## 0.25.46
 
