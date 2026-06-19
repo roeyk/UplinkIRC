@@ -212,6 +212,10 @@ void ChatView::paintEvent(QPaintEvent *)
 void ChatView::resizeEvent(QResizeEvent *e)
 {
     QAbstractScrollArea::resizeEvent(e);
+    if (e->oldSize().width() == e->size().width()) {
+        updateScrollRange();
+        return;
+    }
     invalidateHeights();
     for (auto &l : m_lines) layoutLine(l);
     rebuildCumH();

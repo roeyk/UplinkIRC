@@ -366,9 +366,8 @@ void ManageServersDialog::saveCurrentToModel()
 {
     if (m_currentRow < 0 || m_currentRow >= m_servers.size()) return;
 
-    static const QString kSentinel = QStringLiteral("<keychain>");
     auto resolvePw = [&](QLineEdit *field, bool wasKeychain) {
-        return (field->text().isEmpty() && wasKeychain) ? kSentinel : field->text();
+        return (field->text().isEmpty() && wasKeychain) ? kKeychainSentinel : field->text();
     };
 
     ServerConfig &sc = m_servers[m_currentRow];
@@ -416,7 +415,6 @@ void ManageServersDialog::loadServerToForm(int row)
 {
     if (row < 0 || row >= m_servers.size()) return;
 
-    static const QString kSentinel    = QStringLiteral("<keychain>");
     static const QString kPlaceholder = QStringLiteral("Stored in keychain — type to change, clear to remove");
     static const QString kOptional    = QStringLiteral("optional");
 
@@ -425,7 +423,7 @@ void ManageServersDialog::loadServerToForm(int row)
 
     auto loadPw = [&](QLineEdit *field, const QString &value, bool &flag) {
         field->clear();
-        if (value == kSentinel) {
+        if (value == kKeychainSentinel) {
             field->setPlaceholderText(kPlaceholder);
             flag = true;
         } else {

@@ -222,11 +222,10 @@ ServerDialog::ServerDialog(const ServerConfig &existing, QWidget *parent)
     m_realname->setText(existing.realname);
     m_quitMessage->setText(existing.quitMessage);
     m_awayMessage->setText(existing.awayMessage);
-    static const QString kSentinel = QStringLiteral("<keychain>");
     static const QString kPlaceholder = QStringLiteral("Stored in keychain — type to change, clear to remove");
     auto setupPw = [&](QLineEdit *field, const QString &value, bool &flag) {
-        if (value == kSentinel) { field->setPlaceholderText(kPlaceholder); flag = true; }
-        else                    { field->setText(value); }
+        if (value == kKeychainSentinel) { field->setPlaceholderText(kPlaceholder); flag = true; }
+        else                            { field->setText(value); }
     };
     setupPw(m_password,         existing.password,         m_passwordKeychain);
     m_saslUser->setText(existing.saslUser);
@@ -263,9 +262,8 @@ ServerConfig ServerDialog::serverConfig() const
     sc.realname         = m_realname->text().trimmed();
     sc.quitMessage      = m_quitMessage->text().trimmed();
     sc.awayMessage      = m_awayMessage->text().trimmed();
-    static const QString kSentinel = QStringLiteral("<keychain>");
     auto resolvePw = [&](QLineEdit *field, bool wasKeychain) {
-        return (field->text().isEmpty() && wasKeychain) ? kSentinel : field->text();
+        return (field->text().isEmpty() && wasKeychain) ? kKeychainSentinel : field->text();
     };
     sc.password         = resolvePw(m_password,     m_passwordKeychain);
     sc.saslUser         = m_saslUser->text().trimmed();

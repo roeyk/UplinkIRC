@@ -9,8 +9,6 @@
 
 #include <toml++/toml.hpp>
 
-static const QString kKeychainSentinel = QStringLiteral("<keychain>");
-
 static QString kcKey(const QString &serverName, const char *field)
 {
     return serverName + QLatin1Char(':') + QLatin1String(field);

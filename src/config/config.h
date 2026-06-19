@@ -114,6 +114,8 @@ struct UiConfig {
     QString   nickBrackets{"<>"};
 };
 
+inline const QString kKeychainSentinel = QStringLiteral("<keychain>");
+
 struct Config {
     QList<ServerConfig> servers;
     UiConfig            ui;

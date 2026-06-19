@@ -2737,7 +2737,9 @@ void MainWindow::syncSidebarOrderToConfig()
 {
     QList<ServerConfig> reordered;
     for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
-        const QString host = m_sidebar->topLevelItem(i)->data(0, Qt::UserRole).toString();
+        auto *item = m_sidebar->topLevelItem(i);
+        if (!item) continue;
+        const QString host = item->data(0, Qt::UserRole).toString();
         for (const auto &sc : std::as_const(m_config.servers))
             if (sc.name == host) { reordered.append(sc); break; }
     }
@@ -4570,8 +4572,11 @@ QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,
     auto *item = new QListWidgetItem(e.display());
     if (isBot) {
         const QString key = e.nick.toLower();
-        if (!m_botIconIdx.contains(key))
+        if (!m_botIconIdx.contains(key)) {
+            if (m_botIconIdx.size() >= 500)
+                m_botIconIdx.erase(m_botIconIdx.begin());
             m_botIconIdx[key] = QRandomGenerator::global()->bounded(2);
+        }
         const QString svgPath = m_botIconIdx[key] == 0
             ? QStringLiteral(":/icons/mi-smart-toy.svg")
             : QStringLiteral(":/icons/mi-alien.svg");
