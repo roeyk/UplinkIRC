@@ -106,6 +106,7 @@ private:
     void openChannelList(ServerId host);
     void refreshChatView(ServerId host, BufferId channel, bool resetToLatest = true);
     void loadOlderMessages();
+    void onOlderHistoryLoaded(ServerId host, BufferId channel, int count);
     void refreshNickList(ServerId host, BufferId channel);
     void scheduleNickRefresh(ServerId host, BufferId channel);
     void refreshTopicBar(ServerId host, BufferId channel);
@@ -247,6 +248,7 @@ private:
     QHash<QString, int>           m_renderStart;        // "host\tchannel" → first rendered msg index
     QHash<QString, int>           m_scrollPositions;   // "host\tchannel" → saved scroll px (non-bottom)
     bool                          m_loadingOlder{false};
+    QSet<QString>                 m_historyExhausted;  // channels with no more server history
 
     // Avatar image cache
     QNetworkAccessManager        *m_avatarNam{nullptr};

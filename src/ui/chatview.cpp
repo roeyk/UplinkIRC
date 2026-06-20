@@ -60,10 +60,18 @@ void ChatView::appendLine(const ChatLine &line)
 void ChatView::prependLines(QList<ChatLine> lines)
 {
     if (lines.isEmpty()) return;
-    for (auto &l : lines) layoutLine(l);
+
+    int addedHeight = 0;
+    for (auto &l : lines) {
+        layoutLine(l);
+        addedHeight += l.cachedH;
+    }
+
     m_lines = lines + m_lines;
     rebuildCumH();
     updateScrollRange();
+
+    verticalScrollBar()->setValue(verticalScrollBar()->value() + addedHeight);
     viewport()->update();
 }
 

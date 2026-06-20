@@ -42,6 +42,7 @@ public:
 
     // Bouncer helpers
     void requestHistory(const QString &target, int limit = 100);
+    void requestHistoryBefore(const QString &target, const QString &msgid, int limit = 100);
     void markRead(const QString &target, const QDateTime &ts);
 
     // Monitor

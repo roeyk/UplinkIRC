@@ -2088,6 +2088,7 @@ void MainWindow::connectModel()
     connect(m_model, &SessionModel::selfNickChanged,   this, &MainWindow::onSelfNickChanged);
     connect(m_model, &SessionModel::typingReceived,    this, &MainWindow::onTypingReceived);
     connect(m_model, &SessionModel::messageRedacted,   this, &MainWindow::onMessageRedacted);
+    connect(m_model, &SessionModel::olderHistoryLoaded, this, &MainWindow::onOlderHistoryLoaded);
     connect(m_model, &SessionModel::userMetaChanged, this,
             [this](ServerId, const QString &, const QString &key, const QString &value) {
         if (key == QLatin1String("avatar")) fetchAvatar(value);
@@ -4581,7 +4582,12 @@ void MainWindow::loadOlderMessages()
     if (host.isEmpty() || chName.isEmpty()) return;
 
     const QString key = host.str() + '\t' + chName.str();
-    if (!m_renderStart.contains(key) || m_renderStart[key] == 0) return;
+    if (!m_renderStart.contains(key) || m_renderStart[key] == 0) {
+        if (m_historyExhausted.contains(key)) return;
+        m_loadingOlder = true;
+        m_model->requestOlderHistory(host, chName);
+        return;
+    }
 
     auto *ch = m_model->channel(host, chName);
     if (!ch) return;
@@ -4644,6 +4650,69 @@ void MainWindow::loadOlderMessages()
     m_chatView->prependLines(std::move(older));
 
     QTimer::singleShot(0, this, [this]{ m_loadingOlder = false; });
+}
+
+void MainWindow::onOlderHistoryLoaded(ServerId host, BufferId channel, int count)
+{
+    m_loadingOlder = false;
+
+    if (host != m_model->activeHost() || channel != m_model->activeChannel())
+        return;
+
+    const QString key = host.str() + '\t' + channel.str();
+    if (count <= 0) {
+        m_historyExhausted.insert(key);
+        return;
+    }
+
+    auto *ch = m_model->channel(host, channel);
+    if (!ch) return;
+
+    m_renderStart[key] = 0;
+
+    ChatRenderer::Context ctx;
+    ctx.coloredNicks   = m_config.ui.coloredNicks;
+    ctx.nickBrackets   = m_config.ui.nickBrackets;
+    ctx.emojiPt        = m_config.ui.fontSizes.emoji;
+    ctx.chatPt         = m_config.ui.fontSizes.chat;
+    ctx.validTheme     = m_theme.valid;
+    ctx.themeText      = m_theme.text;
+    ctx.selfNickRe     = m_selfNickRe;
+    ctx.highlightRe    = m_highlightRe;
+    ctx.showTimestamps = m_config.ui.showTimestamps;
+    ctx.channel        = ch;
+
+    const QString selfNick = m_model->selfNick(host);
+    QList<ChatLine> older;
+    const int end = qMin(count, static_cast<int>(ch->messages.size()));
+
+    for (int i = 0; i < end; ) {
+        const auto &msg = ch->messages[i];
+        if (isCondensable(msg, selfNick)) {
+            const QDate day = msg.timestamp.toLocalTime().date();
+            int j = i + 1;
+            while (j < end
+                   && isCondensable(ch->messages[j], selfNick)
+                   && ch->messages[j].timestamp.toLocalTime().date() == day)
+                ++j;
+            QList<Message> group(ch->messages.cbegin() + i, ch->messages.cbegin() + j);
+            const QString groupId    = QString::number(group.first().timestamp.toMSecsSinceEpoch());
+            const bool    grpExpanded = m_expandedEventGroups.contains(groupId);
+            older.append(ChatRenderer::formatEventGroupLine(group, ctx, groupId, grpExpanded));
+            i = j;
+        } else {
+            older.append(ChatRenderer::formatMessageLine(msg, ctx));
+            if (!msg.msgid.isEmpty()) {
+                auto rxIt = ch->reactions.constFind(msg.msgid);
+                if (rxIt != ch->reactions.constEnd() && !rxIt->isEmpty())
+                    older.append(buildReactionLine(*rxIt, msg.msgid));
+            }
+            ++i;
+        }
+    }
+
+    m_chatView->removeLine("status:older");
+    m_chatView->prependLines(std::move(older));
 }
 
 QListWidgetItem *MainWindow::makeNickItem(const NickEntry &e, const Channel *ch,

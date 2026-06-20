@@ -89,6 +89,18 @@ struct Channel {
         }
     }
 
+    void prependMessages(const QList<Message> &msgs)
+    {
+        if (msgs.isEmpty()) return;
+        messages = msgs + messages;
+        while (messages.size() > kMessageBufferCap) {
+            const QString oldId = messages.back().msgid;
+            messages.removeLast();
+            if (!oldId.isEmpty())
+                reactions.remove(oldId);
+        }
+    }
+
     void rebuildNickIndex()
     {
         nickIndex.clear();

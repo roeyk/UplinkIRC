@@ -9,6 +9,7 @@
 #include <QRegularExpression>
 #include <QSet>
 #include <QStandardPaths>
+#include <QTimer>
 
 SessionModel::SessionModel(QObject *parent)
     : QObject(parent)
@@ -660,6 +661,13 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     auto *sess = session(ServerId{host});
     if (!sess) return;
 
+    const QString key = host + '\t' + target.toLower();
+
+    if (msg.isHistory && m_pendingHistoryBefore.contains(key)) {
+        m_historyBeforeBuf[key].append(msg);
+        return;
+    }
+
     auto &ch = sess->getOrCreate(target);
     if (ch.name.isEmpty()) ch.name = target;
     ch.addMessage(msg);
@@ -682,6 +690,37 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     emit messageAdded(ServerId{host}, BufferId{target}, msg);
     if (!isActive && !msg.isHistory && countsAsUnread)
         emit unreadChanged(ServerId{host}, BufferId{target}, ch.unread);
+}
+
+void SessionModel::requestOlderHistory(ServerId host, BufferId channel)
+{
+    const QString key = host.str() + '\t' + channel.str().toLower();
+    if (m_pendingHistoryBefore.contains(key)) return;
+
+    auto *ch = this->channel(host, channel);
+    if (!ch || ch->messages.isEmpty()) return;
+
+    QString oldestMsgid;
+    for (const auto &msg : ch->messages) {
+        if (!msg.msgid.isEmpty()) { oldestMsgid = msg.msgid; break; }
+    }
+    if (oldestMsgid.isEmpty()) return;
+
+    auto *cl = clientFor(host);
+    if (!cl) return;
+
+    m_pendingHistoryBefore.insert(key);
+    cl->requestHistoryBefore(channel.str(), oldestMsgid, 100);
+
+    QTimer::singleShot(0, this, [this, host, channel, key]{
+        m_pendingHistoryBefore.remove(key);
+        const QList<Message> msgs = m_historyBeforeBuf.take(key);
+        if (!msgs.isEmpty()) {
+            auto *target = this->channel(host, channel);
+            if (target) target->prependMessages(msgs);
+        }
+        emit olderHistoryLoaded(host, channel, static_cast<int>(msgs.size()));
+    });
 }
 
 // ---------------------------------------------------------------------------

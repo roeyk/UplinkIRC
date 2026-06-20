@@ -362,6 +362,13 @@ void IrcClient::requestHistory(const QString &target, int limit)
     sendRaw(QString("CHATHISTORY LATEST %1 * %2").arg(target).arg(limit));
 }
 
+void IrcClient::requestHistoryBefore(const QString &target, const QString &msgid, int limit)
+{
+    if (!m_ackedCaps.contains("chathistory") && !m_ackedCaps.contains("draft/chathistory"))
+        return;
+    sendRaw(QString("CHATHISTORY BEFORE %1 msgid=%2 %3").arg(target, msgid).arg(limit));
+}
+
 void IrcClient::markRead(const QString &target, const QDateTime &ts)
 {
     if (!m_ackedCaps.contains("soju.im/read")) return;

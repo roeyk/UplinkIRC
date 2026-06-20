@@ -59,6 +59,8 @@ public:
     bool isIgnoredFor(const QString &nick, IgnoreType type) const;
     IgnoreTypes ignoreFlags(const QString &nick) const;
 
+    void requestOlderHistory(ServerId host, BufferId channel);
+
     void sendReact (ServerId host, BufferId target,
                     const QString &msgid, const QString &emoji);
     void sendRedact(ServerId host, BufferId target,
@@ -97,6 +99,7 @@ signals:
     void unreadChanged   (ServerId host, BufferId channel, int count);
     void reactionsChanged(ServerId host, BufferId channel, const QString &msgid);
     void messageRedacted (ServerId host, BufferId channel, const QString &msgid);
+    void olderHistoryLoaded(ServerId host, BufferId channel, int count);
 
     // Self
     void selfNickChanged(ServerId host, const QString &nick);
@@ -198,4 +201,7 @@ private:
 
     ServerId m_activeHost;
     BufferId m_activeChannel;
+
+    QSet<QString> m_pendingHistoryBefore; // "host\tchannel" keys awaiting CHATHISTORY BEFORE
+    QHash<QString, QList<Message>> m_historyBeforeBuf; // collected prepend messages
 };
