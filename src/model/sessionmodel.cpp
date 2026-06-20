@@ -868,10 +868,9 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
     ch.addNick(nick);
     emit nickAdded(ServerId{host}, BufferId{channel}, nick);
 
-    // Skip WHO if extended-join is active — account arrives in the JOIN message itself.
     if (!isSelf) {
         auto *cl = clientFor(ServerId{host});
-        if (!cl || !cl->hasCap("extended-join"))
+        if (cl && cl->hasCap("whox"))
             sendRaw(ServerId{host}, "WHO " + nick + " %cnfa,42");
     }
 
