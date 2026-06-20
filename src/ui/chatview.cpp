@@ -25,10 +25,19 @@ ChatView::ChatView(QWidget *parent)
     viewport()->setAutoFillBackground(false);
 
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int val) {
-        const bool wasBottom = m_atBottom;
-        m_atBottom = (val >= verticalScrollBar()->maximum() - 4);
-        if (wasBottom != m_atBottom)
-            emit scrolledAwayFromBottom(!m_atBottom);
+        const bool atMax = (val >= verticalScrollBar()->maximum() - 4);
+        if (m_userScrolledAway) {
+            if (atMax) {
+                m_userScrolledAway = false;
+                m_atBottom = true;
+                emit scrolledAwayFromBottom(false);
+            }
+        } else {
+            const bool wasBottom = m_atBottom;
+            m_atBottom = atMax;
+            if (wasBottom != m_atBottom)
+                emit scrolledAwayFromBottom(!m_atBottom);
+        }
         viewport()->update();
         if (val == 0 && !m_lines.isEmpty())
             emit loadOlderRequested();
@@ -36,7 +45,7 @@ ChatView::ChatView(QWidget *parent)
 
     connect(verticalScrollBar(), &QScrollBar::rangeChanged, this,
         [this](int, int max) {
-            if (m_atBottom)
+            if (m_atBottom && !m_userScrolledAway)
                 verticalScrollBar()->setValue(max);
         });
 }
@@ -164,6 +173,7 @@ bool ChatView::isAtBottom() const
 
 void ChatView::scrollToBottom()
 {
+    m_userScrolledAway = false;
     m_atBottom = true;
     verticalScrollBar()->setValue(verticalScrollBar()->maximum());
 }
@@ -240,7 +250,8 @@ void ChatView::wheelEvent(QWheelEvent *e)
     const int delta = e->angleDelta().y();
     if (delta == 0) { e->ignore(); return; }
 
-    if (delta > 0 && m_atBottom) {
+    if (delta > 0) {
+        m_userScrolledAway = true;
         m_atBottom = false;
         emit scrolledAwayFromBottom(true);
     }

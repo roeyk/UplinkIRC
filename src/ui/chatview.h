@@ -69,6 +69,7 @@ private:
     QColor           m_cardBorder;
     QColor           m_subColor;    // subdued text (domain line in preview cards)
     bool             m_atBottom{true};
+    bool             m_userScrolledAway{false};
     QString          m_hoveredAnchor;
     SelPoint         m_selAnchor;
     SelPoint         m_selActive;
