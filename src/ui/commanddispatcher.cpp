@@ -334,8 +334,12 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
             m_model->sendRaw(host, "NOTICE " + target + " :" + msg);
     } else if (cmd == "/caps") {
         auto *cl = m_model->clientFor(host);
-        const QString caps = cl ? cl->ackedCaps().join(", ") : "(not connected)";
-        m_model->localMessage(host, channel, "Acked CAPs: " + caps);
+        if (cl) {
+            const QStringList caps = cl->ackedCaps();
+            m_model->localMessage(host, channel,
+                caps.isEmpty() ? "No caps negotiated."
+                               : "Active caps: " + caps.join("  "));
+        }
     } else if (cmd == "/quote" || cmd == "/raw") {
         m_model->sendRaw(host, args);
     } else if (cmd == "/quit") {
@@ -454,14 +458,6 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
         if (!target.isEmpty())
             m_model->sendRaw(host, "KICK " + channel.str() + " " + target
                              + (reason.isEmpty() ? "" : " :" + reason));
-    } else if (cmd == "/caps") {
-        auto *cl = m_model->clientFor(host);
-        if (cl) {
-            const QStringList caps = cl->ackedCaps();
-            m_model->localMessage(host, channel,
-                caps.isEmpty() ? "No caps negotiated."
-                               : "Active caps: " + caps.join("  "));
-        }
     } else if (cmd == "/version") {
         if (args.isEmpty())
             m_model->sendRaw(host, "VERSION");
