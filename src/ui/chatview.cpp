@@ -105,7 +105,7 @@ void ChatView::insertAfter(const QString &id, const ChatLine &line)
     ChatLine newLine = line;
     layoutLine(newLine);
     const int idx = findLine(id);
-    const int insertIdx = (idx >= 0) ? idx + 1 : m_lines.size();
+    const int insertIdx = (idx >= 0) ? idx + 1 : static_cast<int>(m_lines.size());
     m_lines.insert(insertIdx, newLine);
     m_cumH.insert(insertIdx, 0);
     rebuildCumH();
@@ -191,7 +191,7 @@ void ChatView::scrollToLine(int lineIdx)
 int ChatView::findLine(const QString &id) const
 {
     if (id.isEmpty()) return -1;
-    for (int i = m_lines.size() - 1; i >= 0; --i)
+    for (int i = static_cast<int>(m_lines.size()) - 1; i >= 0; --i)
         if (m_lines[i].id == id) return i;
     return -1;
 }
@@ -223,7 +223,7 @@ void ChatView::paintEvent(QPaintEvent *)
         int selFrom = -1, selTo = -1;
         if (selLo.valid() && i >= selLo.line && i <= selHi.line) {
             selFrom = (i == selLo.line) ? selLo.pos : 0;
-            selTo   = (i == selHi.line) ? selHi.pos : (int)m_lines[i].text.size();
+            selTo   = (i == selHi.line) ? selHi.pos : static_cast<int>(m_lines[i].text.size());
             if (selFrom >= selTo) { selFrom = -1; selTo = -1; }
         }
         int findFrom = -1, findTo = -1;
@@ -436,8 +436,8 @@ QString ChatView::anchorAt(const QPoint &vpPos) const
     const qreal relY = docY - m_cumH[idx] - kVPad;
 
     // Find which visual sub-line was clicked
-    int visIdx = line.visLines.size() - 1; // default to last
-    for (int v = 0; v < line.visLines.size(); ++v) {
+    int visIdx = static_cast<int>(line.visLines.size()) - 1;
+    for (int v = 0; v < static_cast<int>(line.visLines.size()); ++v) {
         const auto &vl = line.visLines[v];
         if (relY < vl.y + vl.h) { visIdx = v; break; }
     }
@@ -468,7 +468,7 @@ QString ChatView::anchorAt(const QPoint &vpPos) const
     const QTextLine tl = layout.lineAt(visIdx);
     if (!tl.isValid()) return {};
 
-    const int charPos = tl.xToCursor((qreal)vpPos.x(), QTextLine::CursorBetweenCharacters);
+    const int charPos = tl.xToCursor(static_cast<qreal>(vpPos.x()), QTextLine::CursorBetweenCharacters);
 
     for (const auto &seg : line.segments) {
         if (!seg.anchor.isEmpty()
@@ -491,8 +491,8 @@ ChatView::SelPoint ChatView::hitTest(const QPoint &vpPos) const
         return {idx, 0};
 
     const qreal relY = docY - m_cumH[idx] - kVPad;
-    int visIdx = (int)line.visLines.size() - 1;
-    for (int v = 0; v < (int)line.visLines.size(); ++v) {
+    int visIdx = static_cast<int>(line.visLines.size()) - 1;
+    for (int v = 0; v < static_cast<int>(line.visLines.size()); ++v) {
         if (relY < line.visLines[v].y + line.visLines[v].h) { visIdx = v; break; }
     }
 
@@ -507,7 +507,7 @@ ChatView::SelPoint ChatView::hitTest(const QPoint &vpPos) const
     const int hangW = lineHangW(line);
     layout.beginLayout();
     bool first = true;
-    for (int v = 0; v < (int)line.visLines.size(); ++v) {
+    for (int v = 0; v < static_cast<int>(line.visLines.size()); ++v) {
         QTextLine tl = layout.createLine();
         if (!tl.isValid()) break;
         const int indent = (!first && line.hangIndent) ? hangW : 0;
@@ -520,7 +520,7 @@ ChatView::SelPoint ChatView::hitTest(const QPoint &vpPos) const
     const QTextLine tl = layout.lineAt(visIdx);
     if (!tl.isValid()) return {idx, 0};
 
-    const int charPos = tl.xToCursor((qreal)vpPos.x(), QTextLine::CursorBetweenCharacters);
+    const int charPos = tl.xToCursor(static_cast<qreal>(vpPos.x()), QTextLine::CursorBetweenCharacters);
     return {idx, charPos};
 }
 
@@ -533,7 +533,7 @@ QString ChatView::selectedText() const
     for (int i = lo.line; i <= hi.line && i < m_lines.size(); ++i) {
         const QString &text = m_lines[i].text;
         const int from = (i == lo.line) ? lo.pos : 0;
-        const int to   = (i == hi.line) ? hi.pos : (int)text.size();
+        const int to   = (i == hi.line) ? hi.pos : static_cast<int>(text.size());
         if (to <= from) continue;
         if (!result.isEmpty()) result += '\n';
         result += text.mid(from, to - from);
@@ -545,7 +545,7 @@ bool ChatView::findText(const QString &text, bool backward)
 {
     if (text.isEmpty() || m_lines.isEmpty()) { clearFind(); return false; }
 
-    const int n         = m_lines.size();
+    const int n         = static_cast<int>(m_lines.size());
     const int startLine = (m_findLine >= 0 && m_findLine < n)
         ? m_findLine
         : qBound(0, lineAt(verticalScrollBar()->value()), n - 1);
@@ -553,16 +553,16 @@ bool ChatView::findText(const QString &text, bool backward)
     if (backward) {
         for (int k = 0; k < n; ++k) {
             const int i    = ((startLine - k) % n + n) % n;
-            const int upTo = (k == 0 && m_findFrom > 0) ? m_findFrom - 1 : m_lines[i].text.size();
-            const int pos  = m_lines[i].text.lastIndexOf(text, upTo, Qt::CaseInsensitive);
-            if (pos >= 0) { setFind(i, pos, pos + (int)text.size()); return true; }
+            const int upTo = (k == 0 && m_findFrom > 0) ? m_findFrom - 1 : static_cast<int>(m_lines[i].text.size());
+            const int pos  = static_cast<int>(m_lines[i].text.lastIndexOf(text, upTo, Qt::CaseInsensitive));
+            if (pos >= 0) { setFind(i, pos, pos + static_cast<int>(text.size())); return true; }
         }
     } else {
         for (int k = 0; k < n; ++k) {
             const int i    = (startLine + k) % n;
             const int from = (k == 0 && m_findTo > 0) ? m_findTo : 0;
-            const int pos  = m_lines[i].text.indexOf(text, from, Qt::CaseInsensitive);
-            if (pos >= 0) { setFind(i, pos, pos + (int)text.size()); return true; }
+            const int pos  = static_cast<int>(m_lines[i].text.indexOf(text, from, Qt::CaseInsensitive));
+            if (pos >= 0) { setFind(i, pos, pos + static_cast<int>(text.size())); return true; }
         }
     }
 
@@ -606,14 +606,14 @@ void ChatView::layoutLine(ChatLine &line) const
         const int textH = fh * 2 + 4;
         const int cardX = kHPad + hangWidth();
         line.cachedH = kVPad + textH + imgH + kVPad;
-        line.visLines = { {0, (int)line.text.size(), (qreal)cardX,
-                            0, (qreal)(wrapWidth() - hangWidth()), (qreal)line.cachedH} };
+        line.visLines = { {0, static_cast<int>(line.text.size()), static_cast<qreal>(cardX),
+                            0, static_cast<qreal>(wrapWidth() - hangWidth()), static_cast<qreal>(line.cachedH)} };
         return;
     }
 
     if (line.text.isEmpty()) {
         line.cachedH = fh + kVPad * 2;
-        line.visLines = { {0, 0, (qreal)kHPad, (qreal)kVPad, (qreal)wrapWidth(), (qreal)fh} };
+        line.visLines = { {0, 0, static_cast<qreal>(kHPad), static_cast<qreal>(kVPad), static_cast<qreal>(wrapWidth()), static_cast<qreal>(fh)} };
         return;
     }
 
@@ -644,7 +644,7 @@ void ChatView::layoutLine(ChatLine &line) const
         QTextLine ptl = pl.createLine();
         if (ptl.isValid()) {
             ptl.setNumColumns(line.hangIndentChars);
-            line.cachedHangPx = (int)std::ceil(ptl.naturalTextWidth());
+            line.cachedHangPx = static_cast<int>(std::ceil(ptl.naturalTextWidth()));
         }
         pl.endLayout();
     }
@@ -677,7 +677,7 @@ void ChatView::layoutLine(ChatLine &line) const
     }
     layout.endLayout();
 
-    line.cachedH = qMax(1, (int)std::ceil(y)) + kVPad;
+    line.cachedH = qMax(1, static_cast<int>(std::ceil(y))) + kVPad;
 }
 
 QList<QTextLayout::FormatRange> ChatView::buildFormatRanges(const ChatLine &line) const

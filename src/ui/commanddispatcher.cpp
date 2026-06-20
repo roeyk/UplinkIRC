@@ -24,6 +24,7 @@
 // Sysinfo helpers
 // ---------------------------------------------------------------------------
 
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
 static QString sysinfoKernel()
 {
     QProcess p;
@@ -32,6 +33,7 @@ static QString sysinfoKernel()
     const QString out = QString::fromLocal8Bit(p.readAllStandardOutput()).trimmed();
     return out.isEmpty() ? "Unknown" : out;
 }
+#endif
 
 static QString sysinfoOS()
 {

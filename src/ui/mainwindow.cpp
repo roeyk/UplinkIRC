@@ -3541,7 +3541,7 @@ void MainWindow::navigateChannel(int direction)
     if (channels.isEmpty()) return;
 
     const int count = static_cast<int>(channels.size());
-    int cur = channels.indexOf(m_sidebar->currentItem());
+    int cur = static_cast<int>(channels.indexOf(m_sidebar->currentItem()));
     int next = (cur < 0) ? 0 : cur + direction;
     if (next < 0) next = count - 1;
     if (next >= count) next = 0;
