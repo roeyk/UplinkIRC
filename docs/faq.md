@@ -429,6 +429,20 @@ To set a theme in config directly:
 theme = "nord"
 ```
 
+### How do I change the font size?
+
+Use **Ctrl+Plus** / **Ctrl+Minus** to zoom the font for the UI region that currently has focus (chat, nick list, sidebar, or input box). You can also use **Ctrl+Scroll wheel** to zoom the region under the cursor. Each region has its own independent font size. For fine-grained control, open **Preferences → Appearance → Font Config** to set exact point sizes for each region. Font sizes are saved to your config automatically.
+
+To set font sizes in config directly:
+
+```toml
+[ui]
+font_chat = 12
+font_sidebar = 10
+font_input = 10
+font_nick_dock = 9
+```
+
 ### How do I hide or show the server/channel list?
 
 Click the **close button** in the top-left corner of the sidebar panel. The sidebar collapses completely; the chat panel expands to fill the window. A **reveal button** appears at the bottom-left of the chat area — click it to bring the sidebar back.
