@@ -1,6 +1,27 @@
 # Changelog
 
 <!--
+Session 2026-06-20:
+- Added keyboard navigation: Alt+Up/Down cycles channels, Alt+Left/Right cycles panes
+- Added Ctrl+K quick channel switcher with live filtering popup
+- Added scroll-to-top history loading via CHATHISTORY BEFORE — infinite scrollback
+- Added jump-to-bottom button with fade animation for busy channels
+- Fixed scroll-up on fast channels: sticky m_userScrolledAway flag, guarded all
+  scrollToBottom callers with isAtBottom(), fixed rangeChanged auto-scroll bypass
+- Fixed mIRC color codes showing as boxes in topic bar (linkifyTopic → ircToHtml)
+- Fixed macOS crash: viewport() call in eventFilter during setupSidebar() construction
+- Fixed duplicate /caps command handler (dead code, never reached)
+- Cleaned all compiler warnings: old-style casts → static_cast, qsizetype narrowing,
+  platform ifdef for sysinfoKernel
+- Closed all 8 external PRs (rich search feature set out of scope, password file
+  redundant vs keychain)
+- Keyboard shortcuts documentation fully rewritten
+- Bugs found: none remaining. All scroll issues resolved through iterative testing.
+- Next priorities: MainWindow controller extractions, ChatView deferred layout,
+  manual stress tests (flood, memory steady-state, AFL fuzzer)
+-->
+
+<!--
 Session 2026-06-19 (emoji):
 - Expanded emoji table from 622 to 1,906 entries using Unicode emoji-test.txt
   and GitHub gemoji shortcodes. Added scripts/generate_emojidata.py for future updates.

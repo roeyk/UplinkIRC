@@ -305,6 +305,15 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Manage Servers dialog redesigned (v0.25.45) — integrated two-panel layout; server list on left, inline editing form on right; no more separate Edit Server popup
 - [x] Website icon rotation (v0.25.45) — docs pages randomly rotate through 15 app icons on each page load
 
+- [x] Keyboard navigation — Alt+Up/Down cycles channels, Alt+Left/Right cycles panes; works from any widget (v0.25.49, 2026-06-20)
+- [x] Quick channel switcher (Ctrl+K) — floating popup with live filtering to jump to any joined channel (v0.25.49, 2026-06-20)
+- [x] Scrollback history loading — CHATHISTORY BEFORE on scroll-to-top; infinite scrollback until server exhausted (v0.25.49, 2026-06-20)
+- [x] Jump-to-bottom button — floating fade-in/out button when scrolled up; click to return to live chat (v0.25.49, 2026-06-20)
+- [x] Scroll-up lock on busy channels — sticky m_userScrolledAway flag prevents auto-scroll snap-back; isAtBottom() respects the flag (v0.25.49, 2026-06-20)
+- [x] mIRC color codes in topic bar — linkifyTopic() now runs through ircToHtml() (v0.25.49, 2026-06-20)
+- [x] Keyboard shortcuts documentation rewritten — quick reference table, navigation section, macOS notes (v0.25.49, 2026-06-20)
+- [x] Static analysis cleanup — duplicate /caps handler removed; compiler warnings fixed (old-style casts, narrowing, platform ifdef) (v0.25.49, 2026-06-20)
+
 ---
 
 ## Security Backlog
