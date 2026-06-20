@@ -20,9 +20,9 @@ QString htmlAttr(const QString &s)
 
 QString linkifyTopic(const QString &text)
 {
-    QString result = text.toHtmlEscaped();
-    result.replace(s_urlRe, R"(<a href="\1">\1</a>)");
-    return result;
+    QString html = ircToHtml(text);
+    html.replace(s_urlRe, R"(<a href="\1">\1</a>)");
+    return html;
 }
 
 QString linkifyHtml(const QString &html)
