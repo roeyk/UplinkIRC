@@ -487,6 +487,9 @@
     <li><a href="#channel-panes">Channel panes</a></li>
     <li><a href="#event-condensation">Event condensation</a></li>
     <li><a href="#chat-area">Chat area</a></li>
+    <li><a href="#keyboard-navigation">Keyboard navigation</a></li>
+    <li><a href="#quick-switcher">Quick channel switcher</a></li>
+    <li><a href="#scroll-history">Scrollback history loading</a></li>
     <li><a href="#unread-separator">Unread separator &amp; scroll</a></li>
     <li><a href="#typing">Typing indicator</a></li>
     <li><a href="#nick-panel">Nick list panel</a></li>
@@ -1643,6 +1646,43 @@ channels = "#uplink"</pre>
       <li>Press <kbd>Ctrl+F</kbd> to search the current buffer. See <a href="#search">Message search</a>.</li>
       <li>When you switch to a channel with unread messages, a <strong>── N new messages ──</strong> divider appears at the point where new messages start, and the view scrolls there automatically. See <a href="#unread-separator">Unread separator &amp; scroll memory</a>.</li>
     </ul>
+  </section>
+
+  <!-- KEYBOARD NAVIGATION -->
+  <section id="keyboard-navigation">
+    <h2>Keyboard navigation</h2>
+    <p>Navigate channels and panes without touching the mouse. These shortcuts work from any focused widget.</p>
+    <table>
+      <thead><tr><th>Shortcut</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Alt+Up</strong></td><td>Switch to the previous channel in the sidebar (wraps around)</td></tr>
+        <tr><td><strong>Alt+Down</strong></td><td>Switch to the next channel in the sidebar (wraps around)</td></tr>
+        <tr><td><strong>Alt+Left</strong></td><td>Switch to the previous open pane (wraps around)</td></tr>
+        <tr><td><strong>Alt+Right</strong></td><td>Switch to the next open pane (wraps around)</td></tr>
+      </tbody>
+    </table>
+    <p>On macOS, use <strong>Option</strong> instead of Alt.</p>
+  </section>
+
+  <!-- QUICK CHANNEL SWITCHER -->
+  <section id="quick-switcher">
+    <h2>Quick channel switcher (Ctrl+K)</h2>
+    <p>Press <strong>Ctrl+K</strong> (Cmd+K on macOS) to open a floating search popup listing all joined channels. Start typing to filter by channel name or server name — the list narrows as you type.</p>
+    <ul>
+      <li><strong>Up/Down</strong> — select a channel from the list</li>
+      <li><strong>Enter</strong> — switch to the selected channel</li>
+      <li><strong>Escape</strong> — dismiss without switching</li>
+    </ul>
+  </section>
+
+  <!-- SCROLLBACK HISTORY LOADING -->
+  <section id="scroll-history">
+    <h2>Scrollback history loading</h2>
+    <p>When you scroll to the top of a channel buffer, Uplink automatically fetches older messages from the server using <code>CHATHISTORY BEFORE</code>. Messages are prepended above the existing buffer without jumping the scroll position.</p>
+    <p>This continues as long as the server has more history available. When the server returns an empty batch, Uplink stops requesting.</p>
+    <h3>Jump to bottom</h3>
+    <p>On busy channels, scrolling up locks the viewport so incoming messages don't snap you back to the bottom. A floating <strong>⬇⬇</strong> button appears in the bottom-right corner of the chat area — click it to return to live chat. The button fades in when you scroll up and fades out when you return to the bottom.</p>
+    <p><strong>Requirement:</strong> The server must support the <code>chathistory</code> or <code>draft/chathistory</code> IRCv3 capability. Ergo, soju, and modern ZNC all support this.</p>
   </section>
 
   <!-- UNREAD SEPARATOR & SCROLL MEMORY -->

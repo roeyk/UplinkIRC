@@ -44,6 +44,23 @@ Session 2026-06-18:
   ChatView deferred layout, review CodeQL findings when first scan completes.
 -->
 
+## 0.25.49
+
+### Added
+- **Keyboard navigation** — Alt+Up/Down to cycle channels, Alt+Left/Right to cycle panes, works from any focused widget
+- **Quick channel switcher (Ctrl+K)** — floating popup with live filtering to jump to any joined channel
+- **Scroll-to-top history loading** — scrolling to the top of a channel buffer fetches older messages from the server via `CHATHISTORY BEFORE`; stops when server history is exhausted
+- **Jump-to-bottom button** — floating double-arrow-down button fades in when scrolled up, click to return to live chat; fades out on return
+
+### Fixed
+- **Scroll-up on busy channels** — new messages no longer snap the viewport back to the bottom; a sticky `m_userScrolledAway` flag locks scroll position until the user explicitly returns to bottom
+- **mIRC color codes in topic bar** — topic text now renders mIRC color/bold/italic/underline codes as formatted HTML instead of showing raw control characters as boxes
+- **macOS crash on launch** — guarded `m_chatView->viewport()` call in `eventFilter` that fired before widget initialization during `setupSidebar()`
+- **Compiler warnings** — replaced all C-style casts with `static_cast` in chatview.cpp, fixed `qsizetype`→`int` narrowing, guarded `sysinfoKernel()` with platform ifdef
+
+### Changed
+- **Keyboard shortcuts documentation** — fully rewritten with quick reference table, navigation section, macOS notes, no more "Planned" section
+
 ## 0.25.48
 
 <!--

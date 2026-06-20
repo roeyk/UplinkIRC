@@ -52,6 +52,8 @@ History messages are visually distinct from live messages:
 - Timestamped with their original send time — previous-day messages show `MM/dd hh:mm` so you always know when they were sent
 - Not counted as unread, so they do not badge the channel in the sidebar
 
+When the user scrolls to the top of a channel buffer and all loaded messages have been displayed, Uplink sends `CHATHISTORY BEFORE <channel> msgid=<oldest> 100` to fetch the next batch of older messages. These are prepended to the buffer without jumping the scroll position. Uplink stops requesting when the server returns an empty batch.
+
 This works on any server or bouncer that supports either cap name, including Ergo, soju, and modern ZNC.
 
 ### `sasl` (PLAIN and EXTERNAL)

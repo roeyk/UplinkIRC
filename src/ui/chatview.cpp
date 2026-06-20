@@ -256,7 +256,7 @@ void ChatView::wheelEvent(QWheelEvent *e)
     const int delta = e->angleDelta().y();
     if (delta == 0) { e->ignore(); return; }
 
-    if (delta > 0) {
+    if (delta > 0 && !m_userScrolledAway) {
         m_userScrolledAway = true;
         m_atBottom = false;
         emit scrolledAwayFromBottom(true);

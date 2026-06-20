@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.25.48-x86_64.AppImage">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.25.49-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.48-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.49-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.48-windows-x64.zip">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.49-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.48-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.49-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -98,7 +98,7 @@
 | **Netsplit / netjoin collapse** | Server-sent `netsplit` and `netjoin` batch types collapse into a single summary line per channel instead of flooding the buffer with individual quit/join lines. |
 | **Standard Replies** | `FAIL`, `WARN`, and `NOTE` server commands displayed in the relevant channel or server buffer with clear `[FAIL]`/`[WARN]`/`[NOTE]` prefixes. |
 | **STS (Strict Transport Security)** | When a server advertises STS, Uplink upgrades plain connections to TLS automatically and caches the policy to `~/.config/uplink/sts.ini`. Future connections enforce TLS regardless of `ssl` in config. Equivalent to HSTS for IRC. |
-| **Chat history replay** | Requests the last 100 messages via `CHATHISTORY LATEST` on join. History messages display dimmed with original timestamps. |
+| **Chat history replay** | Requests the last 100 messages via `CHATHISTORY LATEST` on join. Scrolling to the top fetches older messages via `CHATHISTORY BEFORE` — infinite scrollback until the server runs out. History messages display dimmed with original timestamps. |
 | **Bouncer support** | First-class ZNC and soju: `znc.in/playback`, `soju.im/bouncer-networks`, `soju.im/read`, self-message echo. |
 | **mIRC formatting** | Bold, italic, underline, strikethrough, reverse, 16 IRC colors (fg + bg). |
 | **CTCP** | Auto-replies to `VERSION` and `PING`. `/ping <nick>` shows round-trip time in channel. `/time <nick>` shows the user's local time in channel. Manual `/ctcp <target> <cmd>` for anything else. |
@@ -139,6 +139,9 @@
 | **mIRC colors** | Full IRC color codes rendered in chat. |
 | **Tab completion** | Tab-completes nick names and slash commands. Cycles through candidates. |
 | **Input history** | Up/Down arrows cycle through sent messages. |
+| **Quick channel switcher** | **Ctrl+K** opens a floating popup — type to filter channels, Enter to jump. |
+| **Channel navigation** | **Alt+Up/Down** cycles channels, **Alt+Left/Right** cycles panes. |
+| **Jump to bottom** | Floating button appears when scrolled up in a busy channel — click to return to live chat. |
 
 ### 🖥️ Nick List & Sidebar
 
