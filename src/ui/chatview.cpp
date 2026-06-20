@@ -169,15 +169,19 @@ void ChatView::setColors(const QColor &text, const QColor &bg,
 
 bool ChatView::isAtBottom() const
 {
+    if (m_userScrolledAway) return false;
     const auto *sb = verticalScrollBar();
     return sb->value() >= sb->maximum() - 4;
 }
 
 void ChatView::scrollToBottom()
 {
+    const bool wasAway = m_userScrolledAway;
     m_userScrolledAway = false;
     m_atBottom = true;
     verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+    if (wasAway)
+        emit scrolledAwayFromBottom(false);
 }
 
 void ChatView::scrollToLine(int lineIdx)
