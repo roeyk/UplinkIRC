@@ -131,7 +131,9 @@ void ChatView::clear()
     m_lines.clear();
     m_cumH.clear();
     m_atBottom = true;
+    m_userScrolledAway = false;
     verticalScrollBar()->setRange(0, 0);
+    emit scrolledAwayFromBottom(false);
     viewport()->update();
 }
 
