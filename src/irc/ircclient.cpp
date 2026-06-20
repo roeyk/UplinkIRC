@@ -1478,14 +1478,16 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         break;
     }
 
-    case 354: { // RPL_WHOSPCRPL — Ergo format: [me, type, channel, nick, flags, account]
-        if (params.size() >= 5) {
-            const QString &channel = params[2];
-            const QString &nick    = params[3];
-            const QString &flags   = params[4];
-            const QString account = params.size() >= 6 ? params[5] : QString();
-            if (channel.startsWith('#') || channel.startsWith('&'))
-                emit whoEntryReceived(m_serverName, channel, nick, flags);
+    case 354: { // RPL_WHOSPCRPL — server may or may not include querytype token
+        if (params.size() < 4) break;
+        const bool hasToken = params.size() >= 6 && params[1] == QLatin1String("42");
+        const int b = hasToken ? 2 : 1;
+        if (params.size() >= b + 3) {
+            const QString &channel = params[b];
+            const QString &nick    = params[b + 1];
+            const QString &flags   = params[b + 2];
+            const QString account  = (params.size() > b + 3) ? params[b + 3] : QString();
+            emit whoEntryReceived(m_serverName, channel, nick, flags);
             if (!account.isEmpty() && account != "0" && account != "*")
                 emit accountChanged(m_serverName, nick, account);
         }

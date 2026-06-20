@@ -1352,6 +1352,7 @@ void MainWindow::setupNickPanel()
     m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
     m_nickList->viewport()->installEventFilter(this);
     m_nickList->setSpacing(0);
+    m_nickList->setIconSize(QSize(16, 16));
     m_nickList->setUniformItemSizes(true);
     m_nickDelegate = new NickDelegate(m_nickList);
     if (m_theme.valid)

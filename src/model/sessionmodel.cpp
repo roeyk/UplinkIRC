@@ -870,8 +870,12 @@ void SessionModel::onUserJoined(const QString &host, const QString &channel, con
 
     if (!isSelf) {
         auto *cl = clientFor(ServerId{host});
-        if (cl && cl->hasCap("whox"))
-            sendRaw(ServerId{host}, "WHO " + nick + " %cnfa,42");
+        if (cl) {
+            if (cl->supportsWhox())
+                sendRaw(ServerId{host}, "WHO " + nick + " %tcnfa,42");
+            else
+                sendRaw(ServerId{host}, "WHO " + nick);
+        }
     }
 
     const QString mask = (!user.isEmpty() && !hostAddr.isEmpty())
@@ -1109,11 +1113,25 @@ void SessionModel::onWhoEntry(const QString &host, const QString &channel,
 {
     auto *sess = session(ServerId{host});
     if (!sess) return;
-    auto *ch = sess->get(channel);
-    if (!ch) return;
 
     const bool isBot = flags.contains('B');
     const QString key = nick.toLower();
+    // Update session-wide bot set (covers per-nick WHO returning channel "*")
+    if (isBot) sess->botNicks.insert(key);
+    else       sess->botNicks.remove(key);
+
+    auto *ch = sess->get(channel);
+    if (!ch) {
+        // Per-nick WHO returned "*" — refresh all channels containing this nick
+        if (isBot) {
+            for (auto &c : sess->channels) {
+                if (c.nickIndex.contains(key))
+                    emit nickListChanged(ServerId{host}, BufferId{c.name});
+            }
+        }
+        return;
+    }
+
     const bool changed = isBot ? !ch->botNicks.contains(key)
                                 :  ch->botNicks.contains(key);
     if (!changed) return;
