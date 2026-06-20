@@ -63,6 +63,7 @@ private slots:
     void onServerAdded      (const QString &host);
     void onServerConnected  (const QString &host);
     void onServerDisconnected(const QString &host);
+    void onServerClosed     (const QString &host);
     void onChannelAdded     (const QString &host, const QString &channel);
     void onChannelRemoved   (const QString &host, const QString &channel);
     void onMessageAdded     (const QString &host, const QString &channel, const Message &msg);
@@ -108,6 +109,8 @@ private:
     void refreshTopicBar(const QString &host, const QString &channel);
     void appendMessage  (const Message &msg, bool autoPreview = false);
     void applyFontSizes();
+    void adjustFocusedFontSize(int delta);
+    void adjustFontSizeForWidget(QWidget *widget, int delta);
     void updateTypingLabel();
     void openChannelPane (const QString &host, const QString &channel);
     void closeChannelPane(const QString &host, const QString &channel);
@@ -156,6 +159,8 @@ private:
     int         m_historyIndex{-1};
     QString     m_historyDraft;
 
+    void syncSidebarOrderToConfig();
+    void syncSidebarOrderFromConfig();
     QTreeWidgetItem *findServerItem (const QString &host) const;
     QTreeWidgetItem *findChannelItem(const QString &host, const QString &channel) const;
 

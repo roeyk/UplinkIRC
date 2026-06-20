@@ -475,6 +475,7 @@
     <li><a href="#multi-server">Two servers at once</a></li>
     <li><a href="#znc">ZNC bouncer</a></li>
     <li><a href="#soju">soju bouncer</a></li>
+    <li><a href="#soju-admin">soju server admin</a></li>
     <li><a href="#chathistory">Chat history replay</a></li>
     <li><a href="#websocket">WebSocket transport</a></li>
   </ul>
@@ -771,6 +772,16 @@ channels = "#linux, #archlinux"</pre>
       Set <code>ssl = false</code> with port <code>6667</code> only when TLS is genuinely unavailable: a local test IRCd on <code>127.0.0.1</code>, a private LAN server with no certificate, a bouncer listening on loopback, or a <code>.onion</code> address where Tor provides its own encryption.
     </div>
 
+    <p>You can also connect to any server on the fly without editing config — just type a command in the input box:</p>
+
+    <pre>/server irc.libera.chat             # connects over SSL on port 6697 (default)
+/server irc.example.org:6667        # connects plain-text on port 6667
+/connect irc.oftc.net               # /connect is an alias for /server</pre>
+
+    <p>The server appears in the sidebar immediately. Your nick is inherited from your first configured server. The sidebar label is derived from the hostname — <code>irc.chatjunkies.org</code> shows as <strong>CHATJUNKIES</strong>.</p>
+
+    <p>To close a server you connected to ad-hoc, right-click it in the sidebar and choose <strong>Close Server</strong>, or type <code>/disconnect</code>. The server is removed from the sidebar but not saved to config — it won't reappear on next launch unless you add it to config.</p>
+
     <p>Common IRC networks and their TLS hostnames:</p>
     <table>
       <tr><th>Network</th><th>Host</th><th>Port</th></tr>
@@ -817,7 +828,7 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
     <table>
       <thead><tr><th>Section</th><th>Fields</th></tr></thead>
       <tbody>
-        <tr><td><strong>Connection</strong></td><td>Disabled checkbox (keep in config, skip on startup), Name (display name in sidebar), Host, Port, SSL checkbox</td></tr>
+        <tr><td><strong>Connection</strong></td><td>Disabled checkbox (keep in config, skip on startup), Name (display name in sidebar — must be unique across all servers), Host, Port, SSL checkbox</td></tr>
         <tr><td><strong>Identity</strong></td><td>Nick, Username, Real Name, Quit Message, Away Message</td></tr>
         <tr><td><strong>Authentication</strong></td><td>Server Password (bouncers / password-protected servers); SASL User + SASL Password (SASL PLAIN); SASL EXTERNAL checkbox + Client Cert + Client Key — each has a Browse button to pick the file; NickServ password (auto-identifies on connect)</td></tr>
         <tr><td><strong>Channels</strong></td><td>Auto-join — comma-separated (e.g. <code>#uplink, #linux</code>). See note below for password-protected channels.</td></tr>
@@ -831,6 +842,9 @@ channels = "#linux, #archlinux, #python"   # join all three on connect</pre>
 
     <h3>Editing a server</h3>
     <p>Select the server in the list, click <strong>Edit</strong>, make your changes, and click <strong>OK</strong>. The server disconnects and reconnects with the updated settings immediately.</p>
+
+    <h3>Reordering servers</h3>
+    <p>Select a server in the list and click <strong>▲</strong> or <strong>▼</strong> to move it up or down. The new order is saved to <code>config.toml</code> when you click <strong>OK</strong>. You can also right-click a server header in the sidebar and choose <strong>Move Up</strong> or <strong>Move Down</strong>.</p>
 
     <h3>Removing a server</h3>
     <p>Select the server in the list and click <strong>Remove</strong>. The server disconnects, is removed from the sidebar, and is deleted from <code>config.toml</code>.</p>
@@ -1277,6 +1291,126 @@ channels        = "#debian"</pre>
     </div>
   </section>
 
+  <!-- SOJU SERVER ADMIN -->
+  <section id="soju-admin">
+    <h2>soju server administration</h2>
+
+    <p>This section covers setting up and managing soju on the server side. The examples use FreeBSD, but the commands are the same on Linux — only the paths differ.</p>
+
+    <h3>Install soju</h3>
+    <pre># FreeBSD
+pkg install soju
+
+# Arch Linux
+pacman -S soju
+
+# From source (any platform)
+go install git.sr.ht/~emersion/soju/cmd/...@latest</pre>
+
+    <h3>Configuration file</h3>
+    <p>The soju config lives at <code>/usr/local/etc/soju/config</code> on FreeBSD or <code>/etc/soju/config</code> on Linux. A minimal config:</p>
+    <pre>db sqlite3 /var/db/soju/main.db
+listen ircs://:6697
+tls /path/to/fullchain.pem /path/to/privkey.pem
+hostname irc.example.com
+listen unix+admin://</pre>
+
+    <p>The <code>listen unix+admin://</code> line creates the admin socket that <code>sojuctl</code> uses. Without it, <code>sojuctl</code> commands will fail with a "no such file or directory" error.</p>
+
+    <div class="tip">
+      <strong>Custom port:</strong> if you run an IRC server on the same host, use a different port for soju — e.g. <code>listen ircs://:7778</code>. Clients connect to the soju port, not the IRC server port.
+    </div>
+
+    <h3>Start soju</h3>
+    <pre># FreeBSD
+service soju start
+
+# systemd (Linux)
+systemctl start soju
+
+# Check it's running
+ps aux | grep soju</pre>
+
+    <h3>Create a user</h3>
+    <pre>sudo sojuctl user create -username alice -password secretpass</pre>
+    <p>To see available commands:</p>
+    <pre>sudo sojuctl help</pre>
+
+    <div class="note">
+      <strong>There is no <code>user list</code> command.</strong> To see existing users, query the database directly:
+      <pre>sudo sqlite3 /var/db/soju/main.db "SELECT username FROM User;"</pre>
+    </div>
+
+    <h3>Reset a user's password</h3>
+    <pre>sudo sojuctl user update alice -password newpassword</pre>
+
+    <h3>Check user status</h3>
+    <pre>sudo sojuctl user status alice</pre>
+    <p>This shows how many upstream networks the user has and whether they are connected.</p>
+
+    <h3>Add an upstream network</h3>
+    <p>Connect to soju with your IRC client, then message BouncerServ:</p>
+    <pre>/msg BouncerServ network create -addr ircs://irc.example.com:6697 -nick alice</pre>
+
+    <p>To authenticate to the upstream server, add a NickServ IDENTIFY command:</p>
+    <pre>/msg BouncerServ network create -addr ircs://irc.example.com:6697 -nick alice -connect-command "PRIVMSG NickServ :IDENTIFY myircpassword"</pre>
+
+    <div class="note">
+      <strong>Two separate passwords.</strong> The soju password authenticates your client to the bouncer. The IRC password (NickServ / SASL) authenticates soju to the upstream IRC server. They are unrelated.
+    </div>
+
+    <p>To see what flags <code>network create</code> accepts on your version:</p>
+    <pre>/msg BouncerServ help network create</pre>
+
+    <h3>Check and manage networks</h3>
+    <pre>/msg BouncerServ network status</pre>
+    <p>Or from the server shell:</p>
+    <pre>sudo sqlite3 /var/db/soju/main.db \
+  "SELECT id, name, addr, nick FROM Network WHERE user = (SELECT id FROM User WHERE username = 'alice');"</pre>
+
+    <p>Delete a network by name via BouncerServ:</p>
+    <pre>/msg BouncerServ network delete irc.example.com</pre>
+
+    <p>Or delete by ID directly in the database:</p>
+    <pre>sudo sqlite3 /var/db/soju/main.db "DELETE FROM Network WHERE id = 3;"
+sudo service soju restart</pre>
+
+    <h3>Manage channels in the database</h3>
+    <p>soju remembers which channels you have joined. To see them:</p>
+    <pre>sudo sqlite3 /var/db/soju/main.db "SELECT id, network, name FROM Channel WHERE network = 5;"</pre>
+
+    <p>To remove a stale or mistyped channel:</p>
+    <pre>sudo sqlite3 /var/db/soju/main.db "DELETE FROM Channel WHERE id = 7;"</pre>
+
+    <div class="tip">
+      <strong>Easier way:</strong> just <code>/part #badchannel</code> from your client — soju removes it from its database automatically.
+    </div>
+
+    <h3>Common gotchas</h3>
+    <table>
+      <tr><th>Problem</th><th>Cause</th><th>Fix</th></tr>
+      <tr><td><code>sojuctl</code> says "no such file or directory"</td><td>soju is not running, or <code>listen unix+admin://</code> is missing from config</td><td>Start soju and check the config</td></tr>
+      <tr><td><code>sojuctl</code> says "permission denied"</td><td>The admin socket is owned by the soju user</td><td>Run with <code>sudo</code></td></tr>
+      <tr><td>Nick shows as <code>alice_</code> or <code>alice__</code></td><td>Another connection is already using that nick — often a duplicate network or a ghost from a crashed session</td><td>Delete the duplicate network; <code>/raw KILL alice_</code> if you have IRC oper access</td></tr>
+      <tr><td>Duplicate channels in your client</td><td>Channels listed in both the client config and soju's database — or two networks connecting to the same server</td><td>Remove <code>channels</code> from the client config and let soju manage them; delete duplicate networks</td></tr>
+      <tr><td>"Cannot interact with channels … Did you mean to use a specific network?"</td><td>You are typing in soju's control connection, not the upstream network</td><td>Set <code>bouncer_network</code> in your client config, or put <code>username/networkname</code> in the Username field</td></tr>
+      <tr><td>NickServ authentication fails</td><td>The <code>-connect-command</code> was on a network you deleted; the new auto-created network doesn't have it</td><td>Re-add the connect command: <code>/msg BouncerServ network update networkname -connect-command "PRIVMSG NickServ :IDENTIFY password"</code></td></tr>
+    </table>
+
+    <h3>Database location</h3>
+    <p>soju stores everything in a SQLite database. The path is set in the config file (<code>db sqlite3 /path/to/main.db</code>). Useful tables:</p>
+    <table>
+      <tr><th>Table</th><th>Contents</th></tr>
+      <tr><td><code>User</code></td><td>Bouncer user accounts (username, hashed password, admin flag)</td></tr>
+      <tr><td><code>Network</code></td><td>Upstream IRC server connections (address, nick, credentials)</td></tr>
+      <tr><td><code>Channel</code></td><td>Joined channels per network</td></tr>
+    </table>
+
+    <div class="warning">
+      <strong>Always restart soju after editing the database directly.</strong> soju caches state in memory — changes to the SQLite file are not picked up until restart.
+    </div>
+  </section>
+
   <!-- CHAT HISTORY REPLAY -->
   <section id="chathistory">
     <h2>Chat history replay</h2>
@@ -1381,7 +1515,7 @@ channels  = "#uplink"</pre>
       <li>Channels with new activity show a small <strong>forum icon</strong> after the channel name. Channels where your nick was mentioned show a yellow <strong>lightbulb icon</strong> instead.</li>
       <li>The server heading shows a <strong>globe icon</strong> when connected. The globe turns <strong>red</strong> when the server status pane has unread messages — click the server name to open it and clear the indicator.</li>
       <li>Right-click a channel for options: <strong>Open in Pane</strong> (view it alongside the current channel), Rejoin, Leave, Close. See <a href="#channel-panes">Channel panes</a>.</li>
-      <li>Right-click a server for: Disconnect, Reconnect.</li>
+      <li>Right-click a server for: Disconnect, Reconnect, <strong>Close Server</strong> (removes from sidebar without deleting from config), <strong>Move Up</strong>, <strong>Move Down</strong> (reorder servers — saved to config).</li>
       <li>Drag the divider between the sidebar and the chat area to resize it — the width is saved and restored on the next launch.</li>
       <li>Click the <strong>close button</strong> in the top-left corner of the sidebar panel to collapse the sidebar so the chat fills the card. A <strong>reveal button</strong> appears at the bottom-left of the chat area — click it to bring the sidebar back.</li>
     </ul>
@@ -2303,6 +2437,14 @@ al[Shift+Tab]     →  alice:           (cycle back)
 
     <div class="note">
       <strong>Server support required:</strong> the <strong>Delete</strong> option only appears when the server has acknowledged the <code>draft/message-redaction</code> capability during the CAP handshake. You can only delete your own messages.
+      <br><br>
+      For <strong>Ergo</strong> server operators, three things must be configured in <code>ircd.yaml</code>:
+      <ol>
+        <li>A persistent history database — SQLite, MySQL, or PostgreSQL — under <code>datastore:</code>. The default Ergo package binary may not include SQLite support; if so, rebuild from source with <code>make build_full</code>.</li>
+        <li>Persistent history enabled under <code>history.persistent.enabled: true</code>.</li>
+        <li><code>allow-individual-delete: true</code> under <code>history.retention:</code> — <em>not</em> directly under <code>history:</code>.</li>
+      </ol>
+      After applying these changes, reload or restart Ergo. <code>draft/message-redaction</code> will then appear in the server's CAP LS and the Delete option will be available.
     </div>
   </section>
 

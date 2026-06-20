@@ -4,13 +4,13 @@
 
 [general]
 background   = "#FBF1F2"
-text         = "#8B8198"
+text         = "#746C7F"
 border       = "#D8D5DD"
 accent       = "#7297B9"
 
 [sidebar]
 background   = "#F2F1F4"
-text         = "#BFB9C6"
+text         = "#746C7F"
 active       = "#8B8198"
 unread       = "#7297B9"
 mention      = "#D57E85"
@@ -31,7 +31,7 @@ keyword      = "#EBB790"
 
 [nicklist]
 background   = "#F2F1F4"
-text         = "#BFB9C6"
+text         = "#746C7F"
 op           = "#7297B9"
 halfop       = "#BB99B4"
 voice        = "#A3B367"
@@ -39,6 +39,6 @@ away         = "#D8D5DD"
 
 [input]
 background   = "#F2F1F4"
-text         = "#8B8198"
+text         = "#746C7F"
 placeholder  = "#BFB9C6"
 nick_color   = "#A3B367"

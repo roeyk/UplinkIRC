@@ -1,5 +1,88 @@
 # Changelog
 
+## 0.25.43
+
+### Fixed
+- **Server identity collision** — multiple server entries sharing the same hostname (e.g. a direct connection and a bouncer connection to the same server) no longer interfere with each other. Server identity is now based on the unique config name rather than the hostname.
+- **Duplicate server name guard** — the Manage Servers dialog now rejects adding or renaming a server to a name that already exists.
+- **Sidebar order sync** — reordering servers in the Manage Servers dialog now takes effect immediately in the sidebar without requiring a restart.
+- **Log directory migration** — existing log directories using the old hostname-based layout are automatically renamed to the new name-based layout on startup, preserving chat history.
+- **URL splitting on no-break spaces** — URLs containing Unicode no-break spaces (U+00A0) are no longer incorrectly split into separate links.
+- **Light theme text contrast** — improved text contrast on 72 light themes where foreground colors were too close to the background, making text hard to read.
+
+<!--
+SESSION SUMMARY — 2026-06-17 (URL regex, light theme contrast)
+What changed:
+  - URL regex fix: no-break spaces (U+00A0) no longer split URLs into separate links.
+    Regex word-boundary anchors updated in ChatFormat to treat NBSP like a regular character.
+  - Light theme contrast fix: 72 light themes had foreground colors too close to the
+    background, making text hard to read. Adjusted fg/accent values for readability.
+  - CHANGELOG updated with both fixes.
+  - Verified on Mac — themes render correctly.
+No regressions. No known issues.
+-->
+
+<!--
+SESSION SUMMARY — 2026-06-17 (ServerId refactor, duplicate guard, sidebar sync, log migration)
+What changed:
+  - ServerId refactored from hostname to server config name — fixes collision when multiple
+    server entries share the same host (e.g. direct + bouncer to irc.linuxdojo.org).
+    IrcClient now carries m_serverName alongside m_host; all 119 signal emissions use
+    the name. SessionModel lookups, removeServer, updateServer, clientFor all match by name.
+  - Duplicate server name guard in Manage Servers dialog — blocks add/edit if name exists.
+  - Sidebar reorders live after Manage Servers dialog closes (syncSidebarOrderFromConfig).
+  - Log dir migration at startup: hostname-based dirs renamed to name-based dirs.
+  - Removed dead syncServers() method.
+  - Docs updated: configuration.md (name must be unique), howto.html (server dialog field
+    reference), faq.md (multiple servers can share a host with different names).
+  - Released as v0.25.43. CI, Release, and Pages all green.
+No regressions. No known issues.
+-->
+
+<!--
+SESSION SUMMARY — 2026-06-17 (server management, /connect, CTCP fix, stability)
+What changed:
+  - Right-click server context menu: added Close Server (disconnect + remove from sidebar,
+    keeps config), Move Up, Move Down (reorder servers, persisted to config).
+  - Manage Servers dialog: added ▲/▼ buttons to reorder servers.
+  - New commands: /connect and /server to connect to arbitrary servers by host[:port] with
+    auto-detected SSL (port 6667 = plain, else SSL). /disconnect to close current server.
+  - Sidebar labels for ad-hoc servers use short network names (strip irc. prefix and TLD),
+    e.g. irc.chatjunkies.org → CHATJUNKIES.
+  - Fixed duplicate CTCP VERSION/PING replies caused by echo-message cap echoing outgoing
+    requests back to the sender — self-echo CTCP requests are now skipped.
+  - Fixed /clear not persisting: previously only cleared the visual widget, now also purges
+    the in-memory message buffer so messages don't reappear when switching channels.
+  - Fixed chat view layout thrashing: bottom third of chat would flicker rapidly when content
+    was near viewport threshold. wrapWidth() now reserves scrollbar width permanently.
+  - Resource audit: ASan+UBSan tests all clean. Pruned m_scrollPositions and m_renderStart
+    on channel/server close. Capped m_expandedEventGroups at 200 entries. Avatar base64
+    cache was already properly bounded.
+  - All docs updated across commands.md, howto.html, faq.md, index.html, README.md, ROADMAP.md.
+No regressions. No known issues.
+Next priorities: new hero screenshots for uplinkirc.chat (URGENT); ServerId/BufferId strong types.
+-->
+
+<!--
+SESSION SUMMARY — 2026-06-17 (soju server admin docs)
+What changed:
+  - Added "soju server administration" section to docs/howto.html covering server-side
+    setup: install, config, user management (sojuctl), adding upstream networks via
+    BouncerServ, managing networks/channels in the SQLite database, and a common-gotchas
+    troubleshooting table. Nav sidebar updated with the new section link.
+No code changes. Documentation only.
+-->
+
+<!--
+SESSION SUMMARY — 2026-06-17 (emoji button transparent bg)
+What changed:
+  - Emoji picker button (😊) had an opaque background on macOS — the default QPushButton
+    styling drew a visible box around the emoji. Fixed by adding background: transparent
+    and border: none to the button's inline stylesheet (mainwindow.cpp:1807).
+No regressions. No known issues.
+Next priorities: ASan/UBSan run + heaptrack profile analysis; ServerId/BufferId strong types.
+-->
+
 <!--
 SESSION SUMMARY — 2026-06-16 (icon swap, close-channel UI fix, warning cleanup, v0.25.40 release)
 What changed:
@@ -686,6 +769,41 @@ What changed:
 No regressions. Known issue: REDACT blocked pending Ergo restart.
 Next priorities: Ergo restart + REDACT retest; Ctrl+scroll zoom; ServerId/BufferId strong types.
 -->
+
+<!--
+SESSION SUMMARY — 2026-06-17 (REDACT/message deletion debugging, Ergo server config)
+What changed:
+  - Debugged draft/message-redaction not working on direct Ergo connections.
+  - Root cause: Ergo was not advertising the cap due to three missing config conditions:
+    1. No persistent history database configured (SQLite/MySQL/PostgreSQL required).
+    2. history.persistent.enabled was missing.
+    3. allow-individual-delete was placed directly under history: instead of history.retention:.
+  - Ergo package binary lacked SQLite support; rebuilt from source with make build_full.
+  - pkg lock applied to prevent pkg upgrade from overwriting the custom binary.
+  - No Uplink code changes — this was entirely a server-side config issue.
+  - Updated docs/howto.html (deletion section) and docs/ircv3.md with Ergo server requirements.
+No regressions. No known issues.
+Next priorities: test Delete on direct connection and via soju; ASan/UBSan run.
+-->
+
+<!--
+SESSION SUMMARY — 2026-06-16 (emoji picker width fix)
+What changed:
+  - Emoji picker popup was clipping emojis on the right edge (all platforms, noticed on Mac).
+    The fixed width calculation did not account for the vertical scrollbar eating into the
+    viewport. Replaced the hardcoded +16 padding with a runtime computation that queries the
+    actual scrollbar width, so the grid is fully visible on all platforms.
+No regressions. No known issues.
+Next priorities: test Delete on direct connection and via soju; ASan/UBSan run.
+-->
+
+## v0.25.42 — 2026-06-17
+
+### Fixed
+- **Emoji button background** — the 😊 picker button had an opaque background on macOS instead of blending into the input bar. Now transparent with no border.
+- **Emoji picker clipping** — rightmost column of emojis was cut off on all platforms. The popup width now accounts for the vertical scrollbar by querying the actual scrollbar extent at runtime instead of using an undersized hardcoded padding value.
+
+---
 
 ## v0.25.41 — 2026-06-16
 

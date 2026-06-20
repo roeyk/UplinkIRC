@@ -16,7 +16,10 @@ private:
     void addServer();
     void editServer();
     void removeServer();
+    void moveUp();
+    void moveDown();
     void refreshList();
+    bool nameExists(const QString &name, int excludeRow = -1) const;
 
     QListWidget          *m_list;
     QList<ServerConfig>   m_servers;

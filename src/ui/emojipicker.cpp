@@ -13,18 +13,19 @@
 
 static constexpr int kCols     = 9;
 static constexpr int kBtnSize  = 34;
-static constexpr int kPickerW  = kCols * (kBtnSize + 2) + 16;
+static constexpr int kGridGap  = 2;
+static constexpr int kGridPad  = 2;
+static constexpr int kOuterPad = 4;
 static constexpr int kPickerH  = 340;
 
 EmojiPicker::EmojiPicker(QWidget *parent)
     : QFrame(parent, Qt::Popup | Qt::FramelessWindowHint)
 {
-    setFixedSize(kPickerW, kPickerH);
     setObjectName("emojiPicker");
     setFrameShape(QFrame::StyledPanel);
 
     auto *vbox = new QVBoxLayout(this);
-    vbox->setContentsMargins(4, 4, 4, 4);
+    vbox->setContentsMargins(kOuterPad, kOuterPad, kOuterPad, kOuterPad);
     vbox->setSpacing(4);
 
     m_search = new QLineEdit;
@@ -40,13 +41,17 @@ EmojiPicker::EmojiPicker(QWidget *parent)
 
     m_gridWidget = new QWidget;
     m_gridLayout = new QGridLayout(m_gridWidget);
-    m_gridLayout->setSpacing(2);
-    m_gridLayout->setContentsMargins(2, 2, 2, 2);
-    // Lock column widths so partial search results don't stretch unevenly
+    m_gridLayout->setSpacing(kGridGap);
+    m_gridLayout->setContentsMargins(kGridPad, kGridPad, kGridPad, kGridPad);
     for (int c = 0; c < kCols; ++c)
-        m_gridLayout->setColumnMinimumWidth(c, kBtnSize + 2);
-    m_gridLayout->setColumnStretch(kCols, 1); // absorb leftover space after col 8
+        m_gridLayout->setColumnMinimumWidth(c, kBtnSize + kGridGap);
+    m_gridLayout->setColumnStretch(kCols, 1);
     m_scroll->setWidget(m_gridWidget);
+
+    const int gridW = kCols * (kBtnSize + kGridGap)
+                    + (kCols - 1) * kGridGap + 2 * kGridPad;
+    const int sbW = m_scroll->verticalScrollBar()->sizeHint().width();
+    setFixedSize(gridW + sbW + 2 * kOuterPad, kPickerH);
 
     buildButtons();
     filterGrid({});

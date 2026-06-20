@@ -68,6 +68,7 @@
 #include <QToolTip>
 #include <QCursor>
 #include <QMouseEvent>
+#include <QWheelEvent>
 #include <QTextDocument>
 #include <QTextFrame>
 #include <QTextCursor>
@@ -354,6 +355,8 @@ static constexpr int kInputHistoryCap = 100;
 static constexpr int kMaxExtraPanes   = 3;
 static constexpr int kRenderWindow    = 150; // messages rendered per channel view
 static constexpr int kRenderChunk     = 50;  // messages loaded per scroll-to-top
+static constexpr int kMinChatFontPt   = 7;
+static constexpr int kMaxChatFontPt   = 32;
 
 
 // Clips all child widgets to a rounded rect via a bitmap mask.
@@ -456,6 +459,16 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     auto *ctrlF = new QShortcut(QKeySequence::Find, this);
     connect(ctrlF, &QShortcut::activated, this, &MainWindow::showSearchBar);
+
+    auto *zoomIn = new QShortcut(QKeySequence::ZoomIn, this);
+    connect(zoomIn, &QShortcut::activated, this, [this]{
+        adjustFocusedFontSize(1);
+    });
+
+    auto *zoomOut = new QShortcut(QKeySequence::ZoomOut, this);
+    connect(zoomOut, &QShortcut::activated, this, [this]{
+        adjustFocusedFontSize(-1);
+    });
 
     statusBar()->hide();
 
@@ -560,7 +573,11 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
     m_dispatcher = new CommandDispatcher(m_model, &m_config, this, this);
     connect(m_dispatcher, &CommandDispatcher::switchChannel,  this, &MainWindow::switchToChannel);
     connect(m_dispatcher, &CommandDispatcher::focusInput,     this, [this]{ if (m_input) m_input->setFocus(); });
-    connect(m_dispatcher, &CommandDispatcher::clearChat,      this, [this]{ if (m_chatView) m_chatView->clear(); });
+    connect(m_dispatcher, &CommandDispatcher::clearChat,      this, [this]{
+        if (m_chatView) m_chatView->clear();
+        auto *ch = m_model->channel(m_model->activeHost(), m_model->activeChannel());
+        if (ch) ch->messages.clear();
+    });
     connect(m_dispatcher, &CommandDispatcher::openChannelList,this, &MainWindow::openChannelList);
     connect(m_dispatcher, &CommandDispatcher::openChannelPane,this, &MainWindow::openChannelPane);
     connect(m_dispatcher, &CommandDispatcher::replyBarCleared, this, &MainWindow::clearReplyBar);
@@ -900,22 +917,23 @@ void MainWindow::connectPreferences()
         const QList<ServerConfig> updated = dlg.servers();
         for (const ServerConfig &old : m_config.servers) {
             const bool stillPresent = std::any_of(updated.begin(), updated.end(),
-                [&](const ServerConfig &s){ return s.host == old.host; });
+                [&](const ServerConfig &s){ return s.name == old.name; });
             if (!stillPresent)
-                m_model->removeServer(ServerId{old.host});
+                m_model->removeServer(ServerId{old.name});
         }
         for (const ServerConfig &sc : updated) {
             const ServerConfig *existing = nullptr;
             for (const ServerConfig &old : m_config.servers)
-                if (old.host == sc.host) { existing = &old; break; }
+                if (old.name == sc.name) { existing = &old; break; }
             if (!existing) {
                 m_model->addServer(sc);
             } else if (*existing != sc) {
-                m_model->updateServer(ServerId{existing->host}, sc);
+                m_model->updateServer(ServerId{existing->name}, sc);
             }
         }
         m_config.servers = updated;
         Config::save(m_config, Config::defaultPath(), true);
+        syncSidebarOrderFromConfig();
     });
 
     connect(m_prefsDialog, &PreferencesDialog::aboutRequested, this, [this]{
@@ -945,18 +963,18 @@ void MainWindow::connectPreferences()
             if (!sess.connected) continue;
             // Always update local nickMeta for own nick so tooltip reflects new values
             if (!displayName.isEmpty())
-                m_model->onUserMetaChanged(ServerId{sess.host}, sess.nick, "display-name", displayName);
+                m_model->onUserMetaChanged(ServerId{sess.name}, sess.nick, "display-name", displayName);
             if (!avatarUrl.isEmpty())
-                m_model->onUserMetaChanged(ServerId{sess.host}, sess.nick, "avatar", avatarUrl);
-            auto *cl = m_model->clientFor(ServerId{sess.host});
+                m_model->onUserMetaChanged(ServerId{sess.name}, sess.nick, "avatar", avatarUrl);
+            auto *cl = m_model->clientFor(ServerId{sess.name});
             if (!cl || !cl->hasCap("draft/metadata-2")) {
                 skipped << sess.name;
                 continue;
             }
-            m_model->sendRaw(ServerId{sess.host}, "METADATA * SET display-name :" + displayName);
+            m_model->sendRaw(ServerId{sess.name}, "METADATA * SET display-name :" + displayName);
             const bool localPath = avatarUrl.startsWith('/') || QUrl(avatarUrl).isLocalFile();
             if (!localPath)
-                m_model->sendRaw(ServerId{sess.host}, "METADATA * SET avatar :" + avatarUrl);
+                m_model->sendRaw(ServerId{sess.name}, "METADATA * SET avatar :" + avatarUrl);
             sent << sess.name;
         }
         if (!avatarUrl.isEmpty()) fetchAvatar(avatarUrl);
@@ -1126,6 +1144,84 @@ void MainWindow::applyFontSizes()
     }
 }
 
+// Applies a font-size delta to whichever primary UI region currently has focus.
+//
+// Called by Ctrl++/Ctrl+- shortcuts. `delta` is normally +1 or -1 point. This
+// forwards to `adjustFontSizeForWidget`, which decides whether chat, sidebar,
+// or nick-list font settings should change.
+void MainWindow::adjustFocusedFontSize(int delta)
+{
+    adjustFontSizeForWidget(QApplication::focusWidget(), delta);
+}
+
+// Applies a font-size delta to the UI region that owns `widget`.
+//
+// Called by keyboard shortcuts and Ctrl+wheel event handling. `widget` may be a
+// child viewport, chat view, sidebar, nick list, or pane widget. The function
+// updates in-memory UI font sizes, reapplies fonts, and shows a transient
+// status message. It does not persist changes to config.
+void MainWindow::adjustFontSizeForWidget(QWidget *widget, int delta)
+{
+    // Treat focus/scroll events on child widgets as belonging to their owning
+    // region, such as a list viewport inside the sidebar.
+    auto ownsWidget = [widget](QWidget *owner) {
+        return owner && widget && (widget == owner || owner->isAncestorOf(widget));
+    };
+
+    QList<int *> fontSizes{
+        &m_config.ui.fontSizes.chat,
+        &m_config.ui.fontSizes.topicBar,
+        &m_config.ui.fontSizes.topicText,
+        &m_config.ui.fontSizes.inputNick,
+        &m_config.ui.fontSizes.input,
+    };
+    QString label = tr("Chat font size");
+
+    // The channel list/sidebar owns network and buffer navigation; zoom both
+    // channel rows and network headers so the tree remains visually coherent.
+    if (ownsWidget(m_sidebar)) {
+        fontSizes = {
+            &m_config.ui.fontSizes.sidebar,
+            &m_config.ui.fontSizes.serverHeader,
+        };
+        label = tr("Channel list font size");
+
+    // The active user list owns nickname inspection for the primary pane.
+    } else if (ownsWidget(m_nickList)) {
+        fontSizes = {&m_config.ui.fontSizes.nickList};
+        label = tr("User list font size");
+
+    // Extra panes have their own chat and user-list widgets.
+    } else {
+        for (ChannelPane *pane : std::as_const(m_orderedPanes)) {
+            if (ownsWidget(pane->nickList())) {
+                fontSizes = {&m_config.ui.fontSizes.nickList};
+                label = tr("User list font size");
+                break;
+            }
+            if (ownsWidget(pane->chatView())) {
+                label = tr("Chat font size");
+                break;
+            }
+        }
+    }
+
+    const int next = qBound(kMinChatFontPt, *fontSizes.first() + delta, kMaxChatFontPt);
+
+    // Clamp-bound requests are no-ops, keeping repeated shortcuts harmless.
+    if (next == *fontSizes.first())
+        return;
+
+    // Apply the same delta to every font size in the selected region so chat,
+    // topic, and input text remain visually synchronized.
+    for (int *fontSize : fontSizes)
+        *fontSize = qBound(kMinChatFontPt, *fontSize + delta, kMaxChatFontPt);
+
+    applyFontSizes();
+    statusBar()->show();
+    statusBar()->showMessage(tr("%1: %2 pt").arg(label).arg(next), 1800);
+}
+
 static QIcon makeMenuIcon(const QColor &color)
 {
     return MenuIcons::hamburger(color);
@@ -1140,6 +1236,7 @@ void MainWindow::setupSidebar()
 {
     m_sidebar = new QTreeWidget;
     m_sidebar->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_sidebar));
+    m_sidebar->viewport()->installEventFilter(this);
     m_sidebar->setHeaderHidden(true);
     m_sidebar->setRootIsDecorated(false);
     m_sidebar->setItemsExpandable(false);
@@ -1220,22 +1317,23 @@ void MainWindow::setupSidebar()
             const QList<ServerConfig> updated = dlg.servers();
             for (const ServerConfig &old : m_config.servers) {
                 const bool stillPresent = std::any_of(updated.begin(), updated.end(),
-                    [&](const ServerConfig &s){ return s.host == old.host; });
+                    [&](const ServerConfig &s){ return s.name == old.name; });
                 if (!stillPresent)
-                    m_model->removeServer(ServerId{old.host});
+                    m_model->removeServer(ServerId{old.name});
             }
             for (const ServerConfig &sc : updated) {
                 const ServerConfig *existing = nullptr;
                 for (const ServerConfig &old : m_config.servers)
-                    if (old.host == sc.host) { existing = &old; break; }
+                    if (old.name == sc.name) { existing = &old; break; }
                 if (!existing) {
                     m_model->addServer(sc);
                 } else if (*existing != sc) {
-                    m_model->updateServer(ServerId{existing->host}, sc);
+                    m_model->updateServer(ServerId{existing->name}, sc);
                 }
             }
             m_config.servers = updated;
             Config::save(m_config, Config::defaultPath(), true);
+            syncSidebarOrderFromConfig();
         });
         shBox->addWidget(m_serversBtn);
 
@@ -1280,6 +1378,7 @@ void MainWindow::setupNickPanel()
 {
     m_nickList = new QListWidget;
     m_nickList->setVerticalScrollBar(new FadeScrollBar(Qt::Vertical, m_nickList));
+    m_nickList->viewport()->installEventFilter(this);
     m_nickList->setSpacing(0);
     m_nickList->setUniformItemSizes(true);
     m_nickDelegate = new NickDelegate(m_nickList);
@@ -1564,6 +1663,7 @@ void MainWindow::setupChatArea()
     });
     connect(m_chatView, &ChatView::loadOlderRequested, this, &MainWindow::loadOlderMessages);
     m_chatView->installEventFilter(this);
+    m_chatView->viewport()->installEventFilter(this);
 
     m_linkPreview = new LinkPreview(this);
 
@@ -1584,11 +1684,14 @@ void MainWindow::setupChatArea()
     connect(m_linkPreview, &LinkPreview::cardReady, this,
             [this](const QUrl &pageUrl, const QString &title, const QPixmap &thumbnail){
         const QString urlStr = pageUrl.toString();
+        qDebug() << "[LP] cardReady received:" << urlStr << "title:" << title
+                 << "hasThumb:" << !thumbnail.isNull();
         m_previewWatchdog->stop();
         m_previewFetchBusy = false;
 
         auto it = m_previewChannels.find(urlStr);
         if (it == m_previewChannels.end()) {
+            qDebug() << "[LP] URL not in previewChannels, skipping";
             processPreviewQueue();
             return;
         }
@@ -1806,7 +1909,7 @@ void MainWindow::setupInputBar()
 
     m_emojiBtn = new QPushButton("😊");
     m_emojiBtn->setFixedSize(30, 30);
-    m_emojiBtn->setStyleSheet("QPushButton { padding: 0; font-size: 16px; }");
+    m_emojiBtn->setStyleSheet("QPushButton { padding: 0; font-size: 16px; background: transparent; border: none; }");
     m_emojiBtn->setVisible(m_showEmojiBtn);
     m_emojiBtn->setToolTip("Emoji picker");
 
@@ -1991,6 +2094,8 @@ void MainWindow::connectModel()
             [this](ServerId id){ onServerConnected(id.str()); });
     connect(m_model, &SessionModel::serverDisconnected, this,
             [this](ServerId id){ onServerDisconnected(id.str()); });
+    connect(m_model, &SessionModel::serverClosed, this,
+            [this](ServerId id){ onServerClosed(id.str()); });
     connect(m_model, &SessionModel::channelAdded, this,
             [this](ServerId h, BufferId ch){ onChannelAdded(h.str(), ch.str()); });
     connect(m_model, &SessionModel::channelRemoved, this,
@@ -2213,6 +2318,17 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (!m_chatView)
         return QMainWindow::eventFilter(obj, event);
+
+    if (event->type() == QEvent::Wheel) {
+        auto *wheel = static_cast<QWheelEvent *>(event);
+        if (wheel->modifiers() & Qt::ControlModifier) {
+            const int delta = wheel->angleDelta().y();
+            if (delta != 0) {
+                adjustFontSizeForWidget(qobject_cast<QWidget *>(obj), delta > 0 ? 1 : -1);
+                return true;
+            }
+        }
+    }
 
     if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
         auto *ke = static_cast<QKeyEvent *>(event);
@@ -2517,13 +2633,13 @@ void MainWindow::handleTabComplete(QPlainTextEdit *input, const QString &host, c
 
         if (prefix.startsWith('/')) {
             static const QStringList commands = {
-                "/away", "/back", "/ban", "/caps", "/clear", "/ctcp",
-                "/common",
-                "/deop", "/devoice", "/invite", "/j", "/join",
-                "/close", "/kick", "/last", "/lastmention", "/leave",
-                "/me", "/mentions", "/mode", "/motd", "/msg",
+                "/away", "/back", "/ban", "/caps", "/clear", "/connect", "/ctcp",
+                "/common", "/deop", "/devoice", "/disconnect", "/invite",
+                "/j", "/join", "/close", "/kick", "/last", "/lastmention",
+                "/leave", "/me", "/mentions", "/mode", "/motd", "/msg",
                 "/nick", "/notice", "/op", "/part", "/ping", "/time",
-                "/quit", "/quote", "/raw", "/search", "/sysinfo", "/topic",
+                "/quit", "/quote", "/raw", "/search", "/server", "/sysinfo",
+                "/topic",
                 "/unban", "/version", "/voice", "/whois",
             };
             for (const QString &cmd : commands)
@@ -2726,6 +2842,37 @@ void MainWindow::hideEmojiAutocomplete()
 // Sidebar helpers
 // ---------------------------------------------------------------------------
 
+void MainWindow::syncSidebarOrderToConfig()
+{
+    QList<ServerConfig> reordered;
+    for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
+        const QString host = m_sidebar->topLevelItem(i)->data(0, Qt::UserRole).toString();
+        for (const auto &sc : std::as_const(m_config.servers))
+            if (sc.name == host) { reordered.append(sc); break; }
+    }
+    if (reordered.size() == m_config.servers.size()) {
+        m_config.servers = reordered;
+        Config::save(m_config, Config::defaultPath(), true);
+    }
+}
+
+void MainWindow::syncSidebarOrderFromConfig()
+{
+    for (int ci = 0; ci < m_config.servers.size(); ++ci) {
+        const QString &name = m_config.servers[ci].name;
+        for (int si = ci; si < m_sidebar->topLevelItemCount(); ++si) {
+            if (m_sidebar->topLevelItem(si)->data(0, Qt::UserRole).toString() == name) {
+                if (si != ci) {
+                    auto *item = m_sidebar->takeTopLevelItem(si);
+                    m_sidebar->insertTopLevelItem(ci, item);
+                    item->setExpanded(true);
+                }
+                break;
+            }
+        }
+    }
+}
+
 QTreeWidgetItem *MainWindow::findServerItem(const QString &host) const
 {
     for (int i = 0; i < m_sidebar->topLevelItemCount(); ++i) {
@@ -2753,12 +2900,25 @@ QTreeWidgetItem *MainWindow::findChannelItem(const QString &host, const QString 
 // Model → UI slots
 // ---------------------------------------------------------------------------
 
+static QString shortNetworkName(const QString &host)
+{
+    QString h = host;
+    if (h.startsWith("irc.", Qt::CaseInsensitive))
+        h = h.mid(4);
+    const auto dot = h.lastIndexOf('.');
+    if (dot > 0)
+        h = h.left(dot);
+    return h;
+}
+
 void MainWindow::onServerAdded(const QString &host)
 {
     if (findServerItem(host)) return;
-    QString label = host;
+    QString label;
     for (const auto &sc : std::as_const(m_config.servers))
-        if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
+        if (sc.name == host && !sc.name.isEmpty()) { label = sc.name; break; }
+    if (label.isEmpty())
+        label = shortNetworkName(host);
     auto *item = new QTreeWidgetItem(m_sidebar);
     item->setText(0, label.toUpper());
     item->setData(0, Qt::UserRole,     host);
@@ -2835,6 +2995,33 @@ void MainWindow::onServerDisconnected(const QString &host)
     }
 }
 
+void MainWindow::onServerClosed(const QString &host)
+{
+    auto *srv = findServerItem(host);
+    if (!srv) return;
+
+    // Close any open panes for channels on this server
+    for (int i = srv->childCount() - 1; i >= 0; --i) {
+        const QString ch = srv->child(i)->data(0, Qt::UserRole + 1).toString();
+        closeChannelPane(host, ch);
+    }
+
+    // Prune per-channel caches for this server
+    const QString prefix = host + '\t';
+    for (auto it = m_scrollPositions.begin(); it != m_scrollPositions.end(); )
+        it = it.key().startsWith(prefix) ? m_scrollPositions.erase(it) : ++it;
+    for (auto it = m_renderStart.begin(); it != m_renderStart.end(); )
+        it = it.key().startsWith(prefix) ? m_renderStart.erase(it) : ++it;
+
+    const int idx = m_sidebar->indexOfTopLevelItem(srv);
+    delete m_sidebar->takeTopLevelItem(idx);
+
+    if (m_signalBars && host == m_model->activeHost().str())
+        m_signalBars->setState(SignalBars::State::Disconnected);
+
+    onSidebarSelectionChanged();
+}
+
 void MainWindow::onChannelAdded(const QString &host, const QString &channel)
 {
     if (findChannelItem(host, channel)) return;
@@ -2854,6 +3041,11 @@ void MainWindow::onChannelRemoved(const QString &host, const QString &channel)
     auto *item = findChannelItem(host, channel);
     if (item) delete item;
     closeChannelPane(host, channel);
+
+    const QString key = host + '\t' + channel;
+    m_scrollPositions.remove(key);
+    m_renderStart.remove(key);
+
     onSidebarSelectionChanged();
 }
 
@@ -2916,10 +3108,13 @@ void MainWindow::toggleEventGroupInView(ChatView *view, const QString &groupId,
     QList<Message> group(ch->messages.cbegin() + start, ch->messages.cbegin() + j);
 
     const bool expand = !m_expandedEventGroups.contains(groupId);
-    if (expand)
+    if (expand) {
+        if (m_expandedEventGroups.size() >= 200)
+            m_expandedEventGroups.clear();
         m_expandedEventGroups.insert(groupId);
-    else
+    } else {
         m_expandedEventGroups.remove(groupId);
+    }
 
     ChatRenderer::Context ctx;
     ctx.coloredNicks = m_config.ui.coloredNicks;
@@ -3165,9 +3360,11 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
     if (!item) return;
     QString label = channel;
     if (channel == "(server)") {
-        label = host;
+        label = QString();
         for (const auto &sc : std::as_const(m_config.servers))
-            if (sc.host == host && !sc.name.isEmpty()) { label = sc.name; break; }
+            if (sc.name == host && !sc.name.isEmpty()) { label = sc.name; break; }
+        if (label.isEmpty())
+            label = shortNetworkName(host);
     }
     if (channel == "(server)") {
         const bool connected = [&]{
@@ -3177,7 +3374,7 @@ void MainWindow::onUnreadChanged(const QString &host, const QString &channel, in
             const QColor col = count > 0 ? QColor("#e06c75") : QColor();
             item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::connectedServer(col)));
         }
-        item->setText(0, label);
+        item->setText(0, label.toUpper());
     } else {
         if (count > 0 && m_model->hasMention(ServerId{host}, BufferId{channel}))
             item->setData(0, Qt::UserRole + 2, QVariant::fromValue(MenuIcons::mention(QColor("#FFD700"))));
@@ -3538,6 +3735,11 @@ void MainWindow::switchToChannel(const QString &host, const QString &channel)
 
     setWindowTitle("Uplink — " + channel + " @ " + host);
     updateTypingLabel();
+
+    // Channel switches are conversation navigation; return typing focus to the
+    // active chat input so the next keystroke can send to the selected buffer.
+    if (m_input)
+        m_input->setFocus();
 }
 
 void MainWindow::openChannelList(const QString &host)
@@ -3605,6 +3807,29 @@ void MainWindow::onSidebarContextMenu(const QPoint &pos)
                     cl->reconnect();
             });
         }
+        menu->addAction("Close Server", this, [this, host]{
+            m_model->closeServer(ServerId{host});
+        });
+        menu->addSeparator();
+        const int idx = m_sidebar->indexOfTopLevelItem(item);
+        if (idx > 0) {
+            menu->addAction("Move Up", this, [this, idx]{
+                auto *moved = m_sidebar->takeTopLevelItem(idx);
+                m_sidebar->insertTopLevelItem(idx - 1, moved);
+                moved->setExpanded(true);
+                m_sidebar->setCurrentItem(moved);
+                syncSidebarOrderToConfig();
+            });
+        }
+        if (idx < m_sidebar->topLevelItemCount() - 1) {
+            menu->addAction("Move Down", this, [this, idx]{
+                auto *moved = m_sidebar->takeTopLevelItem(idx);
+                m_sidebar->insertTopLevelItem(idx + 1, moved);
+                moved->setExpanded(true);
+                m_sidebar->setCurrentItem(moved);
+                syncSidebarOrderToConfig();
+            });
+        }
     } else if (channel.startsWith('#') || channel.startsWith('&')) {
         const QString paneKey = host + "|" + channel.toLower();
         if (!m_panes.contains(paneKey)) {
@@ -3659,6 +3884,8 @@ void MainWindow::openChannelPane(const QString &host, const QString &channel)
                                     QColor(m_theme.border));
 
     pane->input()->installEventFilter(this);
+    pane->chatView()->viewport()->installEventFilter(this);
+    pane->nickList()->viewport()->installEventFilter(this);
     connect(pane->chatView(), &ChatView::anchorActivated, this,
             [this, pane](const QString &anchor, const QPoint &gp, Qt::MouseButton btn){
         if (anchor.startsWith(QLatin1String("evgrp:"))) {
@@ -4248,6 +4475,7 @@ void MainWindow::enqueuePreview(const QUrl &url, const QString &host, const QStr
     if (m_previewChannels.contains(key)) return;
     if (m_previewQueue.size() >= 10) return;
     if (m_previewChannels.size() >= 100) return;
+    qDebug() << "[LP] enqueue:" << key << "msgid:" << msgid;
     m_previewChannels.insert(key, {host, channel, msgid});
     m_previewQueue.enqueue(url);
     processPreviewQueue();
@@ -4676,7 +4904,7 @@ void MainWindow::refreshTopicBar(const QString &host, const QString &channel)
 
     QString serverName = host;
     for (const auto &sc : std::as_const(m_config.servers))
-        if (sc.host == host && !sc.name.isEmpty()) { serverName = sc.name; break; }
+        if (sc.name == host && !sc.name.isEmpty()) { serverName = sc.name; break; }
 
     if (channel == "(server)") {
         m_topicLabel->clear();
@@ -4765,7 +4993,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
                          msg.type == MessageType::Notice);
     if (autoPreview && isText) {
         static const QRegularExpression urlRe(
-            R"(https?://[^\s<>"]+)",
+            R"(https?://[^ \t\r\n<>"]+)",
             QRegularExpression::CaseInsensitiveOption);
         auto it = urlRe.globalMatch(msg.text);
         while (it.hasNext()) {

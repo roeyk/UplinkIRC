@@ -111,6 +111,28 @@ Removes a sent message from history and signals other clients to hide it. Requir
 - **Sending:** right-click a **timestamp** on your own message → **Delete**. Only available when the server has acknowledged the `draft/message-redaction` CAP.
 - **Receiving:** redacted messages are replaced with `[message deleted]` in grey italic. The message ID anchor is preserved so reply threading is not broken.
 
+**Server requirements (Ergo):** three settings must be present in `ircd.yaml`:
+
+```yaml
+datastore:
+  sqlite:
+    enabled: true
+    database-path: /var/db/ergo/history.db
+    busy-timeout: 5s
+    max-conns: 1
+
+history:
+  enabled: true
+  persistent:
+    enabled: true
+    registered-channels: opt-out
+    direct-messages: opt-out
+  retention:
+    allow-individual-delete: true  # must be under retention:, not directly under history:
+```
+
+The default Ergo package binary may not include SQLite support. If not, rebuild from source: `git clone https://github.com/ergochat/ergo && cd ergo && make build_full`.
+
 ### `account-notify`
 
 Notifies the client in real time when a user logs in or out of services (NickServ). When a nick's account changes, Uplink updates the account field stored for that nick across all shared channels. The account name is shown as a tooltip when you hover over a nick in the nick list.

@@ -52,6 +52,7 @@ public:
     void monitorStatus();
 
     QString currentNick() const { return m_nick; }
+    QString serverName()  const { return m_serverName; }
     QString host()        const { return m_host; }
     bool    isConnected() const;
     bool    hasCap(const QString &cap) const { return m_ackedCaps.contains(cap); }
@@ -174,6 +175,7 @@ private:
     QSslSocket  *m_socket;
     QWebSocket  *m_wsSocket{nullptr};
     bool         m_useWs{false};
+    QString      m_serverName;
     QString      m_host;
     quint16      m_port{6697};
     bool         m_ssl{true};

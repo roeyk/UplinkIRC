@@ -15,6 +15,17 @@ SessionModel::SessionModel(QObject *parent)
     : QObject(parent)
 {}
 
+static QString serverIdForConfig(const ServerConfig &sc)
+{
+    return sc.name.isEmpty() ? sc.host : sc.name;
+}
+
+static QString clientServerId(const IrcClient *client)
+{
+    const QString id = client->property("serverId").toString();
+    return id.isEmpty() ? client->host() : id;
+}
+
 // Reads a server password from a local file just before connecting.
 //
 // Called by `resolveAndConnect` for Halloy-compatible `password_file` support.
@@ -68,8 +79,15 @@ static QString passwordForBouncer(const ServerConfig &server, const QString &pas
     if (password.contains(u':'))
         return password;
 
-    // ZNC's common form is username/network:password. Reuse the configured
-    // `user` field when it already names a ZNC network.
+    // ZNC's common form is username/network:password. Prefer assembling it
+    // from a plain IRC username plus an explicit bouncer network so the USER
+    // command can stay valid for IRC.
+    if (!server.bouncerNetwork.isEmpty())
+        return server.user + QStringLiteral("/") + server.bouncerNetwork
+               + QStringLiteral(":") + password;
+
+    // Backward-compatibility for configs that already encode user/network in
+    // the `user` field.
     if (server.user.contains(u'/'))
         return server.user + QStringLiteral(":") + password;
 
@@ -98,7 +116,7 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
         // are sent.
         if (filePassword.isEmpty()) {
             emit client->socketError(
-                shared->host,
+                serverIdForConfig(*shared),
                 "Password file could not be read for \"" + shared->name + "\"");
             return;
         }
@@ -133,7 +151,7 @@ static void resolveAndConnect(IrcClient *client, ServerConfig sc)
                 fill(&ServerConfig::nickservPassword, 2);
                 fill(&ServerConfig::proxyPass,        3);
             } else {
-                emit guard->socketError(shared->host,
+                emit guard->socketError(serverIdForConfig(*shared),
                     "Keychain: no credentials stored for \"" + shared->name +
                     "\" — open Edit Server and re-save");
             }
@@ -169,20 +187,30 @@ static QRegularExpression buildHighlightRe(const QString &words)
     return QRegularExpression(parts.join('|'), QRegularExpression::CaseInsensitiveOption);
 }
 
+static QString sanitizeFilename(QString s)
+{
+    const QString bad = QStringLiteral("/\\:*?\"<>|");
+    for (QChar c : bad)
+        s.replace(c, '_');
+    return s;
+}
+
 void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
 {
     if (addToConfig)
         m_config.servers.append(sc);
 
+    const QString serverId = serverIdForConfig(sc);
     ServerSession sess;
     sess.name        = sc.name;
-    sess.host        = sc.host;
+    sess.host        = serverId;
     sess.nick        = sc.nick;
     sess.highlightRe = buildHighlightRe(m_config.ui.highlightWords);
     m_sessions.append(sess);
-    emit serverAdded(ServerId{sc.host});
+    emit serverAdded(ServerId{serverId});
 
     auto *client = new IrcClient(this);
+    client->setProperty("serverId", serverId);
     attachClient(client, sc);
     m_clients.append(client);
     resolveAndConnect(client, sc);
@@ -193,6 +221,18 @@ void SessionModel::loadConfig(const Config &cfg)
     m_config = cfg;
     for (const auto &entry : cfg.ignoreList)
         m_ignoredNicks.insert(entry.nick, entry.flags);
+
+    // Migrate log dirs from hostname-based to name-based layout
+    const QString logsBase = QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                             + "/.config/uplink/logs/";
+    for (const ServerConfig &sc : cfg.servers) {
+        if (sc.name.isEmpty() || sc.name == sc.host) continue;
+        const QString oldDir = logsBase + sanitizeFilename(sc.host);
+        const QString newDir = logsBase + sanitizeFilename(sc.name);
+        if (QDir(oldDir).exists() && !QDir(newDir).exists())
+            QDir().rename(oldDir, newDir);
+    }
+
     for (const ServerConfig &sc : cfg.servers)
         if (!sc.disabled)
             spawnSession(sc, false);
@@ -281,13 +321,7 @@ void SessionModel::monitorStatus(ServerId host)
 // Logging
 // ---------------------------------------------------------------------------
 
-static QString sanitizeFilename(QString s)
-{
-    const QString bad = QStringLiteral("/\\:*?\"<>|");
-    for (QChar c : bad)
-        s.replace(c, '_');
-    return s;
-}
+
 
 void SessionModel::logMessage(const QString &host, const QString &target, const Message &msg)
 {
@@ -352,7 +386,7 @@ void SessionModel::addServer(const ServerConfig &sc)
 void SessionModel::removeServer(ServerId host)
 {
     for (int i = 0; i < m_clients.size(); ++i) {
-        if (m_clients[i]->host() == host.str()) {
+        if (clientServerId(m_clients[i]) == host.str()) {
             m_clients[i]->quit("Removed");
             m_clients[i]->deleteLater();
             m_clients.removeAt(i);
@@ -360,7 +394,7 @@ void SessionModel::removeServer(ServerId host)
         }
     }
     m_sessions.removeIf([&](const ServerSession &s){ return s.host == host.str(); });
-    m_config.servers.removeIf([&](const ServerConfig &s){ return s.host == host.str(); });
+    m_config.servers.removeIf([&](const ServerConfig &s){ return serverIdForConfig(s) == host.str(); });
     emit serverDisconnected(host);
 
     const QString hostSeg = "/" + sanitizeFilename(host.str()) + "/";
@@ -375,22 +409,48 @@ void SessionModel::removeServer(ServerId host)
     }
 }
 
+void SessionModel::closeServer(ServerId host)
+{
+    for (int i = 0; i < m_clients.size(); ++i) {
+        if (clientServerId(m_clients[i]) == host.str()) {
+            m_clients[i]->quit("Closing");
+            m_clients[i]->deleteLater();
+            m_clients.removeAt(i);
+            break;
+        }
+    }
+    m_sessions.removeIf([&](const ServerSession &s){ return s.host == host.str(); });
+
+    const QString hostSeg = "/" + sanitizeFilename(host.str()) + "/";
+    for (auto it = m_logFiles.begin(); it != m_logFiles.end(); ) {
+        if (it.key().contains(hostSeg)) {
+            it.value()->close();
+            delete it.value();
+            it = m_logFiles.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    emit serverClosed(host);
+}
+
+bool SessionModel::connectServer(ServerId host)
+{
+    if (session(host)) return true;
+    for (const auto &sc : std::as_const(m_config.servers)) {
+        if (serverIdForConfig(sc) == host.str() || sc.host == host.str()) {
+            spawnSession(sc, false);
+            return true;
+        }
+    }
+    return false;
+}
+
 void SessionModel::updateServer(ServerId oldHost, const ServerConfig &sc)
 {
     removeServer(oldHost);
     addServer(sc);
-}
-
-void SessionModel::syncServers(const QList<ServerConfig> &servers)
-{
-    for (const ServerConfig &sc : servers) {
-        for (ServerConfig &existing : m_config.servers) {
-            if (existing.host == sc.host) {
-                existing.channels = sc.channels;
-                break;
-            }
-        }
-    }
 }
 
 void SessionModel::closeBuffer(ServerId host, BufferId target)
@@ -401,7 +461,7 @@ void SessionModel::closeBuffer(ServerId host, BufferId target)
     const bool isChannel = target.str().startsWith('#') || target.str().startsWith('&');
     if (isChannel) {
         for (IrcClient *cl : m_clients)
-            if (cl->host() == host.str()) { cl->part(target.str()); break; }
+            if (clientServerId(cl) == host.str()) { cl->part(target.str()); break; }
     }
 
     sess->channels.remove(target.str().toLower());
@@ -434,7 +494,7 @@ Channel *SessionModel::channel(ServerId host, BufferId name)
 IrcClient *SessionModel::clientFor(ServerId host)
 {
     for (IrcClient *cl : m_clients)
-        if (cl->host() == host.str()) return cl;
+        if (clientServerId(cl) == host.str()) return cl;
     return nullptr;
 }
 
@@ -564,138 +624,233 @@ void SessionModel::setActive(ServerId host, BufferId ch)
 
 void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
 {
-    connect(cl, &IrcClient::connected,       this, &SessionModel::onConnected);
-    connect(cl, &IrcClient::disconnected,    this, &SessionModel::onDisconnected);
-    connect(cl, &IrcClient::socketError,     this, &SessionModel::onSocketError);
-    connect(cl, &IrcClient::messageReceived, this, &SessionModel::onMessage);
-    connect(cl, &IrcClient::noticeReceived,  this, &SessionModel::onNotice);
-    connect(cl, &IrcClient::actionReceived,  this, &SessionModel::onAction);
+    const QString serverId = serverIdForConfig(cfg);
+    connect(cl, &IrcClient::connected, this,
+            [this, serverId](const QString &) { onConnected(serverId); });
+    connect(cl, &IrcClient::disconnected, this,
+            [this, serverId](const QString &) { onDisconnected(serverId); });
+    connect(cl, &IrcClient::socketError, this,
+            [this, serverId](const QString &, const QString &error) { onSocketError(serverId, error); });
+    connect(cl, &IrcClient::messageReceived, this,
+            [this, serverId](const QString &, const QString &target, const QString &nick,
+                             const QString &text, const QDateTime &serverTime, bool isHistory,
+                             const QString &msgid, const QString &replyTo) {
+                onMessage(serverId, target, nick, text, serverTime, isHistory, msgid, replyTo);
+            });
+    connect(cl, &IrcClient::noticeReceived, this,
+            [this, serverId](const QString &, const QString &target, const QString &nick,
+                             const QString &text, const QDateTime &serverTime, bool isHistory,
+                             const QString &msgid, const QString &replyTo) {
+                onNotice(serverId, target, nick, text, serverTime, isHistory, msgid, replyTo);
+            });
+    connect(cl, &IrcClient::actionReceived, this,
+            [this, serverId](const QString &, const QString &target, const QString &nick,
+                             const QString &text, const QDateTime &serverTime, bool isHistory,
+                             const QString &msgid) {
+                onAction(serverId, target, nick, text, serverTime, isHistory, msgid);
+            });
     connect(cl, &IrcClient::bouncerNetworkReceived, this,
-            [this](const QString &host, const QString &id,
+            [this, serverId](const QString &, const QString &id,
                    const QString &name, bool connected){
         Q_UNUSED(id)
         // live state-change update (not the initial listing)
-        postMessage(host, "(server)",
+        postMessage(serverId, "(server)",
             Message::make(MessageType::Server, "",
                 QString("Bouncer network: %1 [%2]").arg(name, connected ? "connected" : "offline")));
     });
     connect(cl, &IrcClient::bouncerNetworksListed, this,
-            [this](const QString &host, const QList<QStringList> &networks) {
+            [this, serverId](const QString &, const QList<QStringList> &networks) {
         if (networks.isEmpty()) {
-            postMessage(host, "(server)",
+            postMessage(serverId, "(server)",
                 Message::make(MessageType::Server, "", "Bouncer: no networks configured."));
             return;
         }
-        postMessage(host, "(server)",
+        postMessage(serverId, "(server)",
             Message::make(MessageType::Server, "", "Bouncer networks:"));
         for (const QStringList &n : networks) {
             const QString name  = n.value(1).isEmpty() ? n.value(0) : n.value(1);
             const QString state = n.value(2);
             const QString line  = QString("  %1  [%2]").arg(name, -24).arg(state);
-            postMessage(host, "(server)", Message::make(MessageType::Server, "", line));
+            postMessage(serverId, "(server)", Message::make(MessageType::Server, "", line));
         }
     });
     connect(cl, &IrcClient::readMarkerReceived, this,
-            [this](const QString &host, const QString &target, const QDateTime &ts){
-        if (auto *ch = channel(ServerId{host}, BufferId{target}))
+            [this, serverId](const QString &, const QString &target, const QDateTime &ts){
+        if (auto *ch = channel(ServerId{serverId}, BufferId{target}))
             ch->lastRead = ts;
     });
-    connect(cl, &IrcClient::userJoined,      this, &SessionModel::onUserJoined);
-    connect(cl, &IrcClient::userParted,      this, &SessionModel::onUserParted);
-    connect(cl, &IrcClient::userQuit,        this, &SessionModel::onUserQuit);
-    connect(cl, &IrcClient::netsplitDetected, this, &SessionModel::onNetsplitDetected);
-    connect(cl, &IrcClient::netjoinDetected,  this, &SessionModel::onNetjoinDetected);
-    connect(cl, &IrcClient::standardReply,    this, &SessionModel::onStandardReply);
-    connect(cl, &IrcClient::nickChanged,     this, &SessionModel::onNickChanged);
-    connect(cl, &IrcClient::kicked,          this, &SessionModel::onKicked);
-    connect(cl, &IrcClient::topicReceived,    this, &SessionModel::onTopicReceived);
+    connect(cl, &IrcClient::userJoined, this,
+            [this, serverId](const QString &, const QString &channel, const QString &nick,
+                             const QString &user, const QString &hostAddr) {
+                onUserJoined(serverId, channel, nick, user, hostAddr);
+            });
+    connect(cl, &IrcClient::userParted, this,
+            [this, serverId](const QString &, const QString &channel, const QString &nick,
+                             const QString &user, const QString &hostAddr, const QString &reason) {
+                onUserParted(serverId, channel, nick, user, hostAddr, reason);
+            });
+    connect(cl, &IrcClient::userQuit, this,
+            [this, serverId](const QString &, const QString &nick, const QString &user,
+                             const QString &hostAddr, const QString &reason) {
+                onUserQuit(serverId, nick, user, hostAddr, reason);
+            });
+    connect(cl, &IrcClient::netsplitDetected, this,
+            [this, serverId](const QString &, const QString &servers, const QStringList &nicks) {
+                onNetsplitDetected(serverId, servers, nicks);
+            });
+    connect(cl, &IrcClient::netjoinDetected, this,
+            [this, serverId](const QString &, const QString &servers,
+                             const QStringList &channels, const QStringList &nicks) {
+                onNetjoinDetected(serverId, servers, channels, nicks);
+            });
+    connect(cl, &IrcClient::standardReply, this,
+            [this, serverId](const QString &, const QString &channel,
+                             const QString &severity, const QString &text) {
+                onStandardReply(serverId, channel, severity, text);
+            });
+    connect(cl, &IrcClient::nickChanged, this,
+            [this, serverId](const QString &, const QString &oldNick, const QString &newNick) {
+                onNickChanged(serverId, oldNick, newNick);
+            });
+    connect(cl, &IrcClient::kicked, this,
+            [this, serverId](const QString &, const QString &channel, const QString &nick,
+                             const QString &by, const QString &reason) {
+                onKicked(serverId, channel, nick, by, reason);
+            });
+    connect(cl, &IrcClient::topicReceived, this,
+            [this, serverId](const QString &, const QString &channel, const QString &topic) {
+                onTopicReceived(serverId, channel, topic);
+            });
     connect(cl, &IrcClient::topicSetByReceived, this,
-            [this](const QString &host, const QString &channel,
+            [this, serverId](const QString &, const QString &channel,
                    const QString &setter, quint64 ts) {
-        auto *sess = session(ServerId{host});
+        auto *sess = session(ServerId{serverId});
         if (!sess) return;
         auto &ch = sess->getOrCreate(channel);
         ch.topicSetBy = setter;
         ch.topicSetAt = ts;
-        emit topicSetByChanged(ServerId{host}, BufferId{channel}, setter, ts);
+        emit topicSetByChanged(ServerId{serverId}, BufferId{channel}, setter, ts);
     });
     connect(cl, &IrcClient::awayChanged, this,
-            [this](const QString &host, bool away) {
-        auto *sess = session(ServerId{host});
+            [this, serverId](const QString &, bool away) {
+        auto *sess = session(ServerId{serverId});
         if (sess) sess->away = away;
-        emit awayStatusChanged(ServerId{host}, away);
+        emit awayStatusChanged(ServerId{serverId}, away);
     });
-    connect(cl, &IrcClient::modesReceived,   this, &SessionModel::onModesReceived);
-    connect(cl, &IrcClient::namesReceived,   this, &SessionModel::onNamesReceived);
-    connect(cl, &IrcClient::whoEntryReceived,this, &SessionModel::onWhoEntry);
-    connect(cl, &IrcClient::serverMessage,     this, &SessionModel::onServerMessage);
-    connect(cl, &IrcClient::errorMessage,      this, &SessionModel::onErrorMessage);
-    connect(cl, &IrcClient::contextualMessage, this, &SessionModel::onContextualMessage);
+    connect(cl, &IrcClient::modesReceived, this,
+            [this, serverId](const QString &, const QString &channel, const QString &modes) {
+                onModesReceived(serverId, channel, modes);
+            });
+    connect(cl, &IrcClient::namesReceived, this,
+            [this, serverId](const QString &, const QString &channel, const QStringList &nicks) {
+                onNamesReceived(serverId, channel, nicks);
+            });
+    connect(cl, &IrcClient::whoEntryReceived, this,
+            [this, serverId](const QString &, const QString &channel, const QString &nick,
+                             const QString &flags) {
+                onWhoEntry(serverId, channel, nick, flags);
+            });
+    connect(cl, &IrcClient::serverMessage, this,
+            [this, serverId](const QString &, const QString &text) { onServerMessage(serverId, text); });
+    connect(cl, &IrcClient::errorMessage, this,
+            [this, serverId](const QString &, const QString &text) { onErrorMessage(serverId, text); });
+    connect(cl, &IrcClient::contextualMessage, this,
+            [this, serverId](const QString &, const QString &text) { onContextualMessage(serverId, text); });
     connect(cl, &IrcClient::wallopsReceived, this,
-            [this](const QString &host, const QString &nick, const QString &text){
-        const QString line = "[" + (nick.isEmpty() ? host : nick) + "] " + text;
-        postMessage(host, "(server)", Message::make(MessageType::Wallops, nick, line));
+            [this, serverId](const QString &, const QString &nick, const QString &text){
+        const QString line = "[" + (nick.isEmpty() ? serverId : nick) + "] " + text;
+        postMessage(serverId, "(server)", Message::make(MessageType::Wallops, nick, line));
     });
-    connect(cl, &IrcClient::ctcpPingReply,     this, &SessionModel::onCtcpPingReply);
-    connect(cl, &IrcClient::ctcpTimeReply,   this, &SessionModel::onCtcpTimeReply);
-    connect(cl, &IrcClient::selfNickChanged, this, &SessionModel::onSelfNickChanged);
+    connect(cl, &IrcClient::ctcpPingReply, this,
+            [this, serverId](const QString &, const QString &nick, qint64 ms) {
+                onCtcpPingReply(serverId, nick, ms);
+            });
+    connect(cl, &IrcClient::ctcpTimeReply, this,
+            [this, serverId](const QString &, const QString &nick, const QString &timeStr) {
+                onCtcpTimeReply(serverId, nick, timeStr);
+            });
+    connect(cl, &IrcClient::selfNickChanged, this,
+            [this, serverId](const QString &, const QString &nick) { onSelfNickChanged(serverId, nick); });
     connect(cl, &IrcClient::typingReceived, this,
-            [this](const QString &h, const QString &ch, const QString &nick, const QString &state){
-        emit typingReceived(ServerId{h}, BufferId{ch}, nick, state);
+            [this, serverId](const QString &, const QString &ch, const QString &nick, const QString &state){
+        emit typingReceived(ServerId{serverId}, BufferId{ch}, nick, state);
     });
     connect(cl, &IrcClient::dccSendReceived, this,
-            [this](const QString &h, const QString &nick, const QString &fn,
+            [this, serverId](const QString &, const QString &nick, const QString &fn,
                    quint32 ip, quint16 port, qint64 fs){
-        emit dccSendReceived(ServerId{h}, nick, fn, ip, port, fs);
+        emit dccSendReceived(ServerId{serverId}, nick, fn, ip, port, fs);
     });
     connect(cl, &IrcClient::dccPassiveOfferReceived, this,
-            [this](const QString &h, const QString &nick, const QString &fn,
+            [this, serverId](const QString &, const QString &nick, const QString &fn,
                    quint32 ip, qint64 fs, const QString &tok){
-        emit dccPassiveOfferReceived(ServerId{h}, nick, fn, ip, fs, tok);
+        emit dccPassiveOfferReceived(ServerId{serverId}, nick, fn, ip, fs, tok);
     });
     connect(cl, &IrcClient::dccPassiveSendReply, this,
-            [this](const QString &h, const QString &nick, const QString &fn,
+            [this, serverId](const QString &, const QString &nick, const QString &fn,
                    quint32 ip, quint16 port, qint64 fs, const QString &tok){
-        emit dccPassiveSendReply(ServerId{h}, nick, fn, ip, port, fs, tok);
+        emit dccPassiveSendReply(ServerId{serverId}, nick, fn, ip, port, fs, tok);
     });
     connect(cl, &IrcClient::sslFingerprintPrompt, this,
-            [this](const QString &h, const QString &fp){
-        emit sslFingerprintPrompt(ServerId{h}, fp);
+            [this, serverId](const QString &, const QString &fp){
+        emit sslFingerprintPrompt(ServerId{serverId}, fp);
     });
     connect(cl, &IrcClient::pingRtt, this,
-            [this](const QString &h, int ms){ emit pingRtt(ServerId{h}, ms); });
+            [this, serverId](const QString &, int ms){ emit pingRtt(ServerId{serverId}, ms); });
     connect(cl, &IrcClient::reconnecting, this,
-            [this](const QString &h){ emit serverReconnecting(ServerId{h}); });
+            [this, serverId](const QString &){ emit serverReconnecting(ServerId{serverId}); });
     connect(cl, &IrcClient::channelListEntry, this,
-            [this](const QString &h, const QString &ch, int users, const QString &topic){
-        emit channelListEntry(ServerId{h}, BufferId{ch}, users, topic);
+            [this, serverId](const QString &, const QString &ch, int users, const QString &topic){
+        emit channelListEntry(ServerId{serverId}, BufferId{ch}, users, topic);
     });
     connect(cl, &IrcClient::channelListEnd, this,
-            [this](const QString &h, int total){ emit channelListEnd(ServerId{h}, total); });
-    connect(cl, &IrcClient::hostChanged,     this, &SessionModel::onHostChanged);
-    connect(cl, &IrcClient::reactReceived,   this, &SessionModel::onReactReceived);
-    connect(cl, &IrcClient::accountChanged,  this, &SessionModel::onAccountChanged);
-    connect(cl, &IrcClient::messageRedacted, this, &SessionModel::onMessageRedacted);
-    connect(cl, &IrcClient::inviteNotify,    this, &SessionModel::onInviteNotify);
-    connect(cl, &IrcClient::setNameReceived, this, &SessionModel::onSetNameReceived);
-    connect(cl, &IrcClient::monitorOnline,   this, &SessionModel::onMonitorOnline);
-    connect(cl, &IrcClient::monitorOffline,  this, &SessionModel::onMonitorOffline);
+            [this, serverId](const QString &, int total){ emit channelListEnd(ServerId{serverId}, total); });
+    connect(cl, &IrcClient::hostChanged, this,
+            [this, serverId](const QString &, const QString &nick, const QString &newUser, const QString &newHost) {
+                onHostChanged(serverId, nick, newUser, newHost);
+            });
+    connect(cl, &IrcClient::reactReceived, this,
+            [this, serverId](const QString &, const QString &target, const QString &nick,
+                             const QString &msgid, const QString &emoji) {
+                onReactReceived(serverId, target, nick, msgid, emoji);
+            });
+    connect(cl, &IrcClient::accountChanged, this,
+            [this, serverId](const QString &, const QString &nick, const QString &account) {
+                onAccountChanged(serverId, nick, account);
+            });
+    connect(cl, &IrcClient::messageRedacted, this,
+            [this, serverId](const QString &, const QString &senderNick, const QString &target,
+                             const QString &msgid, const QString &reason) {
+                onMessageRedacted(serverId, senderNick, target, msgid, reason);
+            });
+    connect(cl, &IrcClient::inviteNotify, this,
+            [this, serverId](const QString &, const QString &inviter, const QString &channel,
+                             const QString &targetNick) {
+                onInviteNotify(serverId, inviter, channel, targetNick);
+            });
+    connect(cl, &IrcClient::setNameReceived, this,
+            [this, serverId](const QString &, const QString &nick, const QString &realname) {
+                onSetNameReceived(serverId, nick, realname);
+            });
+    connect(cl, &IrcClient::monitorOnline, this,
+            [this, serverId](const QString &, const QStringList &nicks) { onMonitorOnline(serverId, nicks); });
+    connect(cl, &IrcClient::monitorOffline, this,
+            [this, serverId](const QString &, const QStringList &nicks) { onMonitorOffline(serverId, nicks); });
     connect(cl, &IrcClient::userMetaChanged, this,
-            [this](const QString &h, const QString &nick, const QString &key, const QString &val){
-        onUserMetaChanged(ServerId{h}, nick, key, val);
+            [this, serverId](const QString &, const QString &nick, const QString &key, const QString &val){
+        onUserMetaChanged(ServerId{serverId}, nick, key, val);
     });
 
     if (!m_config.monitorList.isEmpty())
         cl->setMonitorList(m_config.monitorList);
 
     // Pre-create server buffer and configured channels in the session
-    auto *sess = session(ServerId{cfg.host});
+    auto *sess = session(ServerId{serverId});
     if (!sess) return;
     sess->serverBuffer(); // ensure "(server)" exists
     for (const auto &ch : cfg.channels) {
         auto &c  = sess->getOrCreate(ch.name);
         c.name   = ch.name;
-        emit channelAdded(ServerId{cfg.host}, BufferId{ch.name});
+        emit channelAdded(ServerId{serverId}, BufferId{ch.name});
     }
 }
 
@@ -745,13 +900,13 @@ void SessionModel::onConnected(const QString &host)
 
     IrcClient *cl = nullptr;
     for (IrcClient *c : m_clients)
-        if (c->host() == host) { cl = c; break; }
+        if (clientServerId(c) == host) { cl = c; break; }
     if (!cl) return;
 
     // Join configured channels (with keys)
     QSet<QString> configChans;
     for (const ServerConfig &sc : m_config.servers) {
-        if (sc.host != host) continue;
+        if (serverIdForConfig(sc) != host) continue;
         for (const ChannelConfig &cc : sc.channels) {
             cl->join(cc.name, cc.password);
             configChans.insert(cc.name.toLower());
@@ -1329,7 +1484,7 @@ void SessionModel::onMonitorOffline(const QString &host, const QStringList &nick
 void SessionModel::pinCertificate(ServerId host, const QString &fingerprint)
 {
     for (auto &sc : m_config.servers) {
-        if (sc.host == host.str()) {
+        if (serverIdForConfig(sc) == host.str()) {
             sc.pinnedFingerprint = fingerprint;
             Config::save(m_config, Config::defaultPath());
             break;

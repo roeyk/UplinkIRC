@@ -327,7 +327,9 @@ void ChatView::contextMenuEvent(QContextMenuEvent *e)
 
 int ChatView::wrapWidth() const
 {
-    return qMax(1, viewport()->width() - kHPad * 2);
+    const int sbW = verticalScrollBar()->sizeHint().width();
+    const int reserved = viewport()->width() - sbW - kHPad * 2;
+    return qMax(1, reserved);
 }
 
 int ChatView::hangWidth() const

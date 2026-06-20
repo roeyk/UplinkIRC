@@ -10,7 +10,7 @@ accent       = "#A0A7D2"
 
 [sidebar]
 background   = "#E8E8E8"
-text         = "#B8B8B8"
+text         = "#686868"
 active       = "#383838"
 unread       = "#A0A7D2"
 mention      = "#FA8480"
@@ -31,7 +31,7 @@ keyword      = "#FFAA61"
 
 [nicklist]
 background   = "#E8E8E8"
-text         = "#B8B8B8"
+text         = "#686868"
 op           = "#A0A7D2"
 halfop       = "#C8A0D2"
 voice        = "#A0D2C8"
