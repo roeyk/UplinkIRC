@@ -1,5 +1,44 @@
 # Keyboard Shortcuts
 
+All shortcuts use **Ctrl** on Linux and Windows. On macOS, **Ctrl** maps to **Cmd** and **Alt** maps to **Option** automatically.
+
+---
+
+## Quick reference
+
+| Shortcut | Action |
+|---|---|
+| **Ctrl+K** | Quick channel switcher |
+| **Alt+Up / Down** | Previous / next channel |
+| **Alt+Left / Right** | Previous / next pane |
+| **Ctrl+F** | Search current buffer |
+| **Ctrl+W** | Minimize to tray |
+| **Ctrl+B / I / U / S** | Bold / italic / underline / strikethrough |
+| **Ctrl+O** | Clear all formatting |
+| **Ctrl+Plus / Minus** | Zoom font in / out |
+| **Tab** | Complete nick or command |
+| **Enter** | Send message |
+| **Shift+Enter** | Insert newline |
+| **Escape** | Cancel reply, close search, or dismiss emoji list |
+
+---
+
+## Navigation
+
+Navigate between channels and panes without touching the mouse. These shortcuts work from any focused widget — the input box, nick list, or anywhere else.
+
+| Shortcut | Action |
+|---|---|
+| **Ctrl+K** | Quick channel switcher — type to filter, Enter to jump |
+| **Alt+Up** | Switch to the previous channel in the sidebar |
+| **Alt+Down** | Switch to the next channel in the sidebar |
+| **Alt+Left** | Switch to the previous open pane |
+| **Alt+Right** | Switch to the next open pane |
+
+**Ctrl+K** opens a floating search popup listing all joined channels. Start typing to filter by channel name or server — the list narrows as you type. Use Up/Down to select and Enter to switch. Press Escape to dismiss.
+
+Alt+arrow shortcuts wrap around — pressing Alt+Down on the last channel jumps back to the first.
+
 ---
 
 ## Message input
@@ -7,109 +46,96 @@
 | Shortcut | Action |
 |---|---|
 | **Enter** | Send the message |
-| **Shift+Enter** | Insert a newline — compose a multi-line message; press **Enter** to send when done |
-| **Up Arrow** | Cycle back through previously sent messages (message history). When composing a multi-line message, moves the cursor up within the text; history navigation activates only from the first line. |
-| **Down Arrow** | Cycle forward through message history. When composing multi-line, moves cursor down within the text; history navigation activates only from the last line. |
-| **Tab** | Nick completion at the cursor — press repeatedly to cycle through all matches in alphabetical order. Also completes slash commands: typing `/pi` and pressing Tab expands to `/ping`. |
-| **Shift+Tab** | Cycle backwards through nick completions |
-| **Escape** | Cancel a pending reply (when the `↩ nick` reply bar is showing above the input) |
+| **Shift+Enter** | Insert a newline (multi-line compose) |
+| **Up Arrow** | Previous message in send history (from the first line only) |
+| **Down Arrow** | Next message in send history (from the last line only) |
+| **Tab** | Complete the nick or command at the cursor — press again to cycle |
+| **Shift+Tab** | Cycle backwards through completions |
+| **Escape** | Cancel a pending reply |
 
-### Text formatting shortcuts
+### Tab completion
 
-Apply mIRC formatting in the input box. Formatting is applied **visually as you type** — bold text looks bold, italic looks italic. The IRC control codes are generated automatically when you send the message. A small indicator (`B I U S`) appears at the bottom-left of the input showing which formats are currently active.
+Tab completion works anywhere in the line. Type a few letters and press Tab to complete to the first matching nick in the channel. Press Tab again to cycle alphabetically through all matches.
 
-| Shortcut | Format | Effect |
-|---|---|---|
-| **Ctrl+B** | Bold | Toggles bold on/off at the cursor position |
-| **Ctrl+I** | Italic | Toggles italic on/off at the cursor position |
-| **Ctrl+U** | Underline | Toggles underline on/off at the cursor position |
-| **Ctrl+S** | Strikethrough | Toggles strikethrough on/off at the cursor position |
-| **Ctrl+O** | Reset | Clears all active formatting at once |
+At the start of a message, a colon is appended automatically (`alice:`) following IRC convention. Mid-sentence, no colon is added.
 
-Shortcuts **stack** — press Ctrl+B then Ctrl+U to type bold+underlined text. Press the same shortcut again to turn that format off while keeping others active.
-
-**Example:** to send `This is **important** now`:
-
-```
-This is [Ctrl+B]important[Ctrl+B] now
-```
-
-**Example:** bold and underlined at the same time:
-
-```
-[Ctrl+B][Ctrl+U]really important[Ctrl+O]
-```
-
-Use `Ctrl+O` to reset all formatting at once instead of toggling each one off individually.
-
-### Nick completion detail
-
-Tab completion works anywhere in the line, not just at the start. If you type `hey ali` and press Tab, it completes `ali` to the first nick starting with those letters in the current channel. Pressing Tab again cycles to the next match.
-
-For the first word in a message, a `:` is appended automatically — `alice:` — following the IRC convention for addressing someone. For subsequent words, no colon is added.
-
-Slash command completion works the same way:
+Slash commands complete the same way:
 
 ```
 /pi     → Tab →  /ping
 /mo     → Tab →  /mode  → Tab →  /monitor  → Tab →  /motd
 ```
 
----
+### Text formatting
 
-## Interface
+Apply mIRC formatting as you type. The input box shows formatted text live — bold looks bold, italic looks italic. IRC control codes are generated when you send. A small `B I U S` indicator at the bottom-left of the input shows which formats are active.
 
-| Shortcut | Action |
+| Shortcut | Format |
 |---|---|
-| **Ctrl+W** | Minimize to system tray — Uplink keeps running in the background; left-click the tray icon to restore the window |
-| **Close button (×)** | Same as Ctrl+W — minimizes to tray rather than quitting |
-| **Ctrl+F** | Open the message search bar in the current buffer |
-| **Ctrl+Plus** / **Ctrl+=** | Increase font size by 0.5 pt for the focused UI region |
-| **Ctrl+Minus** | Decrease font size by 0.5 pt for the focused UI region |
-| **Ctrl+Scroll wheel** | Zoom font size for the UI region under the cursor (0.5 pt per tick) |
-| **Escape** (search bar open) | Close the search bar and clear the highlight |
-| **Escape** (reply pending) | Cancel the pending reply without sending |
+| **Ctrl+B** | Toggle bold |
+| **Ctrl+I** | Toggle italic |
+| **Ctrl+U** | Toggle underline |
+| **Ctrl+S** | Toggle strikethrough |
+| **Ctrl+O** | Reset all formatting |
 
----
+Formats stack — press Ctrl+B then Ctrl+U to type bold underlined text. Press the same shortcut again to turn off just that format. Use Ctrl+O to clear everything at once.
 
-## Search bar (Ctrl+F)
+```
+This is [Ctrl+B]important[Ctrl+B] now
+[Ctrl+B][Ctrl+U]really important[Ctrl+O]
+```
 
-Open the search bar with **Ctrl+F**, then:
+### Emoji shortcodes
 
-| Shortcut | Action |
+Type a colon to start an emoji shortcode:
+
+| Input | Result |
 |---|---|
-| **Type anything** | Jump to the first match immediately as you type |
-| **Enter** | Jump to the next match (wraps around to the top) |
-| **Shift+Enter** | Jump to the previous match |
-| **Escape** | Close the search bar and clear the highlight |
-| **Click ×** | Clear the search query (bar stays open) |
-
-Search is case-insensitive and covers the full visible buffer for the current channel. It does not search across channels — switch to the channel you want and press Ctrl+F there.
-
----
-
-## Emoji shortcodes
-
-Type a colon in the input box to start an emoji shortcode:
-
-| You type | Result |
-|---|---|
-| `:fire` | Completion list appears: 🔥 fire, … |
-| **Up / Down arrows** | Navigate the completion list |
+| `:fire` | Completion list appears — navigate with Up/Down |
 | **Enter** or **Tab** | Insert the selected emoji |
-| **Escape** | Dismiss the completion list without inserting |
-| `:fire:` (full shortcode with closing `:`) | Substituted to 🔥 immediately, no list needed |
+| **Escape** | Dismiss the list |
+| `:fire:` | Substituted to 🔥 immediately, no list needed |
 
-Any `:shortcode:` patterns still in the text when you press Enter are substituted before the message is sent.
+Any `:shortcode:` patterns still in the text when you send are substituted automatically.
 
 ---
 
-## Planned shortcuts
+## Search (Ctrl+F)
 
-The following are on the roadmap and will be added in a future release:
-
-| Shortcut | Planned action |
+| Shortcut | Action |
 |---|---|
-| **Alt+Up / Alt+Down** | Navigate between channels in the sidebar |
-| **Alt+Left / Alt+Right** | Switch between open channel panes |
-| **Ctrl+K** | Quick channel switcher |
+| **Ctrl+F** | Open the search bar |
+| **Type anything** | Jump to the first match as you type |
+| **Enter** | Next match (wraps around) |
+| **Shift+Enter** | Previous match |
+| **Escape** | Close search and clear highlights |
+
+Search is case-insensitive and covers the full buffer for the current channel. It does not search across channels.
+
+---
+
+## Window and display
+
+| Shortcut | Action |
+|---|---|
+| **Ctrl+W** | Minimize to system tray |
+| **Close button (×)** | Same as Ctrl+W — minimizes to tray, does not quit |
+| **Ctrl+Plus** / **Ctrl+=** | Increase font size (0.5 pt) for the focused UI region |
+| **Ctrl+Minus** | Decrease font size (0.5 pt) for the focused UI region |
+| **Ctrl+Scroll wheel** | Zoom font size for the region under the cursor |
+
+Font zoom is per-region — you can set different sizes for the chat view, nick list, sidebar, and input box independently.
+
+---
+
+## macOS notes
+
+Qt automatically translates modifier keys on macOS:
+
+| This doc says | macOS physical key |
+|---|---|
+| **Ctrl** | **Cmd** (⌘) |
+| **Alt** | **Option** (⌥) |
+| **Shift** | **Shift** (⇧) |
+
+So **Alt+Up** (navigate channels) is **Option+Up** on a Mac, and **Ctrl+F** (search) is **Cmd+F**.

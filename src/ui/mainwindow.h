@@ -29,6 +29,7 @@ class EmojiPicker;
 class DccSend;
 class DccReceive;
 class ChannelPane;
+class QuickSwitcher;
 class QNetworkAccessManager;
 
 class ChatView;
@@ -134,6 +135,10 @@ private:
     void       showSearchBar();
     void       clearReplyBar();
 
+    // Channel / pane navigation (Alt+arrows)
+    void navigateChannel(int direction);
+    void navigatePane(int direction);
+
     // Font zoom (Ctrl+wheel / Ctrl+±)
     double *fontFieldForWidget(QObject *obj, const QPoint &pos = {});
 
@@ -231,6 +236,7 @@ private:
     DocsDialog         *m_docsDialog{nullptr};
     PreferencesDialog  *m_prefsDialog{nullptr};
     EmojiPicker       *m_emojiPicker{nullptr};
+    QuickSwitcher     *m_quickSwitcher{nullptr};
 
     // Typing indicator state
     QTimer                      *m_typingOutTimer{nullptr};

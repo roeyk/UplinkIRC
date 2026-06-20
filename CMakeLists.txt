@@ -108,6 +108,8 @@ qt_add_executable(Uplink WIN32
     src/ui/fadescrollbar.h
     src/ui/signalbars.cpp
     src/ui/signalbars.h
+    src/ui/quickswitcher.cpp
+    src/ui/quickswitcher.h
     src/ui/themeloader.cpp
     src/ui/themeloader.h
     src/irc/ircclient.cpp

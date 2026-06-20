@@ -18,6 +18,7 @@
 #include "ui/themeloader.h"
 #include "ui/linkpreview.h"
 #include "ui/emojipicker.h"
+#include "ui/quickswitcher.h"
 #include "ui/emojidata.h"
 #include "ui/menuicons.h"
 #include "ui/signalbars.h"
@@ -475,6 +476,17 @@ MainWindow::MainWindow(SessionModel *model, const Config &cfg, QWidget *parent)
 
     auto *ctrlF = new QShortcut(QKeySequence::Find, this);
     connect(ctrlF, &QShortcut::activated, this, &MainWindow::showSearchBar);
+
+    m_quickSwitcher = new QuickSwitcher(model, this);
+    connect(m_quickSwitcher, &QuickSwitcher::channelSelected, this, [this](ServerId host, BufferId channel){
+        auto *item = findChannelItem(host, channel);
+        if (item) {
+            m_sidebar->setCurrentItem(item);
+            onSidebarSelectionChanged();
+        }
+    });
+    auto *ctrlK = new QShortcut(QKeySequence("Ctrl+K"), this);
+    connect(ctrlK, &QShortcut::activated, m_quickSwitcher, &QuickSwitcher::showCentered);
 
     statusBar()->hide();
 
@@ -2317,6 +2329,12 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             if (delta != 0 && applyZoom(obj, delta))
                 return true;
         }
+        if (ke->modifiers() & Qt::AltModifier) {
+            if (ke->key() == Qt::Key_Up)   { navigateChannel(-1); return true; }
+            if (ke->key() == Qt::Key_Down) { navigateChannel(+1); return true; }
+            if (ke->key() == Qt::Key_Left) { navigatePane(-1);    return true; }
+            if (ke->key() == Qt::Key_Right){ navigatePane(+1);    return true; }
+        }
     }
 
     if (obj == m_searchInput && event->type() == QEvent::KeyPress) {
@@ -3453,6 +3471,53 @@ void MainWindow::onSidebarSelectionChanged()
     const BufferId channel{item->data(0, Qt::UserRole + 1).toString()};
     if (host.isEmpty() || channel.isEmpty()) return;
     switchToChannel(host, channel);
+}
+
+void MainWindow::navigateChannel(int direction)
+{
+    QList<QTreeWidgetItem*> channels;
+    for (int s = 0; s < m_sidebar->topLevelItemCount(); ++s) {
+        auto *srv = m_sidebar->topLevelItem(s);
+        for (int c = 0; c < srv->childCount(); ++c)
+            channels.append(srv->child(c));
+    }
+    if (channels.isEmpty()) return;
+
+    const int count = static_cast<int>(channels.size());
+    int cur = channels.indexOf(m_sidebar->currentItem());
+    int next = (cur < 0) ? 0 : cur + direction;
+    if (next < 0) next = count - 1;
+    if (next >= count) next = 0;
+
+    m_sidebar->setCurrentItem(channels[next]);
+    onSidebarSelectionChanged();
+}
+
+void MainWindow::navigatePane(int direction)
+{
+    if (m_orderedPanes.isEmpty()) return;
+
+    int cur = -1;
+    for (int i = 0; i < m_orderedPanes.size(); ++i) {
+        auto *pane = m_orderedPanes[i];
+        if (pane->host() == m_model->activeHost() &&
+            pane->channel() == m_model->activeChannel()) {
+            cur = i;
+            break;
+        }
+    }
+
+    const int count = static_cast<int>(m_orderedPanes.size());
+    int next = (cur < 0) ? 0 : cur + direction;
+    if (next < 0) next = count - 1;
+    if (next >= count) next = 0;
+
+    auto *pane = m_orderedPanes[next];
+    auto *item = findChannelItem(pane->host(), pane->channel());
+    if (item) {
+        m_sidebar->setCurrentItem(item);
+        onSidebarSelectionChanged();
+    }
 }
 
 // ---------------------------------------------------------------------------
