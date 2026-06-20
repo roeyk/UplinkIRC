@@ -36,6 +36,7 @@ signals:
     void anchorActivated(const QString &anchor, const QPoint &globalPos, Qt::MouseButton btn);
     void anchorHovered(const QString &anchor);
     void loadOlderRequested();
+    void scrolledAwayFromBottom(bool away);
 
 protected:
     void paintEvent(QPaintEvent *e) override;

@@ -25,7 +25,10 @@ ChatView::ChatView(QWidget *parent)
     viewport()->setAutoFillBackground(false);
 
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int val) {
+        const bool wasBottom = m_atBottom;
         m_atBottom = (val >= verticalScrollBar()->maximum() - 4);
+        if (wasBottom != m_atBottom)
+            emit scrolledAwayFromBottom(!m_atBottom);
         viewport()->update();
         if (val == 0 && !m_lines.isEmpty())
             emit loadOlderRequested();
@@ -236,6 +239,12 @@ void ChatView::wheelEvent(QWheelEvent *e)
     const int step  = lineH * 3;
     const int delta = e->angleDelta().y();
     if (delta == 0) { e->ignore(); return; }
+
+    if (delta > 0 && m_atBottom) {
+        m_atBottom = false;
+        emit scrolledAwayFromBottom(true);
+    }
+
     const int pixels = -delta * step / 120;
     auto *sb = verticalScrollBar();
     sb->setValue(sb->value() + pixels);

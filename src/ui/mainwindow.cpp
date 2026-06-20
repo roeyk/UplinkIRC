@@ -1782,6 +1782,33 @@ void MainWindow::setupChatArea()
         m_nickPanel->setVisible(true);
         m_nickRevealBtn->setVisible(false);
     });
+    m_scrollBottomBtn = new QToolButton(m_chatSection);
+    m_scrollBottomBtn->setFixedSize(32, 32);
+    m_scrollBottomBtn->setIconSize(QSize(22, 22));
+    m_scrollBottomBtn->setAutoRaise(true);
+    m_scrollBottomBtn->setStyleSheet(
+        "QToolButton { background: rgba(0,0,0,0.5); border: none; border-radius: 16px; }"
+        "QToolButton:hover { background: rgba(0,0,0,0.7); }"
+    );
+    m_scrollBottomBtn->setToolTip(tr("Jump to bottom"));
+    m_scrollBottomBtn->setIcon(makeSvgIcon(
+        QStringLiteral(":/icons/mi-keyboard-double-arrow-down.svg"),
+        QColor("#e3e3e3")));
+    m_scrollBottomBtn->setVisible(false);
+    m_scrollBottomBtn->raise();
+    connect(m_scrollBottomBtn, &QToolButton::clicked, this, [this]{
+        m_chatView->scrollToBottom();
+    });
+    connect(m_chatView, &ChatView::scrolledAwayFromBottom, this, [this](bool away){
+        m_scrollBottomBtn->setVisible(away);
+        if (away) {
+            m_scrollBottomBtn->move(
+                (m_chatSection->width() - m_scrollBottomBtn->width()) / 2,
+                m_chatSection->height() - m_scrollBottomBtn->height() - 12);
+            m_scrollBottomBtn->raise();
+        }
+    });
+
     m_chatSection->installEventFilter(this);
 
     m_sidebarRevealBtn = new QToolButton(m_chatSection);
@@ -2371,6 +2398,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         m_sidebarRevealBtn && m_sidebarRevealBtn->isVisible()) {
         auto *re = static_cast<QResizeEvent *>(event);
         m_sidebarRevealBtn->move(4, re->size().height() - m_sidebarRevealBtn->height() - 4);
+    }
+
+    if (obj == m_chatSection && event->type() == QEvent::Resize &&
+        m_scrollBottomBtn && m_scrollBottomBtn->isVisible()) {
+        auto *re = static_cast<QResizeEvent *>(event);
+        m_scrollBottomBtn->move(
+            (re->size().width() - m_scrollBottomBtn->width()) / 2,
+            re->size().height() - m_scrollBottomBtn->height() - 12);
     }
 
     if (obj == m_sidebarPanel && event->type() == QEvent::Resize && m_sidebarCloseBtn) {
