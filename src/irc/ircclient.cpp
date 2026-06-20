@@ -591,16 +591,17 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
         return;
     }
 
-    bool allSelfSigned = true;
+    bool pinEligible = true;
     for (const auto &e : errors) {
         if (e.error() != QSslError::SelfSignedCertificate &&
-            e.error() != QSslError::SelfSignedCertificateInChain) {
-            allSelfSigned = false;
+            e.error() != QSslError::SelfSignedCertificateInChain &&
+            e.error() != QSslError::HostNameMismatch) {
+            pinEligible = false;
             break;
         }
     }
 
-    if (!allSelfSigned) {
+    if (!pinEligible) {
         QStringList msgs;
         for (const auto &e : errors)
             msgs << e.errorString();
