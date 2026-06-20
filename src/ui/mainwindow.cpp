@@ -2421,8 +2421,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         m_sidebarRevealBtn->move(4, re->size().height() - m_sidebarRevealBtn->height() - 4);
     }
 
-    if (obj == m_chatView->viewport() && event->type() == QEvent::Resize &&
-        m_scrollBottomBtn && m_scrollBottomBtn->isVisible()) {
+    if (m_scrollBottomBtn && m_scrollBottomBtn->isVisible() &&
+        event->type() == QEvent::Resize && obj == m_chatView->viewport()) {
         auto *re = static_cast<QResizeEvent *>(event);
         m_scrollBottomBtn->move(
             re->size().width() - m_scrollBottomBtn->width() - 12,
