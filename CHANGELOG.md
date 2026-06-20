@@ -1,6 +1,21 @@
 # Changelog
 
 <!--
+Session 2026-06-20 (bot icon):
+- Root-caused bot icon not showing on Linux: per-nick WHOX returned channel "*",
+  354 handler dropped it; hasCap("whox") was always false; format string missing
+  querytype token. Also a timing issue in DojoBot setting +B after JOIN.
+- Fixed: supportsWhox() accessor, 354 auto-detect token, onWhoEntry handles "*"
+  channel via sess->botNicks, setIconSize on nick list, standard WHO fallback.
+- Bot-side fix: set +B before JOIN so WHO sees the flag immediately.
+- Tagged missing releases: v0.25.46, v0.25.47, v0.25.48, v0.25.49.
+- Code review finding: bot un-flag path for "*" channel doesn't emit nickListChanged
+  (low severity — bot losing +B mid-session is rare).
+- No regressions found.
+- Next priorities: MainWindow controller extractions, ChatView deferred layout.
+-->
+
+<!--
 Session 2026-06-20:
 - Added keyboard navigation: Alt+Up/Down cycles channels, Alt+Left/Right cycles panes
 - Added Ctrl+K quick channel switcher with live filtering popup
@@ -64,6 +79,15 @@ Session 2026-06-18:
 - Next priorities: start MainWindow controller extractions (DccController first),
   ChatView deferred layout, review CodeQL findings when first scan completes.
 -->
+
+## 0.25.50
+
+### Fixed
+- **Bot icon not showing on Linux** — root cause was multi-layered: `hasCap("whox")` checked IRCv3 CAP instead of ISUPPORT (always false, so per-nick WHO was never sent); WHOX format string `%cnfa` was missing the querytype token `t`; the 354 handler dropped entries where channel was `*` (Ergo returns `*` for per-nick WHOX queries); and `onWhoEntry` only updated per-channel bot sets, not the session-wide set.
+- **354 WHOX parser robustness** — auto-detects whether the server included the querytype token, handling both 5-param and 6-param response formats.
+- **Per-nick WHO fallback** — sends standard `WHO nick` on servers that don't support WHOX, so bot detection works everywhere.
+- **Nick list icon size** — explicit `setIconSize(16, 16)` ensures bot icons render on all platforms (Linux Qt styles defaulted to 0×0).
+- **Preview card alignment** — link preview cards now align with the message body text, not the nick column.
 
 ## 0.25.49
 
