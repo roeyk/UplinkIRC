@@ -187,6 +187,14 @@ static QRegularExpression buildHighlightRe(const QString &words)
     return QRegularExpression(parts.join('|'), QRegularExpression::CaseInsensitiveOption);
 }
 
+static QString sanitizeFilename(QString s)
+{
+    const QString bad = QStringLiteral("/\\:*?\"<>|");
+    for (QChar c : bad)
+        s.replace(c, '_');
+    return s;
+}
+
 void SessionModel::spawnSession(const ServerConfig &sc, bool addToConfig)
 {
     if (addToConfig)
@@ -213,6 +221,18 @@ void SessionModel::loadConfig(const Config &cfg)
     m_config = cfg;
     for (const auto &entry : cfg.ignoreList)
         m_ignoredNicks.insert(entry.nick, entry.flags);
+
+    // Migrate log dirs from hostname-based to name-based layout
+    const QString logsBase = QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                             + "/.config/uplink/logs/";
+    for (const ServerConfig &sc : cfg.servers) {
+        if (sc.name.isEmpty() || sc.name == sc.host) continue;
+        const QString oldDir = logsBase + sanitizeFilename(sc.host);
+        const QString newDir = logsBase + sanitizeFilename(sc.name);
+        if (QDir(oldDir).exists() && !QDir(newDir).exists())
+            QDir().rename(oldDir, newDir);
+    }
+
     for (const ServerConfig &sc : cfg.servers)
         if (!sc.disabled)
             spawnSession(sc, false);
@@ -301,13 +321,7 @@ void SessionModel::monitorStatus(ServerId host)
 // Logging
 // ---------------------------------------------------------------------------
 
-static QString sanitizeFilename(QString s)
-{
-    const QString bad = QStringLiteral("/\\:*?\"<>|");
-    for (QChar c : bad)
-        s.replace(c, '_');
-    return s;
-}
+
 
 void SessionModel::logMessage(const QString &host, const QString &target, const Message &msg)
 {
@@ -395,22 +409,48 @@ void SessionModel::removeServer(ServerId host)
     }
 }
 
+void SessionModel::closeServer(ServerId host)
+{
+    for (int i = 0; i < m_clients.size(); ++i) {
+        if (clientServerId(m_clients[i]) == host.str()) {
+            m_clients[i]->quit("Closing");
+            m_clients[i]->deleteLater();
+            m_clients.removeAt(i);
+            break;
+        }
+    }
+    m_sessions.removeIf([&](const ServerSession &s){ return s.host == host.str(); });
+
+    const QString hostSeg = "/" + sanitizeFilename(host.str()) + "/";
+    for (auto it = m_logFiles.begin(); it != m_logFiles.end(); ) {
+        if (it.key().contains(hostSeg)) {
+            it.value()->close();
+            delete it.value();
+            it = m_logFiles.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    emit serverClosed(host);
+}
+
+bool SessionModel::connectServer(ServerId host)
+{
+    if (session(host)) return true;
+    for (const auto &sc : std::as_const(m_config.servers)) {
+        if (serverIdForConfig(sc) == host.str() || sc.host == host.str()) {
+            spawnSession(sc, false);
+            return true;
+        }
+    }
+    return false;
+}
+
 void SessionModel::updateServer(ServerId oldHost, const ServerConfig &sc)
 {
     removeServer(oldHost);
     addServer(sc);
-}
-
-void SessionModel::syncServers(const QList<ServerConfig> &servers)
-{
-    for (const ServerConfig &sc : servers) {
-        for (ServerConfig &existing : m_config.servers) {
-            if (serverIdForConfig(existing) == serverIdForConfig(sc)) {
-                existing.channels = sc.channels;
-                break;
-            }
-        }
-    }
 }
 
 void SessionModel::closeBuffer(ServerId host, BufferId target)
@@ -421,7 +461,7 @@ void SessionModel::closeBuffer(ServerId host, BufferId target)
     const bool isChannel = target.str().startsWith('#') || target.str().startsWith('&');
     if (isChannel) {
         for (IrcClient *cl : m_clients)
-            if (cl->host() == host.str()) { cl->part(target.str()); break; }
+            if (clientServerId(cl) == host.str()) { cl->part(target.str()); break; }
     }
 
     sess->channels.remove(target.str().toLower());
@@ -860,7 +900,7 @@ void SessionModel::onConnected(const QString &host)
 
     IrcClient *cl = nullptr;
     for (IrcClient *c : m_clients)
-        if (c->host() == host) { cl = c; break; }
+        if (clientServerId(c) == host) { cl = c; break; }
     if (!cl) return;
 
     // Join configured channels (with keys)

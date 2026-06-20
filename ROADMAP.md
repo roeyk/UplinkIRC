@@ -87,7 +87,7 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] Status bar text shrunk — 7pt via QSS
 - [x] Clickable URLs in chat messages — http/https links in PRIVMSG, actions, and notices open in browser
 - [x] Reconnect with exponential backoff — auto-reconnect on unexpected disconnect; 5s→10s→20s→40s→60s; deliberate quit disables it
-- [x] Sidebar right-click context menus — server items: Disconnect/Reconnect; channel items: Rejoin/Leave/Close; PM queries: Close Query
+- [x] Sidebar right-click context menus — server items: Disconnect/Reconnect/Close Server/Move Up/Move Down; channel items: Rejoin/Leave/Close; PM queries: Close Query
 - [x] v0.3.0 released
 - [x] macOS release CI fixed — MACOSX_BUNDLE property set; .app bundle produced; macdeployqt succeeds; v0.3.0 re-tagged and all three platform builds pass
 - [x] Link preview — hover tooltip shows domain + page title; inline card with og:image thumbnail auto-appears below live URL messages
@@ -124,7 +124,8 @@ Default network: **irc.linuxdojo.org:6697** — channel **#uplink**
 - [x] SASL EXTERNAL — certificate-based auth; sasl_external + client_cert + client_key config keys; RSA and EC PEM keys; Server dialog browse buttons
 - [x] NickServ IDENTIFY auto — `nickserv_password` in config; sent to NickServ on RPL_WELCOME
 - [x] Server error routing — 482 and other server errors shown in active channel buffer, not just (server)
-- [x] Multiple servers — Manage Servers dialog: add, edit, remove with live connect/disconnect
+- [x] Multiple servers — Manage Servers dialog: add, edit, remove, reorder (▲/▼) with live connect/disconnect
+- [x] /connect and /server commands — connect to any server on the fly by host[:port] with auto SSL detection
 - [x] Reconnect logic — auto-reconnect with backoff on disconnect
 - [x] Connection status indicator — signal bars widget in topic bar; latency-based bar count (4=<50ms … 1=>300ms); blue flash=connecting, red flash=disconnected
 - [x] Mention notifications — ⚡ yellow bolt sidebar indicator when nick is mentioned in inactive channel; 🔥 for general activity; self-nick highlighted red bold in chat

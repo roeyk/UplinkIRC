@@ -67,6 +67,7 @@ void IrcClient::connectToServer(const ServerConfig &cfg)
     m_intentionalDisconnect = false;
     m_reconnectDelay = 5;
 
+    m_serverName      = cfg.name;
     m_host            = cfg.host;
     m_port            = cfg.port;
     m_ssl             = cfg.ssl;
@@ -244,11 +245,11 @@ void IrcClient::privmsg(const QString &target, const QString &text, const QStrin
 {
     if (!validIrcToken(target)) return;
     if (sockState() != QAbstractSocket::ConnectedState) {
-        emit errorMessage(m_host, "Not connected — message not sent");
+        emit errorMessage(m_serverName, "Not connected — message not sent");
         return;
     }
     if (m_utf8Only && text.contains(QChar::ReplacementCharacter))
-        emit serverMessage(m_host,
+        emit serverMessage(m_serverName,
             "Warning: message contains invalid UTF-8 characters — server requires UTF-8 (UTF8ONLY)");
 
     const QString tagStr = replyToMsgid.isEmpty()
@@ -285,7 +286,7 @@ void IrcClient::sendMultiline(const QString &target, const QString &text,
 {
     if (!validIrcToken(target)) return;
     if (sockState() != QAbstractSocket::ConnectedState) {
-        emit errorMessage(m_host, "Not connected — message not sent");
+        emit errorMessage(m_serverName, "Not connected — message not sent");
         return;
     }
 
@@ -318,7 +319,7 @@ void IrcClient::notice(const QString &target, const QString &text)
 {
     if (!validIrcToken(target)) return;
     if (sockState() != QAbstractSocket::ConnectedState) {
-        emit errorMessage(m_host, "Not connected — message not sent");
+        emit errorMessage(m_serverName, "Not connected — message not sent");
         return;
     }
     sendRaw("NOTICE " + target + " :" + stripCrlf(text));
@@ -475,13 +476,13 @@ void IrcClient::onConnected()
                               && !m_saslPassword.isEmpty();
     if (zncAssembled) {
         if (!m_ssl)
-            emit serverMessage(m_host, "Warning: sending server password over unencrypted connection");
+            emit serverMessage(m_serverName, "Warning: sending server password over unencrypted connection");
         sendRaw("PASS :" + stripCrlf(m_saslUser) + "/"
                          + stripCrlf(m_bouncerNetwork) + ":"
                          + stripCrlf(m_saslPassword));
     } else if (!m_password.isEmpty()) {
         if (!m_ssl)
-            emit serverMessage(m_host, "Warning: sending server password over unencrypted connection");
+            emit serverMessage(m_serverName, "Warning: sending server password over unencrypted connection");
         sendRaw("PASS :" + stripCrlf(m_password));
     }
 
@@ -506,7 +507,7 @@ void IrcClient::onDisconnected()
     m_supportsWhox   = false;
     m_bouncerListing = false;
     m_bouncerNetBuf.clear();
-    emit disconnected(m_host);
+    emit disconnected(m_serverName);
     if (!m_stsUpgrade)
         scheduleReconnect();
     m_stsUpgrade = false;
@@ -532,7 +533,7 @@ void IrcClient::onReadyRead()
     const QByteArray raw = m_socket->readAll();
     if (m_utf8Only && raw.contains('\xff')) {
         // Cheap non-UTF-8 sniff: 0xFF never appears in valid UTF-8
-        emit serverMessage(m_host, "Warning: server sent non-UTF-8 data (UTF8ONLY is set)");
+        emit serverMessage(m_serverName, "Warning: server sent non-UTF-8 data (UTF8ONLY is set)");
     }
     m_buffer += raw;
 
@@ -544,7 +545,7 @@ void IrcClient::onReadyRead()
             lineBytes.chop(1);
         if (lineBytes.isEmpty()) continue;
         if (lineBytes.size() > kMaxIrcLine) {
-            emit socketError(m_host, "Dropped oversized IRC line from server");
+            emit socketError(m_serverName, "Dropped oversized IRC line from server");
             continue;
         }
         const QString line = QString::fromUtf8(lineBytes);
@@ -556,7 +557,7 @@ void IrcClient::onReadyRead()
 
     // Only disconnect if the *remaining* partial line (no newline yet) is absurdly large
     if (m_buffer.size() > kMaxPendingBuffer) {
-        emit socketError(m_host, "Server sent oversized unterminated data; disconnecting");
+        emit socketError(m_serverName, "Server sent oversized unterminated data; disconnecting");
         m_socket->disconnectFromHost();
         m_buffer.clear();
     }
@@ -568,7 +569,7 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
         ? m_wsSocket->sslConfiguration().peerCertificateChain()
         : m_socket->peerCertificateChain();
     if (chain.isEmpty()) {
-        emit socketError(m_host, "TLS error: no peer certificate");
+        emit socketError(m_serverName, "TLS error: no peer certificate");
         sockDisconnect();
         return;
     }
@@ -584,7 +585,7 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
             else         m_socket->ignoreSslErrors(errors);
             return;
         }
-        emit socketError(m_host,
+        emit socketError(m_serverName,
             QString("TLS: certificate fingerprint mismatch!\nPinned: %1\nGot:    %2")
                 .arg(m_pinnedFingerprint, fp));
         sockDisconnect();
@@ -605,7 +606,7 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
         QStringList msgs;
         for (const auto &e : errors)
             msgs << e.errorString();
-        emit socketError(m_host, "TLS error: " + msgs.join("; "));
+        emit socketError(m_serverName, "TLS error: " + msgs.join("; "));
         sockDisconnect();
         return;
     }
@@ -614,7 +615,7 @@ void IrcClient::onSslErrors(const QList<QSslError> &errors)
     // The connection is re-established after the user accepts the fingerprint.
     m_intentionalDisconnect = true;
     sockAbort();
-    emit sslFingerprintPrompt(m_host, fp);
+    emit sslFingerprintPrompt(m_serverName, fp);
 }
 
 void IrcClient::abort()
@@ -634,7 +635,7 @@ void IrcClient::reconnect()
 
 void IrcClient::onErrorOccurred(QAbstractSocket::SocketError)
 {
-    emit socketError(m_host, sockErrorString());
+    emit socketError(m_serverName, sockErrorString());
     // disconnected() and scheduleReconnect() are handled by onDisconnected()
     // which Qt emits after every socket error that closes the connection.
 }
@@ -642,7 +643,7 @@ void IrcClient::onErrorOccurred(QAbstractSocket::SocketError)
 void IrcClient::scheduleReconnect()
 {
     if (m_intentionalDisconnect || m_reconnectTimer->isActive() || m_host.isEmpty()) return;
-    emit serverMessage(m_host, QString("Reconnecting in %1s…").arg(m_reconnectDelay));
+    emit serverMessage(m_serverName, QString("Reconnecting in %1s…").arg(m_reconnectDelay));
     m_reconnectTimer->start(m_reconnectDelay * 1000);
     m_reconnectDelay = qMin(m_reconnectDelay * 2, 60);
 }
@@ -651,7 +652,7 @@ void IrcClient::sendPing()
 {
     if (m_pingPending) {
         if (m_pingClock.elapsed() > 90000) {
-            emit socketError(m_host, "Ping timeout");
+            emit socketError(m_serverName, "Ping timeout");
             sockAbort();
         }
         return;
@@ -663,8 +664,8 @@ void IrcClient::sendPing()
 
 void IrcClient::doReconnect()
 {
-    emit reconnecting(m_host);
-    emit serverMessage(m_host, "Reconnecting…");
+    emit reconnecting(m_serverName);
+    emit serverMessage(m_serverName, "Reconnecting…");
     m_saslPending = false;
     if (sockState() != QAbstractSocket::UnconnectedState)
         sockAbort();
@@ -702,7 +703,7 @@ void IrcClient::processLine(const QString &line)
     if (cmd == "PONG") {
         if (m_pingPending && !msg.params.isEmpty() && msg.params.last() == "uplink_rtt") {
             m_pingPending = false;
-            emit pingRtt(m_host, static_cast<int>(m_pingClock.elapsed()));
+            emit pingRtt(m_serverName, static_cast<int>(m_pingClock.elapsed()));
         }
         return;
     }
@@ -718,7 +719,7 @@ void IrcClient::processLine(const QString &line)
                 sendRaw("AUTHENTICATE +");
             } else {
                 if (!m_ssl)
-                    emit serverMessage(m_host, "Warning: sending SASL credentials over unencrypted connection");
+                    emit serverMessage(m_serverName, "Warning: sending SASL credentials over unencrypted connection");
                 // For soju, the SASL username must be "user/network" to select a network
                 QString saslUser = m_saslUser;
                 if (m_bouncerType == BouncerType::Soju && !m_bouncerNetwork.isEmpty())
@@ -747,7 +748,7 @@ void IrcClient::processLine(const QString &line)
         const QString tsTag  = msg.params[1]; // "timestamp=<iso>"
         if (tsTag.startsWith("timestamp=")) {
             const QDateTime ts = QDateTime::fromString(tsTag.mid(10), Qt::ISODateWithMs);
-            emit readMarkerReceived(m_host, target, ts);
+            emit readMarkerReceived(m_serverName, target, ts);
         }
         return;
     }
@@ -764,7 +765,7 @@ void IrcClient::processLine(const QString &line)
     if (!batchRef.isEmpty() && m_batches.contains(batchRef)) {
         auto &batch = m_batches[batchRef];
         if (batch.msgs.size() >= kMaxBatchMessages) {
-            emit errorMessage(m_host, "IRC batch too large; dropping extra messages");
+            emit errorMessage(m_serverName, "IRC batch too large; dropping extra messages");
             return;
         }
         BatchInfo::Msg bm;
@@ -791,14 +792,15 @@ void IrcClient::processLine(const QString &line)
         const QString replyTo = msg.tags.value("+draft/reply");
         const QString account = msg.tags.value("account");
         if (!account.isEmpty())
-            emit accountChanged(m_host, msg.nick, account);
+            emit accountChanged(m_serverName, msg.nick, account);
         if (text.startsWith('\x01') && text.endsWith('\x01')) {
             const QString ctcp    = text.mid(1, text.size() - 2);
             const QString ctcpCmd = ctcp.section(' ', 0, 0).toUpper();
+            const bool selfEcho   = (msg.nick == m_nick);
             if (ctcpCmd == "ACTION") {
-                emit actionReceived(m_host, target,
+                emit actionReceived(m_serverName, target,
                                     msg.nick, ctcp.mid(7), serverTime, false, msgid);
-            } else if (ctcpCmd == "VERSION") {
+            } else if (!selfEcho && ctcpCmd == "VERSION") {
                 const QString rkey = msg.nick + ":VERSION";
                 const qint64  now  = QDateTime::currentMSecsSinceEpoch();
                 if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {
@@ -806,9 +808,9 @@ void IrcClient::processLine(const QString &line)
                         m_ctcpTimestamps.erase(m_ctcpTimestamps.begin());
                     m_ctcpTimestamps.insert(rkey, now);
                     sendRaw("NOTICE " + msg.nick + " :\x01VERSION Uplink " UPLINK_VERSION "\x01");
-                    emit serverMessage(m_host, "CTCP VERSION from " + msg.nick);
+                    emit serverMessage(m_serverName, "CTCP VERSION from " + msg.nick);
                 }
-            } else if (ctcpCmd == "PING") {
+            } else if (!selfEcho && ctcpCmd == "PING") {
                 const QString rkey = msg.nick + ":PING";
                 const qint64  now  = QDateTime::currentMSecsSinceEpoch();
                 if (now - m_ctcpTimestamps.value(rkey, 0) >= 5000) {
@@ -830,23 +832,23 @@ void IrcClient::processLine(const QString &line)
                     const QString token    = ctcp.section(' ', 6, 6);
                     if (ok1 && ok2 && ok3 && !fn.isEmpty() && filesize > 0) {
                         if (port == 0 && !token.isEmpty())
-                            emit dccPassiveOfferReceived(m_host, msg.nick, fn, ip, filesize, token);
+                            emit dccPassiveOfferReceived(m_serverName, msg.nick, fn, ip, filesize, token);
                         else if (port != 0 && !token.isEmpty())
-                            emit dccPassiveSendReply(m_host, msg.nick, fn, ip, port, filesize, token);
+                            emit dccPassiveSendReply(m_serverName, msg.nick, fn, ip, port, filesize, token);
                         else if (port != 0)
-                            emit dccSendReceived(m_host, msg.nick, fn, ip, port, filesize);
+                            emit dccSendReceived(m_serverName, msg.nick, fn, ip, port, filesize);
                         else
-                            emit serverMessage(m_host, "DCC SEND from " + msg.nick + " (malformed)");
+                            emit serverMessage(m_serverName, "DCC SEND from " + msg.nick + " (malformed)");
                     } else
-                        emit serverMessage(m_host, "DCC SEND from " + msg.nick + " (malformed)");
+                        emit serverMessage(m_serverName, "DCC SEND from " + msg.nick + " (malformed)");
                 } else {
-                    emit serverMessage(m_host, "DCC " + dccType + " from " + msg.nick + " (unsupported)");
+                    emit serverMessage(m_serverName, "DCC " + dccType + " from " + msg.nick + " (unsupported)");
                 }
             } else {
-                emit serverMessage(m_host, "CTCP " + ctcpCmd + " from " + msg.nick);
+                emit serverMessage(m_serverName, "CTCP " + ctcpCmd + " from " + msg.nick);
             }
         } else {
-            emit messageReceived(m_host, target, msg.nick, text, serverTime, false, msgid, replyTo);
+            emit messageReceived(m_serverName, target, msg.nick, text, serverTime, false, msgid, replyTo);
         }
         return;
     }
@@ -855,7 +857,7 @@ void IrcClient::processLine(const QString &line)
         const QString text = msg.params.size() >= 2 ? msg.params.last() : msg.trailing;
         const QString noticeAccount = msg.tags.value("account");
         if (!noticeAccount.isEmpty())
-            emit accountChanged(m_host, msg.nick, noticeAccount);
+            emit accountChanged(m_serverName, msg.nick, noticeAccount);
         if (text.startsWith('\x01') && text.endsWith('\x01')) {
             const QString ctcp    = text.mid(1, text.size() - 2);
             const QString ctcpCmd = ctcp.section(' ', 0, 0).toUpper();
@@ -863,18 +865,18 @@ void IrcClient::processLine(const QString &line)
                 bool ok = false;
                 const qint64 sent = ctcp.section(' ', 1).toLongLong(&ok);
                 const qint64 rtt  = QDateTime::currentMSecsSinceEpoch() - sent;
-                emit ctcpPingReply(m_host, msg.nick, ok ? rtt : -1);
+                emit ctcpPingReply(m_serverName, msg.nick, ok ? rtt : -1);
             } else if (ctcpCmd == "VERSION") {
-                emit contextualMessage(m_host,
+                emit contextualMessage(m_serverName,
                     QString("VERSION reply from %1: %2").arg(msg.nick, ctcp.section(' ', 1)));
             } else if (ctcpCmd == "TIME") {
-                emit ctcpTimeReply(m_host, msg.nick, ctcp.section(' ', 1));
+                emit ctcpTimeReply(m_serverName, msg.nick, ctcp.section(' ', 1));
             } else {
-                emit noticeReceived(m_host, msg.params[0], msg.nick,
+                emit noticeReceived(m_serverName, msg.params[0], msg.nick,
                                     "CTCP reply: " + ctcp, serverTime, false, {}, {});
             }
         } else {
-            emit noticeReceived(m_host, msg.params[0], msg.nick, text, serverTime, false,
+            emit noticeReceived(m_serverName, msg.params[0], msg.nick, text, serverTime, false,
                                 msg.tags.value("msgid"), msg.tags.value("+draft/reply"));
         }
         return;
@@ -885,22 +887,22 @@ void IrcClient::processLine(const QString &line)
         QString typing = msg.tags.value("typing");
         if (typing.isEmpty()) typing = msg.tags.value("+typing");
         if (!typing.isEmpty() && msg.nick != m_nick)
-            emit typingReceived(m_host, target, msg.nick, typing);
+            emit typingReceived(m_serverName, target, msg.nick, typing);
         const QString emoji = msg.tags.value("+draft/react");
         if (!emoji.isEmpty()) {
             const QString replyTo = msg.tags.value("+draft/reply");
-            emit reactReceived(m_host, target, msg.nick, replyTo, emoji);
+            emit reactReceived(m_serverName, target, msg.nick, replyTo, emoji);
         }
         return;
     }
 
     if (cmd == "CHGHOST" && msg.params.size() >= 2) {
-        emit hostChanged(m_host, msg.nick, msg.params[0], msg.params[1]);
+        emit hostChanged(m_serverName, msg.nick, msg.params[0], msg.params[1]);
         return;
     }
 
     if (cmd == "ACCOUNT" && !msg.params.isEmpty()) {
-        emit accountChanged(m_host, msg.nick, msg.params[0]);
+        emit accountChanged(m_serverName, msg.nick, msg.params[0]);
         return;
     }
 
@@ -912,52 +914,52 @@ void IrcClient::processLine(const QString &line)
         const QString &key = msg.params[1];
         if ((key == "display-name" || key == "avatar") && !target.startsWith('#')) {
             const QString value = !msg.trailing.isEmpty() ? msg.trailing : msg.params.value(3);
-            emit userMetaChanged(m_host, target, key, value);
+            emit userMetaChanged(m_serverName, target, key, value);
         }
         return;
     }
 
     if (cmd == "SETNAME" && !msg.trailing.isEmpty()) {
-        emit setNameReceived(m_host, msg.nick, msg.trailing);
+        emit setNameReceived(m_serverName, msg.nick, msg.trailing);
         return;
     }
 
     if (cmd == "REDACT" && msg.params.size() >= 2) {
-        emit messageRedacted(m_host, msg.nick, msg.params[0], msg.params[1], msg.trailing);
+        emit messageRedacted(m_serverName, msg.nick, msg.params[0], msg.params[1], msg.trailing);
         return;
     }
 
     if (cmd == "INVITE" && msg.params.size() >= 1) {
         const QString targetNick = msg.params[0];
         const QString channel    = msg.params.size() > 1 ? msg.params[1] : msg.trailing;
-        emit inviteNotify(m_host, msg.nick, channel, targetNick);
+        emit inviteNotify(m_serverName, msg.nick, channel, targetNick);
         return;
     }
 
     if (cmd == "JOIN") {
         const QString channel = msg.params.isEmpty() ? msg.trailing : msg.params[0];
         if (msg.nick == m_nick) {
-            emit serverMessage(m_host, "Joined " + channel);
+            emit serverMessage(m_serverName, "Joined " + channel);
             if (m_ackedCaps.contains("soju.im/no-implicit-names"))
                 sendRaw("NAMES " + channel);
         }
-        emit userJoined(m_host, channel, msg.nick, msg.user, msg.host);
+        emit userJoined(m_serverName, channel, msg.nick, msg.user, msg.host);
         // extended-join: params[1] = account, trailing = realname
         if (msg.params.size() > 1) {
             const QString account = msg.params[1];
             if (!account.isEmpty() && account != "*")
-                emit accountChanged(m_host, msg.nick, account);
+                emit accountChanged(m_serverName, msg.nick, account);
         }
         return;
     }
 
     if (cmd == "PART" && !msg.params.isEmpty()) {
-        emit userParted(m_host, msg.params[0], msg.nick, msg.user, msg.host, msg.trailing);
+        emit userParted(m_serverName, msg.params[0], msg.nick, msg.user, msg.host, msg.trailing);
         return;
     }
 
     if (cmd == "QUIT") {
-        emit userQuit(m_host, msg.nick, msg.user, msg.host, msg.trailing);
+        emit userQuit(m_serverName, msg.nick, msg.user, msg.host, msg.trailing);
         return;
     }
 
@@ -965,32 +967,32 @@ void IrcClient::processLine(const QString &line)
         const QString newNick = msg.params.isEmpty() ? msg.trailing : msg.params[0];
         if (newNick.toLower() == m_nick.toLower() || msg.nick.toLower() == m_nick.toLower()) {
             m_nick = newNick;
-            emit selfNickChanged(m_host, newNick);
+            emit selfNickChanged(m_serverName, newNick);
         }
-        emit nickChanged(m_host, msg.nick, newNick);
+        emit nickChanged(m_serverName, msg.nick, newNick);
         return;
     }
 
     if (cmd == "KICK" && msg.params.size() >= 2) {
-        emit kicked(m_host, msg.params[0], msg.params[1], msg.nick, msg.trailing);
+        emit kicked(m_serverName, msg.params[0], msg.params[1], msg.nick, msg.trailing);
         return;
     }
 
     if (cmd == "MODE" && !msg.params.isEmpty()) {
         QStringList modeParts = msg.params.mid(1);
         if (!msg.trailing.isEmpty()) modeParts << msg.trailing;
-        emit modesReceived(m_host, msg.params[0], modeParts.join(' '));
+        emit modesReceived(m_serverName, msg.params[0], modeParts.join(' '));
         return;
     }
 
     if (cmd == "TOPIC" && !msg.params.isEmpty()) {
-        emit topicReceived(m_host, msg.params[0], msg.trailing);
+        emit topicReceived(m_serverName, msg.params[0], msg.trailing);
         return;
     }
 
     if (cmd == "WALLOPS") {
         const QString text = msg.trailing.isEmpty() ? msg.params.value(0) : msg.trailing;
-        emit wallopsReceived(m_host, msg.nick, text);
+        emit wallopsReceived(m_serverName, msg.nick, text);
         return;
     }
 
@@ -1022,11 +1024,11 @@ void IrcClient::processLine(const QString &line)
             ? prefix + code + ": " + desc
             : prefix + triggeredBy + " " + code + ": " + desc;
         if (!channel.isEmpty())
-            emit standardReply(m_host, channel, cmd, text);
+            emit standardReply(m_serverName, channel, cmd, text);
         else if (cmd == "FAIL")
-            emit errorMessage(m_host, text);
+            emit errorMessage(m_serverName, text);
         else
-            emit serverMessage(m_host, text);
+            emit serverMessage(m_serverName, text);
         return;
     }
 }
@@ -1042,7 +1044,7 @@ void IrcClient::handleBatch(const QStringList &params)
 
     if (refArg.startsWith('+')) {
         if (m_batches.size() >= kMaxOpenBatches) {
-            emit errorMessage(m_host, "Too many open IRC batches; ignoring");
+            emit errorMessage(m_serverName, "Too many open IRC batches; ignoring");
             return;
         }
         const QString ref   = refArg.mid(1);
@@ -1083,7 +1085,7 @@ void IrcClient::deliverBatch(const QString &ref)
             assembled += bm.trailing;
         }
         if (!assembled.isEmpty())
-            emit messageReceived(m_host, target, nick, assembled, serverTime, false, msgid, replyTo);
+            emit messageReceived(m_serverName, target, nick, assembled, serverTime, false, msgid, replyTo);
         return;
     }
 
@@ -1091,7 +1093,7 @@ void IrcClient::deliverBatch(const QString &ref)
         QStringList nicks;
         for (const auto &bm : batch.msgs)
             if (!bm.nick.isEmpty()) nicks.append(bm.nick);
-        emit netsplitDetected(m_host, batch.param, nicks);
+        emit netsplitDetected(m_serverName, batch.param, nicks);
         return;
     }
     if (batch.type == "netjoin") {
@@ -1103,7 +1105,7 @@ void IrcClient::deliverBatch(const QString &ref)
             }
         }
         if (!channels.isEmpty())
-            emit netjoinDetected(m_host, batch.param, channels, nicks);
+            emit netjoinDetected(m_serverName, batch.param, channels, nicks);
         return;
     }
 
@@ -1118,15 +1120,15 @@ void IrcClient::deliverBatch(const QString &ref)
             if (text.startsWith('\x01') && text.endsWith('\x01')) {
                 const QString ctcp = text.mid(1, text.size() - 2);
                 if (ctcp.startsWith("ACTION "))
-                    emit actionReceived(m_host, target, bm.nick,
+                    emit actionReceived(m_serverName, target, bm.nick,
                                         ctcp.mid(7), bm.serverTime, isHistory, bm.msgid);
             } else {
-                emit messageReceived(m_host, target, bm.nick,
+                emit messageReceived(m_serverName, target, bm.nick,
                                      text, bm.serverTime, isHistory, bm.msgid, bm.replyTo);
             }
         } else if (bm.command == "NOTICE" && bm.params.size() >= 1) {
             const QString btext = bm.params.size() >= 2 ? bm.params.last() : bm.trailing;
-            emit noticeReceived(m_host, bm.params[0], bm.nick,
+            emit noticeReceived(m_serverName, bm.params[0], bm.nick,
                                 btext, bm.serverTime, isHistory, bm.msgid, bm.replyTo);
         }
     }
@@ -1155,12 +1157,12 @@ void IrcClient::handleBouncer(const QStringList &params, const QString &trailing
             m_bouncerNetBuf.append({id, name, state});
         if (!m_bouncerListing) {
             // live state-change notify (not the initial listing)
-            emit bouncerNetworkReceived(m_host, id, name, state == "connected");
+            emit bouncerNetworkReceived(m_serverName, id, name, state == "connected");
         }
     } else if (sub == "LISTNETWORKS" && params.size() >= 2
                && params[1].toUpper() == "END") {
         m_bouncerListing = false;
-        emit bouncerNetworksListed(m_host, m_bouncerNetBuf);
+        emit bouncerNetworksListed(m_serverName, m_bouncerNetBuf);
         m_bouncerNetBuf.clear();
     }
 }
@@ -1220,7 +1222,7 @@ void IrcClient::handleCap(const QStringList &params, const QString &trailing)
                     // The singleShot lambda fires after onDisconnected() clears the flag,
                     // so connectToHostEncrypted() always runs in UnconnectedState.
                     m_stsUpgrade = true;
-                    emit serverMessage(m_host, QString("STS: upgrading to TLS on port %1").arg(stsPort));
+                    emit serverMessage(m_serverName, QString("STS: upgrading to TLS on port %1").arg(stsPort));
                     QTimer::singleShot(0, this, [this]() {
                         if (sockState() != QAbstractSocket::UnconnectedState)
                             sockAbort();
@@ -1359,14 +1361,14 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     switch (n) {
     case 1:   // RPL_WELCOME
         m_registered = true;
-        emit selfNickChanged(m_host, m_nick);
-        emit connected(m_host);
-        emit serverMessage(m_host, trailing);
+        emit selfNickChanged(m_serverName, m_nick);
+        emit connected(m_serverName);
+        emit serverMessage(m_serverName, trailing);
         if (!m_nickservPassword.isEmpty()) {
             if (!m_ssl)
-                emit serverMessage(m_host, "Warning: sending NickServ password over unencrypted connection");
+                emit serverMessage(m_serverName, "Warning: sending NickServ password over unencrypted connection");
             sendRaw("PRIVMSG NickServ :IDENTIFY " + m_nickservPassword);
-            emit serverMessage(m_host, "Sent NickServ IDENTIFY");
+            emit serverMessage(m_serverName, "Sent NickServ IDENTIFY");
         }
         // ZNC: request playback of all buffers since last seen
         if (m_bouncerType == BouncerType::ZNC &&
@@ -1387,12 +1389,12 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         for (int i = 1; i < params.size(); ++i) {
             if (params[i].compare("UTF8ONLY", Qt::CaseInsensitive) == 0) {
                 m_utf8Only = true;
-                emit serverMessage(m_host, "UTF8ONLY: server enforces UTF-8 encoding");
+                emit serverMessage(m_serverName, "UTF8ONLY: server enforces UTF-8 encoding");
             } else if (params[i].compare("WHOX", Qt::CaseInsensitive) == 0) {
                 m_supportsWhox = true;
             }
         }
-        emit serverMessage(m_host, trailing);
+        emit serverMessage(m_serverName, trailing);
         break;
     }
     case 251: case 252: case 253: case 254: case 255:
@@ -1401,19 +1403,19 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 375: // RPL_MOTDSTART
     case 376: // RPL_ENDOFMOTD
     case 422: // ERR_NOMOTD
-        emit serverMessage(m_host, trailing);
+        emit serverMessage(m_serverName, trailing);
         break;
 
     case 324: // RPL_CHANNELMODEIS
         if (params.size() >= 3) {
             QStringList modeParts = params.mid(2);
-            emit modesReceived(m_host, params[1], modeParts.join(' '));
+            emit modesReceived(m_serverName, params[1], modeParts.join(' '));
         }
         break;
 
     case 332: // RPL_TOPIC
         if (params.size() >= 2)
-            emit topicReceived(m_host, params[1], trailing);
+            emit topicReceived(m_serverName, params[1], trailing);
         break;
 
     case 315: break; // RPL_ENDOFWHO — suppress
@@ -1423,7 +1425,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             bool ok = false;
             const quint64 ts = params[3].toULongLong(&ok);
             if (ok)
-                emit topicSetByReceived(m_host, params[1], params[2], ts);
+                emit topicSetByReceived(m_serverName, params[1], params[2], ts);
         }
         break;
 
@@ -1442,7 +1444,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             const QString &nick    = params[5];
             const QString &flags   = params[6];
             if (channel.startsWith('#') || channel.startsWith('&'))
-                emit whoEntryReceived(m_host, channel, nick, flags);
+                emit whoEntryReceived(m_serverName, channel, nick, flags);
         }
         break;
     }
@@ -1454,9 +1456,9 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             const QString &flags   = params[4];
             const QString account = params.size() >= 6 ? params[5] : QString();
             if (channel.startsWith('#') || channel.startsWith('&'))
-                emit whoEntryReceived(m_host, channel, nick, flags);
+                emit whoEntryReceived(m_serverName, channel, nick, flags);
             if (!account.isEmpty() && account != "0" && account != "*")
-                emit accountChanged(m_host, nick, account);
+                emit accountChanged(m_serverName, nick, account);
         }
         break;
     }
@@ -1464,8 +1466,8 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 366: { // RPL_ENDOFNAMES
         if (params.size() >= 2) {
             const QString &channel = params[1];
-            emit namesReceived(m_host, channel, m_namesBuffer.take(channel.toLower()));
-            emit namesDone(m_host, channel);
+            emit namesReceived(m_serverName, channel, m_namesBuffer.take(channel.toLower()));
+            emit namesDone(m_serverName, channel);
             sendRaw("MODE " + channel);
             if (m_supportsWhox)
                 sendRaw("WHO " + channel + " %tcnfa,42");
@@ -1479,17 +1481,17 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     }
 
     case 900: // RPL_LOGGEDIN
-        emit serverMessage(m_host, trailing);
+        emit serverMessage(m_serverName, trailing);
         break;
 
     case 903: // RPL_SASLSUCCESS
-        emit serverMessage(m_host, "SASL authentication successful");
+        emit serverMessage(m_serverName, "SASL authentication successful");
         m_saslPending = false;
         sendRaw("CAP END");
         break;
 
     case 904: case 905: case 906:
-        emit serverMessage(m_host, "SASL authentication failed: " + trailing);
+        emit serverMessage(m_serverName, "SASL authentication failed: " + trailing);
         m_saslPending = false;
         sendRaw("CAP END");
         break;
@@ -1498,11 +1500,11 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         if (!m_registered)
             setNick(m_nick + "_");
         else
-            emit errorMessage(m_host, "Nickname " + m_nick + " is already in use");
+            emit errorMessage(m_serverName, "Nickname " + m_nick + " is already in use");
         break;
 
     case 431: case 432:
-        emit errorMessage(m_host, "Nick error: " + trailing);
+        emit errorMessage(m_serverName, "Nick error: " + trailing);
         break;
 
     case 730: { // RPL_MONONLINE
@@ -1511,7 +1513,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             const QString nick = part.section('!', 0, 0).trimmed();
             if (!nick.isEmpty()) nicks << nick;
         }
-        if (!nicks.isEmpty()) emit monitorOnline(m_host, nicks);
+        if (!nicks.isEmpty()) emit monitorOnline(m_serverName, nicks);
         break;
     }
     case 731: { // RPL_MONOFFLINE
@@ -1521,17 +1523,17 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             // offline nicks have no !user@host, but handle both forms
             if (!nick.isEmpty()) nicks << nick;
         }
-        if (!nicks.isEmpty()) emit monitorOffline(m_host, nicks);
+        if (!nicks.isEmpty()) emit monitorOffline(m_serverName, nicks);
         break;
     }
     case 732: // RPL_MONLIST
-        emit serverMessage(m_host, "Monitor: " + trailing);
+        emit serverMessage(m_serverName, "Monitor: " + trailing);
         break;
     case 733: // RPL_ENDOFMONLIST
-        emit serverMessage(m_host, "End of monitor list.");
+        emit serverMessage(m_serverName, "End of monitor list.");
         break;
     case 734: // ERR_MONLISTFULL
-        emit errorMessage(m_host, "Monitor list full: " + trailing);
+        emit errorMessage(m_serverName, "Monitor list full: " + trailing);
         break;
 
     case 761: { // RPL_KEYVALUE — response to METADATA SET/GET: <client> <target> <key> <visibility> :<value>
@@ -1544,7 +1546,7 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
             const QString &key = params[2];
             if ((key == "display-name" || key == "avatar") && !target.startsWith('#')) {
                 const QString value = !trailing.isEmpty() ? trailing : params.value(4);
-                emit userMetaChanged(m_host, target, key, value);
+                emit userMetaChanged(m_serverName, target, key, value);
             }
         }
         break;
@@ -1557,20 +1559,20 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 322: // RPL_LIST — <client> <channel> <count> :<topic>
         if (params.size() >= 3) {
             m_listBuffer.append({params[1], params[2], trailing});
-            emit channelListEntry(m_host, params[1], params[2].toInt(), trailing);
+            emit channelListEntry(m_serverName, params[1], params[2].toInt(), trailing);
         }
         break;
 
     case 323: // RPL_LISTEND
-        emit channelListEnd(m_host, static_cast<int>(m_listBuffer.size()));
-        emit channelListReceived(m_host, m_listBuffer);
+        emit channelListEnd(m_serverName, static_cast<int>(m_listBuffer.size()));
+        emit channelListReceived(m_serverName, m_listBuffer);
         m_listBuffer.clear();
         break;
 
     case 391: { // RPL_TIME — <client> <server> [<timestamp>] :<human-readable>
         const QString srv  = params.size() >= 2 ? params[1] : m_host;
         const QString time = trailing.isEmpty() ? "(no time returned)" : trailing;
-        emit contextualMessage(m_host, "Time on " + srv + ": " + time);
+        emit contextualMessage(m_serverName, "Time on " + srv + ": " + time);
         break;
     }
 
@@ -1579,13 +1581,13 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 243: case 244: case 249: case 250: { // STATS reply lines
         QStringList parts = params.mid(1); // skip client nick
         if (!trailing.isEmpty()) parts << trailing;
-        if (!parts.isEmpty()) emit contextualMessage(m_host, parts.join(' '));
+        if (!parts.isEmpty()) emit contextualMessage(m_serverName, parts.join(' '));
         break;
     }
     case 219: { // RPL_ENDOFSTATS
         const QString query = params.size() >= 2 ? params[1] : QString();
         const QString msg   = trailing.isEmpty() ? "End of STATS" : trailing;
-        emit contextualMessage(m_host, query.isEmpty() ? msg : msg + " (" + query + ")");
+        emit contextualMessage(m_serverName, query.isEmpty() ? msg : msg + " (" + query + ")");
         break;
     }
 
@@ -1593,27 +1595,27 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
         if (params.size() >= 4) {
             const QString line = params[1] + " was " + params[2] + "@" + params[3]
                 + (trailing.isEmpty() ? QString() : " (" + trailing + ")");
-            emit contextualMessage(m_host, line);
+            emit contextualMessage(m_serverName, line);
         }
         break;
     }
     case 305: // RPL_UNAWAY
         m_away = false;
-        emit awayChanged(m_host, false);
-        emit contextualMessage(m_host, "You are no longer away");
+        emit awayChanged(m_serverName, false);
+        emit contextualMessage(m_serverName, "You are no longer away");
         break;
 
     case 306: // RPL_NOWAWAY
         m_away = true;
-        emit awayChanged(m_host, true);
-        emit contextualMessage(m_host, m_awayMsg.isEmpty()
+        emit awayChanged(m_serverName, true);
+        emit contextualMessage(m_serverName, m_awayMsg.isEmpty()
             ? QString("You are now away")
             : "You are now away: " + m_awayMsg);
         break;
 
     case 301: // RPL_AWAY — <client> <nick> :<away message>
         if (params.size() >= 2 && !trailing.isEmpty())
-            emit contextualMessage(m_host, params[1] + " is away: " + trailing);
+            emit contextualMessage(m_serverName, params[1] + " is away: " + trailing);
         break;
 
     // WHOIS/WHOWAS replies — route to active channel/window
@@ -1622,17 +1624,17 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     case 320: // RPL_WHOISSPECIAL
     case 671: // RPL_WHOISSECURE
         if (params.size() >= 2 && !trailing.isEmpty())
-            emit contextualMessage(m_host, params[1] + " " + trailing);
+            emit contextualMessage(m_serverName, params[1] + " " + trailing);
         break;
     case 311: { // RPL_WHOISUSER: <client> <nick> <user> <host> * :<realname>
         if (params.size() >= 4)
-            emit contextualMessage(m_host,
+            emit contextualMessage(m_serverName,
                 params[1] + " (" + params[2] + "@" + params[3] + ") — " + trailing);
         break;
     }
     case 312: { // RPL_WHOISSERVER: <client> <nick> <server> :<info>
         if (params.size() >= 3)
-            emit contextualMessage(m_host,
+            emit contextualMessage(m_serverName,
                 params[1] + " on " + params[2] + " (" + trailing + ")");
         break;
     }
@@ -1650,18 +1652,18 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
                 const QDateTime dt = QDateTime::fromSecsSinceEpoch(params[3].toLongLong());
                 idle += ", signed on " + dt.toString("ddd hh:mm");
             }
-            emit contextualMessage(m_host, params[1] + " — " + idle);
+            emit contextualMessage(m_serverName, params[1] + " — " + idle);
         }
         break;
     }
     case 319: { // RPL_WHOISCHANNELS: <client> <nick> :<channels>
         if (params.size() >= 2 && !trailing.isEmpty())
-            emit contextualMessage(m_host, params[1] + " is on: " + trailing);
+            emit contextualMessage(m_serverName, params[1] + " is on: " + trailing);
         break;
     }
     case 330: { // RPL_WHOISACCOUNT: <client> <nick> <account> :is logged in as
         if (params.size() >= 3)
-            emit contextualMessage(m_host, params[1] + " is logged in as " + params[2]);
+            emit contextualMessage(m_serverName, params[1] + " is logged in as " + params[2]);
         break;
     }
     case 318: // RPL_ENDOFWHOIS — suppress, replies already shown
@@ -1675,9 +1677,9 @@ void IrcClient::handleNumeric(const QString &cmd, const QStringList &params, con
     default:
         if (!trailing.isEmpty()) {
             if (n >= 400)
-                emit errorMessage(m_host, trailing);
+                emit errorMessage(m_serverName, trailing);
             else
-                emit serverMessage(m_host, trailing);
+                emit serverMessage(m_serverName, trailing);
         }
         break;
     }

@@ -154,6 +154,9 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 
 | Command | Description |
 |---|---|
+| `/connect [host[:port]]` | Reconnect to the current server, or connect to a new server. If the host is already in your config, uses that entry; otherwise creates an ad-hoc connection with auto-detected SSL (port 6667 = plain, everything else = SSL). |
+| `/server [host[:port]]` | Alias for `/connect` |
+| `/disconnect` | Close the current server and all its channels from the sidebar. The server remains in your config and will reconnect on next launch. |
 | `/quit [message]` | Disconnect from the current server. If no message is given, uses the server's configured `quit_message` (default: `"Uplink"`) |
 | `/motd [server]` | Request the message of the day |
 | `/list` | Open the channel browser — a sortable dialog showing all channels with user count and topic; type to filter, double-click or press Join to join |
@@ -164,6 +167,10 @@ Shortcuts for sending messages to network services. These are equivalent to `/ms
 ### Examples
 
 ```
+/connect                 # reconnect to the current server
+/connect irc.libera.chat # connect to Libera Chat (SSL, port 6697)
+/server irc.example.org:6667  # connect plain-text on port 6667
+/disconnect              # close the current server from the sidebar
 /quit                    # uses configured quit_message (default: "Uplink")
 /quit later everyone     # overrides for this disconnect only
 /motd
@@ -275,6 +282,9 @@ Right-clicking a **server header** shows:
 |---|---|
 | **Disconnect** | Sends `QUIT` and closes the connection. |
 | **Reconnect** | Re-connects to the server using the current config. |
+| **Close Server** | Disconnects and removes the server and all its channels from the sidebar. The server stays in your config and returns on next launch. |
+| **Move Up** | Moves the server up in the sidebar. Order is saved to config. |
+| **Move Down** | Moves the server down in the sidebar. Order is saved to config. |
 
 ---
 

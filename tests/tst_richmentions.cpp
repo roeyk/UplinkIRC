@@ -149,8 +149,10 @@ void TstRichMentions::mentionsDefaultScopeIsLocal()
     const QStringList lines = RichSearch::renderMentions(
         QList<ServerSession>{libera, oftc},
         ServerId{QStringLiteral("irc.libera.chat")},
-        QStringLiteral("roey"), QStringLiteral("--notimestamp"));
+        QStringLiteral("roey"), QStringLiteral("--notimestamp"),
+        QDateTime(QDate(2026, 6, 17), QTime(12, 3), QTimeZone::UTC));
 
+    QCOMPARE(lines.size(), 1);
     QCOMPARE(withoutHighlightControls(lines.first()),
              QStringLiteral("#one  <alice> roey: check this"));
 }
@@ -169,7 +171,8 @@ void TstRichMentions::mentionsGlobalScopePrefixesNetworkChannel()
     const QStringList lines = RichSearch::renderMentions(
         QList<ServerSession>{libera, oftc},
         ServerId{QStringLiteral("irc.libera.chat")},
-        QStringLiteral("roey"), QStringLiteral("scope=global --notimestamp"));
+        QStringLiteral("roey"), QStringLiteral("scope=global --notimestamp"),
+        QDateTime(QDate(2026, 6, 17), QTime(12, 3), QTimeZone::UTC));
 
     QStringList plainLines;
     for (const QString &line : lines)

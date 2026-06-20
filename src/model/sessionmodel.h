@@ -22,8 +22,9 @@ public:
     void loadConfig(const Config &cfg);
     void addServer(const ServerConfig &sc);
     void removeServer(ServerId host);
+    void closeServer(ServerId host);
+    bool connectServer(ServerId host);
     void updateServer(ServerId oldHost, const ServerConfig &sc);
-    void syncServers(const QList<ServerConfig> &servers);
     void closeBuffer(ServerId host, BufferId target);
 
     // Read access for UI
@@ -77,6 +78,7 @@ signals:
     void serverAdded       (ServerId host);
     void serverConnected   (ServerId host);
     void serverDisconnected(ServerId host);
+    void serverClosed      (ServerId host);
     void channelAdded  (ServerId host, BufferId channel);
     void channelRemoved(ServerId host, BufferId channel);
 

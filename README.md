@@ -24,19 +24,19 @@
 ---
 
 <p align="center">
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.25.40-x86_64.AppImage">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-0.25.43-x86_64.AppImage">
     <img src="https://img.shields.io/badge/⬇%20AppImage-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download AppImage" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.40-linux-x86_64.tar.gz">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.43-linux-x86_64.tar.gz">
     <img src="https://img.shields.io/badge/⬇%20tar.gz-Linux%20x86__64-1793d1?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux tar.gz" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.40-windows-x64.zip">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.43-windows-x64.zip">
     <img src="https://img.shields.io/badge/⬇%20Windows-x64-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows" />
   </a>
   &nbsp;
-  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.40-macos-arm64.dmg">
+  <a href="https://github.com/noderelay/UplinkIRC/releases/latest/download/Uplink-v0.25.43-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/⬇%20macOS-arm64-555?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS" />
   </a>
   &nbsp;
@@ -385,7 +385,10 @@ channels = "#linux, #archlinux"
 | `/version [nick]` | Request VERSION (nick optional) |
 | `/ctcp <target> <cmd> [args]` | Send a CTCP request |
 | `/sysinfo` | Post OS / CPU / GPU / RAM / uptime to channel |
-| `/clear` | Clear the chat buffer |
+| `/clear` | Clear the chat buffer (purges history) |
+| `/connect [host[:port]]` | Reconnect, or connect to any server |
+| `/server [host[:port]]` | Alias for `/connect` |
+| `/disconnect` | Close the current server and all its channels |
 | `/quote <raw>` | Send a raw IRC line |
 | `/quit [message]` | Disconnect from the current server |
 | `/help` | List all commands in the chat buffer |
