@@ -3260,7 +3260,7 @@ void MainWindow::onMessageAdded(ServerId host, BufferId channel, const Message &
         } else {
             view->appendLine(ChatRenderer::formatMessageLine(msg, makeCtx(ch)));
         }
-        view->scrollToBottom();
+        if (view->isAtBottom()) view->scrollToBottom();
     };
 
     if (host == m_model->activeHost() &&
@@ -5116,7 +5116,7 @@ void MainWindow::appendMessage(const Message &msg, bool autoPreview)
         }
     }
 
-    m_chatView->scrollToBottom();
+    if (m_chatView->isAtBottom()) m_chatView->scrollToBottom();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
