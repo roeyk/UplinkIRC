@@ -56,6 +56,11 @@ void ChatView::appendLine(const ChatLine &line)
 {
     const int prevTotal = totalHeight();
     m_lines.append(line);
+    if (m_lines.last().role == ChatLineRole::PreviewCard && m_lines.size() >= 2) {
+        const auto &prev = m_lines[m_lines.size() - 2];
+        if (prev.cachedHangPx > 0)
+            m_lines.last().cachedHangPx = prev.cachedHangPx;
+    }
     layoutLine(m_lines.last());
     m_cumH.append(prevTotal);
 
@@ -103,8 +108,10 @@ void ChatView::replaceLine(const QString &id, const ChatLine &line)
 void ChatView::insertAfter(const QString &id, const ChatLine &line)
 {
     ChatLine newLine = line;
-    layoutLine(newLine);
     const int idx = findLine(id);
+    if (idx >= 0 && newLine.role == ChatLineRole::PreviewCard && m_lines[idx].cachedHangPx > 0)
+        newLine.cachedHangPx = m_lines[idx].cachedHangPx;
+    layoutLine(newLine);
     const int insertIdx = (idx >= 0) ? idx + 1 : static_cast<int>(m_lines.size());
     m_lines.insert(insertIdx, newLine);
     m_cumH.insert(insertIdx, 0);
@@ -608,10 +615,10 @@ void ChatView::layoutLine(ChatLine &line) const
     if (line.role == ChatLineRole::PreviewCard) {
         const int imgH  = line.image.isNull() ? 0 : (line.image.height() + 4);
         const int textH = fh * 2 + 4;
-        const int cardX = kHPad + hangWidth();
+        const int cardX = kHPad + (line.cachedHangPx > 0 ? line.cachedHangPx : hangWidth());
         line.cachedH = kVPad + textH + imgH + kVPad;
         line.visLines = { {0, static_cast<int>(line.text.size()), static_cast<qreal>(cardX),
-                            0, static_cast<qreal>(wrapWidth() - hangWidth()), static_cast<qreal>(line.cachedH)} };
+                            0, static_cast<qreal>(wrapWidth() - cardX + kHPad), static_cast<qreal>(line.cachedH)} };
         return;
     }
 
@@ -774,7 +781,7 @@ void ChatView::drawLine(QPainter &p, const ChatLine &line, int screenY,
 
 void ChatView::drawPreviewCard(QPainter &p, const ChatLine &line, int screenY) const
 {
-    const int x    = kHPad + hangWidth();
+    const int x    = kHPad + (line.cachedHangPx > 0 ? line.cachedHangPx : hangWidth());
     const int maxW = viewport()->width() - kHPad - x;
     if (line.text.isEmpty() && line.image.isNull()) return;
 
