@@ -31,6 +31,8 @@ class DccReceive;
 class ChannelPane;
 class QuickSwitcher;
 class QNetworkAccessManager;
+class QGraphicsOpacityEffect;
+class QPropertyAnimation;
 
 class ChatView;
 class QTimer;
@@ -203,7 +205,9 @@ private:
     QLabel       *m_nickCountLabel{nullptr};
     QToolButton  *m_nickToggleBtn{nullptr};
     QToolButton  *m_nickRevealBtn{nullptr};
-    QToolButton  *m_scrollBottomBtn{nullptr};
+    QToolButton              *m_scrollBottomBtn{nullptr};
+    QGraphicsOpacityEffect   *m_scrollBottomOpacity{nullptr};
+    QPropertyAnimation       *m_scrollBottomAnim{nullptr};
     QToolButton  *m_sidebarRevealBtn{nullptr};
     QToolButton  *m_sidebarCloseBtn{nullptr};
     QWidget      *m_chatSection{nullptr};

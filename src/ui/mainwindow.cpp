@@ -53,6 +53,8 @@
 #include <QSplitter>
 #include <QTextCharFormat>
 #include <QScrollBar>
+#include <QGraphicsOpacityEffect>
+#include <QPropertyAnimation>
 #include <QInputDialog>
 #include <QSysInfo>
 #include <QThread>
@@ -1782,10 +1784,11 @@ void MainWindow::setupChatArea()
         m_nickPanel->setVisible(true);
         m_nickRevealBtn->setVisible(false);
     });
-    m_scrollBottomBtn = new QToolButton(m_chatSection);
+    m_scrollBottomBtn = new QToolButton(m_chatView->viewport());
     m_scrollBottomBtn->setFixedSize(32, 32);
     m_scrollBottomBtn->setIconSize(QSize(22, 22));
     m_scrollBottomBtn->setAutoRaise(true);
+    m_scrollBottomBtn->setCursor(Qt::PointingHandCursor);
     m_scrollBottomBtn->setStyleSheet(
         "QToolButton { background: rgba(0,0,0,0.5); border: none; border-radius: 16px; }"
         "QToolButton:hover { background: rgba(0,0,0,0.7); }"
@@ -1795,17 +1798,35 @@ void MainWindow::setupChatArea()
         QStringLiteral(":/icons/mi-keyboard-double-arrow-down.svg"),
         QColor("#e3e3e3")));
     m_scrollBottomBtn->setVisible(false);
-    m_scrollBottomBtn->raise();
+    m_scrollBottomOpacity = new QGraphicsOpacityEffect(m_scrollBottomBtn);
+    m_scrollBottomOpacity->setOpacity(0.0);
+    m_scrollBottomBtn->setGraphicsEffect(m_scrollBottomOpacity);
+    m_scrollBottomAnim = new QPropertyAnimation(m_scrollBottomOpacity, "opacity", this);
+    m_scrollBottomAnim->setDuration(300);
+    m_scrollBottomAnim->setEasingCurve(QEasingCurve::OutCubic);
     connect(m_scrollBottomBtn, &QToolButton::clicked, this, [this]{
         m_chatView->scrollToBottom();
     });
     connect(m_chatView, &ChatView::scrolledAwayFromBottom, this, [this](bool away){
-        m_scrollBottomBtn->setVisible(away);
+        auto *vp = m_chatView->viewport();
+        m_scrollBottomBtn->move(
+            vp->width() - m_scrollBottomBtn->width() - 12,
+            vp->height() - m_scrollBottomBtn->height() - 12);
+        m_scrollBottomBtn->raise();
+        m_scrollBottomAnim->stop();
         if (away) {
-            m_scrollBottomBtn->move(
-                (m_chatSection->width() - m_scrollBottomBtn->width()) / 2,
-                m_chatSection->height() - m_scrollBottomBtn->height() - 12);
-            m_scrollBottomBtn->raise();
+            m_scrollBottomBtn->setVisible(true);
+            m_scrollBottomAnim->setStartValue(m_scrollBottomOpacity->opacity());
+            m_scrollBottomAnim->setEndValue(0.85);
+            m_scrollBottomAnim->start();
+        } else {
+            m_scrollBottomAnim->setStartValue(m_scrollBottomOpacity->opacity());
+            m_scrollBottomAnim->setEndValue(0.0);
+            m_scrollBottomAnim->start();
+            connect(m_scrollBottomAnim, &QPropertyAnimation::finished, this, [this]{
+                if (m_scrollBottomOpacity->opacity() < 0.01)
+                    m_scrollBottomBtn->setVisible(false);
+            }, Qt::SingleShotConnection);
         }
     });
 
@@ -2400,11 +2421,11 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         m_sidebarRevealBtn->move(4, re->size().height() - m_sidebarRevealBtn->height() - 4);
     }
 
-    if (obj == m_chatSection && event->type() == QEvent::Resize &&
+    if (obj == m_chatView->viewport() && event->type() == QEvent::Resize &&
         m_scrollBottomBtn && m_scrollBottomBtn->isVisible()) {
         auto *re = static_cast<QResizeEvent *>(event);
         m_scrollBottomBtn->move(
-            (re->size().width() - m_scrollBottomBtn->width()) / 2,
+            re->size().width() - m_scrollBottomBtn->width() - 12,
             re->size().height() - m_scrollBottomBtn->height() - 12);
     }
 
