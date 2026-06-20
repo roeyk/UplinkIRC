@@ -63,6 +63,18 @@ qt_add_executable(Uplink WIN32
     src/model/serversession.h
     src/model/channel.h
     src/model/message.h
+    src/search/completion.cpp
+    src/search/common.cpp
+    src/search/display.cpp
+    src/search/displayhighlight.cpp
+    src/search/internal.h
+    src/search/mentions.cpp
+    src/search/queryoptions.cpp
+    src/search/queryeval.cpp
+    src/search/queryparser.cpp
+    src/search/richsearch.cpp
+    src/search/richsearch.h
+    src/search/tokenizer.cpp
     src/ui/mainwindow.cpp
     src/ui/mainwindow.h
     src/ui/commanddispatcher.cpp

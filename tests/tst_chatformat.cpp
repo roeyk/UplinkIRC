@@ -23,7 +23,24 @@ private slots:
     void linkifyHttps();
     void linkifyFtpSkipped();
     void linkifyNoUrl();
+    void formatsCommonOutputAsThemedSegments();
+    void formatsPrefixedSearchOutputAsThemedSegments();
 };
+
+static QString segmentText(const ChatLine &line, const ChatSegment &segment)
+{
+    return line.text.mid(segment.start, segment.length);
+}
+
+static bool hasSegmentText(const ChatLine &line, const QString &text)
+{
+    for (const ChatSegment &segment : line.segments) {
+        if (segmentText(line, segment) == text)
+            return true;
+    }
+
+    return false;
+}
 
 void TstChatFormat::htmlAttrQuote()
 {
@@ -126,6 +143,47 @@ void TstChatFormat::linkifyFtpSkipped()
 void TstChatFormat::linkifyNoUrl()
 {
     QCOMPARE(linkifyHtml(QStringLiteral("no url here")), QStringLiteral("no url here"));
+}
+
+void TstChatFormat::formatsCommonOutputAsThemedSegments()
+{
+    Context ctx;
+    ctx.showTimestamps = false;
+    ctx.validTheme = true;
+    ctx.themeText = QStringLiteral("#dddddd");
+    ctx.themeAccent = QStringLiteral("#00aaee");
+    ctx.themePlaceholder = QStringLiteral("#777777");
+
+    const ChatLine line = formatMessageLine(
+        Message::make(MessageType::Server, QString(), QStringLiteral("alice: #rust, #linux")),
+        ctx);
+
+    QVERIFY(line.text.contains(QStringLiteral("alice: #rust, #linux")));
+    QVERIFY(hasSegmentText(line, QStringLiteral("alice")));
+    QVERIFY(hasSegmentText(line, QStringLiteral("#rust")));
+    QVERIFY(hasSegmentText(line, QStringLiteral("#linux")));
+}
+
+void TstChatFormat::formatsPrefixedSearchOutputAsThemedSegments()
+{
+    Context ctx;
+    ctx.showTimestamps = false;
+    ctx.validTheme = true;
+    ctx.themeText = QStringLiteral("#dddddd");
+    ctx.themeAccent = QStringLiteral("#00aaee");
+    ctx.themePlaceholder = QStringLiteral("#777777");
+
+    const ChatLine line = formatMessageLine(
+        Message::make(
+            MessageType::Server,
+            QString(),
+            QStringLiteral("Libera/#one: <alice> deploy finished")),
+        ctx);
+
+    QVERIFY(line.text.contains(QStringLiteral("Libera/#one: <alice> deploy finished")));
+    QVERIFY(hasSegmentText(line, QStringLiteral("Libera")));
+    QVERIFY(hasSegmentText(line, QStringLiteral("#one")));
+    QVERIFY(hasSegmentText(line, QStringLiteral("alice")));
 }
 
 QTEST_GUILESS_MAIN(TstChatFormat)

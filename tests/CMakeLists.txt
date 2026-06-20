@@ -3,7 +3,10 @@ find_package(Qt6 REQUIRED COMPONENTS Test Core Gui)
 function(uplink_test TARGET)
     cmake_parse_arguments("" "" "" "SOURCES;LIBS" ${ARGN})
     add_executable(${TARGET} ${_SOURCES})
-    target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+    target_include_directories(${TARGET} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src
+        ${QTKEYCHAIN_COMPAT_INCLUDE}
+    )
     target_link_libraries(${TARGET} PRIVATE Qt6::Test Qt6::Core ${_LIBS})
     add_test(NAME ${TARGET} COMMAND ${TARGET})
 endfunction()
@@ -19,6 +22,41 @@ uplink_test(tst_chatformat
         tst_chatformat.cpp
         ${CMAKE_SOURCE_DIR}/src/ui/chatrenderer.cpp
     LIBS Qt6::Gui
+)
+
+uplink_test(tst_config
+    SOURCES
+        tst_config.cpp
+        ${CMAKE_SOURCE_DIR}/src/config/config.cpp
+        ${CMAKE_SOURCE_DIR}/src/config/keychainhelper.cpp
+    LIBS tomlplusplus::tomlplusplus Qt6Keychain::Qt6Keychain
+)
+
+uplink_test(tst_richsearch
+    SOURCES
+        tst_richsearch.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/completion.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/common.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/display.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/displayhighlight.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryeval.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryoptions.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryparser.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/richsearch.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/tokenizer.cpp
+)
+
+uplink_test(tst_richmentions
+    SOURCES
+        tst_richmentions.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/display.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/displayhighlight.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/mentions.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryeval.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryoptions.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/queryparser.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/richsearch.cpp
+        ${CMAKE_SOURCE_DIR}/src/search/tokenizer.cpp
 )
 
 # ---------------------------------------------------------------------------

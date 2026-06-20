@@ -2,6 +2,7 @@
 #include "model/sessionmodel.h"
 #include "irc/ircclient.h"
 #include "config/config.h"
+#include "search/richsearch.h"
 
 #include <memory>
 #include <QDateTime>
@@ -287,8 +288,129 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
     const QString cmd  = trimmed.section(' ', 0, 0).toLower();
     const QString args = trimmed.section(' ', 1);
 
+    // Builds the synthetic local buffer name for non-inline rich-search output.
+    //
+    // Used only by `publishLocalResults`; the returned buffer is local UI state
+    // and is not joined or requested from IRC.
+    auto resultBuffer = [&](const QString &kind) {
+        return BufferId{QStringLiteral("%1: %2").arg(kind, channel.str())};
+    };
+
+    // Publishes local rich-search-family command output.
+    //
+    // Called by `/search`, `/last`, and `/mentions` handlers after parser and
+    // renderer logic have produced display lines. `view` chooses current
+    // buffer, synthetic tab, or side pane. This function writes local messages
+    // only; it never sends IRC traffic.
+    auto publishLocalResults = [&](const QString &kind,
+                                   RichSearch::ResultView view,
+                                   const QString &summary,
+                                   const QString &emptyMessage,
+                                   const QStringList &lines) {
+        const BufferId target = view == RichSearch::ResultView::Inline
+            ? channel
+            : resultBuffer(kind);
+
+        // Non-inline views use a synthetic local buffer so search output does
+        // not bury the source conversation.
+        if (view != RichSearch::ResultView::Inline)
+            m_model->localMessage(host, target, QStringLiteral("--- %1 ---").arg(summary));
+
+        m_model->localMessage(host, target, summary);
+
+        // Empty output is still written to the selected destination so the user
+        // can see that the command ran and where it was routed.
+        if (lines.isEmpty()) {
+            m_model->localMessage(host, target, emptyMessage);
+        } else {
+            const int limit = 50;
+
+            // Bound result output to keep broad searches responsive.
+            for (int i = 0; i < lines.size() && i < limit; ++i)
+                m_model->localMessage(host, target, lines[i]);
+
+            if (lines.size() > limit)
+                m_model->localMessage(host, target,
+                    QString("Search output truncated; showing first %1 results").arg(limit));
+        }
+
+        // Reveal the result destination after it has content.
+        if (view == RichSearch::ResultView::Tab)
+            emit switchChannel(host.str(), target.str());
+        else if (view == RichSearch::ResultView::Pane)
+            emit openChannelPane(host.str(), target.str());
+    };
+
     if (cmd == "/join" || cmd == "/j") {
         m_model->sendJoin(host, BufferId{args.section(' ', 0, 0)}, args.section(' ', 1, 1));
+    } else if (cmd == "/mentions" || cmd == "/lastmention") {
+        const RichSearch::MentionResult result = RichSearch::renderMentionResult(
+            m_model->sessions(),
+            host,
+            m_model->selfNick(host),
+            args);
+
+        if (!result.ok) {
+            m_model->localMessage(host, channel, "Invalid /mentions syntax: " + result.error);
+            return true;
+        }
+
+        publishLocalResults(
+            QStringLiteral("Mentions"),
+            result.view,
+            QString("Mentions found in loaded messages: %1").arg(result.lines.size()),
+            QStringLiteral("No mentions found in loaded local buffers."),
+            result.lines);
+    } else if (cmd == "/common") {
+        const RichSearch::CommonResult parsed = RichSearch::parseCommon(args);
+        if (!parsed.ok) {
+            m_model->localMessage(host, channel, "Invalid /common syntax: " + parsed.error);
+            return true;
+        }
+
+        const QStringList lines = RichSearch::renderCommon(
+            m_model->sessions(),
+            host,
+            channel,
+            parsed.command.scope);
+
+        m_model->localMessage(host, channel,
+            QString("Common channels found for %1 user%2")
+                .arg(lines.size())
+                .arg(lines.size() == 1 ? "" : "s"));
+
+        if (lines.isEmpty()) {
+            m_model->localMessage(host, channel, "No common channels found in known local membership.");
+        } else {
+            for (const QString &line : lines)
+                m_model->localMessage(host, channel, line);
+        }
+    } else if (cmd == "/search" || cmd == "/last") {
+        auto *current = m_model->channel(host, channel);
+        if (!current) {
+            m_model->localMessage(host, channel, "Search is available only after the current buffer has local messages.");
+            return true;
+        }
+
+        const RichSearch::Result parsed = RichSearch::parse(args);
+        if (!parsed.ok) {
+            m_model->localMessage(host, channel, "Invalid search syntax: " + parsed.error);
+            return true;
+        }
+
+        const QStringList lines = RichSearch::renderMatches(
+            *current,
+            parsed.command,
+            m_model->selfNick(host));
+
+        publishLocalResults(
+            QStringLiteral("Search"),
+            parsed.command.options.view,
+            QString("Search matched %1 loaded message%2")
+                .arg(lines.size())
+                .arg(lines.size() == 1 ? "" : "s"),
+            QStringLiteral("No search matches found in loaded local messages."),
+            lines);
     } else if (cmd == "/part" || cmd == "/leave" || cmd == "/close") {
         const bool isChannel = channel.str().startsWith('#') || channel.str().startsWith('&');
         if (isChannel)
@@ -668,6 +790,10 @@ bool CommandDispatcher::dispatch(const QString &text, ServerId host,
             "  /me <action>                — send an action (/me waves)",
             "  /msg <target> <message>     — send a private message",
             "  /query <nick>               — open a PM buffer without sending",
+            "  /common [scope=global|network] — list known shared channels with users here",
+            "  /mentions                   — list recent loaded mentions of your nick",
+            "  /search <query>             — search loaded messages in the current buffer",
+            "  /last <query>               — alias for current-buffer loaded-message search",
             "  /ns <text>                  — message NickServ",
             "  /cs <text>                  — message ChanServ",
             "  /bs <text>                  — message BotServ",

@@ -539,6 +539,204 @@ static void addSelfNickHighlight(TextBuilder &tb, int textStart, const QRegularE
     }
 }
 
+// Returns the active theme text color for renderer-owned command output.
+//
+// Called by the local command-output segment helpers below. `ctx` is the
+// formatting context supplied by MainWindow. The return value is a QColor only;
+// this helper does not mutate the builder or inspect messages.
+static QColor themedTextColor(const Context &ctx)
+{
+    return ctx.validTheme ? QColor(ctx.themeText) : QColor("#cccccc");
+}
+
+// Returns the active theme accent color for network/channel labels.
+//
+// Called by `appendThemedCommandOutput` and its helpers. Falls back to a stable
+// accent when no theme is loaded so local command output remains legible.
+static QColor themedAccentColor(const Context &ctx)
+{
+    return ctx.validTheme ? QColor(ctx.themeAccent) : QColor("steelblue");
+}
+
+// Returns the active placeholder/dim color for separators and timestamps.
+//
+// Called by `appendThemedCommandOutput`. The value is used only for display
+// segments and has no effect on stored message text.
+static QColor themedPlaceholderColor(const Context &ctx)
+{
+    return ctx.validTheme ? QColor(ctx.themePlaceholder) : QColor("#888888");
+}
+
+// Builds a QTextCharFormat from a color and optional semantic bold flag.
+//
+// Called by local command-output helpers when appending themed segments.
+// Returns a format object; it has no side effects.
+static QTextCharFormat coloredFormat(const QColor &color, bool bold = false)
+{
+    QTextCharFormat format;
+    format.setForeground(color);
+
+    // Bold is used for semantic emphasis such as network labels and nicks.
+    if (bold)
+        format.setFontWeight(QFont::Bold);
+
+    return format;
+}
+
+// Appends a comma-separated channel list with themed channel styling.
+//
+// Used for `/common` rows such as `alice: #one, #two`. `tb` receives appended
+// segments, `channels` is the rendered local output field, and the formats
+// control channel names versus punctuation.
+static void appendChannelList(TextBuilder &tb, const QString &channels,
+                              const QTextCharFormat &channelFmt,
+                              const QTextCharFormat &plainFmt)
+{
+    const QStringList parts = channels.split(u',', Qt::SkipEmptyParts);
+
+    // Keep punctuation neutral while channel names receive the themed accent.
+    for (int i = 0; i < parts.size(); ++i) {
+        if (i > 0)
+            tb.append(QStringLiteral(", "), plainFmt);
+
+        tb.append(parts[i].trimmed(), channelFmt);
+    }
+}
+
+// Appends a comma-separated nick list with Uplink nick colors and anchors.
+//
+// Used for the `/common` exclusive footer. `tb` receives appended segments and
+// `nicks` is the already-formatted local output field.
+static void appendNickList(TextBuilder &tb, const QString &nicks,
+                           const QTextCharFormat &plainFmt)
+{
+    const QStringList parts = nicks.split(u',', Qt::SkipEmptyParts);
+
+    // Nicks use the same nick-color convention as ordinary chat lines.
+    for (int i = 0; i < parts.size(); ++i) {
+        if (i > 0)
+            tb.append(QStringLiteral(", "), plainFmt);
+
+        const QString nick = parts[i].trimmed();
+        tb.append(nick, coloredFormat(nickColor(nick), true), QStringLiteral("nick:") + nick);
+    }
+}
+
+// Appends one formatted search-family message row.
+//
+// Used for `/search`, `/last`, and `/mentions` output after optional prefixes
+// have been parsed. `text` is local command output, not raw IRC input. It
+// styles timestamps and origins while delegating message-body IRC controls to
+// `ircToSegments`.
+static void appendResultMessage(TextBuilder &tb, const QString &text,
+                                const Context &ctx,
+                                const QTextCharFormat &plainFmt,
+                                const QTextCharFormat &timeFmt)
+{
+    QString rest = text;
+
+    // Search output timestamps are bracketed; style them like secondary text.
+    if (rest.startsWith(u'[')) {
+        const qsizetype close = rest.indexOf(QStringLiteral("] "));
+        if (close != -1) {
+            tb.append(rest.left(close + 1), timeFmt);
+            tb.append(QStringLiteral(" "), plainFmt);
+            rest = rest.mid(close + 2);
+        }
+    }
+
+    // Search output origins are rendered in angle brackets; style the nick
+    // segment using Uplink's normal nick-color convention.
+    if (rest.startsWith(u'<')) {
+        const qsizetype close = rest.indexOf(QStringLiteral("> "));
+        if (close != -1) {
+            const QString nick = rest.mid(1, close - 1);
+            tb.append(QStringLiteral("<"), plainFmt);
+            tb.append(nick, coloredFormat(nickColor(nick), true),
+                      QStringLiteral("nick:") + nick);
+            tb.append(QStringLiteral("> "), plainFmt);
+            rest = rest.mid(close + 2);
+        }
+    }
+
+    ircToSegments(rest, coloredFormat(themedTextColor(ctx)), tb);
+}
+
+// Tries to render one local command-output line as themed segments.
+//
+// Called from `formatMessageLine` for `MessageType::Server` rows. `text` is the
+// local status message produced by `/search`, `/last`, `/common`, or
+// `/mentions`; `ctx` supplies theme colors. Returns true when a known rich
+// output shape was parsed and appended, otherwise false so the caller can fall
+// back to normal server text rendering.
+static bool appendThemedCommandOutput(TextBuilder &tb, const QString &text,
+                                      const Context &ctx)
+{
+    const QTextCharFormat dimFmt = coloredFormat(themedPlaceholderColor(ctx));
+    const QTextCharFormat plainFmt = coloredFormat(themedTextColor(ctx));
+    const QTextCharFormat accentFmt = coloredFormat(themedAccentColor(ctx), true);
+    const QTextCharFormat channelFmt = coloredFormat(themedAccentColor(ctx));
+
+    const QRegularExpression exclusiveRe(QStringLiteral("^exclusive to ([^:]+): (.*)$"));
+    const QRegularExpressionMatch exclusiveMatch = exclusiveRe.match(text);
+    if (exclusiveMatch.hasMatch()) {
+        tb.append(QStringLiteral("exclusive to "), dimFmt);
+        tb.append(exclusiveMatch.captured(1), channelFmt);
+        tb.append(QStringLiteral(": "), dimFmt);
+        appendNickList(tb, exclusiveMatch.captured(2), plainFmt);
+        return true;
+    }
+
+    const QRegularExpression localMentionRe(QStringLiteral("^([#&+!][^\\s]+)\\s\\s(.+)$"));
+    const QRegularExpressionMatch localMentionMatch = localMentionRe.match(text);
+    if (localMentionMatch.hasMatch()) {
+        tb.append(localMentionMatch.captured(1), channelFmt);
+        tb.append(QStringLiteral("  "), dimFmt);
+        appendResultMessage(tb, localMentionMatch.captured(2), ctx, plainFmt, dimFmt);
+        return true;
+    }
+
+    const QRegularExpression globalPrefixRe(QStringLiteral("^([^\\s/:]+)/([^\\s:]+): (.*)$"));
+    const QRegularExpressionMatch globalPrefixMatch = globalPrefixRe.match(text);
+    if (globalPrefixMatch.hasMatch()) {
+        const QString right = globalPrefixMatch.captured(2);
+        tb.append(globalPrefixMatch.captured(1), accentFmt);
+        tb.append(QStringLiteral("/"), dimFmt);
+
+        if (right.startsWith(u'#') || right.startsWith(u'&') || right.startsWith(u'+')
+            || right.startsWith(u'!')) {
+            tb.append(right, channelFmt);
+            tb.append(QStringLiteral(": "), dimFmt);
+            appendResultMessage(tb, globalPrefixMatch.captured(3), ctx, plainFmt, dimFmt);
+        } else {
+            tb.append(right, coloredFormat(nickColor(right), true), QStringLiteral("nick:") + right);
+            tb.append(QStringLiteral(": "), dimFmt);
+            appendChannelList(tb, globalPrefixMatch.captured(3), channelFmt, plainFmt);
+        }
+        return true;
+    }
+
+    const QRegularExpression commonRe(QStringLiteral("^([^\\s/:]+): ([#&+!].*)$"));
+    const QRegularExpressionMatch commonMatch = commonRe.match(text);
+    if (commonMatch.hasMatch()) {
+        const QString nick = commonMatch.captured(1);
+        tb.append(nick, coloredFormat(nickColor(nick), true), QStringLiteral("nick:") + nick);
+        tb.append(QStringLiteral(": "), dimFmt);
+        appendChannelList(tb, commonMatch.captured(2), channelFmt, plainFmt);
+        return true;
+    }
+
+    // Plain /search rows without mention/global prefixes start with either a
+    // timestamp or an origin. Style their pieces rather than treating them as
+    // one undifferentiated status string.
+    if (text.startsWith(u'[') || text.startsWith(u'<')) {
+        appendResultMessage(tb, text, ctx, plainFmt, dimFmt);
+        return true;
+    }
+
+    return false;
+}
+
 ChatLine formatMessageLine(const Message &msg, const Context &ctx)
 {
     const QDateTime local = msg.timestamp.toLocalTime();
@@ -716,7 +914,9 @@ ChatLine formatMessageLine(const Message &msg, const Context &ctx)
     default: {
         QTextCharFormat f;
         f.setForeground(dimColor);
-        tb.append(" * " + msg.text, f);
+        tb.append(" * ", f);
+        if (!appendThemedCommandOutput(tb, msg.text, ctx))
+            ircToSegments(msg.text, f, tb);
         break;
     }
     }

@@ -234,6 +234,10 @@ Config Config::load(const QString &path)
                 sc.user     = sstr("user", "uplink");
                 sc.realname = sstr("realname", "Uplink User");
                 sc.password         = sstr("password");
+                // password_file stores a local path only; SessionModel reads
+                // the secret at connect time and does not write it back here.
+                sc.passwordFile     = sstr("password_file");
+                sc.passwordFileFirstLineOnly = (*s)["password_file_first_line_only"].value_or(true);
                 sc.saslUser         = sstr("sasl_user");
                 sc.saslPassword     = sstr("sasl_password");
                 sc.saslExternal     = (*s)["sasl_external"].value_or(false);
@@ -414,6 +418,12 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
         out << "realname = " << tomlQuote(s.realname) << "\n";
         if (!savedPw.isEmpty())
             out << "password          = " << tomlQuote(savedPw) << "\n";
+        // Preserve password_file as a path reference rather than expanding it
+        // into a plaintext password during config save.
+        if (!s.passwordFile.isEmpty())
+            out << "password_file     = " << tomlQuote(s.passwordFile) << "\n";
+        if (!s.passwordFile.isEmpty() && !s.passwordFileFirstLineOnly)
+            out << "password_file_first_line_only = false\n";
         if (!s.saslUser.isEmpty())
             out << "sasl_user         = " << tomlQuote(s.saslUser) << "\n";
         if (!savedSasl.isEmpty())

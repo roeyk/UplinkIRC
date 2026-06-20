@@ -42,6 +42,8 @@ struct ServerConfig {
     QString            user;
     QString            realname;
     QString            password;         // PASS / bouncer
+    QString            passwordFile;     // PASS read from a local file at connect time
+    bool               passwordFileFirstLineOnly{true};
     QString            saslUser;
     QString            saslPassword;
     bool               saslExternal{false};
@@ -65,6 +67,8 @@ struct ServerConfig {
         return host == o.host && port == o.port && ssl == o.ssl
             && nick == o.nick && user == o.user && realname == o.realname
             && name == o.name && password == o.password
+            && passwordFile == o.passwordFile
+            && passwordFileFirstLineOnly == o.passwordFileFirstLineOnly
             && saslUser == o.saslUser && saslPassword == o.saslPassword
             && saslExternal == o.saslExternal
             && clientCertFile == o.clientCertFile && clientKeyFile == o.clientKeyFile
