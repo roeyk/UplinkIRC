@@ -122,25 +122,3 @@ jobs:
             Uplink-*.AppImage.zsync
           generate_release_notes: true
 
-  update-docs:
-    needs: build
-    runs-on: ubuntu-latest
-    if: success()
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: main
-
-      - name: Sync site version strings
-        run: bash scripts/sync-site.sh
-
-      - name: Commit if changed
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/index.html README.md
-          git diff --cached --quiet && echo "nothing to commit" && exit 0
-          git commit -m "docs: sync site to ${{ github.ref_name }}"
-          git push origin main
-
