@@ -44,6 +44,27 @@ Session 2026-06-18:
   ChatView deferred layout, review CodeQL findings when first scan completes.
 -->
 
+## 0.25.48
+
+<!--
+Session 2026-06-19 (link preview fix):
+- Fixed link preview showing "Error 404 (Not Found)!!1" instead of actual page titles.
+  Root cause: pinRequestToAddress() rewrote URLs to connect to resolved IPs directly,
+  breaking HTTP/2 :authority headers and TLS SNI on macOS. Servers received the IP
+  instead of the hostname and returned 404. The 404 error page's <title> was then
+  extracted and displayed as the preview.
+- Removed IP pinning entirely — DNS pre-check (all resolved IPs verified non-private)
+  still blocks SSRF; the pinning closed a narrow DNS-rebinding TOCTOU gap that isn't
+  a practical threat for an IRC client.
+- Added HTTP status code check (>= 400) so error pages can never become previews.
+- No regressions found. No known issues.
+- Next priorities: MainWindow controller extractions, ChatView deferred layout.
+-->
+
+### Fixed
+- **Link preview 404 errors** — removed IP pinning (`pinRequestToAddress`) which broke HTTP/2 `:authority` headers and TLS SNI on macOS, causing servers to return 404 error pages that were displayed as preview titles. DNS pre-check still blocks all private/loopback addresses.
+- **Error page previews** — HTTP responses with status >= 400 are now silently dropped so error page titles never appear as link previews.
+
 ## 0.25.47
 
 ### Improved
@@ -68,7 +89,7 @@ Session 2026-06-18:
 - **DCC double-cleanup** — added `m_done`/`m_finished` terminal-state guards to `DccReceive` and `DccSend`; all MainWindow DCC lambdas now use `QPointer` instead of raw pointers to prevent use-after-free on cancel/error/finish races.
 - **Passive DCC timeout** — stale `m_pendingPassiveSends` entries are cleaned up after 120 seconds if the remote never replies.
 - **DCC quoted filenames** — incoming `DCC SEND "my file.txt" ...` from other clients now parses correctly; control characters are stripped.
-- **Link preview SSRF DNS pinning** — page, hover, and image fetches now connect to the validated resolved IP directly via `pinRequestToAddress()`, with `setPeerVerifyName()` for HTTPS SNI. Closes the DNS-rebinding TOCTOU gap.
+- **Link preview SSRF DNS pinning** — page, hover, and image fetches now connect to the validated resolved IP directly via `pinRequestToAddress()`, with `setPeerVerifyName()` for HTTPS SNI. Closes the DNS-rebinding TOCTOU gap. *(Reverted in v0.25.48 — broke HTTP/2 and macOS TLS; replaced with HTTP status code guard.)*
 - **TLS certificate prompt** — no longer says "self-signed" for hostname mismatches; now says "could not be verified" with accurate action text.
 - **Update check** — replaced regex JSON parsing with `QJsonDocument`; added 15-second transfer timeout.
 - **ChatView resize** — height-only window resizes skip the full 5 000-line relayout since line wrapping depends only on width.
