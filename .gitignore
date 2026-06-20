@@ -5,6 +5,11 @@ config.toml
 # Build
 build/
 build-appimage/
+build-san/
+build-heaptrack/
+
+# Profiling
+heaptrack.*
 
 # AppImage packaging (generated/downloaded, not sources)
 packaging/tools/
