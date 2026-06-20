@@ -36,20 +36,6 @@ static bool isBlockedBySchemeOrLiteral(const QUrl &url)
     return false;
 }
 
-// Rewrites a URL to connect to a validated IP directly, preserving the
-// original hostname in Host header and TLS SNI. Closes the DNS-rebinding
-// TOCTOU gap where a second resolution could return a private address.
-static void pinRequestToAddress(QNetworkRequest &req, const QUrl &originalUrl,
-                                const QHostAddress &addr)
-{
-    QUrl pinned = originalUrl;
-    pinned.setHost(addr.toString());
-    req.setUrl(pinned);
-    req.setRawHeader("Host", originalUrl.host().toUtf8());
-    if (originalUrl.scheme().toLower() == "https")
-        req.setPeerVerifyName(originalUrl.host());
-}
-
 // ── misc helpers ──────────────────────────────────────────────────────────────
 
 static bool isImageUrl(const QUrl &url)
@@ -137,7 +123,6 @@ void LinkPreview::resolveAndFetchHover(const QUrl &url)
                 if (isPrivateAddress(a)) return;
 
             QNetworkRequest req(url);
-            pinRequestToAddress(req, url, info.addresses().first());
             req.setRawHeader("User-Agent", "WhatsApp/2");
             req.setRawHeader("Accept", "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8");
             req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
@@ -197,11 +182,11 @@ void LinkPreview::resolveAndFetch(const QUrl &url)
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
                 if (isPrivateAddress(a)) return;
-            doPageFetch(url, info.addresses().first());
+            doPageFetch(url);
         });
 }
 
-void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &resolvedAddr)
+void LinkPreview::doPageFetch(const QUrl &url)
 {
     if (isImageUrl(url)) {
         const QString filename = url.fileName();
@@ -211,7 +196,6 @@ void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &resolvedAddr)
 
     m_buf.clear();
     QNetworkRequest req(url);
-    pinRequestToAddress(req, url, resolvedAddr);
     req.setRawHeader("User-Agent", "WhatsApp/2");
     req.setRawHeader("Accept", "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8");
     req.setRawHeader("Accept-Language", "en-US,en;q=0.5");
@@ -245,6 +229,14 @@ void LinkPreview::doPageFetch(const QUrl &url, const QHostAddress &resolvedAddr)
                 ++m_redirectCount;
                 resolveAndFetch(next);
             }
+            return;
+        }
+
+        const int httpStatus =
+            reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        if (httpStatus >= 400) {
+            reply->deleteLater();
+            m_buf.clear();
             return;
         }
 
@@ -284,15 +276,13 @@ void LinkPreview::fetchImage(const QUrl &pageUrl, const QString &title, const QU
             if (info.addresses().isEmpty()) return;
             for (const QHostAddress &a : info.addresses())
                 if (isPrivateAddress(a)) return;
-            doImageFetch(pageUrl, title, imageUrl, info.addresses().first());
+            doImageFetch(pageUrl, title, imageUrl);
         });
 }
 
-void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl,
-                               const QHostAddress &resolvedAddr)
+void LinkPreview::doImageFetch(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl)
 {
     QNetworkRequest req(imageUrl);
-    pinRequestToAddress(req, imageUrl, resolvedAddr);
     req.setRawHeader("User-Agent",
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/124.0 Safari/537.36");

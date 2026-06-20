@@ -2,7 +2,6 @@
 
 #include <QByteArray>
 #include <QHash>
-#include <QHostAddress>
 #include <QList>
 #include <QObject>
 #include <QPixmap>
@@ -30,10 +29,9 @@ private:
     };
 
     void resolveAndFetch(const QUrl &url);
-    void doPageFetch(const QUrl &url, const QHostAddress &resolvedAddr);
+    void doPageFetch(const QUrl &url);
     void fetchImage(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl);
-    void doImageFetch(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl,
-                      const QHostAddress &resolvedAddr);
+    void doImageFetch(const QUrl &pageUrl, const QString &title, const QUrl &imageUrl);
     void resolveAndFetchHover(const QUrl &url);
     void insertCache(const QString &key, CachedCard &&card);
 
