@@ -148,7 +148,7 @@ public:
     QSize sizeHint(const QStyleOptionViewItem &option,
                    const QModelIndex &) const override
     {
-        return QSize(option.rect.width(), 16);
+        return QSize(option.rect.width(), qMax(18, option.fontMetrics.height() + 4));
     }
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -1078,9 +1078,14 @@ void MainWindow::applyFontSizes()
         }
     }
     if (m_chatView)       m_chatView->setFont(makeFont(fs.chat));
-    if (m_nickList)       m_nickList->setFont(makeFont(fs.nickList));
+    if (m_nickList) {
+        m_nickList->setFont(makeFont(fs.nickList));
+        m_nickList->doItemsLayout();
+        m_nickList->viewport()->update();
+    }
     if (m_nickPanel)      m_nickPanel->setFont(makeFont(fs.nickDock));
     if (m_nickCountLabel) m_nickCountLabel->setFont(makeFont(fs.nickDock));
+    if (m_nickFilter)     m_nickFilter->setFont(makeFont(fs.nickDock));
     if (m_searchBtn)
         m_searchBtn->setIcon(makeSvgIcon(
             QStringLiteral(":/icons/mi-search.svg"),
@@ -1134,6 +1139,8 @@ void MainWindow::applyFontSizes()
         const QFont chatFont = makeFont(fs.chat);
         p->chatView()->setFont(chatFont);
         p->nickList()->setFont(makeFont(fs.nickList));
+        p->nickList()->doItemsLayout();
+        p->nickList()->viewport()->update();
         p->setTopicFont(makeFont(fs.topicText));
         p->setInputFont(makeFont(fs.inputNick), makeFont(fs.input));
     }
