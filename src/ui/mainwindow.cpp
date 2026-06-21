@@ -142,13 +142,25 @@ static QRect dropdownVisibleGeometry(const QRect &screen, const QString &edge,
     const int pctH = qBound(10, heightPercent, 100);
     const int width = screen.width() * pctW / 100;
     const int height = screen.height() * pctH / 100;
-    const int x = edge == QStringLiteral("right")
-        ? screen.right() - width + 1
-        : screen.left() + (screen.width() - width) / 2;
-    const int y = edge == QStringLiteral("bottom")
-        ? screen.bottom() - height + 1
-        : screen.top() + (screen.height() - height) / 2;
+    const int x = edge == QStringLiteral("left")
+        ? screen.left()
+        : edge == QStringLiteral("right")
+            ? screen.right() - width + 1
+            : screen.left() + (screen.width() - width) / 2;
+    const int y = edge == QStringLiteral("top")
+        ? screen.top()
+        : edge == QStringLiteral("bottom")
+            ? screen.bottom() - height + 1
+            : screen.top() + (screen.height() - height) / 2;
     return QRect(x, y, width, height);
+}
+
+// Converts a user-facing percent into the floating point value Qt expects for
+// whole-window opacity. Dropdown callers clamp to a visible minimum so an
+// accidental setting cannot make Uplink effectively disappear.
+static qreal dropdownOpacityValue(int percent)
+{
+    return qBound(20, percent, 100) / 100.0;
 }
 
 // Returns the off-screen endpoint used for dropdown slide-in/out animation.
@@ -791,8 +803,8 @@ void MainWindow::setupToolbar()
 
             if (m_dropdownVisible) {
                 setWindowOpacity(isActiveWindow()
-                    ? qBound(20, m_config.ui.dropdownOpacityPercent, 100) / 100.0
-                    : qBound(20, m_config.ui.dropdownInactiveOpacityPercent, 100) / 100.0);
+                    ? dropdownOpacityValue(m_config.ui.dropdownOpacityPercent)
+                    : dropdownOpacityValue(m_config.ui.dropdownInactiveOpacityPercent));
             }
         });
 
@@ -5169,11 +5181,16 @@ void MainWindow::showDropdown(const QString &edgeOverride)
     setWindowFlags((m_dropdownNormalFlags ? m_dropdownNormalFlags : windowFlags())
                    | Qt::FramelessWindowHint
                    | Qt::WindowStaysOnTopHint);
-    setWindowOpacity(qBound(20, m_config.ui.dropdownOpacityPercent, 100) / 100.0);
+    setWindowOpacity(dropdownOpacityValue(m_config.ui.dropdownOpacityPercent));
     setGeometry(hidden);
     show();
     raise();
     activateWindow();
+    QTimer::singleShot(0, this, [this]{
+        setWindowOpacity(dropdownOpacityValue(isActiveWindow()
+            ? m_config.ui.dropdownOpacityPercent
+            : m_config.ui.dropdownInactiveOpacityPercent));
+    });
 
     auto *animation = new QPropertyAnimation(this, "geometry", this);
     animation->setDuration(qBound(0, m_config.ui.dropdownAnimationMs, 1000));
@@ -5181,6 +5198,9 @@ void MainWindow::showDropdown(const QString &edgeOverride)
     animation->setEndValue(visible);
     animation->setEasingCurve(QEasingCurve::OutCubic);
     connect(animation, &QPropertyAnimation::finished, this, [this]{
+        setWindowOpacity(dropdownOpacityValue(isActiveWindow()
+            ? m_config.ui.dropdownOpacityPercent
+            : m_config.ui.dropdownInactiveOpacityPercent));
         if (m_input)
             m_input->setFocus();
     });
@@ -5233,7 +5253,7 @@ void MainWindow::changeEvent(QEvent *event)
             const int opacity = isActiveWindow()
                 ? m_config.ui.dropdownOpacityPercent
                 : m_config.ui.dropdownInactiveOpacityPercent;
-            setWindowOpacity(qBound(20, opacity, 100) / 100.0);
+            setWindowOpacity(dropdownOpacityValue(opacity));
         }
     }
 
