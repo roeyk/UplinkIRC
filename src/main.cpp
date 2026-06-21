@@ -10,19 +10,46 @@
 #include <QPixmapCache>
 #include <QScopedPointer>
 #include <QStandardPaths>
+#include <QStringList>
 #include "config/config.h"
 #include "model/sessionmodel.h"
 #include "ui/mainwindow.h"
 #include "ui/themeloader.h"
 #include "version.h"
 
-static QString ipcServerName()
+// Returns the pre-existing dropdown IPC name used by the first implementation.
+//
+// `sendIpcCommand` still tries this name so users who have one old running
+// process can toggle it once during an upgrade. New instances listen on the
+// stable per-user name returned by `primaryIpcServerName`.
+static QString legacyIpcServerName()
 {
     const QString scope = QStandardPaths::writableLocation(
         QStandardPaths::AppConfigLocation);
     const QByteArray digest = QCryptographicHash::hash(
         scope.toUtf8(), QCryptographicHash::Sha256).toHex();
     return QStringLiteral("uplink-") + QString::fromLatin1(digest.left(16));
+}
+
+// Returns a KDE/WM-launch-stable local server name for this user's Uplink.
+//
+// The global shortcut command may run with a slightly different Qt standard
+// path environment than a terminal-launched process. Using a per-user name
+// keeps `Uplink --toggle-dropdown` pointed at the same already-running
+// application instance in both launch paths.
+static QString primaryIpcServerName()
+{
+    const QString user = qEnvironmentVariable("USER", QStringLiteral("user"));
+    return QStringLiteral("uplink-") + user;
+}
+
+static QStringList ipcServerNames()
+{
+    QStringList names{primaryIpcServerName()};
+    const QString legacy = legacyIpcServerName();
+    if (!names.contains(legacy))
+        names.append(legacy);
+    return names;
 }
 
 static bool hasArgument(const QStringList &args, const QString &name)
@@ -51,20 +78,24 @@ static QString optionValue(const QStringList &args, const QString &name)
 // true only when a running instance received the command.
 static bool sendIpcCommand(const QString &command, const QString &edge)
 {
-    QLocalSocket socket;
-    socket.connectToServer(ipcServerName());
+    for (const QString &serverName : ipcServerNames()) {
+        QLocalSocket socket;
+        socket.connectToServer(serverName);
 
-    // A short timeout keeps WM shortcut invocations responsive when Uplink is
-    // not running; the caller can then start a new dropdown instance.
-    if (!socket.waitForConnected(200))
-        return false;
+        // A short timeout keeps WM shortcut invocations responsive when Uplink
+        // is not running; the caller can then start a new dropdown instance.
+        if (!socket.waitForConnected(200))
+            continue;
 
-    socket.write((command + QStringLiteral("\t") + edge
-                  + QStringLiteral("\n")).toUtf8());
-    socket.flush();
-    socket.waitForBytesWritten(200);
-    socket.disconnectFromServer();
-    return true;
+        socket.write((command + QStringLiteral("\t") + edge
+                      + QStringLiteral("\n")).toUtf8());
+        socket.flush();
+        socket.waitForBytesWritten(200);
+        socket.disconnectFromServer();
+        return true;
+    }
+
+    return false;
 }
 
 int main(int argc, char *argv[])
@@ -133,9 +164,10 @@ int main(int argc, char *argv[])
                              client, &QLocalSocket::deleteLater);
         }
     });
-    if (!ipcServer.listen(ipcServerName())) {
-        QLocalServer::removeServer(ipcServerName());
-        ipcServer.listen(ipcServerName());
+    const QString serverName = primaryIpcServerName();
+    if (!ipcServer.listen(serverName)) {
+        QLocalServer::removeServer(serverName);
+        ipcServer.listen(serverName);
     }
 
     if (toggleDropdown)
