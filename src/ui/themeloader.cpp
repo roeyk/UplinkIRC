@@ -482,9 +482,13 @@ QScrollBar:horizontal { height: 0; }
 
 /* ── Splitter ── */
 QSplitter::handle {
-    background: {{border}};
-    width: 1px;
-    height: 1px;
+    background: transparent;
+}
+QSplitter::handle:horizontal {
+    border-left: 1px solid {{border}};
+}
+QSplitter::handle:vertical {
+    border-top: 1px solid {{border}};
 }
 
 /* ── Embedded nick panel ── */
