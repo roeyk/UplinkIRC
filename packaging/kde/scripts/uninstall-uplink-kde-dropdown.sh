@@ -14,8 +14,7 @@ qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
 
 cat <<'EOF'
 
-Removed Uplink KDE dropdown experiment.
+Removed Uplink KDE diagnostic script.
 
 If the script remains active until session restart, log out/in or restart KWin.
 EOF
-

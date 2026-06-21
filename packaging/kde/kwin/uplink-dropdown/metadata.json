@@ -7,12 +7,11 @@
                 "Name": "Roey Katz and Codex"
             }
         ],
-        "Description": "Experimental KWin dropdown placement rules for Uplink",
+        "Description": "Diagnostic-only KWin logger for Uplink window identity fields",
         "Icon": "preferences-system-windows-script-test",
         "Id": "uplink-dropdown",
         "License": "MIT",
-        "Name": "Uplink Dropdown"
+        "Name": "Uplink Dropdown Diagnostics"
     },
     "X-Plasma-API": "javascript"
 }
-

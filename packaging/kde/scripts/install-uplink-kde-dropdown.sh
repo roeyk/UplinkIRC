@@ -18,17 +18,15 @@ qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
 
 cat <<'EOF'
 
-Installed Uplink KDE dropdown experiment.
+Installed Uplink KDE diagnostic script.
 
 Next steps:
-  1. In KDE System Settings -> Keyboard -> Shortcuts, bind Meta+` to:
-     /home/roey/mystuff/projects/UplinkIRC/build-rich-search/Uplink --toggle-dropdown
-
-  2. Start Uplink, then toggle it.
-
-  3. Watch logs with:
+  1. Start Uplink normally.
+  2. Watch logs with:
      journalctl -b -f | grep -i uplink-dropdown
+
+This script is diagnostic-only. It does not modify geometry, opacity, borders,
+desktop placement, taskbar visibility, or any other window property.
 
 If the script does not take effect immediately, log out/in or restart KWin.
 EOF
-

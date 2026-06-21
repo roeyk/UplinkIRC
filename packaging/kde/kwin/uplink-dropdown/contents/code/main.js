@@ -1,20 +1,39 @@
 /*
-    Experimental Uplink dropdown KWin integration.
+    Diagnostic-only Uplink/KWin integration.
 
-    This script intentionally lives outside Uplink proper. Uplink provides the
-    portable `--toggle-dropdown` hook; this script applies KDE/KWin-specific
-    window placement and presentation hints when KWin exposes the needed
-    properties.
+    This script intentionally does not modify any window properties. Its only
+    job is to log KWin identity fields for matching windows so dropdown-related
+    behavior can be diagnosed safely.
 */
 
 const LOG_PREFIX = "uplink-dropdown: ";
 const TARGET_CLASS_PARTS = ["uplink"];
-const WIDTH_PERCENT = 100;
-const HEIGHT_PERCENT = 45;
-const ACTIVE_OPACITY = 0.92;
-const INACTIVE_OPACITY = 0.78;
+const WINDOW_TYPE_FLAGS = [
+    "normalWindow",
+    "desktopWindow",
+    "dock",
+    "toolbar",
+    "menu",
+    "dialog",
+    "utility",
+    "splash",
+    "dropdownMenu",
+    "popupMenu",
+    "tooltip",
+    "notification",
+    "criticalNotification",
+    "appletPopup",
+    "onScreenDisplay",
+    "comboBox",
+    "dndIcon",
+    "popupWindow",
+    "specialWindow",
+    "outline",
+    "lockScreen",
+    "inputMethod"
+];
 
-const managedWindows = new Map();
+const seenWindows = new Set();
 
 function log(message) {
     console.info(LOG_PREFIX + message);
@@ -40,101 +59,83 @@ function matchesUplinkWindow(window) {
     return TARGET_CLASS_PARTS.some((part) => combined.indexOf(part) >= 0);
 }
 
-function trySet(window, property, value) {
-    try {
-        if (property in window) {
-            window[property] = value;
-            return true;
+function windowKey(window) {
+    return [
+        asString(window.resourceClass),
+        asString(window.resourceName),
+        asString(window.windowClass),
+        asString(window.caption)
+    ].join(" | ");
+}
+
+function collectTypeFlags(window) {
+    const flags = [];
+
+    WINDOW_TYPE_FLAGS.forEach((flag) => {
+        try {
+            if (flag in window && window[flag]) {
+                flags.push(flag);
+            }
+        } catch (error) {
+            log("could not inspect type flag " + flag + ": " + error);
         }
-    } catch (error) {
-        log("could not set " + property + ": " + error);
-    }
+    });
 
-    return false;
+    return flags;
 }
 
-function outputGeometry(window) {
-    if (window.output && window.output.geometry) {
-        return window.output.geometry;
-    }
-
-    if (workspace.activeWindow && workspace.activeWindow.output
-        && workspace.activeWindow.output.geometry) {
-        return workspace.activeWindow.output.geometry;
-    }
-
-    if (workspace.screenOrder && workspace.screenOrder.length > 0
-        && workspace.screenOrder[0].geometry) {
-        return workspace.screenOrder[0].geometry;
-    }
-
-    return null;
-}
-
-function dropdownGeometry(window) {
-    const screen = outputGeometry(window);
-    if (!screen) {
-        return null;
-    }
-
-    const width = Math.round(screen.width * WIDTH_PERCENT / 100);
-    const height = Math.round(screen.height * HEIGHT_PERCENT / 100);
-
-    return {
-        x: screen.x + Math.round((screen.width - width) / 2),
-        y: screen.y,
-        width: width,
-        height: height
-    };
-}
-
-function applyDropdownProperties(window) {
+function logWindowDetails(window, reason) {
     if (!window || !matchesUplinkWindow(window)) {
         return;
     }
 
-    const geometry = dropdownGeometry(window);
-    if (geometry) {
-        trySet(window, "frameGeometry", geometry);
-    } else {
-        log("no output geometry available for " + asString(window.caption));
+    const flags = collectTypeFlags(window);
+    const key = windowKey(window);
+
+    log(
+        reason
+        + " resourceClass=\"" + asString(window.resourceClass)
+        + "\" resourceName=\"" + asString(window.resourceName)
+        + "\" windowClass=\"" + asString(window.windowClass)
+        + "\" caption=\"" + asString(window.caption)
+        + "\" typeFlags=[" + flags.join(", ") + "]"
+    );
+
+    if (seenWindows.has(key)) {
+        return;
     }
 
-    trySet(window, "noBorder", true);
-    trySet(window, "keepAbove", true);
-    trySet(window, "skipTaskbar", true);
-    trySet(window, "skipPager", true);
-    trySet(window, "onAllDesktops", true);
-    trySet(window, "opacity", window.active ? ACTIVE_OPACITY : INACTIVE_OPACITY);
+    seenWindows.add(key);
 
-    if (!managedWindows.has(window)) {
-        managedWindows.set(window, true);
-
-        if (window.activeChanged) {
-            window.activeChanged.connect(() => {
-                trySet(window, "opacity", window.active ? ACTIVE_OPACITY : INACTIVE_OPACITY);
-            });
-        }
-
-        if (window.outputChanged) {
-            window.outputChanged.connect(() => {
-                applyDropdownProperties(window);
-            });
-        }
-
-        if (window.closed) {
-            window.closed.connect(() => {
-                managedWindows.delete(window);
-            });
-        }
+    if (window.captionChanged) {
+        window.captionChanged.connect(() => {
+            logWindowDetails(window, "captionChanged");
+        });
     }
 
-    log("applied dropdown properties to " + asString(window.caption));
+    if (window.windowClassChanged) {
+        window.windowClassChanged.connect(() => {
+            logWindowDetails(window, "windowClassChanged");
+        });
+    }
+
+    if (window.resourceNameChanged) {
+        window.resourceNameChanged.connect(() => {
+            logWindowDetails(window, "resourceNameChanged");
+        });
+    }
+
+    if (window.closed) {
+        window.closed.connect(() => {
+            log("closed caption=\"" + asString(window.caption) + "\"");
+            seenWindows.delete(key);
+        });
+    }
 }
 
 function processExistingWindows() {
     workspace.windowList().forEach((window) => {
-        applyDropdownProperties(window);
+        logWindowDetails(window, "existing");
     });
 }
 
@@ -142,28 +143,16 @@ function main() {
     processExistingWindows();
 
     workspace.windowAdded.connect((window) => {
-        applyDropdownProperties(window);
+        logWindowDetails(window, "windowAdded");
     });
 
     if (workspace.windowActivated) {
         workspace.windowActivated.connect((window) => {
-            applyDropdownProperties(window);
+            logWindowDetails(window, "windowActivated");
         });
     }
 
-    if (workspace.screensChanged) {
-        workspace.screensChanged.connect(() => {
-            processExistingWindows();
-        });
-    }
-
-    if (workspace.screenOrderChanged) {
-        workspace.screenOrderChanged.connect(() => {
-            processExistingWindows();
-        });
-    }
-
-    log("loaded");
+    log("loaded diagnostic-only window logger");
 }
 
 main();
