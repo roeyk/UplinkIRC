@@ -90,6 +90,8 @@ qt_add_executable(Uplink WIN32
     src/ui/channellistdialog.h
     src/ui/docsdialog.cpp
     src/ui/docsdialog.h
+    src/ui/dropdownsettingsdialog.cpp
+    src/ui/dropdownsettingsdialog.h
     src/ui/fontdialog.cpp
     src/ui/fontdialog.h
     src/ui/serverdialog.cpp

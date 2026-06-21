@@ -134,6 +134,13 @@ Config Config::load(const QString &path)
             if (cfg.ui.appIcon == "dark")  cfg.ui.appIcon = "flat-black";
             if (cfg.ui.appIcon == "light") cfg.ui.appIcon = "original-flat-shine";
             cfg.ui.nickBrackets    = ustr("nick_brackets", "<>");
+            cfg.ui.dropdownEdge    = ustr("dropdown_edge", "top");
+            cfg.ui.dropdownShortcut = ustr("dropdown_shortcut", "Meta+`");
+            cfg.ui.dropdownWidthPercent = static_cast<int>((*ui)["dropdown_width_percent"].value_or(100));
+            cfg.ui.dropdownHeightPercent = static_cast<int>((*ui)["dropdown_height_percent"].value_or(45));
+            cfg.ui.dropdownAnimationMs = static_cast<int>((*ui)["dropdown_animation_ms"].value_or(150));
+            cfg.ui.dropdownOpacityPercent = static_cast<int>((*ui)["dropdown_opacity_percent"].value_or(100));
+            cfg.ui.dropdownInactiveOpacityPercent = static_cast<int>((*ui)["dropdown_inactive_opacity_percent"].value_or(80));
             cfg.ui.notifications   = (*ui)["notifications"].value_or(true);
             cfg.ui.fontFamily      = ustr("font_family", kDefaultFontFamily);
             cfg.ui.fontSizes.toolbar      = (*ui)["font_toolbar"].value_or(10.0);
@@ -316,6 +323,14 @@ void Config::save(const Config &cfg, const QString &path, bool migratePasswords)
     out << "highlight_words = " << tomlQuote(cfg.ui.highlightWords) << "\n";
     out << "app_icon = " << tomlQuote(cfg.ui.appIcon) << "\n";
     out << "nick_brackets = " << tomlQuote(cfg.ui.nickBrackets) << "\n";
+    out << "dropdown_edge = " << tomlQuote(cfg.ui.dropdownEdge) << "\n";
+    out << "dropdown_shortcut = " << tomlQuote(cfg.ui.dropdownShortcut) << "\n";
+    out << "dropdown_width_percent = " << cfg.ui.dropdownWidthPercent << "\n";
+    out << "dropdown_height_percent = " << cfg.ui.dropdownHeightPercent << "\n";
+    out << "dropdown_animation_ms = " << cfg.ui.dropdownAnimationMs << "\n";
+    out << "dropdown_opacity_percent = " << cfg.ui.dropdownOpacityPercent << "\n";
+    out << "dropdown_inactive_opacity_percent = "
+        << cfg.ui.dropdownInactiveOpacityPercent << "\n";
     out << "notifications = " << boolStr(cfg.ui.notifications) << "\n";
     out << "font_family = " << tomlQuote(cfg.ui.fontFamily) << "\n";
     out << "font_toolbar = " << cfg.ui.fontSizes.toolbar << "\n";
