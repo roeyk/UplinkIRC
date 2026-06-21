@@ -98,9 +98,9 @@ features, bug fixes, and experimental UI improvements.
 
 | Branch | Purpose |
 |---|---|
-| `roey/upstream-smooth-splitters` | Upstream-focused PR branch for smoother side-pane and nested splitter resizing. |
-| `roey/upstream-topic-collapse` | Upstream-focused PR branch for collapsible topic display controls. |
-| `roey/upstream-dropdown-settings` | Planned upstream-focused PR branch for portable dropdown mode, transparency/defocus opacity, and the dropdown settings dialog. |
+| `roey/upstream-smooth-splitters` | Upstream PR #10 for smoother side-pane and nested splitter resizing. |
+| `roey/upstream-topic-collapse` | Upstream PR #11 for collapsible topic display controls. |
+| `roey/upstream-dropdown-settings` | Upstream PR #12 for portable dropdown mode, transparency/defocus opacity, and the dropdown settings dialog. |
 
 ### Relationship To Upstream
 
