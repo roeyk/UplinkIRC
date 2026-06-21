@@ -57,6 +57,58 @@
 
 ---
 
+## Roey Fork Delta
+
+This fork tracks upstream Uplink while carrying a set of local IRC workflow
+features, bug fixes, and experimental UI improvements.
+
+### Contents
+
+- [Feature Additions](#feature-additions)
+- [Bug Fixes And QoL Changes](#bug-fixes-and-qol-changes)
+- [Upstream PR Branches](#upstream-pr-branches)
+- [Relationship To Upstream](#relationship-to-upstream)
+
+### Feature Additions
+
+| Area | Difference from upstream |
+|---|---|
+| Rich search | Adds `/search` and `/last` over loaded local buffers, with selectors such as text/origin/nick/reaction, boolean grouping, modifiers, context lines, span filters, `--other`, `--textonly`, and `--notimestamp`. |
+| Search output | Supports inline, pane, and tab-oriented result output, with theme-aware rendered segments and match highlighting. |
+| Mentions | Adds `/mentions` and `/lastmention` for recent loaded mentions, including local/global scope behavior. |
+| Common channels | Adds `/common` for inspecting users who share channels with you, using already-known channel membership without extra WHOIS traffic. |
+| Argument completion | Adds richer completion for search/common/mention commands, including selector names, values, view modes, and nickname values. |
+| ZNC config compatibility | Supports password files and ZNC-style password assembly from user/network settings. |
+| TLS certificate workflow | Adds certificate fingerprint pinning/acceptance support for self-hosted ZNC-style deployments. |
+| Dropdown mode | Adds portable Yakuake-style dropdown behavior via `Uplink --toggle-dropdown`, with configurable slide edge, size, animation, focused opacity, defocused opacity, and a settings dialog. |
+
+### Bug Fixes And QoL Changes
+
+| Area | Difference from upstream |
+|---|---|
+| Font zoom | Adds Ctrl+Plus/Ctrl+Minus and Ctrl+MouseWheel font zoom behavior for chat, channel list, user list, topic, and input areas. |
+| List font sizing | Fixes channel-list and user-list delegate sizing so font zoom changes row height, not just glyph width. |
+| Pane resizing | Improves splitter hit targets and resize behavior for channel list, user list, and spawned panes. |
+| Nested splitter behavior | Keeps the outer channel-list splitter stable while allowing inner user-list splitters to yield width in constrained windows. |
+| Read markers | Persists local read-through timestamps so ZNC-replayed messages do not recreate cleared unread counts after restart. |
+| Buffer close focus | Restores focus to the previously active buffer after closing a channel/direct conversation instead of leaving a blank selection panel. |
+| Topic real estate | A separate branch adds collapsible topic-display controls: expanded topics get a bottom-left collapse arrow; collapsed topics show a down-arrow “show /topic” control in the header. |
+
+### Upstream PR Branches
+
+| Branch | Purpose |
+|---|---|
+| `roey/upstream-smooth-splitters` | Upstream-focused PR branch for smoother side-pane and nested splitter resizing. |
+| `roey/upstream-topic-collapse` | Upstream-focused PR branch for collapsible topic display controls. |
+| `roey/upstream-dropdown-settings` | Planned upstream-focused PR branch for portable dropdown mode, transparency/defocus opacity, and the dropdown settings dialog. |
+
+### Relationship To Upstream
+
+The goal is to keep broadly useful UI fixes small enough for upstream review
+while retaining larger local workflow features in this fork. Private/fork-only
+work may move faster than upstream and may include features that are not yet
+accepted upstream.
+
 ## App Icon
 
 <p align="center">
