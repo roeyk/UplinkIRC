@@ -18,6 +18,27 @@
 #include <QDesktopServices>
 #include <QUrl>
 
+constexpr int kInteractiveSplitterGripWidth = 6;
+
+// Gives a ChannelPane's embedded chat/user-list splitter a practical drag
+// target while leaving painting to the application theme. ChannelPane owns
+// spawned panes used by pane/tab command output, so this mirrors MainWindow's
+// splitter policy for consistent manual resizing. The function accepts an
+// already-created splitter, updates its interaction settings, and returns no
+// value.
+static void configureInteractiveSplitter(QSplitter *splitter)
+{
+    // Resize pane contents during the drag so constrained normal-size windows
+    // do not feel like they update only after mouse release.
+    splitter->setOpaqueResize(true);
+
+    // Keep both sides resizeable without allowing accidental zero-width panes.
+    splitter->setChildrenCollapsible(false);
+
+    // Use a larger logical grip; the theme can still paint a slim divider.
+    splitter->setHandleWidth(kInteractiveSplitterGripWidth);
+}
+
 ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     : QWidget(parent), m_host(std::move(host)), m_channel(std::move(channel))
 {
@@ -107,7 +128,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     nwvbox->addStretch(1);
 
     auto *bodySplitter = new QSplitter(Qt::Horizontal);
-    bodySplitter->setHandleWidth(0);
+    configureInteractiveSplitter(bodySplitter);
     bodySplitter->addWidget(m_chatView);
     bodySplitter->addWidget(nickWrapper);
     bodySplitter->setStretchFactor(0, 1);
