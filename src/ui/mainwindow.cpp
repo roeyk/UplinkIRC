@@ -737,7 +737,7 @@ void MainWindow::setupToolbar()
     });
 }
 
-static QIcon makeTopicIcon(const QColor &color);
+static QIcon makeTopicArrowIcon(const QColor &color, bool up);
 static QIcon makeMenuIcon(const QColor &color);
 static QString topicAgeStr(quint64 ts);
 
@@ -763,9 +763,12 @@ void MainWindow::connectPreferences()
                                       QColor(m_theme.text));
         if (m_theme.valid) {
             if (m_primaryTopicBtn) {
-                const bool on = m_primaryTopicBtn->isChecked();
-                m_primaryTopicBtn->setIcon(makeTopicIcon(
-                    QColor(on ? m_theme.accent : m_theme.placeholder)));
+                m_primaryTopicBtn->setIcon(makeTopicArrowIcon(
+                    QColor(m_theme.placeholder), false));
+            }
+            if (m_topicCollapseBtn) {
+                m_topicCollapseBtn->setIcon(makeTopicArrowIcon(
+                    QColor(m_theme.accent), true));
             }
             for (auto *pane : std::as_const(m_panes)) {
                 auto *nd = new NickDelegate(pane->nickList());
@@ -774,8 +777,8 @@ void MainWindow::connectPreferences()
                               QColor(m_theme.text));
                 pane->nickList()->setItemDelegate(nd);
                 pane->setTopicIcon(
-                    makeTopicIcon(QColor(m_theme.placeholder)),
-                    makeTopicIcon(QColor(m_theme.accent)));
+                    makeTopicArrowIcon(QColor(m_theme.placeholder), false),
+                    makeTopicArrowIcon(QColor(m_theme.accent), true));
             }
         }
         if (m_sidebarCloseBtn)
@@ -1036,26 +1039,20 @@ void MainWindow::connectPreferences()
 }
 
 
-static QIcon makeTopicIcon(const QColor &color)
+static QIcon makeTopicArrowIcon(const QColor &color, bool up)
 {
     const int sz = 14;
     QPixmap pix(sz, sz);
     pix.fill(Qt::transparent);
     QPainter p(&pix);
     p.setRenderHint(QPainter::Antialiasing);
-    QPen pen(color, 1.3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    QPen pen(color, 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
     p.setPen(pen);
-    p.setBrush(Qt::NoBrush);
-    // Speech bubble body
-    p.drawRoundedRect(QRectF(1.0, 1.0, 11.0, 8.5), 2.0, 2.0);
-    // Tail pointing bottom-left
-    QPolygonF tail;
-    tail << QPointF(2.5, 9.5) << QPointF(1.0, 13.0) << QPointF(5.5, 9.5);
-    p.drawPolyline(tail);
-    // Two text lines inside the bubble
-    p.setPen(QPen(color, 1.0, Qt::SolidLine, Qt::RoundCap));
-    p.drawLine(QPointF(3.5, 4.0), QPointF(9.5, 4.0));
-    p.drawLine(QPointF(3.5, 6.5), QPointF(7.5, 6.5));
+
+    const qreal yTip = up ? 3.5 : 10.5;
+    const qreal yBase = up ? 9.5 : 4.5;
+    p.drawLine(QPointF(3.0, yBase), QPointF(7.0, yTip));
+    p.drawLine(QPointF(11.0, yBase), QPointF(7.0, yTip));
     return QIcon(pix);
 }
 
@@ -1476,17 +1473,20 @@ void MainWindow::setupChatArea()
         m_primaryTopicBtn->setCheckable(true);
         m_primaryTopicBtn->setChecked(m_showTopic);
         m_primaryTopicBtn->setText({});
-        m_primaryTopicBtn->setIcon(makeTopicIcon(
-            QColor(m_theme.valid ? m_theme.placeholder : "#888888")));
+        m_primaryTopicBtn->setIcon(makeTopicArrowIcon(
+            QColor(m_theme.valid ? m_theme.placeholder : "#888888"), false));
         m_primaryTopicBtn->setIconSize(QSize(14, 14));
         m_primaryTopicBtn->setAutoRaise(false);
+        m_primaryTopicBtn->setToolTip(tr("Show /topic"));
+        m_primaryTopicBtn->setVisible(!m_showTopic);
         connect(m_primaryTopicBtn, &QToolButton::toggled, this, [this](bool on){
             const int scrollPos = m_nickList ? m_nickList->verticalScrollBar()->value() : 0;
             const int sbScroll  = m_sidebar  ? m_sidebar->verticalScrollBar()->value()  : 0;
             m_topicDisplay->setVisible(on);
+            m_primaryTopicBtn->setVisible(!on);
             if (m_theme.valid)
-                m_primaryTopicBtn->setIcon(makeTopicIcon(
-                    QColor(on ? m_theme.accent : m_theme.placeholder)));
+                m_primaryTopicBtn->setIcon(makeTopicArrowIcon(
+                    QColor(m_theme.placeholder), false));
             QTimer::singleShot(0, this, [this, scrollPos, sbScroll]{
                 if (m_nickList) m_nickList->verticalScrollBar()->setValue(scrollPos);
                 if (m_sidebar)  m_sidebar->verticalScrollBar()->setValue(sbScroll);
@@ -1542,8 +1542,9 @@ void MainWindow::setupChatArea()
     }
     // Topic display — shown below header when Show Topic is on
     m_topicDisplay = new QWidget;
-    auto *tdHbox   = new QHBoxLayout(m_topicDisplay);
-    tdHbox->setContentsMargins(8, 3, 8, 3);
+    auto *tdVbox   = new QVBoxLayout(m_topicDisplay);
+    tdVbox->setContentsMargins(8, 3, 8, 3);
+    tdVbox->setSpacing(2);
     m_topicText = new QLabel;
     m_topicText->setObjectName("topicText");
     m_topicText->setWordWrap(true);
@@ -1556,7 +1557,24 @@ void MainWindow::setupChatArea()
         if (s == "http" || s == "https")
             QDesktopServices::openUrl(u);
     });
-    tdHbox->addWidget(m_topicText, 1);
+    tdVbox->addWidget(m_topicText, 1);
+    auto *topicControlRow = new QHBoxLayout;
+    topicControlRow->setContentsMargins(0, 0, 0, 0);
+    m_topicCollapseBtn = new QToolButton;
+    m_topicCollapseBtn->setObjectName("topicToggle");
+    m_topicCollapseBtn->setText({});
+    m_topicCollapseBtn->setIcon(makeTopicArrowIcon(
+        QColor(m_theme.valid ? m_theme.accent : "#888888"), true));
+    m_topicCollapseBtn->setIconSize(QSize(14, 14));
+    m_topicCollapseBtn->setToolTip(tr("Collapse"));
+    m_topicCollapseBtn->setAutoRaise(false);
+    connect(m_topicCollapseBtn, &QToolButton::clicked, this, [this]{
+        if (m_primaryTopicBtn)
+            m_primaryTopicBtn->setChecked(false);
+    });
+    topicControlRow->addWidget(m_topicCollapseBtn, 0, Qt::AlignLeft);
+    topicControlRow->addStretch(1);
+    tdVbox->addLayout(topicControlRow);
     m_topicDisplay->setObjectName("topicDisplay");
     m_topicDisplay->setVisible(m_showTopic);
     m_topicText->installEventFilter(this);
@@ -3722,11 +3740,9 @@ void MainWindow::switchToChannel(ServerId host, BufferId channel)
 
     // Topic button + topic bar: only meaningful in channels
     if (m_primaryTopicBtn)
-        m_primaryTopicBtn->setVisible(isChannel);
+        m_primaryTopicBtn->setVisible(false);
     if (m_topicDisplay && !isChannel)
         m_topicDisplay->setVisible(false);
-    else if (m_topicDisplay && isChannel)
-        m_topicDisplay->setVisible(m_showTopic && m_primaryTopicBtn && m_primaryTopicBtn->isChecked());
 
     clearReplyBar();
     m_model->setActive(host, channel);
@@ -4008,8 +4024,8 @@ void MainWindow::openChannelPane(ServerId host, BufferId channel)
 
     if (m_theme.valid) {
         pane->setTopicIcon(
-            makeTopicIcon(QColor(m_theme.placeholder)),
-            makeTopicIcon(QColor(m_theme.accent)));
+            makeTopicArrowIcon(QColor(m_theme.placeholder), false),
+            makeTopicArrowIcon(QColor(m_theme.accent), true));
     }
 
     rebuildPaneLayout();
@@ -5010,6 +5026,8 @@ void MainWindow::refreshTopicBar(ServerId host, BufferId channel)
         m_topicLabel->clear();
         m_userInfoLabel->setText(serverName);
         if (m_topicText) m_topicText->clear();
+        if (m_primaryTopicBtn) m_primaryTopicBtn->hide();
+        if (m_topicDisplay) m_topicDisplay->hide();
         if (m_topicSetByLabel) m_topicSetByLabel->hide();
     } else {
         const QString modes   = ch ? ch->modes : QString();
@@ -5023,6 +5041,11 @@ void MainWindow::refreshTopicBar(ServerId host, BufferId channel)
             m_topicText->setText(topicHtml.isEmpty()
                 ? topicHtml
                 : QString("<span style='font-size:%1pt;'>%2</span>").arg(topicPt).arg(topicHtml));
+            const bool hasTopic = !topicHtml.isEmpty();
+            if (m_primaryTopicBtn)
+                m_primaryTopicBtn->setVisible(hasTopic && !m_primaryTopicBtn->isChecked());
+            if (m_topicDisplay)
+                m_topicDisplay->setVisible(hasTopic && m_primaryTopicBtn && m_primaryTopicBtn->isChecked());
         }
 
         if (m_topicSetByLabel) {

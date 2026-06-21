@@ -195,6 +195,7 @@ private:
     QWidget      *m_primaryPanel{nullptr};
     QWidget      *m_primaryHeader{nullptr};
     QToolButton  *m_primaryTopicBtn{nullptr};
+    QToolButton  *m_topicCollapseBtn{nullptr};
     QToolButton  *m_searchBtn{nullptr};
     QToolButton  *m_primaryCloseBtn{nullptr};
     QListWidget  *m_nickList;

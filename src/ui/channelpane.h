@@ -51,6 +51,7 @@ private:
     QWidget      *m_topicBar{nullptr};
     QLabel       *m_topicText{nullptr};
     QToolButton  *m_topicToggle{nullptr};
+    QToolButton  *m_topicCollapseBtn{nullptr};
     int           m_topicFontPt{11};
     QString       m_rawTopicHtml;
 };

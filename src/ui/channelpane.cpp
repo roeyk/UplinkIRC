@@ -38,6 +38,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_topicToggle->setIconSize(QSize(14, 14));
     m_topicToggle->setAutoRaise(false);
     m_topicToggle->setCheckable(true);
+    m_topicToggle->setToolTip(tr("Show /topic"));
 
     auto *nameLabel = new QLabel(m_channel.str());
     nameLabel->setObjectName("paneChannelLabel");
@@ -69,6 +70,7 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
     m_topicBar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     auto *tbhbox = new QHBoxLayout(m_topicBar);
     tbhbox->setContentsMargins(8, 4, 8, 4);
+    tbhbox->setSpacing(4);
     m_topicText = new QLabel;
     m_topicText->setObjectName("topicText");
     m_topicText->setWordWrap(true);
@@ -82,12 +84,32 @@ ChannelPane::ChannelPane(ServerId host, BufferId channel, QWidget *parent)
             QDesktopServices::openUrl(u);
     });
     m_topicText->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    tbhbox->addWidget(m_topicText);
+    auto *topicVbox = new QVBoxLayout;
+    topicVbox->setContentsMargins(0, 0, 0, 0);
+    topicVbox->setSpacing(2);
+    topicVbox->addWidget(m_topicText);
+    auto *topicControlRow = new QHBoxLayout;
+    topicControlRow->setContentsMargins(0, 0, 0, 0);
+    m_topicCollapseBtn = new QToolButton;
+    m_topicCollapseBtn->setObjectName("topicToggle");
+    m_topicCollapseBtn->setText({});
+    m_topicCollapseBtn->setIconSize(QSize(14, 14));
+    m_topicCollapseBtn->setToolTip(tr("Collapse"));
+    m_topicCollapseBtn->setAutoRaise(false);
+    connect(m_topicCollapseBtn, &QToolButton::clicked, this, [this]{
+        if (m_topicToggle)
+            m_topicToggle->setChecked(false);
+    });
+    topicControlRow->addWidget(m_topicCollapseBtn, 0, Qt::AlignLeft);
+    topicControlRow->addStretch(1);
+    topicVbox->addLayout(topicControlRow);
+    tbhbox->addLayout(topicVbox, 1);
     m_topicBar->hide();
     vbox->addWidget(m_topicBar);
 
     connect(m_topicToggle, &QToolButton::toggled, this, [this](bool on){
         m_topicBar->setVisible(on);
+        m_topicToggle->setVisible(!on);
     });
 
     // Chat view
@@ -182,6 +204,7 @@ void ChannelPane::setTopic(const QString &html)
     }
     if (m_topicBar && m_topicToggle) {
         const bool hasTopic = !html.isEmpty();
+        m_topicToggle->setVisible(hasTopic && !m_topicToggle->isChecked());
         m_topicToggle->setChecked(hasTopic);
         m_topicBar->setVisible(hasTopic);
     }
@@ -190,11 +213,15 @@ void ChannelPane::setTopic(const QString &html)
 void ChannelPane::setTopicIcon(const QIcon &collapsed, const QIcon &expanded)
 {
     if (!m_topicToggle) return;
-    m_topicToggle->setIcon(m_topicToggle->isChecked() ? expanded : collapsed);
+    m_topicToggle->setIcon(collapsed);
+    if (m_topicCollapseBtn)
+        m_topicCollapseBtn->setIcon(expanded);
     disconnect(m_topicIconConn);
     m_topicIconConn = connect(m_topicToggle, &QToolButton::toggled, this,
-                              [this, collapsed, expanded](bool on){
-        m_topicToggle->setIcon(on ? expanded : collapsed);
+                              [this, collapsed, expanded]{
+        m_topicToggle->setIcon(collapsed);
+        if (m_topicCollapseBtn)
+            m_topicCollapseBtn->setIcon(expanded);
     });
 }
 
