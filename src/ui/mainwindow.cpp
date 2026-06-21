@@ -7,6 +7,7 @@
 #include "ui/aboutdialog.h"
 #include "ui/channellistdialog.h"
 #include "ui/docsdialog.h"
+#include "ui/dropdownsettingsdialog.h"
 #include "ui/fontdialog.h"
 #include "ui/preferencesdialog.h"
 #include "ui/serverdialog.h"
@@ -35,6 +36,7 @@
 #include <QToolButton>
 #include <QMenu>
 #include <QAction>
+#include <QPropertyAnimation>
 #include <QTreeWidget>
 #include <QListWidget>
 #include <QListWidgetItem>
@@ -112,6 +114,60 @@ static void configureInteractiveSplitter(QSplitter *splitter, bool childrenColla
     // Provide a practical hit target; the stylesheet still paints a thin
     // divider, so this widens interaction without making the UI visually heavy.
     splitter->setHandleWidth(kInteractiveSplitterGripWidth);
+}
+
+// Normalizes user/config dropdown edge text into one of the supported slide
+// directions. MainWindow calls this before computing dropdown geometry; an
+// empty or unknown value falls back to top for Yakuake-style behavior.
+static QString normalizedDropdownEdge(const QString &edge)
+{
+    const QString value = edge.trimmed().toLower();
+    if (value == QStringLiteral("bottom") || value == QStringLiteral("left")
+        || value == QStringLiteral("right") || value == QStringLiteral("top")) {
+        return value;
+    }
+    return QStringLiteral("top");
+}
+
+// Calculates the on-screen dropdown rectangle for one screen and edge.
+//
+// Used by `MainWindow::showDropdown` and `MainWindow::toggleDropdown`. `screen`
+// is the available desktop area, `edge` is already normalized, and the
+// percentages come from config. Returns the visible window geometry and has no
+// side effects.
+static QRect dropdownVisibleGeometry(const QRect &screen, const QString &edge,
+                                     int widthPercent, int heightPercent)
+{
+    const int pctW = qBound(10, widthPercent, 100);
+    const int pctH = qBound(10, heightPercent, 100);
+    const int width = screen.width() * pctW / 100;
+    const int height = screen.height() * pctH / 100;
+    const int x = edge == QStringLiteral("right")
+        ? screen.right() - width + 1
+        : screen.left() + (screen.width() - width) / 2;
+    const int y = edge == QStringLiteral("bottom")
+        ? screen.bottom() - height + 1
+        : screen.top() + (screen.height() - height) / 2;
+    return QRect(x, y, width, height);
+}
+
+// Returns the off-screen endpoint used for dropdown slide-in/out animation.
+//
+// Called by the dropdown show/hide methods. `visible` is the on-screen
+// rectangle and `edge` is the side the window should slide through. Returns the
+// same size translated just outside that side of the screen.
+static QRect dropdownHiddenGeometry(const QRect &visible, const QString &edge)
+{
+    QRect hidden = visible;
+    if (edge == QStringLiteral("bottom"))
+        hidden.moveTop(visible.bottom() + 1);
+    else if (edge == QStringLiteral("left"))
+        hidden.moveLeft(visible.left() - visible.width());
+    else if (edge == QStringLiteral("right"))
+        hidden.moveLeft(visible.right() + 1);
+    else
+        hidden.moveTop(visible.top() - visible.height());
+    return hidden;
 }
 
 class FixedRowDelegate : public QStyledItemDelegate {
@@ -717,6 +773,27 @@ void MainWindow::setupToolbar()
 
         menu->addAction(MenuIcons::servers(ic), "Open Config", this, []{
             QDesktopServices::openUrl(QUrl::fromLocalFile(Config::defaultPath()));
+        });
+
+        menu->addAction(MenuIcons::fontConfig(ic), "Dropdown Settings", this, [this]{
+            DropdownSettingsDialog dlg(m_config.ui, this);
+            if (dlg.exec() != QDialog::Accepted)
+                return;
+
+            m_config.ui.dropdownShortcut = dlg.shortcut();
+            m_config.ui.dropdownEdge = dlg.edge();
+            m_config.ui.dropdownWidthPercent = dlg.widthPercent();
+            m_config.ui.dropdownHeightPercent = dlg.heightPercent();
+            m_config.ui.dropdownAnimationMs = dlg.animationMs();
+            m_config.ui.dropdownOpacityPercent = dlg.opacityPercent();
+            m_config.ui.dropdownInactiveOpacityPercent = dlg.inactiveOpacityPercent();
+            Config::save(m_config, Config::defaultPath(), true);
+
+            if (m_dropdownVisible) {
+                setWindowOpacity(isActiveWindow()
+                    ? qBound(20, m_config.ui.dropdownOpacityPercent, 100) / 100.0
+                    : qBound(20, m_config.ui.dropdownInactiveOpacityPercent, 100) / 100.0);
+            }
         });
 
         menu->addAction(MenuIcons::connStatus(ic), "Reload Config", this, []{
@@ -5066,6 +5143,79 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
+void MainWindow::showDropdown(const QString &edgeOverride)
+{
+    const QString edge = normalizedDropdownEdge(
+        edgeOverride.isEmpty() ? m_config.ui.dropdownEdge : edgeOverride);
+    auto *targetScreen = QGuiApplication::screenAt(QCursor::pos());
+    if (!targetScreen)
+        targetScreen = screen() ? screen() : QGuiApplication::primaryScreen();
+    if (!targetScreen)
+        return;
+
+    const QRect visible = dropdownVisibleGeometry(
+        targetScreen->availableGeometry(),
+        edge,
+        m_config.ui.dropdownWidthPercent,
+        m_config.ui.dropdownHeightPercent);
+    const QRect hidden = dropdownHiddenGeometry(visible, edge);
+
+    if (!m_dropdownVisible) {
+        m_dropdownNormalGeometry = geometry();
+        m_dropdownNormalFlags = windowFlags();
+    }
+
+    m_dropdownVisible = true;
+    setWindowFlags((m_dropdownNormalFlags ? m_dropdownNormalFlags : windowFlags())
+                   | Qt::FramelessWindowHint
+                   | Qt::WindowStaysOnTopHint);
+    setWindowOpacity(qBound(20, m_config.ui.dropdownOpacityPercent, 100) / 100.0);
+    setGeometry(hidden);
+    show();
+    raise();
+    activateWindow();
+
+    auto *animation = new QPropertyAnimation(this, "geometry", this);
+    animation->setDuration(qBound(0, m_config.ui.dropdownAnimationMs, 1000));
+    animation->setStartValue(hidden);
+    animation->setEndValue(visible);
+    animation->setEasingCurve(QEasingCurve::OutCubic);
+    connect(animation, &QPropertyAnimation::finished, this, [this]{
+        if (m_input)
+            m_input->setFocus();
+    });
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void MainWindow::toggleDropdown(const QString &edgeOverride)
+{
+    if (!m_dropdownVisible || !isVisible()) {
+        showDropdown(edgeOverride);
+        return;
+    }
+
+    const QString edge = normalizedDropdownEdge(
+        edgeOverride.isEmpty() ? m_config.ui.dropdownEdge : edgeOverride);
+    const QRect visible = geometry();
+    const QRect hidden = dropdownHiddenGeometry(visible, edge);
+
+    auto *animation = new QPropertyAnimation(this, "geometry", this);
+    animation->setDuration(qBound(0, m_config.ui.dropdownAnimationMs, 1000));
+    animation->setStartValue(visible);
+    animation->setEndValue(hidden);
+    animation->setEasingCurve(QEasingCurve::InCubic);
+    connect(animation, &QPropertyAnimation::finished, this, [this]{
+        hide();
+        m_dropdownVisible = false;
+        setWindowOpacity(1.0);
+        if (m_dropdownNormalFlags)
+            setWindowFlags(m_dropdownNormalFlags);
+        if (m_dropdownNormalGeometry.isValid())
+            setGeometry(m_dropdownNormalGeometry);
+    });
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
@@ -5076,8 +5226,16 @@ void MainWindow::changeEvent(QEvent *event)
     if (event->type() == QEvent::PaletteChange && m_sendBtn)
         m_sendBtn->setIcon(MenuIcons::send({}, 26));
 
-    if (event->type() == QEvent::ActivationChange && isActiveWindow() && m_tray)
-        m_tray->setNotify(false);
+    if (event->type() == QEvent::ActivationChange) {
+        if (isActiveWindow() && m_tray)
+            m_tray->setNotify(false);
+        if (m_dropdownVisible) {
+            const int opacity = isActiveWindow()
+                ? m_config.ui.dropdownOpacityPercent
+                : m_config.ui.dropdownInactiveOpacityPercent;
+            setWindowOpacity(qBound(20, opacity, 100) / 100.0);
+        }
+    }
 
     if (event->type() == QEvent::WindowStateChange) {
         const auto *sc = static_cast<QWindowStateChangeEvent *>(event);

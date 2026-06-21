@@ -51,6 +51,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(SessionModel *model, const Config &cfg, QWidget *parent = nullptr);
     ~MainWindow() override;
+    void toggleDropdown(const QString &edgeOverride = {});
+    void showDropdown(const QString &edgeOverride = {});
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
@@ -272,6 +274,9 @@ private:
     bool    m_showNickPrefix{true};
     bool    m_showEmojiBtn{false};
     bool    m_showTopic{true};
+    bool    m_dropdownVisible{false};
+    QRect   m_dropdownNormalGeometry;
+    Qt::WindowFlags m_dropdownNormalFlags{};
 
     CommandDispatcher *m_dispatcher{nullptr};
 

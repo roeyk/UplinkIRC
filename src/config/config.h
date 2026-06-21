@@ -116,6 +116,13 @@ struct UiConfig {
     bool      showUnreadCounts{true};
     QString   appIcon{"dark"};
     QString   nickBrackets{"<>"};
+    QString   dropdownEdge{"top"};
+    QString   dropdownShortcut{"Meta+`"};
+    int       dropdownWidthPercent{100};
+    int       dropdownHeightPercent{45};
+    int       dropdownAnimationMs{150};
+    int       dropdownOpacityPercent{100};
+    int       dropdownInactiveOpacityPercent{80};
 };
 
 struct Config {

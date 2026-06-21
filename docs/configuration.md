@@ -116,6 +116,13 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `notifications` | bool | `true` | Show a green dot on the tray icon when you receive a mention or PM and the window is not focused. Clears automatically when you focus the window. Also toggled from **Preferences → Tray Notifications**. |
 | `nick_brackets` | string | `"<>"` | Characters that wrap nick names in chat messages. Can also be changed live from **Preferences → Nick Brackets**. See [Nick bracket style](#nick-bracket-style) below. |
 | `app_icon` | string | `"dark"` | Which app icon variant to use. Choices: `"dark"`, `"light"`. Change from **Preferences** (click **⚙**) → **App Icon**. |
+| `dropdown_edge` | string | `"top"` | Edge used by `Uplink --toggle-dropdown`. Choices: `"top"`, `"bottom"`, `"left"`, `"right"`. |
+| `dropdown_shortcut` | string | `"Meta+\`"` | Shortcut text shown in **Dropdown Settings**. Bind this key in your WM/compositor to the generated command. |
+| `dropdown_width_percent` | integer | `100` | Dropdown width as a percentage of the active screen. Used mainly for top/bottom dropdowns. |
+| `dropdown_height_percent` | integer | `45` | Dropdown height as a percentage of the active screen. Used mainly for top/bottom dropdowns. |
+| `dropdown_animation_ms` | integer | `150` | Slide animation duration for dropdown show/hide. |
+| `dropdown_opacity_percent` | integer | `100` | Dropdown window opacity while shown. Values below `100` require compositor support. |
+| `dropdown_inactive_opacity_percent` | integer | `80` | Dropdown opacity when the dropdown window is not focused. |
 | `font_family` | string | `"IBM Plex Mono"` | Font family applied to all UI zones |
 | `font_toolbar` | integer | `10` | Font size (pt) for the ☰ button |
 | `font_sidebar` | integer | `10` | Font size (pt) for the server/channel tree |
@@ -130,6 +137,22 @@ Controls the look and feel of the interface. All keys are optional — missing k
 | `font_emoji` | integer | `16` | Font size (pt) for emoji characters in chat messages — independent of `font_chat` so emoji stay readable at small font sizes |
 
 All font sizes and the theme can be changed live from **Preferences → Font Config...** and the theme list in **Preferences** without editing the file.
+
+### Dropdown mode
+
+Uplink can be toggled like a dropdown terminal without using KDE-specific global shortcut APIs. Use **☰ → Dropdown Settings** to choose the intended shortcut, slide edge, size, animation speed, and opacity levels. Then bind your desktop environment or window manager shortcut to:
+
+```bash
+Uplink --toggle-dropdown
+```
+
+For example, bind Meta+Backtick to that command in your WM/compositor keyboard shortcut settings. To override the configured slide edge for one binding:
+
+```bash
+Uplink --toggle-dropdown --dropdown-edge left
+```
+
+Set `dropdown_opacity_percent` below `100` for a translucent dropdown, and `dropdown_inactive_opacity_percent` for the defocused state. Background blur is compositor-specific; configure it in your desktop environment/window manager rules if you want Konsole/Yakuake-style blur.
 
 ---
 
