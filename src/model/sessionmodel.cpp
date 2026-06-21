@@ -611,10 +611,22 @@ void SessionModel::setActive(ServerId host, BufferId ch)
     m_activeChannel = ch;
     // Clear unread on the newly active channel
     if (auto *c = channel(host, ch)) {
+        const QDateTime readAt = c->messages.isEmpty()
+            ? QDateTime::currentDateTimeUtc()
+            : c->messages.constLast().timestamp.toUTC();
+
         c->unread         = 0;
         c->mentions       = 0;
         c->firstUnreadIdx = -1;
+        c->lastRead       = readAt;
         emit unreadChanged(host, ch, 0);
+
+        // Persist the read point when the server/bouncer supports
+        // soju.im/read. Without this, a restart can reconstruct the same
+        // unread count from the older server-side marker even though the user
+        // already visited the channel locally.
+        if (auto *cl = clientFor(host))
+            cl->markRead(ch.str(), readAt);
     }
 }
 
