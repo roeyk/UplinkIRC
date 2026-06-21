@@ -3,11 +3,13 @@
 #include "config/keychainhelper.h"
 
 #include <memory>
+#include <QCryptographicHash>
 #include <QPointer>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QSettings>
 #include <QSet>
 #include <QStandardPaths>
 
@@ -24,6 +26,20 @@ static QString clientServerId(const IrcClient *client)
 {
     const QString id = client->property("serverId").toString();
     return id.isEmpty() ? client->host() : id;
+}
+
+// Builds a QSettings-safe key for one local read marker.
+//
+// Called by `localReadMarker` and `recordLocalReadMarker`. `host` and
+// `channel` identify the Uplink buffer; the channel part is folded to lower
+// case so IRC channel case differences do not create separate markers.
+// Returns a hex SHA-256 key and produces no I/O itself.
+static QString localReadMarkerKey(ServerId host, BufferId channel)
+{
+    const QString raw = host.str() + QStringLiteral("\n")
+                      + channel.str().toLower();
+    return QString::fromLatin1(QCryptographicHash::hash(
+        raw.toUtf8(), QCryptographicHash::Sha256).toHex());
 }
 
 // Reads a server password from a local file just before connecting.
@@ -570,6 +586,47 @@ bool SessionModel::hasMention(ServerId host, BufferId ch)
     return c && c->mentions > 0;
 }
 
+// Reads Uplink's local fallback read marker for one buffer.
+//
+// Used by `postMessage` when a channel is first touched in memory. `host` and
+// `channel` identify the buffer. Returns the persisted UTC timestamp, or an
+// invalid QDateTime when the user has never visited that buffer on this
+// machine. It reads only local application settings and performs no network
+// traffic.
+QDateTime SessionModel::localReadMarker(ServerId host, BufferId channel) const
+{
+    QSettings settings(QStringLiteral("uplink"), QStringLiteral("uplink"));
+    settings.beginGroup(QStringLiteral("localReadMarkers"));
+    const QString value = settings.value(localReadMarkerKey(host, channel)).toString();
+    settings.endGroup();
+
+    // Empty values mean no local fallback marker exists yet.
+    if (value.isEmpty())
+        return {};
+
+    return QDateTime::fromString(value, Qt::ISODateWithMs).toUTC();
+}
+
+// Persists Uplink's local fallback read marker for one buffer.
+//
+// Called by `setActive` whenever the user visits a buffer, and by remote
+// MARKREAD handling when the server supplies a read marker. `readAt` is the
+// latest message time considered seen. The function writes only local
+// application settings and does not modify IRC server state.
+void SessionModel::recordLocalReadMarker(ServerId host, BufferId channel,
+                                         const QDateTime &readAt)
+{
+    // Invalid timestamps are not useful as durable read points.
+    if (!readAt.isValid())
+        return;
+
+    QSettings settings(QStringLiteral("uplink"), QStringLiteral("uplink"));
+    settings.beginGroup(QStringLiteral("localReadMarkers"));
+    settings.setValue(localReadMarkerKey(host, channel),
+                      readAt.toUTC().toString(Qt::ISODateWithMs));
+    settings.endGroup();
+}
+
 void SessionModel::sendJoin(ServerId host, BufferId channel, const QString &key)
 {
     auto *cl = clientFor(ServerId{host});
@@ -619,6 +676,7 @@ void SessionModel::setActive(ServerId host, BufferId ch)
         c->mentions       = 0;
         c->firstUnreadIdx = -1;
         c->lastRead       = readAt;
+        recordLocalReadMarker(host, ch, readAt);
         emit unreadChanged(host, ch, 0);
 
         // Persist the read point when the server/bouncer supports
@@ -690,6 +748,7 @@ void SessionModel::attachClient(IrcClient *cl, const ServerConfig &cfg)
             [this, serverId](const QString &, const QString &target, const QDateTime &ts){
         if (auto *ch = channel(ServerId{serverId}, BufferId{target}))
             ch->lastRead = ts;
+        recordLocalReadMarker(ServerId{serverId}, BufferId{target}, ts);
     });
     connect(cl, &IrcClient::userJoined, this,
             [this, serverId](const QString &, const QString &channel, const QString &nick,
@@ -877,6 +936,8 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
 
     auto &ch = sess->getOrCreate(target);
     if (ch.name.isEmpty()) ch.name = target;
+    if (!ch.lastRead.isValid())
+        ch.lastRead = localReadMarker(ServerId{host}, BufferId{target});
     ch.addMessage(msg);
     if (m_config.ui.logMessages)
         logMessage(host, target, msg);
@@ -884,7 +945,9 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     const bool isActive = (host == m_activeHost.str() && target.compare(m_activeChannel.str(), Qt::CaseInsensitive) == 0);
     const bool countsAsUnread = msg.type == MessageType::Privmsg
         || (msg.type == MessageType::Notice && target == "(server)");
-    if (!isActive && !msg.isHistory && countsAsUnread) {
+    const bool isLocallyRead = ch.lastRead.isValid()
+        && msg.timestamp.toUTC() <= ch.lastRead.toUTC();
+    if (!isActive && !msg.isHistory && !isLocallyRead && countsAsUnread) {
         if (ch.unread == 0)
             ch.firstUnreadIdx = static_cast<int>(ch.messages.size()) - 1;
         ++ch.unread;
@@ -895,7 +958,7 @@ void SessionModel::postMessage(const QString &host, const QString &target, const
     }
 
     emit messageAdded(ServerId{host}, BufferId{target}, msg);
-    if (!isActive && !msg.isHistory && countsAsUnread)
+    if (!isActive && !msg.isHistory && !isLocallyRead && countsAsUnread)
         emit unreadChanged(ServerId{host}, BufferId{target}, ch.unread);
 }
 

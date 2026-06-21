@@ -98,7 +98,7 @@ constexpr int kInteractiveSplitterGripWidth = 6;
 // normal and fullscreen window states. The function takes an already-created
 // splitter, mutates only its interaction policy, and produces no external
 // output.
-static void configureInteractiveSplitter(QSplitter *splitter)
+static void configureInteractiveSplitter(QSplitter *splitter, bool childrenCollapsible)
 {
     // Use an opaque drag so pane contents resize continuously instead of
     // jumping after the handle is released on platforms/styles that default to
@@ -107,7 +107,7 @@ static void configureInteractiveSplitter(QSplitter *splitter)
 
     // Keep children resizeable but prevent accidental collapse-to-zero while
     // dragging near the side panes in a constrained normal-size window.
-    splitter->setChildrenCollapsible(false);
+    splitter->setChildrenCollapsible(childrenCollapsible);
 
     // Provide a practical hit target; the stylesheet still paints a thin
     // divider, so this widens interaction without making the UI visually heavy.
@@ -1810,6 +1810,7 @@ void MainWindow::setupChatArea()
     chatVbox->addWidget(headerRow);
 
     auto *chatLeft = new QWidget;
+    chatLeft->setMinimumSize(1, 1);
     auto *chatLeftVbox = new QVBoxLayout(chatLeft);
     chatLeftVbox->setContentsMargins(0, 0, 0, 0);
     chatLeftVbox->setSpacing(0);
@@ -1817,7 +1818,7 @@ void MainWindow::setupChatArea()
     chatLeftVbox->addWidget(m_chatView, 1);
 
     m_chatSplitter = new QSplitter(Qt::Horizontal);
-    configureInteractiveSplitter(m_chatSplitter);
+    configureInteractiveSplitter(m_chatSplitter, true);
     m_chatSplitter->addWidget(chatLeft);
     m_chatSplitter->addWidget(m_nickPanel);
     m_chatSplitter->setStretchFactor(0, 1);
@@ -1874,7 +1875,7 @@ void MainWindow::setupChatArea()
     });
 
     m_mainSplitter = new QSplitter(Qt::Horizontal);
-    configureInteractiveSplitter(m_mainSplitter);
+    configureInteractiveSplitter(m_mainSplitter, false);
     m_mainSplitter->addWidget(m_sidebarPanel);
     m_mainSplitter->addWidget(chatSection);
     m_mainSplitter->setStretchFactor(0, 0);
@@ -1885,7 +1886,7 @@ void MainWindow::setupChatArea()
     // setupInputBar will append search/reply/typing/input into chatSection
 
     m_panesSplitter = new QSplitter(Qt::Horizontal);
-    configureInteractiveSplitter(m_panesSplitter);
+    configureInteractiveSplitter(m_panesSplitter, true);
     m_panesSplitter->addWidget(m_primaryPanel);
     m_panesSplitter->setStretchFactor(0, 1);
 
@@ -4104,7 +4105,7 @@ void MainWindow::rebuildPaneLayout()
 
     auto makeVert = []() -> QSplitter * {
         auto *s = new QSplitter(Qt::Vertical);
-        configureInteractiveSplitter(s);
+        configureInteractiveSplitter(s, true);
         return s;
     };
 

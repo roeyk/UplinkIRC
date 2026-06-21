@@ -189,6 +189,8 @@ private:
 
     void postMessage(const QString &host, const QString &target, const Message &msg);
     void logMessage (const QString &host, const QString &target, const Message &msg);
+    QDateTime localReadMarker(ServerId host, BufferId channel) const;
+    void recordLocalReadMarker(ServerId host, BufferId channel, const QDateTime &readAt);
 
     QList<ServerSession> m_sessions;
     QList<IrcClient *>   m_clients;

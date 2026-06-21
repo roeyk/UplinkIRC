@@ -32,8 +32,8 @@ static void configureInteractiveSplitter(QSplitter *splitter)
     // do not feel like they update only after mouse release.
     splitter->setOpaqueResize(true);
 
-    // Keep both sides resizeable without allowing accidental zero-width panes.
-    splitter->setChildrenCollapsible(false);
+    // Let the inner user list yield space when its containing pane gets narrow.
+    splitter->setChildrenCollapsible(true);
 
     // Use a larger logical grip; the theme can still paint a slim divider.
     splitter->setHandleWidth(kInteractiveSplitterGripWidth);
