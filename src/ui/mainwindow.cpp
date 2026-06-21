@@ -249,7 +249,7 @@ public:
                    const QModelIndex &index) const override
     {
         QSize s = QStyledItemDelegate::sizeHint(option, index);
-        s.setHeight(26);
+        s.setHeight(qMax(26, option.fontMetrics.height() + 8));
         return s;
     }
 
@@ -1076,6 +1076,8 @@ void MainWindow::applyFontSizes()
             f.setBold(true);
             srv->setFont(0, f);
         }
+        m_sidebar->doItemsLayout();
+        m_sidebar->viewport()->update();
     }
     if (m_chatView)       m_chatView->setFont(makeFont(fs.chat));
     if (m_nickList) {
