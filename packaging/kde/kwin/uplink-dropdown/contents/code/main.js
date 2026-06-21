@@ -35,8 +35,7 @@ function matchesUplinkWindow(window) {
     const resourceClass = lower(window.resourceClass);
     const resourceName = lower(window.resourceName);
     const windowClass = lower(window.windowClass);
-    const caption = lower(window.caption);
-    const combined = resourceClass + " " + resourceName + " " + windowClass + " " + caption;
+    const combined = resourceClass + " " + resourceName + " " + windowClass;
 
     return TARGET_CLASS_PARTS.some((part) => combined.indexOf(part) >= 0);
 }
@@ -168,4 +167,3 @@ function main() {
 }
 
 main();
-

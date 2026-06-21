@@ -22,6 +22,11 @@ window properties:
 - all desktops;
 - opacity where the KWin script API exposes it.
 
+The script matches Uplink by KWin resource/window-class fields only. It does
+not inspect window captions or terminal titles, because that can accidentally
+match unrelated applications such as Yakuake when their title contains an
+Uplink path.
+
 ## What This Does Not Provide Yet
 
 - It does not register the global shortcut automatically.
@@ -86,4 +91,3 @@ Keep this integration layer separate from Uplink proper. Uplink proper should
 only provide stable hooks such as `--toggle-dropdown` and stable IPC. KDE
 shortcut installation, window rules, KWin scripting, compositor opacity, and
 blur behavior belong here.
-
