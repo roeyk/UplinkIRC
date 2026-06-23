@@ -485,9 +485,15 @@ QSplitter::handle {
     background: transparent;
 }
 QSplitter::handle:horizontal {
+    width: 6px;
+    min-width: 6px;
+    max-width: 6px;
     border-left: 1px solid {{border}};
 }
 QSplitter::handle:vertical {
+    height: 6px;
+    min-height: 6px;
+    max-height: 6px;
     border-top: 1px solid {{border}};
 }
 
